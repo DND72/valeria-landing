@@ -22,11 +22,6 @@ const credentials = [
     desc: 'Titolo ufficiale FIDE · ID 373110313. La stessa capacità di anticipare le mosse sul tavolo e nella vita.',
   },
   {
-    icon: '🔯',
-    title: 'Massona di Terzo Grado',
-    desc: 'Il grado di Maestro — il più alto della Massoneria blu. Un percorso esoterico serio e strutturato.',
-  },
-  {
     icon: '🌟',
     title: 'Allieva del Maestro Villanova',
     desc: 'Formazione nella tradizione iniziatica dei Tarocchi di Marsiglia. Un metodo trasmesso, non improvvisato.',
