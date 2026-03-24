@@ -42,7 +42,7 @@ export default function BookingSection() {
         >
           {/* Replace the src below with your actual Calendly URL once you create the account */}
           <iframe
-            src="https://calendly.com/valeriadipace"
+            src="https://calendly.com/valeriadipace?hide_gdpr_banner=1&background_color=060608&text_color=f5f0e8&primary_color=d4a017"
             width="100%"
             height="650"
             frameBorder="0"
@@ -61,38 +61,6 @@ export default function BookingSection() {
           </noscript>
         </motion.div>
 
-        {/* Placeholder message (remove once Calendly is active) */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-8 p-6 rounded-lg border border-gold-600/20 bg-gold-600/5 text-center"
-        >
-          <p className="text-white/50 text-sm mb-3">
-            Il sistema di prenotazione sarà attivo a breve con Calendly + PayPal.
-            <br />
-            Nel frattempo, puoi contattare Valeria direttamente su:
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="https://www.kang.it/tarologa-stella"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
-            >
-              📞 Kang — Stella
-            </a>
-            <a
-              href="https://www.wengo.it"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
-            >
-              💬 Wengo — Valeria
-            </a>
-          </div>
-        </motion.div>
 
         {/* Payment security note */}
         <motion.div
