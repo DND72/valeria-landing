@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Stats from './components/Stats'
 import About from './components/About'
+import Gallery from './components/Gallery'
 import HowItWorks from './components/HowItWorks'
 import Reviews from './components/Reviews'
 import TarotAppPromo from './components/TarotAppPromo'
@@ -18,6 +19,7 @@ export default function App() {
         <Hero />
         <Stats />
         <About />
+        <Gallery />
         <HowItWorks />
         <Reviews />
         <TarotAppPromo />

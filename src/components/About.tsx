@@ -27,6 +27,11 @@ const credentials = [
     desc: 'Grado di Commander nell\'Ordine Templare. Un percorso cavalleresco ed esoterico tra i più antichi e rigorosi.',
   },
   {
+    icon: '🕊️',
+    title: 'Ambasciatrice di Pace',
+    desc: 'Onorificenza conferita per impegno nel dialogo, nella cultura e nella crescita spirituale dell\'individuo.',
+  },
+  {
     icon: '🌟',
     title: 'Allieva del Maestro Villanova',
     desc: 'Formazione nella tradizione iniziatica dei Tarocchi di Marsiglia. Un metodo trasmesso, non improvvisato.',

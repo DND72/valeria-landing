@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const links = [
   { label: 'Chi sono', href: '#chi-sono' },
-  { label: 'Numeri', href: '#numeri' },
+  { label: 'Galleria', href: '#galleria' },
   { label: 'Come funziona', href: '#come-funziona' },
   { label: 'Recensioni', href: '#recensioni' },
   { label: 'Prenota', href: '#prenota' },
