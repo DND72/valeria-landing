@@ -1,6 +1,17 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 export default function BookingSection() {
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://assets.calendly.com/assets/external/widget.js'
+    script.async = true
+    document.body.appendChild(script)
+    return () => {
+      document.body.removeChild(script)
+    }
+  }, [])
+
   return (
     <section id="prenota" className="py-24 px-6 relative overflow-hidden">
       <div className="section-divider" />
@@ -31,34 +42,19 @@ export default function BookingSection() {
           </p>
         </motion.div>
 
-        {/* Calendly embed placeholder */}
+        {/* Calendly inline widget */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="mystical-card p-0 overflow-hidden"
-          style={{ minHeight: '600px' }}
+          className="mystical-card p-0 overflow-hidden rounded-lg"
         >
-          {/* Replace the src below with your actual Calendly URL once you create the account */}
-          <iframe
-            src="https://calendly.com/valeriadipace?hide_gdpr_banner=1&background_color=060608&text_color=f5f0e8&primary_color=d4a017"
-            width="100%"
-            height="650"
-            frameBorder="0"
-            title="Prenota una sessione con Valeria"
-            className="w-full"
-            style={{
-              background: 'transparent',
-              minHeight: '600px',
-            }}
+          <div
+            className="calendly-inline-widget w-full"
+            data-url="https://calendly.com/valeriadipace?hide_gdpr_banner=1&background_color=060608&text_color=f5f0e8&primary_color=d4a017"
+            style={{ minWidth: '320px', height: '700px' }}
           />
-          {/* Fallback if Calendly is not yet configured */}
-          <noscript>
-            <div className="p-12 text-center">
-              <p className="text-white/60 mb-4">Per prenotare la tua sessione, contatta Valeria direttamente.</p>
-            </div>
-          </noscript>
         </motion.div>
 
 
