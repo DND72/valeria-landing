@@ -1,5 +1,49 @@
 import { motion } from 'framer-motion'
 
+const ShiningStella = () => (
+  <span className="relative inline-block">
+    {/* Sparkle particles around "Stella" */}
+    {[
+      { top: '-18px', left: '10%',  delay: 0,    size: 'w-1.5 h-1.5' },
+      { top: '-14px', left: '75%',  delay: 0.4,  size: 'w-1 h-1' },
+      { top: '0px',   left: '-8%',  delay: 0.8,  size: 'w-1 h-1' },
+      { top: '0px',   left: '105%', delay: 0.2,  size: 'w-1.5 h-1.5' },
+      { top: '80%',   left: '5%',   delay: 0.6,  size: 'w-1 h-1' },
+      { top: '70%',   left: '90%',  delay: 1.0,  size: 'w-1 h-1' },
+    ].map((s, i) => (
+      <motion.span
+        key={i}
+        className={`absolute ${s.size} rounded-full bg-gold-300 pointer-events-none`}
+        style={{ top: s.top, left: s.left }}
+        animate={{
+          opacity: [0, 1, 0],
+          scale:   [0.5, 1.4, 0.5],
+        }}
+        transition={{
+          duration: 2,
+          delay: s.delay,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+    ))}
+    {/* The word itself with shimmering gold */}
+    <motion.span
+      className="gold-text italic"
+      animate={{
+        filter: [
+          'drop-shadow(0 0 6px rgba(212,160,23,0.4))',
+          'drop-shadow(0 0 18px rgba(252,211,77,0.9))',
+          'drop-shadow(0 0 6px rgba(212,160,23,0.4))',
+        ],
+      }}
+      transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+    >
+      Stella
+    </motion.span>
+  </span>
+)
+
 const TarotCardIcon = () => (
   <svg className="w-8 h-8" viewBox="0 0 48 64" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="2" y="2" width="44" height="60" rx="4" stroke="#d4a017" strokeWidth="2" fill="none" />
@@ -60,10 +104,9 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.1 }}
           className="font-serif text-5xl md:text-7xl font-bold leading-tight mb-6"
         >
-          Le carte non{' '}
-          <span className="gold-text italic">mentono.</span>
+          Le carte non mentono.
           <br />
-          Valeria le sa leggere.
+          Valeria è la tua <ShiningStella />
         </motion.h1>
 
         {/* Subtitle */}
@@ -74,7 +117,7 @@ export default function Hero() {
           className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
         >
           Attrice, due lauree, percorso esoterico decennale.
-          Oltre <strong className="text-gold-400">3.000 consulti</strong> e un metodo che unisce psicologia, intuito e tradizione iniziatica.
+          Oltre <strong className="text-gold-400">3.000 consulti</strong> come Stella su Kang — ora puoi trovarla direttamente qui.
         </motion.p>
 
         <motion.p
