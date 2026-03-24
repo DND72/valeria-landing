@@ -22,6 +22,11 @@ const credentials = [
     desc: 'Titolo ufficiale FIDE · ID 373110313. La stessa capacità di anticipare le mosse sul tavolo e nella vita.',
   },
   {
+    icon: '⚔️',
+    title: 'Dama Templare · Commander Regionale',
+    desc: 'Grado di Commander nell\'Ordine Templare. Un percorso cavalleresco ed esoterico tra i più antichi e rigorosi.',
+  },
+  {
     icon: '🌟',
     title: 'Allieva del Maestro Villanova',
     desc: 'Formazione nella tradizione iniziatica dei Tarocchi di Marsiglia. Un metodo trasmesso, non improvvisato.',
