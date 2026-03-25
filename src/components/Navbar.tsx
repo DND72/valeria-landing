@@ -8,7 +8,6 @@ const links = [
   { label: 'Galleria', href: '#galleria' },
   { label: 'Blog', href: '/blog' },
   { label: 'Recensioni', href: '#recensioni' },
-  { label: 'Prenota', href: '#prenota' },
 ]
 
 export default function Navbar() {
@@ -65,16 +64,21 @@ export default function Navbar() {
               Il mio spazio
             </button>
           ) : (
-            <button
-              onClick={() => navigate('/accedi')}
-              className="text-sm text-white/60 hover:text-gold-400 transition-colors"
-            >
-              Accedi
-            </button>
+            <>
+              <button
+                onClick={() => navigate('/accedi')}
+                className="text-sm text-white/60 hover:text-gold-400 transition-colors"
+              >
+                Accedi
+              </button>
+              <button
+                onClick={() => navigate('/registrati')}
+                className="btn-gold text-sm px-6 py-2.5"
+              >
+                Iscriviti
+              </button>
+            </>
           )}
-          <a href="#prenota" className="btn-gold text-sm px-6 py-2.5">
-            Prenota ora
-          </a>
         </div>
 
         {/* Hamburger */}
@@ -123,20 +127,21 @@ export default function Navbar() {
                   Il mio spazio ✨
                 </button>
               ) : (
-                <button
-                  onClick={() => { navigate('/accedi'); setMenuOpen(false) }}
-                  className="text-left text-white/60 hover:text-gold-400 transition-colors"
-                >
-                  Accedi
-                </button>
+                <>
+                  <button
+                    onClick={() => { navigate('/accedi'); setMenuOpen(false) }}
+                    className="text-left text-white/60 hover:text-gold-400 transition-colors"
+                  >
+                    Accedi
+                  </button>
+                  <button
+                    onClick={() => { navigate('/registrati'); setMenuOpen(false) }}
+                    className="btn-gold text-sm px-6 py-2.5 w-full text-center"
+                  >
+                    Iscriviti
+                  </button>
+                </>
               )}
-              <a
-                href="#prenota"
-                className="btn-gold text-sm px-6 py-2.5 w-full text-center"
-                onClick={() => setMenuOpen(false)}
-              >
-                Prenota ora
-              </a>
               </li>
             </ul>
           </motion.div>
