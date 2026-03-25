@@ -39,11 +39,17 @@
 @layer components {
   .gold-text {
     @apply text-transparent bg-clip-text;
-    background-image: linear-gradient(135deg, #ffcc00 0%, #ffe566 35%, #ffaa00 65%, #ff8c00 100%);
+    background-image: linear-gradient(180deg,
+      #fffde0 0%,
+      #fff5a0 20%,
+      #ffe033 45%,
+      #ffc200 70%,
+      #ffaa00 100%
+    );
     filter:
-      drop-shadow(0 0 8px rgba(255, 200, 0, 0.9))
-      drop-shadow(0 0 20px rgba(255, 160, 0, 0.6))
-      drop-shadow(0 3px 6px rgba(0, 0, 0, 0.8));
+      drop-shadow(0 0 10px rgba(255, 230, 50, 1))
+      drop-shadow(0 0 25px rgba(255, 180, 0, 0.7))
+      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.9));
   }
 
   .gold-border {
@@ -53,11 +59,17 @@
   /* Numeri e valori in evidenza */
   .gold-number {
     @apply text-transparent bg-clip-text font-bold;
-    background-image: linear-gradient(180deg, #ffe566 0%, #ffcc00 50%, #ff9500 100%);
+    background-image: linear-gradient(180deg,
+      #fffde0 0%,
+      #fff0a0 25%,
+      #ffe033 50%,
+      #ffb800 80%,
+      #ff9500 100%
+    );
     filter:
-      drop-shadow(0 0 10px rgba(255, 210, 0, 1))
-      drop-shadow(0 0 25px rgba(255, 150, 0, 0.7))
-      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.9));
+      drop-shadow(0 0 12px rgba(255, 235, 50, 1))
+      drop-shadow(0 0 30px rgba(255, 180, 0, 0.8))
+      drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
   }
 
   .section-divider {
