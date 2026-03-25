@@ -104,19 +104,19 @@ export default function Reviews() {
           className="flex flex-wrap items-center justify-center gap-8 mb-12"
         >
           <div className="text-center">
-            <div className="font-serif text-5xl font-bold gold-text">4,97</div>
+            <div className="font-serif text-5xl gold-number">4,97</div>
             <Stars count={5} />
             <p className="text-white/40 text-xs mt-1">261 recensioni · Kang</p>
           </div>
           <div className="w-px h-16 bg-white/10 hidden sm:block" />
           <div className="text-center">
-            <div className="font-serif text-5xl font-bold gold-text">776</div>
+            <div className="font-serif text-5xl gold-number">776</div>
             <p className="text-white/60 text-sm font-medium mt-1">commenti positivi</p>
             <p className="text-white/40 text-xs mt-0.5">Wengo</p>
           </div>
           <div className="w-px h-16 bg-white/10 hidden sm:block" />
           <div className="text-center">
-            <div className="font-serif text-5xl font-bold gold-text">3.359</div>
+            <div className="font-serif text-5xl gold-number">3.359</div>
             <p className="text-white/60 text-sm font-medium mt-1">consulti completati</p>
             <p className="text-white/40 text-xs mt-0.5">su piattaforme certificate</p>
           </div>

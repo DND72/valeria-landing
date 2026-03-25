@@ -32,8 +32,8 @@ const stats: StatItem[] = [
     icon: '💬',
   },
   {
-    value: 3,
-    suffix: '',
+    value: 10,
+    suffix: '+',
     label: 'Anni di pratica',
     sublabel: 'con trasmissione alchemica',
     icon: '🌙',
@@ -112,7 +112,7 @@ export default function Stats() {
               className="mystical-card text-center group"
             >
               <div className="text-4xl mb-3">{stat.icon}</div>
-              <div className="font-serif text-3xl md:text-4xl font-bold gold-text mb-1">
+              <div className="font-serif text-3xl md:text-4xl gold-number mb-1">
                 <AnimatedNumber target={stat.value} suffix={stat.suffix} active={inView} />
               </div>
               <div className="text-white font-medium text-sm mb-1">{stat.label}</div>
