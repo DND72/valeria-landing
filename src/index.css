@@ -26,8 +26,13 @@
       0 1px 0 rgba(255, 200, 50, 0.4),
       0 2px 0 rgba(180, 120, 0, 0.3),
       0 3px 0 rgba(120, 80, 0, 0.2),
-      0 4px 8px rgba(0, 0, 0, 0.6),
-      0 8px 20px rgba(0, 0, 0, 0.4);
+      0 4px 8px rgba(0, 0, 0, 0.7),
+      0 8px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Body text — shadow scura per leggibilità su galassie */
+  p, span, li, a, label, blockquote {
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -113,6 +118,17 @@
   background-size: 200% auto;
   animation: shimmer 3s linear infinite;
 }
+
+/* ── Legibility overrides: testo piccolo più visibile su sfondo galassia ── */
+
+/* Testo bianco muto → caldo e più opaco */
+.text-white\/60 { color: rgba(255, 240, 210, 0.85) !important; }
+.text-white\/50 { color: rgba(255, 235, 200, 0.80) !important; }
+.text-white\/40 { color: rgba(255, 225, 180, 0.72) !important; }
+.text-white\/30 { color: rgba(255, 215, 160, 0.65) !important; }
+.text-white\/25 { color: rgba(255, 210, 150, 0.60) !important; }
+.text-white\/20 { color: rgba(255, 200, 140, 0.55) !important; }
+.text-white\/15 { color: rgba(255, 195, 130, 0.50) !important; }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
