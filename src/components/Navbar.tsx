@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 const links = [
   { label: 'Chi sono', href: '#chi-sono' },
@@ -34,9 +34,9 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-        <a href="#top" className="font-serif text-xl font-semibold gold-text">
+        <Link to="/" className="font-serif text-xl font-semibold gold-text">
           Valeria Di Pace
-        </a>
+        </Link>
 
         {/* Desktop links */}
         <ul className="hidden md:flex items-center gap-8">
