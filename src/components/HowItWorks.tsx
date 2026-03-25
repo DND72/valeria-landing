@@ -25,18 +25,21 @@ const services = [
   {
     name: 'Consulto breve',
     duration: '30 minuti',
+    price: null,
     ideal: 'Una domanda specifica · Una situazione da chiarire',
     icon: '🌙',
   },
   {
     name: 'Consulto completo',
     duration: '60 minuti',
+    price: '50€',
     ideal: 'Lettura approfondita · Più temi · Visione d\'insieme',
     icon: '✨',
   },
   {
     name: 'Percorso mensile',
     duration: '4 sessioni',
+    price: null,
     ideal: 'Accompagnamento continuativo · Crescita personale',
     icon: '🌟',
   },
@@ -122,7 +125,15 @@ export default function HowItWorks() {
               <h3 className="font-serif text-xl font-bold text-white mb-1 group-hover:text-gold-400 transition-colors">
                 {service.name}
               </h3>
-              <p className="text-gold-500 font-medium text-sm mb-3">{service.duration}</p>
+              <p className="text-gold-500 font-medium text-sm mb-1">{service.duration}</p>
+              {service.price && (
+                <p className="font-serif text-2xl font-bold mb-3" style={{
+                  background: 'linear-gradient(135deg, #ffe066, #ffd700)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>{service.price}</p>
+              )}
+              {!service.price && <div className="mb-3 text-white/20 text-xs italic">prezzo da definire</div>}
               <p className="text-white/40 text-xs">{service.ideal}</p>
             </motion.div>
           ))}
