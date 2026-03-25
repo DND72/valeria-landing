@@ -1,3 +1,4 @@
+import { Routes, Route } from 'react-router-dom'
 import StarField from './components/StarField'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -9,6 +10,24 @@ import Reviews from './components/Reviews'
 import TarotAppPromo from './components/TarotAppPromo'
 import BookingSection from './components/BookingSection'
 import Footer from './components/Footer'
+import SignInPage from './pages/SignInPage'
+import SignUpPage from './pages/SignUpPage'
+import Dashboard from './pages/Dashboard'
+
+function HomePage() {
+  return (
+    <>
+      <Hero />
+      <Stats />
+      <About />
+      <Gallery />
+      <HowItWorks />
+      <Reviews />
+      <TarotAppPromo />
+      <BookingSection />
+    </>
+  )
+}
 
 export default function App() {
   return (
@@ -16,14 +35,12 @@ export default function App() {
       <StarField />
       <Navbar />
       <main>
-        <Hero />
-        <Stats />
-        <About />
-        <Gallery />
-        <HowItWorks />
-        <Reviews />
-        <TarotAppPromo />
-        <BookingSection />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/accedi" element={<SignInPage />} />
+          <Route path="/registrati" element={<SignUpPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
       </main>
       <Footer />
     </div>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useUser } from '@clerk/clerk-react'
+import { useNavigate } from 'react-router-dom'
 
 const links = [
   { label: 'Chi sono', href: '#chi-sono' },
@@ -12,6 +14,8 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user, isLoaded } = useUser()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40)
@@ -49,9 +53,29 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <a href="#prenota" className="hidden md:inline-flex btn-gold text-sm px-6 py-2.5">
-          Prenota ora
-        </a>
+        <div className="hidden md:flex items-center gap-3">
+          {isLoaded && user ? (
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
+            >
+              {user.imageUrl && (
+                <img src={user.imageUrl} alt="" className="w-5 h-5 rounded-full" />
+              )}
+              Il mio spazio
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/accedi')}
+              className="text-sm text-white/60 hover:text-gold-400 transition-colors"
+            >
+              Accedi
+            </button>
+          )}
+          <a href="#prenota" className="btn-gold text-sm px-6 py-2.5">
+            Prenota ora
+          </a>
+        </div>
 
         {/* Hamburger */}
         <button
@@ -91,13 +115,28 @@ export default function Navbar() {
                 </li>
               ))}
               <li>
-                <a
-                  href="#prenota"
-                  className="btn-gold text-sm px-6 py-2.5 w-full text-center"
-                  onClick={() => setMenuOpen(false)}
+                {isLoaded && user ? (
+                <button
+                  onClick={() => { navigate('/dashboard'); setMenuOpen(false) }}
+                  className="text-left text-white/80 hover:text-gold-400 transition-colors"
                 >
-                  Prenota ora
-                </a>
+                  Il mio spazio ✨
+                </button>
+              ) : (
+                <button
+                  onClick={() => { navigate('/accedi'); setMenuOpen(false) }}
+                  className="text-left text-white/60 hover:text-gold-400 transition-colors"
+                >
+                  Accedi
+                </button>
+              )}
+              <a
+                href="#prenota"
+                className="btn-gold text-sm px-6 py-2.5 w-full text-center"
+                onClick={() => setMenuOpen(false)}
+              >
+                Prenota ora
+              </a>
               </li>
             </ul>
           </motion.div>
