@@ -85,92 +85,58 @@ export default function Hero() {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+      <div className="relative z-10 max-w-4xl mx-auto text-center">
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium mb-8"
+        >
+          <TarotCardIcon />
+          <span>Tarologa · Tarocchi di Marsiglia</span>
+        </motion.div>
 
-          {/* Photo */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9 }}
-            className="relative shrink-0"
-          >
-            <div className="relative w-64 h-80 md:w-80 md:h-96 lg:w-96 lg:h-[28rem]">
-              <img
-                src="/valeria-spiaggia.png"
-                alt="Valeria Di Pace"
-                className="w-full h-full object-cover object-top rounded-2xl"
-                style={{
-                  boxShadow: '0 0 60px rgba(255,200,0,0.25), 0 20px 60px rgba(0,0,0,0.7)',
-                  border: '1px solid rgba(255,210,0,0.25)',
-                }}
-              />
-              {/* Gold glow overlay bottom */}
-              <div className="absolute inset-x-0 bottom-0 h-1/3 rounded-b-2xl"
-                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }}
-              />
-              {/* Floating badge */}
-              <div className="absolute -bottom-4 -right-4 px-4 py-2 rounded-full text-xs font-semibold text-dark-500"
-                style={{ background: 'linear-gradient(135deg, #ffcc00, #ffdd00)' }}
-              >
-                ⭐ 4,97 / 5
-              </div>
-            </div>
-          </motion.div>
+        {/* Main heading */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="font-serif text-5xl md:text-7xl font-bold leading-tight mb-6"
+        >
+          Le carte non mentono.
+          <br />
+          Valeria è la tua <ShiningStella />
+        </motion.h1>
 
-          {/* Text */}
-          <div className="flex-1 text-center lg:text-left">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium mb-6"
-            >
-              <TarotCardIcon />
-              <span>Tarologa · Tarocchi di Marsiglia</span>
-            </motion.div>
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.25 }}
+          className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
+        >
+          Attrice, due lauree, percorso alchemico decennale.
+          Oltre <strong className="text-gold-400">3.000 consulti</strong> come Stella su Kang — ora puoi trovarla direttamente qui.
+        </motion.p>
 
-            {/* Main heading */}
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
-            >
-              Le carte non mentono.
-              <br />
-              Valeria è la tua <ShiningStella />
-            </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.35 }}
+          className="text-white/40 text-base mb-12 italic font-serif"
+        >
+          "Oltre la mossa: Valeria combina l'intuizione della giocatrice esperta con il rigore dell'analisi tecnica,<br className="hidden md:block" />
+          offrendo una visione profonda, moderna e in continua evoluzione."
+        </motion.p>
 
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.25 }}
-              className="text-white/60 text-lg max-w-xl mb-4 leading-relaxed"
-            >
-              Attrice, due lauree, percorso alchemico decennale.
-              Oltre <strong className="text-gold-400">3.000 consulti</strong> come Stella su Kang — ora puoi trovarla direttamente qui.
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.35 }}
-              className="text-white/40 text-sm mb-10 italic font-serif"
-            >
-              "Oltre la mossa: Valeria combina l'intuizione della giocatrice esperta con il rigore dell'analisi tecnica,
-              offrendo una visione profonda, moderna e in continua evoluzione."
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.45 }}
-              className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4"
-            >
+        {/* CTAs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.45 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+        >
           <a href="#prenota" className="btn-gold text-base">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -184,9 +150,7 @@ export default function Hero() {
             </svg>
             Prova gratis le carte
           </a>
-            </motion.div>
-          </div>{/* end text */}
-        </div>{/* end flex row */}
+        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div

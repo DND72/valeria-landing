@@ -34,8 +34,14 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="font-serif text-xl font-semibold gold-text">
-          Valeria Di Pace
+        <Link to="/" className="flex flex-col items-center gap-1 group">
+          <span className="font-serif text-xl font-semibold gold-text">Valeria Di Pace</span>
+          <img
+            src="/valeria-spiaggia.png"
+            alt="Valeria Di Pace"
+            className="w-10 h-10 rounded-full object-cover object-top border border-gold-500/40 shadow-md group-hover:border-gold-400/70 transition-all duration-300"
+            style={{ boxShadow: '0 0 8px rgba(255,200,0,0.3)' }}
+          />
         </Link>
 
         {/* Desktop links */}
