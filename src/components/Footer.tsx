@@ -30,12 +30,13 @@ export default function Footer() {
             <h4 className="text-white/60 text-sm font-semibold uppercase tracking-wider mb-4">Navigazione</h4>
             <ul className="space-y-2">
               {[
-                { label: 'Chi sono', href: '#chi-sono' },
-                { label: 'I numeri', href: '#numeri' },
-                { label: 'Come funziona', href: '#come-funziona' },
-                { label: 'Recensioni', href: '#recensioni' },
-                { label: 'Prenota', href: '#prenota' },
-                { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },
+              { label: 'Chi sono', href: '#chi-sono' },
+              { label: 'I numeri', href: '#numeri' },
+              { label: 'Come funziona', href: '#come-funziona' },
+              { label: 'Blog', href: '/blog' },
+              { label: 'Recensioni', href: '#recensioni' },
+              { label: 'Prenota', href: '#prenota' },
+              { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },
               ].map((link) => (
                 <li key={link.href}>
                   <a

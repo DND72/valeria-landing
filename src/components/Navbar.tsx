@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 const links = [
   { label: 'Chi sono', href: '#chi-sono' },
   { label: 'Galleria', href: '#galleria' },
-  { label: 'Come funziona', href: '#come-funziona' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Recensioni', href: '#recensioni' },
   { label: 'Prenota', href: '#prenota' },
 ]

@@ -13,6 +13,8 @@ import Footer from './components/Footer'
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
 import Dashboard from './pages/Dashboard'
+import BlogPage from './pages/BlogPage'
+import ArticlePage from './pages/ArticlePage'
 
 function HomePage() {
   return (
@@ -40,6 +42,8 @@ export default function App() {
           <Route path="/accedi" element={<SignInPage />} />
           <Route path="/registrati" element={<SignUpPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<ArticlePage />} />
         </Routes>
       </main>
       <Footer />
