@@ -34,14 +34,18 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="flex flex-col items-center gap-1 group">
-          <span className="font-serif text-xl font-semibold gold-text">Valeria Di Pace</span>
-          <img
-            src="/valeria-spiaggia.png"
-            alt="Valeria Di Pace"
-            className="w-10 h-10 rounded-full object-cover object-top border border-gold-500/40 shadow-md group-hover:border-gold-400/70 transition-all duration-300"
-            style={{ boxShadow: '0 0 8px rgba(255,200,0,0.3)' }}
-          />
+        <Link to="/" className="flex flex-col items-center gap-1 group w-36">
+          <span className="font-serif text-xl font-semibold gold-text whitespace-nowrap">Valeria Di Pace</span>
+          <div className="w-full rounded-lg overflow-hidden border border-gold-500/40 group-hover:border-gold-400/70 transition-all duration-300"
+            style={{ aspectRatio: '3/4', boxShadow: '0 0 10px rgba(255,200,0,0.25)' }}
+          >
+            <img
+              src="/valeria-spiaggia.png"
+              alt="Valeria Di Pace"
+              className="w-full h-full object-cover scale-150 origin-center"
+              style={{ objectPosition: '50% 55%' }}
+            />
+          </div>
         </Link>
 
         {/* Desktop links */}
