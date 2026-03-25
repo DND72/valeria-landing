@@ -69,6 +69,30 @@ export default function Hero() {
         }}
       />
 
+      {/* Valeria photo — top-left, scrolls with page */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.9, delay: 0.2 }}
+        className="absolute top-20 left-4 md:left-8 z-10 pointer-events-none"
+      >
+        <div
+          className="rounded-xl overflow-hidden border border-gold-500/30"
+          style={{
+            width: '130px',
+            aspectRatio: '3/4',
+            boxShadow: '0 0 20px rgba(255,200,0,0.2), 0 8px 32px rgba(0,0,0,0.6)',
+          }}
+        >
+          <img
+            src="/valeria-navbar.png"
+            alt="Valeria Di Pace"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: '50% 20%' }}
+          />
+        </div>
+      </motion.div>
+
       {/* Decorative arc lines */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <svg
