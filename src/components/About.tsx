@@ -22,6 +22,11 @@ const credentials = [
     desc: 'Titolo ufficiale FIDE · ID 373110313. La stessa capacità di anticipare le mosse sul tavolo e nella vita.',
   },
   {
+    icon: '🌿',
+    title: 'Parafarmacia Energia & Benessere',
+    desc: 'Titolare per 15 anni della Parafarmacia Energia & Benessere in Liguria. La cura della persona — mente, corpo e spirito — è da sempre la sua missione.',
+  },
+  {
     icon: '⚔️',
     title: 'Dama Templare · Commander Regionale',
     desc: 'Grado di Commander nell\'Ordine Templare. Un percorso cavalleresco ed esoterico tra i più antichi e rigorosi.',
@@ -62,17 +67,19 @@ export default function About() {
             <div className="space-y-4 text-white/60 leading-relaxed">
               <p>
                 Valeria Di Pace non è la solita tarologa. Prima di sedersi davanti alle carte,
-                ha attraversato tre università, calcato i set televisivi di Canale 5 e intrapreso
-                un percorso esoterico tra i più rigorosi che esistano.
+                ha attraversato tre università, calcato i set televisivi di Canale 5, gestito
+                per 15 anni una parafarmacia e intrapreso un percorso esoterico tra i più
+                rigorosi che esistano.
               </p>
               <p>
                 La sua lettura dei Tarocchi di Marsiglia unisce la psicologia junghiana,
-                il pensiero strutturato del giurista e l'intuito affinato in anni di pratiche iniziatiche.
+                il pensiero strutturato del giurista, la conoscenza del corpo e della salute
+                e l'intuito affinato in anni di pratiche iniziatiche.
                 Non interpreta simboli a caso — legge pattern, come fa con gli scacchi.
               </p>
               <p>
-                Calore umano, empatia vera e una rara capacità di vedere oltre le parole.
-                I suoi clienti tornano perché sentono la differenza.
+                Mente, corpo, spirito. Valeria conosce tutti e tre i livelli — e nelle carte
+                li vede tutti insieme. I suoi clienti tornano perché sentono la differenza.
               </p>
             </div>
 

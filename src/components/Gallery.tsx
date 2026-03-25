@@ -4,7 +4,7 @@ import { useState } from 'react'
 interface GalleryItem {
   src: string
   caption: string
-  category: 'templare' | 'onorificenze' | 'altro'
+  category: 'templare' | 'onorificenze' | 'parafarmacia' | 'altro'
 }
 
 // Inserisci qui i percorsi delle foto reali.
@@ -26,12 +26,18 @@ const galleryItems: GalleryItem[] = [
     caption: 'Investitura Commander Regionale',
     category: 'templare',
   },
+  {
+    src: '',
+    caption: 'Parafarmacia Energia & Benessere',
+    category: 'parafarmacia',
+  },
 ]
 
 const categories = [
   { id: 'tutti', label: 'Tutti' },
   { id: 'templare', label: 'Ordine Templare' },
   { id: 'onorificenze', label: 'Onorificenze' },
+  { id: 'parafarmacia', label: 'Energia & Benessere' },
 ]
 
 function PlaceholderCard({ caption }: { caption: string }) {
