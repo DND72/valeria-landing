@@ -15,6 +15,7 @@ import SignUpPage from './pages/SignUpPage'
 import Dashboard from './pages/Dashboard'
 import BlogPage from './pages/BlogPage'
 import ArticlePage from './pages/ArticlePage'
+import GraziePage from './pages/GraziePage'
 
 function HomePage() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/accedi" element={<SignInPage />} />
           <Route path="/registrati" element={<SignUpPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/grazie" element={<GraziePage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<ArticlePage />} />
         </Routes>
