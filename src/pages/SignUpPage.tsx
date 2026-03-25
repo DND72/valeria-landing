@@ -24,6 +24,9 @@ export default function SignUpPage() {
           <p className="text-white/50 text-sm max-w-xs mx-auto">
             Registrati e ricevi subito un <strong className="text-gold-400">consulto gratuito di 10 minuti</strong> con Valeria
           </p>
+          <p className="text-white/30 text-xs max-w-xs mx-auto mt-2">
+            🔒 Scegli una password di almeno 8 caratteri — quella che preferisci. Riceverai un codice via email per confermare il tuo account.
+          </p>
         </div>
         <SignUp
           appearance={{
