@@ -40,10 +40,10 @@ export default function Navbar() {
             style={{ aspectRatio: '3/4', boxShadow: '0 0 10px rgba(255,200,0,0.25)' }}
           >
             <img
-              src="/valeria-spiaggia.png"
+              src="/valeria-navbar.png"
               alt="Valeria Di Pace"
-              className="w-full h-full object-cover scale-150 origin-center"
-              style={{ objectPosition: '50% 75%' }}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: '50% 20%' }}
             />
           </div>
         </Link>
