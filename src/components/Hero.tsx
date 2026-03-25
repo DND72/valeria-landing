@@ -126,8 +126,8 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.35 }}
           className="text-white/40 text-base mb-12 italic font-serif"
         >
-          "Valeria legge le situazioni come un maestro di scacchi legge la scacchiera —<br className="hidden md:block" />
-          vede dove stai andando prima ancora che tu lo sappia."
+          "Oltre la mossa: Valeria combina l'intuizione della giocatrice esperta con il rigore dell'analisi tecnica,<br className="hidden md:block" />
+          offrendo una visione profonda, moderna e in continua evoluzione."
         </motion.p>
 
         {/* CTAs */}

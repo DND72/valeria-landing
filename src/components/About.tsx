@@ -19,7 +19,7 @@ const credentials = [
   {
     icon: '♟️',
     title: 'Arena International Master (FIDE)',
-    desc: 'Titolo ufficiale FIDE · ID 373110313. La stessa capacità di anticipare le mosse sul tavolo e nella vita.',
+    desc: 'Titolo FIDE · ID 373110313. Specialista dei finali, analisi post-partita rigorosa, riconoscimento di pattern complessi. Le stesse qualità che porta in ogni lettura dei tarocchi.',
   },
   {
     icon: '🌿',
@@ -80,6 +80,15 @@ export default function About() {
               <p>
                 Mente, corpo, spirito. Valeria conosce tutti e tre i livelli — e nelle carte
                 li vede tutti insieme. I suoi clienti tornano perché sentono la differenza.
+              </p>
+            </div>
+
+            {/* Chess-tarot philosophy box */}
+            <div className="mt-6 p-4 rounded-lg border border-gold-600/20 bg-gold-600/5">
+              <p className="text-gold-400 text-xs font-semibold uppercase tracking-wider mb-2">♟️ Scacchi & Tarocchi — lo stesso metodo</p>
+              <p className="text-white/50 text-sm leading-relaxed italic">
+                "Riconoscere pattern, analizzare i momenti critici, mantenere la visione d'insieme.
+                Valeria porta sulla scacchiera e sulle carte lo stesso rigore — e la stessa lucidità."
               </p>
             </div>
 
