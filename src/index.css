@@ -72,6 +72,12 @@
       drop-shadow(0 0 35px rgba(255, 200, 0, 0.9));
   }
 
+  /* Annulla text-shadow su tutti i figli di gold-text e gold-number */
+  .gold-text *, .gold-number * {
+    text-shadow: none !important;
+    color: transparent;
+  }
+
   .section-divider {
     @apply w-24 h-px mx-auto my-8;
     background: linear-gradient(90deg, transparent, #d4a017, transparent);
