@@ -40,8 +40,8 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/accedi" element={<SignInPage />} />
-          <Route path="/registrati" element={<SignUpPage />} />
+          <Route path="/accedi/*" element={<SignInPage />} />
+          <Route path="/registrati/*" element={<SignUpPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/grazie" element={<GraziePage />} />
           <Route path="/blog" element={<BlogPage />} />

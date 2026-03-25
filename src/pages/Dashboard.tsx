@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
+import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 
 const PAYPAL_SDK_URL = 'https://www.paypal.com/sdk/js?client-id=BAAIsnQZ6B0G4SuUAk1nU0CRxfSlFupqNWGyOjvqzj745x9fvKMVkRHgG-5FRxUMeZEz5gd0r1YztBDK18&components=hosted-buttons&disable-funding=venmo&currency=EUR'
 
@@ -29,8 +30,9 @@ export default function Dashboard() {
     if (isLoaded && !user) navigate('/accedi')
   }, [isLoaded, user, navigate])
 
-  // Carica il PayPal SDK dinamicamente solo nel dashboard
+  // Carica il PayPal SDK solo per utenti non privilegiati (staff: niente PayPal sul sito)
   useEffect(() => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
     if (paypalLoaded.current || document.querySelector('#paypal-sdk')) return
     const script = document.createElement('script')
     script.id = 'paypal-sdk'
@@ -51,10 +53,11 @@ export default function Dashboard() {
       if (s) s.remove()
       paypalLoaded.current = false
     }
-  }, [])
+  }, [isLoaded, user])
 
   if (!isLoaded || !user) return null
 
+  const privileged = isPrivilegedClerkUser(user)
   const firstName = user.firstName || user.emailAddresses[0]?.emailAddress.split('@')[0] || 'cara'
 
   return (
@@ -76,9 +79,19 @@ export default function Dashboard() {
         >
           <div>
             <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Il tuo spazio</p>
-            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
-              Ciao, <span className="gold-text">{firstName}</span> ✨
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
+                Ciao, <span className="gold-text">{firstName}</span> ✨
+              </h1>
+              {privileged && (
+                <span
+                  className="text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-gold-600/40 text-gold-400/90"
+                  title="Prenotazione senza pagamento sul sito"
+                >
+                  Staff
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={() => signOut(() => navigate('/'))}
@@ -187,30 +200,51 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Acquista consulti */}
+        {/* Acquista consulti — nascosto per account staff (pagamento fuori dal sito) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
           className="mb-8"
         >
-          <h2 className="font-serif text-xl font-bold text-white mb-1">Acquista un consulto</h2>
-          <p className="text-white/40 text-sm mb-5">Pagamento sicuro via PayPal · anche con carta di credito</p>
-          <div className="grid md:grid-cols-3 gap-4">
-            {consulti.map((c) => (
-              <div key={c.id} className="mystical-card text-center">
-                <div className="text-3xl mb-2">{c.icon}</div>
-                <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
-                <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
-                <p className="font-serif text-2xl font-bold mb-3" style={{
-                  background: 'linear-gradient(135deg, #ffe066, #ffd700)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}>{c.price}</p>
-                <div id={`paypal-container-${c.id}`} className="w-full" />
+          {privileged ? (
+            <>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">Prenotazione staff</h2>
+              <p className="text-white/40 text-sm mb-5">
+                Questo account non richiede il pagamento tramite PayPal sul sito. Usa il calendario qui sotto per prenotare.
+              </p>
+              <div
+                className="mystical-card border border-gold-600/25"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(212,160,23,0.08) 0%, rgba(13,27,42,0.6) 100%)',
+                }}
+              >
+                <p className="text-white/80 text-sm leading-relaxed">
+                  Il pagamento per i tuoi consulti, se applicabile, è gestito direttamente con Valeria — non tramite questa pagina.
+                </p>
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">Acquista un consulto</h2>
+              <p className="text-white/40 text-sm mb-5">Pagamento sicuro via PayPal · anche con carta di credito</p>
+              <div className="grid md:grid-cols-3 gap-4">
+                {consulti.map((c) => (
+                  <div key={c.id} className="mystical-card text-center">
+                    <div className="text-3xl mb-2">{c.icon}</div>
+                    <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
+                    <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
+                    <p className="font-serif text-2xl font-bold mb-3" style={{
+                      background: 'linear-gradient(135deg, #ffe066, #ffd700)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}>{c.price}</p>
+                    <div id={`paypal-container-${c.id}`} className="w-full" />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </motion.div>
 
         {/* Calendario completo — consulti a pagamento e altri slot */}
@@ -223,7 +257,9 @@ export default function Dashboard() {
         >
           <h2 className="font-serif text-xl font-bold text-white mb-1">Prenota la tua lettura</h2>
           <p className="text-white/40 text-sm mb-4">
-            Scegli data e ora per i tuoi consulti. Dopo il pagamento dal profilo, prenota qui lo slot che preferisci.
+            {privileged
+              ? 'Scegli data e ora dal calendario. Per il tuo account non è richiesto il pagamento tramite questa pagina.'
+              : 'Scegli data e ora per i tuoi consulti. Dopo il pagamento dal profilo, prenota qui lo slot che preferisci.'}
           </p>
           <div className="mystical-card p-0 overflow-hidden rounded-lg">
             <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={680} />

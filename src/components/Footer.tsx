@@ -35,7 +35,6 @@ export default function Footer() {
               { label: 'Come funziona', href: '#come-funziona' },
               { label: 'Blog', href: '/blog' },
               { label: 'Recensioni', href: '#recensioni' },
-              { label: 'Prenota', href: '#prenota' },
               { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },
               ].map((link) => (
                 <li key={link.href}>
@@ -52,17 +51,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* CTA */}
+          {/* Trust */}
           <div>
-            <h4 className="text-white/60 text-sm font-semibold uppercase tracking-wider mb-4">Prenota ora</h4>
-            <p className="text-white/40 text-sm mb-5">
-              Pronta ad ascoltarti. Scegli il tuo momento e prenota la tua lettura.
-            </p>
-            <a href="#prenota" className="btn-gold text-sm px-6 py-3">
-              Prenota la lettura
-            </a>
-
-            <div className="mt-6 space-y-2">
+            <h4 className="text-white/60 text-sm font-semibold uppercase tracking-wider mb-4">Perché fidarsi</h4>
+            <div className="space-y-2">
               <div className="flex items-center gap-2 text-white/30 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-600" />
                 Piattaforma certificata · 4,97/5 · 261 recensioni
@@ -90,19 +82,19 @@ export default function Footer() {
           </p>
         </motion.div>
 
-        {/* Legal links — Iubenda */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+        {/* Legal — link testuali (quando attivi Iubenda, sostituisci href con gli ID reali) */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-6 text-white/20 text-xs">
           <a
             href="https://www.iubenda.com/privacy-policy/XXXXXXXX"
-            className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-white/20 text-xs hover:text-white/40 transition-colors"
+            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
             title="Privacy Policy"
           >
             Privacy Policy
           </a>
-          <span className="text-white/10 text-xs">·</span>
+          <span className="text-white/10">·</span>
           <a
             href="https://www.iubenda.com/privacy-policy/XXXXXXXX/cookie-policy"
-            className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-white/20 text-xs hover:text-white/40 transition-colors"
+            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
             title="Cookie Policy"
           >
             Cookie Policy

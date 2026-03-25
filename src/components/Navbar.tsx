@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
 import { useNavigate, Link } from 'react-router-dom'
+import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 
 const links = [
   { label: 'Chi sono', href: '#chi-sono' },
@@ -15,6 +16,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { user, isLoaded } = useUser()
   const navigate = useNavigate()
+  const privileged = isLoaded && user ? isPrivilegedClerkUser(user) : false
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40)
@@ -74,6 +76,11 @@ export default function Navbar() {
                 <img src={user.imageUrl} alt="" className="w-5 h-5 rounded-full" />
               )}
               Il mio spazio
+              {privileged && (
+                <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
+                  Staff
+                </span>
+              )}
             </button>
           ) : (
             <>
@@ -134,9 +141,14 @@ export default function Navbar() {
                 {isLoaded && user ? (
                 <button
                   onClick={() => { navigate('/dashboard'); setMenuOpen(false) }}
-                  className="text-left text-white/80 hover:text-gold-400 transition-colors"
+                  className="text-left text-white/80 hover:text-gold-400 transition-colors flex items-center gap-2 flex-wrap"
                 >
                   Il mio spazio ✨
+                  {privileged && (
+                    <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
+                      Staff
+                    </span>
+                  )}
                 </button>
               ) : (
                 <>

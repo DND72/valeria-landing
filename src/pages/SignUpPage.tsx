@@ -28,9 +28,9 @@ export default function SignUpPage() {
             🔒 Scegli una password di almeno 8 caratteri — quella che preferisci. Riceverai un codice via email per confermare il tuo account.
           </p>
         </div>
+        {/* hash: su SPA in produzione il routing "path" può non montare il form; la hash gestisce i passaggi interni */}
         <SignUp
-          routing="path"
-          path="/registrati"
+          routing="hash"
           fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {
@@ -48,6 +48,8 @@ export default function SignUpPage() {
               socialButtonsBlockButton: 'border-gold-600/30 text-white hover:bg-gold-600/10',
               formButtonPrimary: 'bg-gradient-to-r from-gold-600 to-gold-300 text-dark-500 font-semibold',
               footerActionLink: 'text-gold-400 hover:text-gold-300',
+              formFieldErrorText: 'text-red-400 text-sm',
+              alertText: 'text-red-300 text-sm',
             },
           }}
           signInUrl="/accedi"

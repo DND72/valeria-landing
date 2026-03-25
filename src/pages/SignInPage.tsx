@@ -21,8 +21,7 @@ export default function SignInPage() {
           <p className="text-white/50 text-sm">Accedi al tuo spazio personale</p>
         </div>
         <SignIn
-          routing="path"
-          path="/accedi"
+          routing="hash"
           fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {
@@ -40,6 +39,8 @@ export default function SignInPage() {
               socialButtonsBlockButton: 'border-gold-600/30 text-white hover:bg-gold-600/10',
               formButtonPrimary: 'bg-gradient-to-r from-gold-600 to-gold-300 text-dark-500 font-semibold',
               footerActionLink: 'text-gold-400 hover:text-gold-300',
+              formFieldErrorText: 'text-red-400 text-sm',
+              alertText: 'text-red-300 text-sm',
             },
           }}
           signUpUrl="/registrati"

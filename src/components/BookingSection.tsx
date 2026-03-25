@@ -1,12 +1,11 @@
 import { motion } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import CalendlyEmbed from './CalendlyEmbed'
 import { CALENDLY_BOOKING_URL } from '../constants/calendly'
 
 export default function BookingSection() {
   const { user, isLoaded } = useUser()
-  const navigate = useNavigate()
 
   return (
     <section id="prenota" className="py-24 px-6 relative overflow-hidden">
@@ -35,51 +34,53 @@ export default function BookingSection() {
           <p className="text-white/50 text-lg max-w-xl mx-auto">
             {user
               ? 'Scegli giorno e ora dal calendario. Valeria ti aspetta.'
-              : 'Il calendario è riservato agli iscritti. Un passo e sei dentro.'}
+              : isLoaded
+                ? 'Qui sotto vedi le disponibilità in tempo reale. Per completare la prenotazione e il pagamento dal profilo serve un account.'
+                : 'Qui sotto trovi il calendario con le disponibilità aggiornate.'}
           </p>
         </motion.div>
 
-        {!isLoaded ? (
-          <div className="mystical-card text-center py-16 text-white/40 text-sm">Caricamento…</div>
-        ) : user ? (
+        {!user && isLoaded && (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="mystical-card p-0 overflow-hidden rounded-lg"
-          >
-            <CalendlyEmbed url={CALENDLY_BOOKING_URL} />
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="mystical-card text-center p-8 md:p-12"
+            transition={{ duration: 0.5 }}
+            className="mystical-card text-center p-6 md:p-8 mb-6"
           >
             <p className="text-white/70 text-lg mb-2 max-w-lg mx-auto leading-relaxed">
               Per prenotare una lettura serve un account: così Valeria sa dove contattarti,
               puoi usare i minuti gratuiti e pagare i consulti in sicurezza dal tuo spazio personale.
             </p>
-            <p className="text-white/40 text-sm mb-8 max-w-md mx-auto">
+            <p className="text-white/40 text-sm mb-6 max-w-md mx-auto">
               Anche se non vuoi il consulto omaggio, l’iscrizione resta il primo passo — è la nostra porta di ingresso.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button type="button" onClick={() => navigate('/registrati')} className="btn-gold">
-                ✨ Crea il tuo account
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/accedi')}
-                className="btn-outline"
-              >
+            <p className="text-white/50 text-sm">
+              <Link to="/registrati" className="text-gold-400 hover:text-gold-300 underline underline-offset-4 font-medium">
+                Crea il tuo account
+              </Link>
+              <span className="text-white/25 mx-2">·</span>
+              <Link to="/accedi" className="text-white/55 hover:text-white/75 underline underline-offset-4">
                 Ho già un account
-              </button>
-            </div>
+              </Link>
+            </p>
           </motion.div>
         )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className={`mystical-card p-0 overflow-hidden rounded-lg ${isLoaded && !user ? 'ring-1 ring-white/10' : ''}`}
+        >
+          <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={680} />
+          {isLoaded && !user && (
+            <p className="text-center text-white/35 text-xs px-4 py-2 border-t border-white/5 bg-dark-500/50">
+              Non sei ancora dentro? Puoi comunque sfogliare date e orari; per confermare lo slot usa i link sopra quando sei pronta.
+            </p>
+          )}
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0 }}
