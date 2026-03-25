@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "serve dist -l $PORT --single"
+    "start": "node scripts/start-spa.mjs"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.61.4",
