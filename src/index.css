@@ -40,16 +40,15 @@
   .gold-text {
     @apply text-transparent bg-clip-text;
     background-image: linear-gradient(180deg,
-      #fffde0 0%,
-      #fff5a0 20%,
-      #ffe033 45%,
-      #ffc200 70%,
-      #ffaa00 100%
+      #ffffff 0%,
+      #fffde0 25%,
+      #fff5a0 55%,
+      #ffe566 80%,
+      #ffdd00 100%
     );
     filter:
-      drop-shadow(0 0 10px rgba(255, 230, 50, 1))
-      drop-shadow(0 0 25px rgba(255, 180, 0, 0.7))
-      drop-shadow(0 4px 8px rgba(0, 0, 0, 0.9));
+      drop-shadow(0 0 12px rgba(255, 230, 50, 1))
+      drop-shadow(0 0 28px rgba(255, 180, 0, 0.8));
   }
 
   .gold-border {
@@ -60,16 +59,15 @@
   .gold-number {
     @apply text-transparent bg-clip-text font-bold;
     background-image: linear-gradient(180deg,
-      #fffde0 0%,
-      #fff0a0 25%,
-      #ffe033 50%,
-      #ffb800 80%,
-      #ff9500 100%
+      #ffffff 0%,
+      #fffde0 20%,
+      #fff5a0 50%,
+      #ffe566 75%,
+      #ffdd00 100%
     );
     filter:
-      drop-shadow(0 0 12px rgba(255, 235, 50, 1))
-      drop-shadow(0 0 30px rgba(255, 180, 0, 0.8))
-      drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
+      drop-shadow(0 0 14px rgba(255, 235, 50, 1))
+      drop-shadow(0 0 35px rgba(255, 200, 0, 0.9));
   }
 
   .section-divider {
