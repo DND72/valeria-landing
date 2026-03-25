@@ -43,7 +43,7 @@ export default function Navbar() {
               src="/valeria-spiaggia.png"
               alt="Valeria Di Pace"
               className="w-full h-full object-cover scale-150 origin-center"
-              style={{ objectPosition: '50% 55%' }}
+              style={{ objectPosition: '50% 75%' }}
             />
           </div>
         </Link>
