@@ -90,8 +90,27 @@ export default function Footer() {
           </p>
         </motion.div>
 
+        {/* Legal links — Iubenda */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+          <a
+            href="https://www.iubenda.com/privacy-policy/XXXXXXXX"
+            className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-white/20 text-xs hover:text-white/40 transition-colors"
+            title="Privacy Policy"
+          >
+            Privacy Policy
+          </a>
+          <span className="text-white/10 text-xs">·</span>
+          <a
+            href="https://www.iubenda.com/privacy-policy/XXXXXXXX/cookie-policy"
+            className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe text-white/20 text-xs hover:text-white/40 transition-colors"
+            title="Cookie Policy"
+          >
+            Cookie Policy
+          </a>
+        </div>
+
         {/* Disclaimer */}
-        <p className="text-center text-white/15 text-xs mt-6 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-center text-white/15 text-xs mt-4 max-w-2xl mx-auto leading-relaxed">
           Le letture dei tarocchi sono offerte a scopo di intrattenimento, riflessione personale e crescita interiore.
           Non costituiscono consulenza medica, legale o finanziaria.
         </p>

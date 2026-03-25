@@ -34,9 +34,14 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="font-serif text-xl font-semibold gold-text">
-          Valeria Di Pace
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/" className="font-serif text-xl font-semibold gold-text">
+            Valeria Di Pace
+          </Link>
+          <span className="hidden sm:inline text-[9px] italic text-white/25 tracking-wide border border-white/10 rounded px-1.5 py-0.5 leading-none">
+            site in developing
+          </span>
+        </div>
 
         {/* Desktop links */}
         <ul className="hidden md:flex items-center gap-8">
