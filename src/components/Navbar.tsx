@@ -38,7 +38,14 @@ export default function Navbar() {
           <Link to="/" className="font-serif text-xl font-semibold gold-text">
             Valeria Di Pace
           </Link>
-          <span className="hidden sm:inline text-[9px] italic text-white/25 tracking-wide border border-white/10 rounded px-1.5 py-0.5 leading-none">
+          <span
+            className="hidden sm:inline text-[11px] italic tracking-wide border rounded px-2 py-0.5 leading-none"
+            style={{
+              color: 'rgba(255, 210, 80, 0.7)',
+              borderColor: 'rgba(255, 210, 80, 0.25)',
+              animation: 'devPulse 2s ease-in-out infinite',
+            }}
+          >
             site in developing
           </span>
         </div>
