@@ -2,8 +2,9 @@ import { useUser, useClerk } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import CalendlyEmbed from '../components/CalendlyEmbed'
+import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
 
-const FREE_CALENDLY_URL = 'https://calendly.com/valeriadipace/consulto-gratuito-10min'
 const PAYPAL_SDK_URL = 'https://www.paypal.com/sdk/js?client-id=BAAIsnQZ6B0G4SuUAk1nU0CRxfSlFupqNWGyOjvqzj745x9fvKMVkRHgG-5FRxUMeZEz5gd0r1YztBDK18&components=hosted-buttons&disable-funding=venmo&currency=EUR'
 
 const consulti = [
@@ -114,15 +115,15 @@ export default function Dashboard() {
               </div>
               <h2 className="font-serif text-2xl md:text-3xl font-bold text-white mb-2">
                 Il tuo consulto gratuito<br />
-                <span className="gold-text">10 minuti con Valeria</span>
+                <span className="gold-text">7 minuti con Valeria</span>
               </h2>
               <p className="text-white/50 text-sm max-w-md">
-                Benvenuta nella famiglia. Valeria ti aspetta per una lettura gratuita di 10 minuti —
+                Benvenuta nella famiglia. Valeria ti aspetta per una lettura gratuita di 7 minuti —
                 il tuo primo passo nel mondo delle carte.
               </p>
             </div>
             <a
-              href={FREE_CALENDLY_URL}
+              href={CALENDLY_FREE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-gold whitespace-nowrap shrink-0"
@@ -141,9 +142,9 @@ export default function Dashboard() {
             {
               icon: '🔮',
               title: 'Prenota un consulto',
-              desc: '30 o 60 minuti con Valeria',
-              href: '/#prenota',
-              cta: 'Vai al calendario',
+              desc: 'Apri il calendario qui sotto',
+              href: '#prenota-calendly',
+              cta: 'Scorri al calendario',
             },
             {
               icon: '🃏',
@@ -211,6 +212,23 @@ export default function Dashboard() {
             ))}
           </div>
         </motion.div>
+
+        {/* Calendario completo — consulti a pagamento e altri slot */}
+        <motion.section
+          id="prenota-calendly"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mb-8 scroll-mt-28"
+        >
+          <h2 className="font-serif text-xl font-bold text-white mb-1">Prenota la tua lettura</h2>
+          <p className="text-white/40 text-sm mb-4">
+            Scegli data e ora per i tuoi consulti. Dopo il pagamento dal profilo, prenota qui lo slot che preferisci.
+          </p>
+          <div className="mystical-card p-0 overflow-hidden rounded-lg">
+            <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={680} />
+          </div>
+        </motion.section>
 
         {/* Profile info */}
         <motion.div

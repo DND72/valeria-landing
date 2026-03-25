@@ -1,22 +1,17 @@
-import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useUser } from '@clerk/clerk-react'
+import { useNavigate } from 'react-router-dom'
+import CalendlyEmbed from './CalendlyEmbed'
+import { CALENDLY_BOOKING_URL } from '../constants/calendly'
 
 export default function BookingSection() {
-  useEffect(() => {
-    const script = document.createElement('script')
-    script.src = 'https://assets.calendly.com/assets/external/widget.js'
-    script.async = true
-    document.body.appendChild(script)
-    return () => {
-      document.body.removeChild(script)
-    }
-  }, [])
+  const { user, isLoaded } = useUser()
+  const navigate = useNavigate()
 
   return (
     <section id="prenota" className="py-24 px-6 relative overflow-hidden">
       <div className="section-divider" />
 
-      {/* Gold glow background */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -38,27 +33,54 @@ export default function BookingSection() {
             Prenota la tua <span className="gold-text">lettura</span>
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto">
-            Scegli il giorno, l'ora e la modalità. Valeria ti aspetta.
+            {user
+              ? 'Scegli giorno e ora dal calendario. Valeria ti aspetta.'
+              : 'Il calendario è riservato agli iscritti. Un passo e sei dentro.'}
           </p>
         </motion.div>
 
-        {/* Calendly inline widget */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="mystical-card p-0 overflow-hidden rounded-lg"
-        >
-          <div
-            className="calendly-inline-widget w-full"
-            data-url="https://calendly.com/valeriadipace?hide_gdpr_banner=1&background_color=060608&text_color=f5f0e8&primary_color=d4a017"
-            style={{ minWidth: '320px', height: '700px' }}
-          />
-        </motion.div>
+        {!isLoaded ? (
+          <div className="mystical-card text-center py-16 text-white/40 text-sm">Caricamento…</div>
+        ) : user ? (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="mystical-card p-0 overflow-hidden rounded-lg"
+          >
+            <CalendlyEmbed url={CALENDLY_BOOKING_URL} />
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="mystical-card text-center p-8 md:p-12"
+          >
+            <p className="text-white/70 text-lg mb-2 max-w-lg mx-auto leading-relaxed">
+              Per prenotare una lettura serve un account: così Valeria sa dove contattarti,
+              puoi usare i minuti gratuiti e pagare i consulti in sicurezza dal tuo spazio personale.
+            </p>
+            <p className="text-white/40 text-sm mb-8 max-w-md mx-auto">
+              Anche se non vuoi il consulto omaggio, l’iscrizione resta il primo passo — è la nostra porta di ingresso.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button type="button" onClick={() => navigate('/registrati')} className="btn-gold">
+                ✨ Crea il tuo account
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/accedi')}
+                className="btn-outline"
+              >
+                Ho già un account
+              </button>
+            </div>
+          </motion.div>
+        )}
 
-
-        {/* Payment security note */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -70,7 +92,7 @@ export default function BookingSection() {
             <svg className="w-4 h-4 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            Pagamento sicuro via PayPal
+            Pagamento sicuro via PayPal (dal tuo profilo)
           </span>
           <span className="flex items-center gap-1.5">
             <svg className="w-4 h-4 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
