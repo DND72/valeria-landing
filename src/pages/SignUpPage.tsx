@@ -28,9 +28,9 @@ export default function SignUpPage() {
             🔒 Scegli una password di almeno 8 caratteri — quella che preferisci. Riceverai un codice via email per confermare il tuo account.
           </p>
         </div>
-        {/* hash: su SPA in produzione il routing "path" può non montare il form; la hash gestisce i passaggi interni */}
         <SignUp
-          routing="hash"
+          routing="path"
+          path="/registrati"
           fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {

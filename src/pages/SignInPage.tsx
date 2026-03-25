@@ -21,7 +21,8 @@ export default function SignInPage() {
           <p className="text-white/50 text-sm">Accedi al tuo spazio personale</p>
         </div>
         <SignIn
-          routing="hash"
+          routing="path"
+          path="/accedi"
           fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {
