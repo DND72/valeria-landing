@@ -1,18 +1,56 @@
 import { useUser, useClerk } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const FREE_CALENDLY_URL = 'https://calendly.com/valeriadipace/consulto-gratuito-10min'
+const PAYPAL_SDK_URL = 'https://www.paypal.com/sdk/js?client-id=BAAIsnQZ6B0G4SuUAk1nU0CRxfSlFupqNWGyOjvqzj745x9fvKMVkRHgG-5FRxUMeZEz5gd0r1YztBDK18&components=hosted-buttons&disable-funding=venmo&currency=EUR'
+
+const consulti = [
+  { id: 'MYR75N4X68N7E', name: 'Consulto breve',    duration: '30 min · Telefonico',   price: '30€', icon: '🌙' },
+  { id: 'SVPB6FGR6L6G2', name: 'Consulto online',   duration: '30 min · Videochiamata', price: '40€', icon: '🌐' },
+  { id: 'RRN5H6RBWLUYL', name: 'Consulto completo', duration: '60 min · Telefonico',   price: '50€', icon: '✨' },
+]
+
+declare global {
+  interface Window {
+    paypal?: { HostedButtons: (c: { hostedButtonId: string }) => { render: (s: string) => void } }
+  }
+}
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser()
   const { signOut } = useClerk()
   const navigate = useNavigate()
+  const paypalLoaded = useRef(false)
 
   useEffect(() => {
     if (isLoaded && !user) navigate('/accedi')
   }, [isLoaded, user, navigate])
+
+  // Carica il PayPal SDK dinamicamente solo nel dashboard
+  useEffect(() => {
+    if (paypalLoaded.current || document.querySelector('#paypal-sdk')) return
+    const script = document.createElement('script')
+    script.id = 'paypal-sdk'
+    script.src = PAYPAL_SDK_URL
+    script.setAttribute('data-sdk-integration-source', 'developer-studio')
+    script.onload = () => {
+      paypalLoaded.current = true
+      consulti.forEach(({ id }) => {
+        const el = document.getElementById(`paypal-container-${id}`)
+        if (el && window.paypal) {
+          window.paypal.HostedButtons({ hostedButtonId: id }).render(`#paypal-container-${id}`)
+        }
+      })
+    }
+    document.body.appendChild(script)
+    return () => {
+      const s = document.getElementById('paypal-sdk')
+      if (s) s.remove()
+      paypalLoaded.current = false
+    }
+  }, [])
 
   if (!isLoaded || !user) return null
 
@@ -147,6 +185,32 @@ export default function Dashboard() {
             </motion.a>
           ))}
         </div>
+
+        {/* Acquista consulti */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="mb-8"
+        >
+          <h2 className="font-serif text-xl font-bold text-white mb-1">Acquista un consulto</h2>
+          <p className="text-white/40 text-sm mb-5">Pagamento sicuro via PayPal · anche con carta di credito</p>
+          <div className="grid md:grid-cols-3 gap-4">
+            {consulti.map((c) => (
+              <div key={c.id} className="mystical-card text-center">
+                <div className="text-3xl mb-2">{c.icon}</div>
+                <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
+                <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
+                <p className="font-serif text-2xl font-bold mb-3" style={{
+                  background: 'linear-gradient(135deg, #ffe066, #ffd700)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>{c.price}</p>
+                <div id={`paypal-container-${c.id}`} className="w-full" />
+              </div>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Profile info */}
         <motion.div
