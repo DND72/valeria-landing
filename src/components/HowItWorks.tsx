@@ -42,13 +42,13 @@ const services = [
     icon: '✨',
   },
   {
-    name: 'Percorso mensile',
-    duration: '4 sessioni',
-    price: null,
+    name: 'Consulto online',
+    duration: '30 minuti · Videochiamata',
+    price: '40€',
     payLink: null,
-    hostedButtonId: null,
-    ideal: 'Accompagnamento continuativo · Crescita personale',
-    icon: '🌟',
+    hostedButtonId: 'SVPB6FGR6L6G2',
+    ideal: 'Meet o Zoom · Più temi in un\'ora · Visione a distanza',
+    icon: '🌐',
   },
 ]
 
