@@ -33,6 +33,15 @@ const services = [
     icon: '🌙',
   },
   {
+    name: 'Consulto online',
+    duration: '30 minuti · Videochiamata',
+    price: '40€',
+    payLink: null,
+    hostedButtonId: 'SVPB6FGR6L6G2',
+    ideal: 'Meet o Zoom · Più temi · Visione a distanza',
+    icon: '🌐',
+  },
+  {
     name: 'Consulto completo',
     duration: '60 minuti · Telefonico',
     price: '50€',
@@ -40,15 +49,6 @@ const services = [
     hostedButtonId: 'RRN5H6RBWLUYL',
     ideal: 'Lettura approfondita · Più temi · Visione d\'insieme',
     icon: '✨',
-  },
-  {
-    name: 'Consulto online',
-    duration: '30 minuti · Videochiamata',
-    price: '40€',
-    payLink: null,
-    hostedButtonId: 'SVPB6FGR6L6G2',
-    ideal: 'Meet o Zoom · Più temi in un\'ora · Visione a distanza',
-    icon: '🌐',
   },
 ]
 
