@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PayPalHostedButton from './PayPalHostedButton'
 
 const steps = [
   {
@@ -27,6 +28,7 @@ const services = [
     duration: '30 minuti · Telefonico',
     price: '30€',
     payLink: 'https://www.paypal.com/ncp/payment/S6V5E36DJVCVS',
+    hostedButtonId: null,
     ideal: 'Una domanda specifica · Una situazione da chiarire',
     icon: '🌙',
   },
@@ -35,6 +37,7 @@ const services = [
     duration: '60 minuti',
     price: '50€',
     payLink: null,
+    hostedButtonId: 'RRN5H6RBWLUYL',
     ideal: 'Lettura approfondita · Più temi · Visione d\'insieme',
     icon: '✨',
   },
@@ -43,6 +46,7 @@ const services = [
     duration: '4 sessioni',
     price: null,
     payLink: null,
+    hostedButtonId: null,
     ideal: 'Accompagnamento continuativo · Crescita personale',
     icon: '🌟',
   },
@@ -138,7 +142,7 @@ export default function HowItWorks() {
               )}
               {!service.price && !service.payLink && <div className="mb-3 text-white/20 text-xs italic">prezzo da definire</div>}
               <p className="text-white/40 text-xs mb-4">{service.ideal}</p>
-              {service.payLink && (
+              {service.payLink && !service.hostedButtonId && (
                 <a
                   href={service.payLink}
                   target="_blank"
@@ -155,6 +159,9 @@ export default function HowItWorks() {
                   </svg>
                   Paga con PayPal
                 </a>
+              )}
+              {service.hostedButtonId && (
+                <PayPalHostedButton hostedButtonId={service.hostedButtonId} />
               )}
             </motion.div>
           ))}
