@@ -35,7 +35,7 @@ const stats: StatItem[] = [
     value: 3,
     suffix: '',
     label: 'Anni di pratica',
-    sublabel: 'con metodo iniziatico',
+    sublabel: 'con trasmissione alchemica',
     icon: '🌙',
   },
 ]

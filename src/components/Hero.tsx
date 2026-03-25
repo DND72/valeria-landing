@@ -116,7 +116,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.25 }}
           className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
         >
-          Attrice, due lauree, percorso esoterico decennale.
+          Attrice, due lauree, percorso alchemico decennale.
           Oltre <strong className="text-gold-400">3.000 consulti</strong> come Stella su Kang — ora puoi trovarla direttamente qui.
         </motion.p>
 

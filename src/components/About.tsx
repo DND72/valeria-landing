@@ -38,8 +38,8 @@ const credentials = [
   },
   {
     icon: '🌟',
-    title: 'Allieva del Maestro Villanova',
-    desc: 'Formazione nella tradizione iniziatica dei Tarocchi di Marsiglia. Un metodo trasmesso, non improvvisato.',
+    title: 'Percorso Alchemico',
+    desc: 'Formazione trasmessa attraverso percorsi alchemici e tradizioni ermetiche. Una conoscenza che non si studia sui libri — si riceve e si vive.',
   },
 ]
 
@@ -68,13 +68,13 @@ export default function About() {
               <p>
                 Valeria Di Pace non è la solita tarologa. Prima di sedersi davanti alle carte,
                 ha attraversato tre università, calcato i set televisivi di Canale 5, gestito
-                per 15 anni una parafarmacia e intrapreso un percorso esoterico tra i più
-                rigorosi che esistano.
+                per 15 anni una parafarmacia e attraversato percorsi alchemici ed ermetici
+                tra i più profondi che esistano.
               </p>
               <p>
                 La sua lettura dei Tarocchi di Marsiglia unisce la psicologia junghiana,
                 il pensiero strutturato del giurista, la conoscenza del corpo e della salute
-                e l'intuito affinato in anni di pratiche iniziatiche.
+                e l'intuito affinato attraverso anni di trasmissione alchemica.
                 Non interpreta simboli a caso — legge pattern, come fa con gli scacchi.
               </p>
               <p>

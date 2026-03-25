@@ -112,7 +112,7 @@ export default function ArticlePage() {
           <p className="text-white font-semibold mb-1">Valeria Di Pace</p>
           <p className="text-white/40 text-sm leading-relaxed">
             Tarologa, psicologa, attrice. Arena International Master (FIDE). Dama Templare.
-            Oltre 3.000 consulti con metodo iniziatico dei Tarocchi di Marsiglia.
+            Oltre 3.000 consulti. Percorso alchemico ed ermetico. Tarocchi di Marsiglia.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <a href="/#prenota" className="btn-gold text-sm px-5 py-2.5">
