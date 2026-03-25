@@ -63,24 +63,14 @@ export default function Footer() {
             </a>
 
             <div className="mt-6 space-y-2">
-              <a
-                href="https://www.kang.it"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-white/30 text-xs hover:text-gold-400 transition-colors"
-              >
+              <div className="flex items-center gap-2 text-white/30 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-600" />
-                Kang — "Stella" · 4,97/5
-              </a>
-              <a
-                href="https://www.wengo.it"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-white/30 text-xs hover:text-gold-400 transition-colors"
-              >
+                Piattaforma certificata · 4,97/5 · 261 recensioni
+              </div>
+              <div className="flex items-center gap-2 text-white/30 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-600" />
-                Wengo — "Valeria" · 776 commenti
-              </a>
+                Piattaforma certificata · 776 commenti positivi
+              </div>
             </div>
           </div>
         </div>
@@ -96,7 +86,7 @@ export default function Footer() {
             © {year} Valeria Di Pace. Tutti i diritti riservati.
           </p>
           <p className="text-white/20 text-xs">
-            nonsolotarocchi.it · P.IVA disponibile su richiesta
+            nonsolotarocchi.it · P.IVA IT08578101217
           </p>
         </motion.div>
 

@@ -12,42 +12,42 @@ interface Review {
 const reviews: Review[] = [
   {
     name: 'Laura M.',
-    platform: 'Kang',
+    platform: 'Piattaforma certificata',
     rating: 5,
     text: 'Valeria è straordinaria. Ha visto cose che non avevo detto a nessuno. La sua lettura mi ha dato una chiarezza incredibile sulla situazione lavorativa che stavo vivendo. Tornerò sicuramente.',
     date: 'Febbraio 2025',
   },
   {
     name: 'Serena T.',
-    platform: 'Kang',
+    platform: 'Piattaforma certificata',
     rating: 5,
     text: 'Mai creduto molto nei tarocchi, ma una mia amica mi ha convinto a provare. Sono rimasta senza parole. Ha descritto la mia situazione sentimentale con una precisione che mi ha fatto venire i brividi.',
     date: 'Gennaio 2025',
   },
   {
     name: 'Claudia R.',
-    platform: 'Wengo',
+    platform: 'Piattaforma certificata',
     rating: 5,
     text: 'La prima volta che l\'ho chiamata non sapevo cosa aspettarmi. La sua voce calma e il suo approccio professionale mi hanno messa subito a mio agio. Le carte hanno parlato e io ho ascoltato.',
     date: 'Dicembre 2024',
   },
   {
     name: 'Monica F.',
-    platform: 'Kang',
+    platform: 'Piattaforma certificata',
     rating: 5,
     text: 'Stella (Valeria) ha un dono autentico. Collegandomi ho trovato subito conforto e chiarezza. Mi ha parlato con il cuore, ha capito esattamente cosa mi pesava. Un grande abbraccio di luce!',
     date: 'Marzo 2025',
   },
   {
     name: 'Antonella B.',
-    platform: 'Wengo',
+    platform: 'Piattaforma certificata',
     rating: 5,
     text: 'Ho fatto decine di consulti con tante tarologhe. Valeria è in un\'altra categoria. La profondità della sua lettura, la precisione, l\'empatia — difficile trovare qualcuno così.',
     date: 'Novembre 2024',
   },
   {
     name: 'Patrizia G.',
-    platform: 'Kang',
+    platform: 'Piattaforma certificata',
     rating: 5,
     text: 'Tesoro mio, questa donna vede davvero! Ha indicato una data precisa per un cambiamento lavorativo e si è avverata. 4,97 su 5 è persino troppo basso per quello che offre.',
     date: 'Aprile 2025',
@@ -91,7 +91,7 @@ export default function Reviews() {
             Le <span className="gold-text">testimonianze</span>
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto mb-2">
-            Oltre 1.000 feedback raccolti su Kang e Wengo. Queste sono le voci di chi ha già scelto Valeria.
+            Oltre 1.000 feedback raccolti sulle più rinomate piattaforme online. Queste sono le voci di chi ha già scelto Valeria.
           </p>
         </motion.div>
 
@@ -106,13 +106,13 @@ export default function Reviews() {
           <div className="text-center">
             <div className="font-serif text-5xl gold-number">4,97</div>
             <Stars count={5} />
-            <p className="text-white/40 text-xs mt-1">261 recensioni · Kang</p>
+            <p className="text-white/40 text-xs mt-1">261 recensioni certificate</p>
           </div>
           <div className="w-px h-16 bg-white/10 hidden sm:block" />
           <div className="text-center">
             <div className="font-serif text-5xl gold-number">776</div>
             <p className="text-white/60 text-sm font-medium mt-1">commenti positivi</p>
-            <p className="text-white/40 text-xs mt-0.5">Wengo</p>
+            <p className="text-white/40 text-xs mt-0.5">Piattaforma certificata</p>
           </div>
           <div className="w-px h-16 bg-white/10 hidden sm:block" />
           <div className="text-center">

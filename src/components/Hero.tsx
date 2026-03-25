@@ -141,7 +141,7 @@ export default function Hero() {
           className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
         >
           Attrice, due lauree, percorso alchemico decennale.
-          Oltre <strong className="text-gold-400">3.000 consulti</strong> come Stella su Kang — ora puoi trovarla direttamente qui.
+          Oltre <strong className="text-gold-400">3.000 consulti</strong> sulle più rinomate piattaforme online — ora puoi trovarla direttamente qui.
         </motion.p>
 
         <motion.p

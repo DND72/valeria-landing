@@ -28,7 +28,7 @@ const stats: StatItem[] = [
     value: 1037,
     suffix: '+',
     label: 'Feedback positivi',
-    sublabel: 'tra Kang e Wengo',
+    sublabel: 'sulle principali piattaforme',
     icon: '💬',
   },
   {
@@ -131,11 +131,11 @@ export default function Stats() {
         >
           <span className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-gold-500 inline-block" />
-            Kang · "Stella" · 4,97/5
+            Piattaforma certificata · 4,97/5 · 261 recensioni
           </span>
           <span className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-gold-500 inline-block" />
-            Wengo · "Valeria" · 776 commenti
+            Piattaforma certificata · 776 commenti positivi
           </span>
           <span className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-gold-500 inline-block" />
