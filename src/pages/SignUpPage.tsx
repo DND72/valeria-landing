@@ -22,13 +22,16 @@ export default function SignUpPage() {
             Crea il tuo <span className="gold-text">spazio</span>
           </h1>
           <p className="text-white/50 text-sm max-w-xs mx-auto">
-            Registrati e ricevi subito un <strong className="text-gold-400">consulto gratuito di 10 minuti</strong> con Valeria
+            Registrati e ricevi subito un <strong className="text-gold-400">consulto gratuito di 7 minuti</strong> con Valeria
           </p>
           <p className="text-white/30 text-xs max-w-xs mx-auto mt-2">
             🔒 Scegli una password di almeno 8 caratteri — quella che preferisci. Riceverai un codice via email per confermare il tuo account.
           </p>
         </div>
         <SignUp
+          routing="path"
+          path="/registrati"
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {
               colorPrimary: '#d4a017',
@@ -47,7 +50,6 @@ export default function SignUpPage() {
               footerActionLink: 'text-gold-400 hover:text-gold-300',
             },
           }}
-          redirectUrl="/dashboard"
           signInUrl="/accedi"
         />
       </motion.div>

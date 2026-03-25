@@ -21,6 +21,9 @@ export default function SignInPage() {
           <p className="text-white/50 text-sm">Accedi al tuo spazio personale</p>
         </div>
         <SignIn
+          routing="path"
+          path="/accedi"
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             variables: {
               colorPrimary: '#d4a017',
@@ -39,7 +42,6 @@ export default function SignInPage() {
               footerActionLink: 'text-gold-400 hover:text-gold-300',
             },
           }}
-          redirectUrl="/dashboard"
           signUpUrl="/registrati"
         />
       </motion.div>
