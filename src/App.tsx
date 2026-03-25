@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import StarField from './components/StarField'
+import CosmicBackground from './components/CosmicBackground'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Stats from './components/Stats'
@@ -34,7 +34,7 @@ function HomePage() {
 export default function App() {
   return (
     <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
-      <StarField />
+      <CosmicBackground />
       <Navbar />
       <main>
         <Routes>
