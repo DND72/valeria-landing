@@ -25,7 +25,7 @@ const services = [
   {
     name: 'Consulto breve',
     duration: '30 minuti · Telefonico',
-    price: null,
+    price: '30€',
     payLink: 'https://www.paypal.com/ncp/payment/S6V5E36DJVCVS',
     ideal: 'Una domanda specifica · Una situazione da chiarire',
     icon: '🌙',
