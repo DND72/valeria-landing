@@ -34,7 +34,7 @@ const services = [
   },
   {
     name: 'Consulto completo',
-    duration: '60 minuti',
+    duration: '60 minuti · Telefonico',
     price: '50€',
     payLink: null,
     hostedButtonId: 'RRN5H6RBWLUYL',
