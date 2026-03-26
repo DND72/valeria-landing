@@ -187,3 +187,16 @@
   background: #d4a017;
   border-radius: 3px;
 }
+
+/* Calendly iframe a volte copre elementi fixed */
+nav {
+  position: fixed;
+  z-index: 9999 !important;
+}
+
+/* Tieni il widget sotto la navbar */
+.calendly-inline-widget,
+.calendly-inline-widget iframe {
+  position: relative;
+  z-index: 1 !important;
+}
