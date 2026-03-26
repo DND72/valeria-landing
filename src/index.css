@@ -106,6 +106,15 @@
     box-shadow: 0 0 30px rgba(245, 166, 35, 0.4), 0 2px 0 rgba(180,100,0,0.5);
   }
 
+  /* Testo scuro su oro: niente shadow (evita effetto "sfocato") */
+  .btn-gold,
+  .btn-gold *,
+  .btn-outline,
+  .btn-outline * {
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
   .btn-gold:hover {
     transform: translateY(-2px);
     box-shadow: 0 0 50px rgba(255, 200, 50, 0.6), 0 2px 0 rgba(180,100,0,0.5);

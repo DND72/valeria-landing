@@ -1,6 +1,6 @@
 import { useUser, useClerk } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
@@ -25,6 +25,18 @@ export default function Dashboard() {
   const { signOut } = useClerk()
   const navigate = useNavigate()
   const paypalLoaded = useRef(false)
+  const freeCalendlyRef = useRef<HTMLDivElement | null>(null)
+
+  const [freeOpen, setFreeOpen] = useState(false)
+  const [freeHidden, setFreeHidden] = useState(false)
+
+  useEffect(() => {
+    try {
+      setFreeHidden(window.localStorage.getItem('freeConsultHidden') === '1')
+    } catch {
+      // ignore
+    }
+  }, [])
 
   useEffect(() => {
     if (isLoaded && !user) navigate('/accedi')
@@ -59,6 +71,7 @@ export default function Dashboard() {
 
   const privileged = isPrivilegedClerkUser(user)
   const firstName = user.firstName || user.emailAddresses[0]?.emailAddress.split('@')[0] || 'cara'
+  const showFreeCard = useMemo(() => !freeHidden, [freeHidden])
 
   return (
     <div className="min-h-screen px-6 py-24">
@@ -105,49 +118,79 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Free consultation card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="relative rounded-2xl overflow-hidden mb-8 p-8"
-          style={{
-            background: 'linear-gradient(135deg, rgba(212,160,23,0.15) 0%, rgba(13,27,42,0.9) 100%)',
-            border: '1px solid rgba(212,160,23,0.35)',
-          }}
-        >
-          {/* Glow */}
-          <div
-            className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20 blur-3xl pointer-events-none"
-            style={{ background: 'radial-gradient(circle, #fcd34d, #d4a017)' }}
-          />
+        {showFreeCard && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="relative rounded-2xl overflow-hidden mb-8 p-8"
+            style={{
+              background: 'linear-gradient(135deg, rgba(212,160,23,0.15) 0%, rgba(13,27,42,0.9) 100%)',
+              border: '1px solid rgba(212,160,23,0.35)',
+            }}
+          >
+            {/* Glow */}
+            <div
+              className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20 blur-3xl pointer-events-none"
+              style={{ background: 'radial-gradient(circle, #fcd34d, #d4a017)' }}
+            />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 text-xs font-medium mb-4">
-                🎁 Regalo di benvenuto
+            <div className="relative z-10 flex flex-col gap-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 text-xs font-medium mb-4">
+                    🎁 Regalo di benvenuto
+                  </div>
+                  <h2 className="font-serif text-2xl md:text-3xl font-bold text-white mb-2">
+                    Il tuo consulto gratuito<br />
+                    <span className="gold-text">7 minuti con Valeria</span>
+                  </h2>
+                  <p className="text-white/50 text-sm max-w-md">
+                    Benvenuta nella famiglia. Valeria ti aspetta per una lettura gratuita di 7 minuti —
+                    il tuo primo passo nel mondo delle carte.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    className="btn-gold whitespace-nowrap"
+                    onClick={() => {
+                      setFreeOpen(true)
+                      setTimeout(() => freeCalendlyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
+                    }}
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Prenota ora — Gratis
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-outline whitespace-nowrap"
+                    onClick={() => {
+                      setFreeHidden(true)
+                      try {
+                        window.localStorage.setItem('freeConsultHidden', '1')
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                  >
+                    Non mostrarlo più
+                  </button>
+                </div>
               </div>
-              <h2 className="font-serif text-2xl md:text-3xl font-bold text-white mb-2">
-                Il tuo consulto gratuito<br />
-                <span className="gold-text">7 minuti con Valeria</span>
-              </h2>
-              <p className="text-white/50 text-sm max-w-md">
-                Benvenuta nella famiglia. Valeria ti aspetta per una lettura gratuita di 7 minuti —
-                il tuo primo passo nel mondo delle carte.
-              </p>
+
+              {freeOpen && (
+                <div ref={freeCalendlyRef} className="mystical-card p-0 overflow-hidden rounded-lg">
+                  <CalendlyEmbed url={CALENDLY_FREE_URL} minHeight={720} />
+                </div>
+              )}
             </div>
-            <a
-              href={CALENDLY_FREE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-gold whitespace-nowrap shrink-0"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Prenota ora — Gratis
-            </a>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Quick actions */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
