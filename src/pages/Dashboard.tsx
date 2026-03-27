@@ -108,7 +108,9 @@ export default function Dashboard() {
   if (!isLoaded || !user) return null
 
   const privileged = isPrivilegedClerkUser(user)
-  const firstName = user.firstName || user.emailAddresses[0]?.emailAddress.split('@')[0] || 'cara'
+  const rawEmail = user.emailAddresses[0]?.emailAddress
+  const firstName =
+    user.firstName || (rawEmail ? rawEmail.split('@')[0] : null) || 'cara'
 
   async function handleTaxSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
