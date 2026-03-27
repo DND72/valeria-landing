@@ -4,7 +4,7 @@ import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { PAYPAL_CONSULTI, paypalHostedCheckoutUrl } from '../constants/paypal'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
-import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
+import { CALENDLY_BOOKING_URL } from '../constants/calendly'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import { apiJson, ApiError } from '../lib/api'
@@ -32,7 +32,6 @@ export default function Dashboard() {
   const calendarSectionRef = useRef<HTMLElement | null>(null)
 
   const [freeHidden, setFreeHidden] = useState(false)
-  const [selectedCalendlyUrl, setSelectedCalendlyUrl] = useState(CALENDLY_BOOKING_URL)
 
   const [taxInfo, setTaxInfo] = useState<{
     showReminder: boolean
@@ -211,7 +210,6 @@ export default function Dashboard() {
                     type="button"
                     className="btn-gold whitespace-nowrap"
                     onClick={() => {
-                      setSelectedCalendlyUrl(CALENDLY_FREE_URL)
                       setTimeout(() => calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
                     }}
                   >
@@ -306,30 +304,10 @@ export default function Dashboard() {
           <p className="text-white/40 text-sm mb-4">
             {privileged
               ? 'Scegli data e ora dal calendario. Per il tuo account non è richiesto il pagamento tramite questa pagina.'
-              : selectedCalendlyUrl === CALENDLY_FREE_URL
-                ? 'Hai selezionato il consulto gratuito da 7 minuti. Scegli qui lo slot disponibile.'
-                : 'Controlla disponibilita e scegli il tuo slot. Subito dopo puoi completare il pagamento del consulto scelto.'}
+              : 'Controlla disponibilita e scegli il tuo slot. Subito dopo puoi completare il pagamento del consulto scelto.'}
           </p>
-          {!privileged && (
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <button
-                type="button"
-                className="btn-outline text-xs px-4 py-2"
-                onClick={() => setSelectedCalendlyUrl(CALENDLY_BOOKING_URL)}
-              >
-                Calendario consulti standard
-              </button>
-              <button
-                type="button"
-                className="btn-outline text-xs px-4 py-2"
-                onClick={() => setSelectedCalendlyUrl(CALENDLY_FREE_URL)}
-              >
-                Calendario consulto gratuito
-              </button>
-            </div>
-          )}
           <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
-            <CalendlyEmbed url={selectedCalendlyUrl} minHeight={700} />
+            <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={700} />
           </div>
         </motion.section>
 
