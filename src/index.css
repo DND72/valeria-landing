@@ -220,10 +220,7 @@ nav {
   max-width: 100%;
 }
 
-/* L’iframe Calendly può crescere in altezza: limita l’area cliccabile al box (evita che copra i link sotto). */
-.calendly-inline-widget iframe {
-  max-height: 100% !important;
-}
+/* Non forzare max-height sull’iframe: può impedire al widget di calcolare l’altezza e il calendario resta vuoto. */
 
 /* Popup / overlay Calendly (spesso appendati al body) */
 .calendly-overlay,
