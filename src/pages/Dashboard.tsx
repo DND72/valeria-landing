@@ -16,6 +16,21 @@ const consulti = [
   { id: 'RRN5H6RBWLUYL', name: 'Consulto completo', duration: '60 min · Telefonico',   price: '50€', icon: '✨' },
 ]
 
+/** Evita .split su null / tipi non stringa (Clerk a volte restituisce valori limite). */
+function displayFirstName(user: {
+  firstName: string | null | undefined
+  emailAddresses?: { emailAddress: string | null | undefined }[] | null | undefined
+}): string {
+  const fn = user.firstName?.trim()
+  if (fn) return fn
+  const raw = user.emailAddresses?.[0]?.emailAddress
+  if (typeof raw !== 'string' || raw.length === 0) return 'cara'
+  const at = raw.indexOf('@')
+  if (at <= 0) return 'cara'
+  const local = raw.slice(0, at).trim()
+  return local || 'cara'
+}
+
 declare global {
   interface Window {
     paypal?: { HostedButtons: (c: { hostedButtonId: string }) => { render: (s: string) => void } }
@@ -108,9 +123,7 @@ export default function Dashboard() {
   if (!isLoaded || !user) return null
 
   const privileged = isPrivilegedClerkUser(user)
-  const rawEmail = user.emailAddresses[0]?.emailAddress
-  const firstName =
-    user.firstName || (rawEmail ? rawEmail.split('@')[0] : null) || 'cara'
+  const firstName = displayFirstName(user)
 
   async function handleTaxSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
