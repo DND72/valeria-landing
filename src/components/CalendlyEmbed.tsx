@@ -106,8 +106,12 @@ export default function CalendlyEmbed({ url, className = '', minHeight = 700 }: 
   return (
     <div
       ref={containerRef}
-      className={`calendly-inline-widget w-full ${className}`}
-      style={{ minWidth: '320px', height: `${minHeight}px` }}
+      className={`calendly-inline-widget w-full overflow-hidden ${className}`}
+      style={{
+        minWidth: '320px',
+        height: `${minHeight}px`,
+        maxHeight: `min(${minHeight}px, 85vh)`,
+      }}
     />
   )
 }

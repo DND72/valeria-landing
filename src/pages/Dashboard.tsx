@@ -328,23 +328,26 @@ export default function Dashboard() {
               </button>
             </div>
           )}
-          <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate [contain:layout]">
+          <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
             <CalendlyEmbed url={selectedCalendlyUrl} minHeight={700} />
           </div>
         </motion.section>
 
-        {/* Acquista consulti — nascosto per account staff (pagamento fuori dal sito) */}
+        {/* Acquista consulti — nascosto per account staff (pagamento fuori dal sito). z-index sopra eventuali layer Calendly. */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
-          className="mb-8"
+          className="mb-8 relative z-30 isolate"
         >
           {privileged ? (
             <>
               <h2 className="font-serif text-xl font-bold text-white mb-1">2) Prenotazione staff</h2>
-              <p className="text-white/40 text-sm mb-5">
+              <p className="text-white/40 text-sm mb-2">
                 Questo account non richiede il pagamento tramite PayPal sul sito. Dopo aver scelto data e ora, la gestione economica resta diretta con Valeria.
+              </p>
+              <p className="text-white/30 text-xs mb-5 border-l border-gold-600/30 pl-3">
+                I tre pulsanti PayPal compaiono solo ai clienti (account senza privilegio staff in Clerk). Se qui non li vedi, è normale: non sono “spariti” da PayPal.
               </p>
               <div
                 className="mystical-card border border-gold-600/25"

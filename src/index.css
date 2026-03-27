@@ -93,6 +93,7 @@
   .mystical-card::before {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    pointer-events: none;
     background: linear-gradient(135deg, rgba(212, 160, 23, 0.08) 0%, transparent 100%);
   }
 
@@ -207,11 +208,21 @@ nav {
   isolation: isolate;
 }
 
+.calendly-inline-widget {
+  overflow: hidden !important;
+  isolation: isolate;
+}
+
 .calendly-inline-widget,
 .calendly-inline-widget iframe {
   position: relative !important;
   z-index: 0 !important;
   max-width: 100%;
+}
+
+/* L’iframe Calendly può crescere in altezza: limita l’area cliccabile al box (evita che copra i link sotto). */
+.calendly-inline-widget iframe {
+  max-height: 100% !important;
 }
 
 /* Popup / overlay Calendly (spesso appendati al body) */
