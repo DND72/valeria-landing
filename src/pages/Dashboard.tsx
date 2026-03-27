@@ -1,6 +1,6 @@
 import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
@@ -102,11 +102,13 @@ export default function Dashboard() {
     }
   }, [isLoaded, user])
 
+  // Deve stare prima del return: gli hook non possono essere dopo if (!user) return null
+  const showFreeCard = !freeHidden
+
   if (!isLoaded || !user) return null
 
   const privileged = isPrivilegedClerkUser(user)
   const firstName = user.firstName || user.emailAddresses[0]?.emailAddress.split('@')[0] || 'cara'
-  const showFreeCard = useMemo(() => !freeHidden, [freeHidden])
 
   async function handleTaxSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
