@@ -1,10 +1,12 @@
-import { useUser, useClerk } from '@clerk/clerk-react'
+import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
+import { getApiBaseUrl } from '../constants/api'
+import { apiJson, ApiError } from '../lib/api'
 
 const PAYPAL_SDK_URL = 'https://www.paypal.com/sdk/js?client-id=BAAIsnQZ6B0G4SuUAk1nU0CRxfSlFupqNWGyOjvqzj745x9fvKMVkRHgG-5FRxUMeZEz5gd0r1YztBDK18&components=hosted-buttons&disable-funding=venmo&currency=EUR'
 
@@ -22,6 +24,7 @@ declare global {
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser()
+  const { getToken } = useAuth()
   const { signOut } = useClerk()
   const navigate = useNavigate()
   const paypalLoaded = useRef(false)
@@ -29,6 +32,17 @@ export default function Dashboard() {
 
   const [freeHidden, setFreeHidden] = useState(false)
   const [selectedCalendlyUrl, setSelectedCalendlyUrl] = useState(CALENDLY_BOOKING_URL)
+
+  const [taxInfo, setTaxInfo] = useState<{
+    showReminder: boolean
+    donePaidConsults: number
+    hasCodiceFiscale: boolean
+  } | null>(null)
+  const [taxFirst, setTaxFirst] = useState('')
+  const [taxLast, setTaxLast] = useState('')
+  const [taxCf, setTaxCf] = useState('')
+  const [taxSubmitting, setTaxSubmitting] = useState(false)
+  const [taxMessage, setTaxMessage] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -41,6 +55,27 @@ export default function Dashboard() {
   useEffect(() => {
     if (isLoaded && !user) navigate('/accedi')
   }, [isLoaded, user, navigate])
+
+  useEffect(() => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
+    if (!getApiBaseUrl()) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const r = await apiJson<{
+          showReminder: boolean
+          donePaidConsults: number
+          hasCodiceFiscale: boolean
+        }>(getToken, '/api/me/tax-reminder')
+        if (!cancelled) setTaxInfo(r)
+      } catch {
+        if (!cancelled) setTaxInfo(null)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [isLoaded, user, getToken])
 
   // Carica il PayPal SDK solo per utenti non privilegiati (staff: niente PayPal sul sito)
   useEffect(() => {
@@ -73,6 +108,33 @@ export default function Dashboard() {
   const firstName = user.firstName || user.emailAddresses[0]?.emailAddress.split('@')[0] || 'cara'
   const showFreeCard = useMemo(() => !freeHidden, [freeHidden])
 
+  async function handleTaxSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setTaxMessage(null)
+    if (!getApiBaseUrl()) {
+      setTaxMessage('Servizio dati non disponibile.')
+      return
+    }
+    setTaxSubmitting(true)
+    try {
+      await apiJson(getToken, '/api/me/tax-code', {
+        method: 'POST',
+        body: JSON.stringify({
+          firstName: taxFirst.trim(),
+          lastName: taxLast.trim(),
+          codiceFiscale: taxCf.trim(),
+        }),
+      })
+      setTaxMessage('Grazie, i dati sono stati registrati.')
+      setTaxInfo((prev) => (prev ? { ...prev, showReminder: false, hasCodiceFiscale: true } : prev))
+    } catch (err) {
+      const msg = err instanceof ApiError ? String(err.message) : 'Impossibile salvare. Riprova più tardi.'
+      setTaxMessage(msg)
+    } finally {
+      setTaxSubmitting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen px-6 py-24">
       <div
@@ -88,7 +150,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex items-center justify-between mb-12"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12"
         >
           <div>
             <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Il tuo spazio</p>
@@ -106,6 +168,12 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+          <div className="flex flex-wrap items-center gap-3 justify-end">
+            {privileged && (
+              <Link to="/control-room" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                Control Room
+              </Link>
+            )}
           <button
             onClick={() => signOut(() => navigate('/'))}
             className="text-white/30 text-sm hover:text-white/60 transition-colors flex items-center gap-1.5"
@@ -115,6 +183,7 @@ export default function Dashboard() {
             </svg>
             Esci
           </button>
+          </div>
         </motion.div>
 
         {/* Free consultation card */}
@@ -324,6 +393,68 @@ export default function Dashboard() {
             </>
           )}
         </motion.div>
+
+        {!privileged && taxInfo?.showReminder && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mb-8 mystical-card border border-amber-600/30"
+          >
+            <h3 className="font-serif text-lg font-bold text-white mb-1">Dati per fatturazione</h3>
+            <p className="text-white/50 text-sm mb-4">
+              Dopo diversi consulti completati, per la contabilità servono nome, cognome e codice fiscale. Non blocca la
+              prenotazione: puoi compilare quando preferisci.
+            </p>
+            {taxInfo.donePaidConsults >= 3 && (
+              <p className="text-amber-200/80 text-xs mb-4">
+                Consulti pagati registrati come completati: <strong>{taxInfo.donePaidConsults}</strong>
+              </p>
+            )}
+            <form onSubmit={(e) => void handleTaxSubmit(e)} className="grid gap-3 sm:grid-cols-2 max-w-lg">
+              <label className="block sm:col-span-1">
+                <span className="text-white/45 text-xs block mb-1">Nome</span>
+                <input
+                  required
+                  value={taxFirst}
+                  onChange={(e) => setTaxFirst(e.target.value)}
+                  className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white"
+                  autoComplete="given-name"
+                />
+              </label>
+              <label className="block sm:col-span-1">
+                <span className="text-white/45 text-xs block mb-1">Cognome</span>
+                <input
+                  required
+                  value={taxLast}
+                  onChange={(e) => setTaxLast(e.target.value)}
+                  className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white"
+                  autoComplete="family-name"
+                />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="text-white/45 text-xs block mb-1">Codice fiscale</span>
+                <input
+                  required
+                  minLength={11}
+                  maxLength={16}
+                  value={taxCf}
+                  onChange={(e) => setTaxCf(e.target.value.toUpperCase())}
+                  className="w-full max-w-sm bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white font-mono tracking-wide"
+                  autoComplete="off"
+                />
+              </label>
+              <button type="submit" className="btn-gold text-sm px-5 py-2.5 sm:col-span-2 w-fit" disabled={taxSubmitting}>
+                {taxSubmitting ? 'Salvataggio…' : 'Salva dati'}
+              </button>
+            </form>
+            {taxMessage && (
+              <p className={`text-sm mt-3 ${taxMessage.startsWith('Grazie') ? 'text-emerald-400/90' : 'text-red-400/90'}`}>
+                {taxMessage}
+              </p>
+            )}
+          </motion.div>
+        )}
 
         {/* Profile info */}
         <motion.div

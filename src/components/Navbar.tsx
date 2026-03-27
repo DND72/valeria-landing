@@ -68,20 +68,30 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-3">
           {isLoaded && user ? (
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
-            >
-              {user.imageUrl && (
-                <img src={user.imageUrl} alt="" className="w-5 h-5 rounded-full" />
-              )}
-              Il mio spazio
+            <>
               {privileged && (
-                <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
-                  Staff
-                </span>
+                <Link
+                  to="/control-room"
+                  className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
+                >
+                  Control Room
+                </Link>
               )}
-            </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
+              >
+                {user.imageUrl && (
+                  <img src={user.imageUrl} alt="" className="w-5 h-5 rounded-full" />
+                )}
+                Il mio spazio
+                {privileged && (
+                  <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
+                    Staff
+                  </span>
+                )}
+              </button>
+            </>
           ) : (
             <>
               <button
@@ -137,19 +147,30 @@ export default function Navbar() {
                   </a>
                 </li>
               ))}
-              <li>
+              <li className="flex flex-col gap-2">
                 {isLoaded && user ? (
-                <button
-                  onClick={() => { navigate('/dashboard'); setMenuOpen(false) }}
-                  className="text-left text-white/80 hover:text-gold-400 transition-colors flex items-center gap-2 flex-wrap"
-                >
-                  Il mio spazio ✨
+                <>
                   {privileged && (
-                    <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
-                      Staff
-                    </span>
+                    <Link
+                      to="/control-room"
+                      className="text-gold-500/90 hover:text-gold-300 transition-colors"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Control Room
+                    </Link>
                   )}
-                </button>
+                  <button
+                    onClick={() => { navigate('/dashboard'); setMenuOpen(false) }}
+                    className="text-left text-white/80 hover:text-gold-400 transition-colors flex items-center gap-2 flex-wrap"
+                  >
+                    Il mio spazio ✨
+                    {privileged && (
+                      <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
+                        Staff
+                      </span>
+                    )}
+                  </button>
+                </>
               ) : (
                 <>
                   <button

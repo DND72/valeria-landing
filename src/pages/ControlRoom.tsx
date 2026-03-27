@@ -1,0 +1,381 @@
+import { useAuth, useUser } from '@clerk/clerk-react'
+import { motion } from 'framer-motion'
+import { useCallback, useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { apiJson, ApiError } from '../lib/api'
+import { isPrivilegedClerkUser } from '../lib/privilegedUser'
+import { getApiBaseUrl } from '../constants/api'
+
+type ConsultRow = {
+  id: string
+  clerk_user_id: string | null
+  calendly_event_uri: string | null
+  status: string
+  is_free_consult: boolean
+  meeting_join_url: string | null
+  meeting_provider: string | null
+  invitee_email: string | null
+  invitee_name: string | null
+  start_at: string | null
+  end_at: string | null
+  paypal_order_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+type NoteRow = {
+  id: string
+  staff_clerk_user_id: string
+  body: string
+  created_at: string
+  updated_at: string
+}
+
+function formatWhen(iso: string | null): string {
+  if (!iso) return '—'
+  try {
+    return new Intl.DateTimeFormat('it-IT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(iso))
+  } catch {
+    return iso
+  }
+}
+
+export default function ControlRoom() {
+  const { isLoaded, user } = useUser()
+  const { getToken } = useAuth()
+  const navigate = useNavigate()
+  const apiConfigured = Boolean(getApiBaseUrl())
+
+  const [list, setList] = useState<ConsultRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [listError, setListError] = useState<string | null>(null)
+
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [detailConsult, setDetailConsult] = useState<ConsultRow | null>(null)
+  const [notes, setNotes] = useState<NoteRow[]>([])
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
+
+  const [noteDraft, setNoteDraft] = useState('')
+  const [noteSaving, setNoteSaving] = useState(false)
+
+  const [statusDraft, setStatusDraft] = useState<string>('scheduled')
+
+  const loadList = useCallback(async () => {
+    if (!apiConfigured) {
+      setLoading(false)
+      return
+    }
+    setListError(null)
+    setLoading(true)
+    try {
+      const data = await apiJson<{ consults: ConsultRow[] }>(getToken, '/api/staff/consults')
+      setList(data.consults ?? [])
+    } catch (e) {
+      setListError(e instanceof ApiError ? String(e.message) : 'Impossibile caricare i consulti')
+      setList([])
+    } finally {
+      setLoading(false)
+    }
+  }, [getToken, apiConfigured])
+
+  const loadDetail = useCallback(
+    async (id: string) => {
+      if (!apiConfigured) return
+      setDetailError(null)
+      setDetailLoading(true)
+      try {
+        const data = await apiJson<{ consult: ConsultRow; notes: NoteRow[] }>(getToken, `/api/staff/consults/${id}`)
+        setDetailConsult(data.consult)
+        setNotes(data.notes ?? [])
+        setStatusDraft(data.consult.status)
+      } catch (e) {
+        setDetailError(e instanceof ApiError ? String(e.message) : 'Errore caricamento dettaglio')
+        setDetailConsult(null)
+        setNotes([])
+      } finally {
+        setDetailLoading(false)
+      }
+    },
+    [getToken, apiConfigured]
+  )
+
+  useEffect(() => {
+    if (!isLoaded) return
+    if (!user || !isPrivilegedClerkUser(user)) {
+      navigate('/dashboard', { replace: true })
+      return
+    }
+    void loadList()
+  }, [isLoaded, user, navigate, loadList])
+
+  useEffect(() => {
+    if (!selectedId) {
+      setDetailConsult(null)
+      setNotes([])
+      return
+    }
+    setDetailConsult(null)
+    setNotes([])
+    setDetailError(null)
+    void loadDetail(selectedId)
+  }, [selectedId, loadDetail])
+
+  useEffect(() => {
+    if (!user || !isLoaded) return
+    if (!isPrivilegedClerkUser(user)) return
+    const t = window.setInterval(() => {
+      void loadList()
+    }, 60_000)
+    return () => clearInterval(t)
+  }, [user, isLoaded, loadList])
+
+  if (!isLoaded || !user) return null
+  if (!isPrivilegedClerkUser(user)) return null
+
+  const submitNote = async () => {
+    const body = noteDraft.trim()
+    if (!selectedId || !body || !apiConfigured) return
+    setNoteSaving(true)
+    try {
+      await apiJson<{ note: NoteRow }>(getToken, `/api/staff/consults/${selectedId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({ body }),
+      })
+      setNoteDraft('')
+      await loadDetail(selectedId)
+      await loadList()
+    } catch (e) {
+      setDetailError(e instanceof ApiError ? String(e.message) : 'Salvataggio nota fallito')
+    } finally {
+      setNoteSaving(false)
+    }
+  }
+
+  const saveStatus = async () => {
+    if (!selectedId || !detailConsult || statusDraft === detailConsult.status) return
+    if (!apiConfigured) return
+    setDetailLoading(true)
+    try {
+      const data = await apiJson<{ consult: ConsultRow }>(getToken, `/api/staff/consults/${selectedId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: statusDraft }),
+      })
+      setDetailConsult(data.consult)
+      await loadList()
+    } catch (e) {
+      setDetailError(e instanceof ApiError ? String(e.message) : 'Aggiornamento stato fallito')
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen px-6 py-24">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 70% 40% at 50% 20%, rgba(212,160,23,0.06) 0%, transparent 70%)',
+        }}
+      />
+
+      <div className="relative z-10 max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10"
+        >
+          <div>
+            <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Staff</p>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">Control Room</h1>
+            <p className="text-white/45 text-sm mt-2 max-w-xl">
+              Consulti da Calendly, note interne e stato. Le note non sono visibili ai clienti.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => void loadList()}
+              className="btn-outline text-sm px-4 py-2"
+              disabled={loading || !apiConfigured}
+            >
+              Aggiorna elenco
+            </button>
+            <Link to="/dashboard" className="btn-gold text-sm px-4 py-2 text-center">
+              Il mio spazio
+            </Link>
+          </div>
+        </motion.div>
+
+        {!apiConfigured && (
+          <div className="mystical-card border border-amber-600/30 text-amber-200/90 text-sm mb-8">
+            <strong className="text-white">Backend non collegato.</strong> Aggiungi{' '}
+            <code className="text-amber-300/90">VITE_API_URL</code> nel build del sito (stesso valore dell’URL pubblico
+            del servizio API su Railway) e ridistribuisci.
+          </div>
+        )}
+
+        {listError && (
+          <p className="text-red-400/90 text-sm mb-6" role="alert">
+            {listError}
+          </p>
+        )}
+
+        <div className="grid lg:grid-cols-5 gap-8">
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="lg:col-span-2 mystical-card p-0 overflow-hidden"
+          >
+            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+              <h2 className="font-semibold text-white text-sm">Consulti recenti</h2>
+              {loading && <span className="text-white/35 text-xs">Caricamento…</span>}
+            </div>
+            <ul className="max-h-[min(70vh,560px)] overflow-y-auto divide-y divide-white/5">
+              {list.length === 0 && !loading && (
+                <li className="px-4 py-8 text-white/40 text-sm text-center">Nessun consulto in elenco.</li>
+              )}
+              {list.map((c) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(c.id)}
+                    className={`w-full text-left px-4 py-3 transition-colors ${
+                      selectedId === c.id ? 'bg-gold-600/15 border-l-2 border-gold-500' : 'hover:bg-white/5 border-l-2 border-transparent'
+                    }`}
+                  >
+                    <p className="text-white text-sm font-medium truncate">{c.invitee_name || c.invitee_email || 'Senza nome'}</p>
+                    <p className="text-white/40 text-xs truncate">{c.invitee_email}</p>
+                    <div className="flex flex-wrap gap-2 mt-1.5">
+                      <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-white/10 text-white/70">
+                        {c.status}
+                      </span>
+                      <span className="text-[10px] text-white/35">{formatWhen(c.start_at)}</span>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-3 mystical-card"
+          >
+            {!selectedId && (
+              <p className="text-white/45 text-sm">Seleziona un consulto dall’elenco per vedere dettagli e note.</p>
+            )}
+            {selectedId && detailLoading && !detailConsult && (
+              <p className="text-white/45 text-sm">Caricamento dettaglio…</p>
+            )}
+            {detailError && (
+              <p className="text-red-400/90 text-sm mb-4" role="alert">
+                {detailError}
+              </p>
+            )}
+            {detailConsult && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-serif text-xl text-white mb-2">Dettaglio</h3>
+                  <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                    <div>
+                      <dt className="text-white/40">Invitato</dt>
+                      <dd className="text-white/90">{detailConsult.invitee_name || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-white/40">Email</dt>
+                      <dd className="text-white/90 break-all">{detailConsult.invitee_email || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-white/40">Inizio</dt>
+                      <dd className="text-white/90">{formatWhen(detailConsult.start_at)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-white/40">Clerk cliente</dt>
+                      <dd className="text-white/90 font-mono text-xs break-all">{detailConsult.clerk_user_id || '—'}</dd>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <dt className="text-white/40">Link riunione</dt>
+                      <dd className="text-white/90">
+                        {detailConsult.meeting_join_url ? (
+                          <a
+                            href={detailConsult.meeting_join_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gold-400 hover:underline break-all"
+                          >
+                            {detailConsult.meeting_join_url}
+                          </a>
+                        ) : (
+                          '—'
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div className="flex flex-wrap items-end gap-3">
+                  <div>
+                    <label htmlFor="cr-status" className="block text-white/45 text-xs mb-1">
+                      Stato
+                    </label>
+                    <select
+                      id="cr-status"
+                      value={statusDraft}
+                      onChange={(e) => setStatusDraft(e.target.value)}
+                      className="bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white"
+                    >
+                      <option value="scheduled">scheduled</option>
+                      <option value="pending_payment">pending_payment</option>
+                      <option value="done">done</option>
+                      <option value="cancelled">cancelled</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-outline text-sm px-4 py-2"
+                    onClick={() => void saveStatus()}
+                    disabled={detailLoading || statusDraft === detailConsult.status}
+                  >
+                    Salva stato
+                  </button>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-white/80 text-sm mb-2">Note interne</h4>
+                  <ul className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                    {notes.length === 0 && <li className="text-white/35 text-sm">Nessuna nota.</li>}
+                    {notes.map((n) => (
+                      <li key={n.id} className="text-sm border-l-2 border-gold-600/40 pl-3">
+                        <p className="text-white/85 whitespace-pre-wrap">{n.body}</p>
+                        <p className="text-white/30 text-[11px] mt-1">{formatWhen(n.created_at)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                  <textarea
+                    value={noteDraft}
+                    onChange={(e) => setNoteDraft(e.target.value)}
+                    placeholder="Aggiungi una nota…"
+                    rows={4}
+                    className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 mb-2"
+                  />
+                  <button
+                    type="button"
+                    className="btn-gold text-sm px-4 py-2"
+                    onClick={() => void submitNote()}
+                    disabled={noteSaving || !noteDraft.trim() || !apiConfigured}
+                  >
+                    {noteSaving ? 'Salvataggio…' : 'Aggiungi nota'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.section>
+        </div>
+      </div>
+    </div>
+  )
+}
