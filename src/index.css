@@ -198,6 +198,41 @@
   border-radius: 3px;
 }
 
+/* ── Sfondo galassie (CosmicBackground): animazione globale, non nel tag <style> inline ── */
+@keyframes cosmicDriftBg {
+  0% {
+    background-position: 42% 58%;
+    background-size: 100% 100%;
+  }
+  33% {
+    background-position: 58% 42%;
+    background-size: 118% 118%;
+  }
+  66% {
+    background-position: 48% 52%;
+    background-size: 110% 110%;
+  }
+  100% {
+    background-position: 42% 58%;
+    background-size: 100% 100%;
+  }
+}
+
+/*
+  Movimento percepibile (~48s): prima era ~140s + movimento minimo → sembrava fermo.
+  Se il sistema ha "Riduci movimento" / Reduce motion attivo, l’animazione non parte (vedi media sotto).
+*/
+.cosmic-bg-drift {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cosmic-bg-drift {
+    animation: cosmicDriftBg 48s ease-in-out infinite alternate;
+  }
+}
+
 /*
   Calendly/PayPal possono creare layer fixed altissimi (anche fuori da main).
   La nav deve stare sopra a tutto; i widget restano nel flusso della pagina.
