@@ -197,17 +197,31 @@
   border-radius: 3px;
 }
 
-/* Calendly / iframe a volte creano stacking altissimo: navbar sempre sopra */
+/*
+  Calendly/PayPal possono creare layer fixed altissimi (anche fuori da main).
+  La nav deve stare sopra a tutto; i widget restano nel flusso della pagina.
+*/
 nav {
   position: fixed;
-  z-index: 99999 !important;
+  z-index: 2147483640 !important;
   isolation: isolate;
 }
 
-/* Widget Calendly sotto la navbar; contenitore in Dashboard usa isolate */
 .calendly-inline-widget,
 .calendly-inline-widget iframe {
   position: relative !important;
   z-index: 0 !important;
   max-width: 100%;
+}
+
+/* Popup / overlay Calendly (spesso appendati al body) */
+.calendly-overlay,
+.calendly-popup,
+.calendly-popup-content {
+  z-index: 2147483000 !important;
+}
+
+/* Badge floating Calendly */
+.calendly-badge-widget {
+  z-index: 2147483000 !important;
 }

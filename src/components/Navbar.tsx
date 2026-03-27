@@ -29,7 +29,8 @@ export default function Navbar() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      style={{ zIndex: 2147483640 }}
+      className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
         scrolled
           ? 'py-3 bg-dark-500/90 backdrop-blur-md border-b border-gold-600/20 shadow-lg shadow-black/50'
           : 'py-5 bg-transparent'

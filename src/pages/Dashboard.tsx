@@ -120,7 +120,19 @@ export default function Dashboard() {
   // Deve stare prima del return: gli hook non possono essere dopo if (!user) return null
   const showFreeCard = !freeHidden
 
-  if (!isLoaded || !user) return null
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen px-6 py-24 flex flex-col items-center justify-center gap-4">
+        <div
+          className="h-10 w-10 rounded-full border-2 border-gold-500/30 border-t-gold-400 animate-spin"
+          aria-hidden
+        />
+        <p className="text-white/60 text-sm">Caricamento del tuo spazio…</p>
+      </div>
+    )
+  }
+
+  if (!user) return null
 
   const privileged = isPrivilegedClerkUser(user)
   const firstName = displayFirstName(user)
