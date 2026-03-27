@@ -244,7 +244,6 @@ nav {
 }
 
 .calendly-inline-widget {
-  overflow: hidden !important;
   isolation: isolate;
 }
 
@@ -253,6 +252,11 @@ nav {
   position: relative !important;
   z-index: 0 !important;
   max-width: 100%;
+}
+
+/* Iframe embed: angoli coerenti col riquadro (evita rettangolo nero che “sborda” visivamente) */
+.calendly-embed-shell .calendly-embed-iframe {
+  border-radius: 14px;
 }
 
 /* Non forzare max-height sull’iframe: può impedire al widget di calcolare l’altezza e il calendario resta vuoto. */

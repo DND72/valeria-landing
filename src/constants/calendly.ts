@@ -3,7 +3,7 @@
  * Opzionale: sovrascrivi con VITE_CALENDLY_BOOKING_URL in .env o Railway (poi rebuild).
  */
 const DEFAULT_BOOKING =
-  'https://calendly.com/valeriadipace?hide_gdpr_banner=1&background_color=060608&text_color=f5f0e8&primary_color=d4a017'
+  'https://calendly.com/valeriadipace?hide_gdpr_banner=1&background_color=0a0e1a&text_color=f5f0e8&primary_color=d4a017'
 
 function envBooking(fallback: string): string {
   const v = import.meta.env.VITE_CALENDLY_BOOKING_URL
