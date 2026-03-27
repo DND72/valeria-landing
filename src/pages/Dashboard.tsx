@@ -25,10 +25,10 @@ export default function Dashboard() {
   const { signOut } = useClerk()
   const navigate = useNavigate()
   const paypalLoaded = useRef(false)
-  const freeCalendlyRef = useRef<HTMLDivElement | null>(null)
+  const calendarSectionRef = useRef<HTMLElement | null>(null)
 
-  const [freeOpen, setFreeOpen] = useState(false)
   const [freeHidden, setFreeHidden] = useState(false)
+  const [selectedCalendlyUrl, setSelectedCalendlyUrl] = useState(CALENDLY_BOOKING_URL)
 
   useEffect(() => {
     try {
@@ -156,8 +156,8 @@ export default function Dashboard() {
                     type="button"
                     className="btn-gold whitespace-nowrap"
                     onClick={() => {
-                      setFreeOpen(true)
-                      setTimeout(() => freeCalendlyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
+                      setSelectedCalendlyUrl(CALENDLY_FREE_URL)
+                      setTimeout(() => calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
                     }}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,11 +183,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {freeOpen && (
-                <div ref={freeCalendlyRef} className="mystical-card p-0 overflow-hidden rounded-lg">
-                  <CalendlyEmbed url={CALENDLY_FREE_URL} minHeight={720} />
-                </div>
-              )}
             </div>
           </motion.div>
         )}
@@ -197,8 +192,8 @@ export default function Dashboard() {
           {[
             {
               icon: '🔮',
-              title: 'Prenota un consulto',
-              desc: 'Apri il calendario qui sotto',
+              title: 'Scegli prima la data',
+              desc: 'Controlla subito disponibilita',
               href: '#prenota-calendly',
               cta: 'Scorri al calendario',
             },
@@ -243,6 +238,46 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Calendario completo — primo step */}
+        <motion.section
+          id="prenota-calendly"
+          ref={calendarSectionRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="mb-8 scroll-mt-28"
+        >
+          <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli data e ora</h2>
+          <p className="text-white/40 text-sm mb-4">
+            {privileged
+              ? 'Scegli data e ora dal calendario. Per il tuo account non è richiesto il pagamento tramite questa pagina.'
+              : selectedCalendlyUrl === CALENDLY_FREE_URL
+                ? 'Hai selezionato il consulto gratuito da 7 minuti. Scegli qui lo slot disponibile.'
+                : 'Controlla disponibilita e scegli il tuo slot. Subito dopo puoi completare il pagamento del consulto scelto.'}
+          </p>
+          {!privileged && (
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <button
+                type="button"
+                className="btn-outline text-xs px-4 py-2"
+                onClick={() => setSelectedCalendlyUrl(CALENDLY_BOOKING_URL)}
+              >
+                Calendario consulti standard
+              </button>
+              <button
+                type="button"
+                className="btn-outline text-xs px-4 py-2"
+                onClick={() => setSelectedCalendlyUrl(CALENDLY_FREE_URL)}
+              >
+                Calendario consulto gratuito
+              </button>
+            </div>
+          )}
+          <div className="mystical-card p-0 overflow-hidden rounded-lg">
+            <CalendlyEmbed url={selectedCalendlyUrl} minHeight={700} />
+          </div>
+        </motion.section>
+
         {/* Acquista consulti — nascosto per account staff (pagamento fuori dal sito) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -252,9 +287,9 @@ export default function Dashboard() {
         >
           {privileged ? (
             <>
-              <h2 className="font-serif text-xl font-bold text-white mb-1">Prenotazione staff</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">2) Prenotazione staff</h2>
               <p className="text-white/40 text-sm mb-5">
-                Questo account non richiede il pagamento tramite PayPal sul sito. Usa il calendario qui sotto per prenotare.
+                Questo account non richiede il pagamento tramite PayPal sul sito. Dopo aver scelto data e ora, la gestione economica resta diretta con Valeria.
               </p>
               <div
                 className="mystical-card border border-gold-600/25"
@@ -263,13 +298,13 @@ export default function Dashboard() {
                 }}
               >
                 <p className="text-white/80 text-sm leading-relaxed">
-                  Il pagamento per i tuoi consulti, se applicabile, è gestito direttamente con Valeria — non tramite questa pagina.
+                  Se serve modificare lo slot scelto, puoi tornare al calendario sopra e selezionare una disponibilita diversa.
                 </p>
               </div>
             </>
           ) : (
             <>
-              <h2 className="font-serif text-xl font-bold text-white mb-1">Acquista un consulto</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">2) Scegli il consulto e completa il pagamento</h2>
               <p className="text-white/40 text-sm mb-5">Pagamento sicuro via PayPal · anche con carta di credito</p>
               <div className="grid md:grid-cols-3 gap-4">
                 {consulti.map((c) => (
@@ -289,25 +324,6 @@ export default function Dashboard() {
             </>
           )}
         </motion.div>
-
-        {/* Calendario completo — consulti a pagamento e altri slot */}
-        <motion.section
-          id="prenota-calendly"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mb-8 scroll-mt-28"
-        >
-          <h2 className="font-serif text-xl font-bold text-white mb-1">Prenota la tua lettura</h2>
-          <p className="text-white/40 text-sm mb-4">
-            {privileged
-              ? 'Scegli data e ora dal calendario. Per il tuo account non è richiesto il pagamento tramite questa pagina.'
-              : 'Scegli data e ora per i tuoi consulti. Dopo il pagamento dal profilo, prenota qui lo slot che preferisci.'}
-          </p>
-          <div className="mystical-card p-0 overflow-hidden rounded-lg">
-            <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={680} />
-          </div>
-        </motion.section>
 
         {/* Profile info */}
         <motion.div
