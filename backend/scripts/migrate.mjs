@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Applica migrations/*.sql in ordine lessicografico su DATABASE_URL.
+ * Legge DATABASE_URL da: variabile d'ambiente oppure file backend/.env (consigliato su Windows).
  */
+import { config } from 'dotenv'
 import { readdir, readFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -9,6 +11,7 @@ import pg from 'pg'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = join(__dirname, '..')
+config({ path: join(root, '.env') })
 
 const databaseUrl = process.env.DATABASE_URL
 if (!databaseUrl?.trim()) {
