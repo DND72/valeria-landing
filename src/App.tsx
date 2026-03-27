@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import CosmicBackground from './components/CosmicBackground'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -17,6 +17,7 @@ import BlogPage from './pages/BlogPage'
 import ArticlePage from './pages/ArticlePage'
 import GraziePage from './pages/GraziePage'
 import ControlRoom from './pages/ControlRoom'
+import RouteErrorBoundary from './components/RouteErrorBoundary'
 
 function HomePage() {
   return (
@@ -33,22 +34,31 @@ function HomePage() {
   )
 }
 
+function AppRoutes() {
+  const { pathname } = useLocation()
+  return (
+    <RouteErrorBoundary key={pathname}>
+      <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/accedi/*" element={<SignInPage />} />
+            <Route path="/registrati/*" element={<SignUpPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/control-room" element={<ControlRoom />} />
+            <Route path="/grazie" element={<GraziePage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<ArticlePage />} />
+      </Routes>
+    </RouteErrorBoundary>
+  )
+}
+
 export default function App() {
   return (
     <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
       <CosmicBackground />
       <Navbar />
-      <main>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/accedi/*" element={<SignInPage />} />
-          <Route path="/registrati/*" element={<SignUpPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/control-room" element={<ControlRoom />} />
-          <Route path="/grazie" element={<GraziePage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:slug" element={<ArticlePage />} />
-        </Routes>
+      <main className="relative z-0">
+        <AppRoutes />
       </main>
       <Footer />
     </div>

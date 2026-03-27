@@ -359,7 +359,7 @@ export default function Dashboard() {
               </button>
             </div>
           )}
-          <div className="mystical-card p-0 overflow-hidden rounded-lg">
+          <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate [contain:layout]">
             <CalendlyEmbed url={selectedCalendlyUrl} minHeight={700} />
           </div>
         </motion.section>

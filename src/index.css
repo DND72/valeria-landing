@@ -197,15 +197,17 @@
   border-radius: 3px;
 }
 
-/* Calendly iframe a volte copre elementi fixed */
+/* Calendly / iframe a volte creano stacking altissimo: navbar sempre sopra */
 nav {
   position: fixed;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
+  isolation: isolate;
 }
 
-/* Tieni il widget sotto la navbar */
+/* Widget Calendly sotto la navbar; contenitore in Dashboard usa isolate */
 .calendly-inline-widget,
 .calendly-inline-widget iframe {
-  position: relative;
-  z-index: 1 !important;
+  position: relative !important;
+  z-index: 0 !important;
+  max-width: 100%;
 }
