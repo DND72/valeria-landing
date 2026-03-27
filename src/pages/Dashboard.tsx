@@ -1,20 +1,13 @@
 import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { PAYPAL_CONSULTI, paypalHostedCheckoutUrl } from '../constants/paypal'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import { apiJson, ApiError } from '../lib/api'
-
-const PAYPAL_SDK_URL = 'https://www.paypal.com/sdk/js?client-id=BAAIsnQZ6B0G4SuUAk1nU0CRxfSlFupqNWGyOjvqzj745x9fvKMVkRHgG-5FRxUMeZEz5gd0r1YztBDK18&components=hosted-buttons&disable-funding=venmo&currency=EUR'
-
-const consulti = [
-  { id: 'MYR75N4X68N7E', name: 'Consulto breve',    duration: '30 min · Telefonico',   price: '30€', icon: '🌙' },
-  { id: 'SVPB6FGR6L6G2', name: 'Consulto online',   duration: '30 min · Videochiamata', price: '40€', icon: '🌐' },
-  { id: 'RRN5H6RBWLUYL', name: 'Consulto completo', duration: '60 min · Telefonico',   price: '50€', icon: '✨' },
-]
 
 /** Evita .split su null / tipi non stringa (Clerk a volte restituisce valori limite). */
 function displayFirstName(user: {
@@ -31,18 +24,11 @@ function displayFirstName(user: {
   return local || 'cara'
 }
 
-declare global {
-  interface Window {
-    paypal?: { HostedButtons: (c: { hostedButtonId: string }) => { render: (s: string) => void } }
-  }
-}
-
 export default function Dashboard() {
   const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
   const { signOut } = useClerk()
   const navigate = useNavigate()
-  const paypalLoaded = useRef(false)
   const calendarSectionRef = useRef<HTMLElement | null>(null)
 
   const [freeHidden, setFreeHidden] = useState(false)
@@ -87,31 +73,6 @@ export default function Dashboard() {
       cancelled = true
     }
   }, [isLoaded, user, getToken])
-
-  // Carica il PayPal SDK solo per utenti non privilegiati (staff: niente PayPal sul sito)
-  useEffect(() => {
-    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
-    if (paypalLoaded.current || document.querySelector('#paypal-sdk')) return
-    const script = document.createElement('script')
-    script.id = 'paypal-sdk'
-    script.src = PAYPAL_SDK_URL
-    script.setAttribute('data-sdk-integration-source', 'developer-studio')
-    script.onload = () => {
-      paypalLoaded.current = true
-      consulti.forEach(({ id }) => {
-        const el = document.getElementById(`paypal-container-${id}`)
-        if (el && window.paypal) {
-          window.paypal.HostedButtons({ hostedButtonId: id }).render(`#paypal-container-${id}`)
-        }
-      })
-    }
-    document.body.appendChild(script)
-    return () => {
-      const s = document.getElementById('paypal-sdk')
-      if (s) s.remove()
-      paypalLoaded.current = false
-    }
-  }, [isLoaded, user])
 
   // Deve stare prima del return: gli hook non possono essere dopo if (!user) return null
   const showFreeCard = !freeHidden
@@ -399,19 +360,31 @@ export default function Dashboard() {
           ) : (
             <>
               <h2 className="font-serif text-xl font-bold text-white mb-1">2) Scegli il consulto e completa il pagamento</h2>
-              <p className="text-white/40 text-sm mb-5">Pagamento sicuro via PayPal · anche con carta di credito</p>
+              <p className="text-white/40 text-sm mb-2">
+                Pagamento sicuro su PayPal (si apre in una nuova scheda) · anche con carta, senza caricare script PayPal in questa pagina.
+              </p>
+              <p className="text-white/30 text-xs mb-5 max-w-2xl">
+                Quantità e prezzo dei pulsanti: account PayPal → Pulsanti PayPal → modifica il pulsante. Slot e calendario: Calendly → Tipi di evento → il tuo evento.
+              </p>
               <div className="grid md:grid-cols-3 gap-4">
-                {consulti.map((c) => (
-                  <div key={c.id} className="mystical-card text-center">
+                {PAYPAL_CONSULTI.map((c) => (
+                  <div key={c.id} className="mystical-card text-center flex flex-col">
                     <div className="text-3xl mb-2">{c.icon}</div>
                     <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
                     <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
-                    <p className="font-serif text-2xl font-bold mb-3" style={{
+                    <p className="font-serif text-2xl font-bold mb-4" style={{
                       background: 'linear-gradient(135deg, #ffe066, #ffd700)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                     }}>{c.price}</p>
-                    <div id={`paypal-container-${c.id}`} className="w-full" />
+                    <a
+                      href={paypalHostedCheckoutUrl(c.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-gold text-sm px-4 py-2.5 inline-flex items-center justify-center gap-2 w-full mt-auto"
+                    >
+                      Paga con PayPal
+                    </a>
                   </div>
                 ))}
               </div>
