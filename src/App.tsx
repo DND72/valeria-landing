@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import CosmicBackground from './components/CosmicBackground'
 import Navbar from './components/Navbar'
@@ -36,6 +37,20 @@ function HomePage() {
 
 function AppRoutes() {
   const { pathname } = useLocation()
+
+  // Clerk / widget esterni a volte lasciano overflow:hidden o position:fixed sul body.
+  // Ripristina lo scroll quando si cambia pagina (es. uscita da Dashboard / modali).
+  useLayoutEffect(() => {
+    const body = document.body
+    const html = document.documentElement
+    body.style.removeProperty('overflow')
+    html.style.removeProperty('overflow')
+    body.style.removeProperty('position')
+    body.style.removeProperty('width')
+    body.style.removeProperty('height')
+    body.style.removeProperty('padding-right')
+  }, [pathname])
+
   return (
     <RouteErrorBoundary key={pathname}>
       <Routes>

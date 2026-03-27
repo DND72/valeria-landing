@@ -1,7 +1,7 @@
 import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import { CALENDLY_BOOKING_URL, CALENDLY_FREE_URL } from '../constants/calendly'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
@@ -68,10 +68,6 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    if (isLoaded && !user) navigate('/accedi')
-  }, [isLoaded, user, navigate])
-
-  useEffect(() => {
     if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
     if (!getApiBaseUrl()) return
     let cancelled = false
@@ -132,7 +128,7 @@ export default function Dashboard() {
     )
   }
 
-  if (!user) return null
+  if (!user) return <Navigate to="/" replace />
 
   const privileged = isPrivilegedClerkUser(user)
   const firstName = displayFirstName(user)
