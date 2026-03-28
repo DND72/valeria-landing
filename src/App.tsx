@@ -15,6 +15,7 @@ import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
 import Dashboard from './pages/Dashboard'
 import BlogPage from './pages/BlogPage'
+import PersonalGrowthPage from './pages/PersonalGrowthPage'
 import ArticlePage from './pages/ArticlePage'
 import GraziePage from './pages/GraziePage'
 import ControlRoom from './pages/ControlRoom'
@@ -68,6 +69,7 @@ function AppRoutes() {
             <Route path="/gestione-recensioni" element={<StaffReviewsPage />} />
             <Route path="/gestione-commenti-blog" element={<StaffBlogCommentsPage />} />
             <Route path="/grazie" element={<GraziePage />} />
+            <Route path="/crescita-personale" element={<PersonalGrowthPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<ArticlePage />} />
       </Routes>

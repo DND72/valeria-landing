@@ -1,7 +1,7 @@
 import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, Navigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
@@ -33,6 +33,7 @@ export default function Dashboard() {
   const { getToken } = useAuth()
   const { signOut } = useClerk()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const calendarSectionRef = useRef<HTMLElement | null>(null)
 
   const [freeHidden, setFreeHidden] = useState(false)
@@ -72,6 +73,19 @@ export default function Dashboard() {
       // ignore
     }
   }, [])
+
+  /** Es. /dashboard?consult=coaching dalla pagina Crescita personale */
+  useEffect(() => {
+    const raw = searchParams.get('consult')
+    if (!raw) return
+    const match = CONSULT_CHOICES.find((c) => c.kind === raw)
+    if (match) {
+      setSelectedConsult(match.kind)
+      window.setTimeout(() => {
+        calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 350)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
@@ -341,7 +355,7 @@ export default function Dashboard() {
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Tocca <strong className="text-gold-500/90">Continua</strong>: si apre sotto il calendario giusto per quel tipo (anche omaggio). Il pagamento avviene in Calendly quando hai scelto data e ora, come da tua configurazione (es. PayPal).
               </p>
-              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {consultChoicesForClient.map((c) => {
                   const selected = selectedConsult === c.kind
                   return (

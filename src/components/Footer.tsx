@@ -33,6 +33,7 @@ export default function Footer() {
               { label: 'Chi sono', href: '#chi-sono' },
               { label: 'I numeri', href: '#numeri' },
               { label: 'Come funziona', href: '#come-funziona' },
+              { label: 'Crescita personale', href: '/crescita-personale' },
               { label: 'Blog', href: '/blog' },
               { label: 'Recensioni', href: '#recensioni' },
               { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },

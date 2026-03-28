@@ -7,6 +7,7 @@ import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 const links = [
   { label: 'Chi sono', href: '#chi-sono' },
   { label: 'Galleria', href: '#galleria' },
+  { label: 'Crescita personale', href: '/crescita-personale' },
   { label: 'Blog', href: '/blog' },
   { label: 'Recensioni', href: '#recensioni' },
 ]
