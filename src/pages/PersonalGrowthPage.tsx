@@ -9,9 +9,9 @@ const PACKAGE_BLURBS: Record<string, string> = {
   coaching_intro:
     'Per conoscervi, capire cosa vi serve e iniziare a definire obiettivi. Dieci minuti senza impegno: capite con chi avete a che fare e Valeria capisce voi.',
   coaching_60:
-    'Una sessione intera dedicata al percorso: lavoro sulle priorità, le abitudini e la direzione che volete dare — in video o al telefono.',
+    'Una sessione da un’ora (70€ su Calendly, come da evento): lavoro su priorità, abitudini e direzione — video o telefono.',
   coaching_pack5:
-    'Percorso strutturato su cinque incontri. Prenotate le date direttamente su Calendly (come da configurazione del vostro evento): un punto fermo per costruire risultati nel tempo.',
+    'Cinque sedute da un’ora ciascuna (70€ l’ora in Calendly, totale 350€). Su PayPal impostiamo cinque pagamenti; le date delle sedute le affineremo con Calendly (o un altro flusso) appena definito.',
 }
 
 export default function PersonalGrowthPage() {
@@ -75,8 +75,9 @@ export default function PersonalGrowthPage() {
             Pacchetti
           </h2>
           <p className="text-white/40 text-sm text-center max-w-2xl mx-auto mb-8">
-            Tre modalità: una conoscenza gratuita, sedute da un&apos;ora, oppure un pacchetto di cinque incontri con
-            date scelte su Calendly.
+            Conoscenza gratuita (10 min), sedute da un&apos;ora a <strong className="text-white/55">70€</strong>, oppure
+            pacchetto cinque sedute a <strong className="text-white/55">350€</strong> (5 × 70€, pagamenti PayPal da
+            concordare sul flusso).
           </p>
           <div className="grid md:grid-cols-3 gap-5">
             {COACHING_PACKAGES.map((pkg, i) => {
@@ -160,8 +161,9 @@ export default function PersonalGrowthPage() {
             <li className="flex gap-3">
               <span className="text-emerald-500/90 shrink-0">3.</span>
               <span>
-                <strong className="text-white/75">Pacchetto 5 sedute</strong> — su Calendly puoi impostare più
-                prenotazioni consecutive o far prenotare le cinque date a scelta; Valeria allinea lì il flusso con te.
+                <strong className="text-white/75">Pagamenti</strong> — su Calendly resta l&apos;ora a 70€; per il
+                pacchetto, su PayPal si possono impostare i cinque pagamenti. Come far scegliere tutte le date ai
+                clienti si può evolvere in seguito (Calendly, crediti, altro).
               </span>
             </li>
           </ul>
