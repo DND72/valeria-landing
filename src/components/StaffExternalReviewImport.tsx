@@ -1,6 +1,7 @@
 import { useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import { getApiBaseUrl } from '../constants/api'
 import StarsRating from './StarsRating'
@@ -29,7 +30,9 @@ export default function StaffExternalReviewImport() {
           body: body.trim(),
         }),
       })
-      setMsg('Recensione importata e pubblicata nella sezione «Dicono di me».')
+      setMsg(
+        'Recensione salvata in moderazione. Quando sei pronta, aprila in Gestione recensioni e pubblicala: così compare in «Dicono di me».'
+      )
       setBody('')
       setAuthorDisplayName('')
     } catch (e) {
@@ -50,8 +53,11 @@ export default function StaffExternalReviewImport() {
     >
       <h2 className="font-serif text-xl font-bold text-white mb-1">Importa recensione da altra piattaforma</h2>
       <p className="text-white/40 text-sm mb-4">
-        Kang, Profetum, Wengo, ecc. Verrà mostrata sul sito con il badge &quot;Altra piattaforma&quot; e inclusa nella
-        media generale.
+        Kang, Profetum, Wengo, ecc. Resta in coda finché non la pubblichi da{' '}
+        <Link to="/gestione-recensioni" className="text-gold-500/90 hover:underline">
+          Gestione recensioni
+        </Link>
+        . Poi comparirà in «Dicono di me» con il badge &quot;Altra piattaforma&quot; e conterà nella media pubblica.
       </p>
       <div className="grid sm:grid-cols-2 gap-3 mb-3">
         <label className="block">
@@ -107,7 +113,7 @@ export default function StaffExternalReviewImport() {
         disabled={submitting || body.trim().length < 20}
         className="btn-gold text-sm px-5 py-2"
       >
-        {submitting ? 'Salvataggio…' : 'Pubblica sul sito'}
+        {submitting ? 'Salvataggio…' : 'Invia in moderazione'}
       </button>
       {msg && (
         <p

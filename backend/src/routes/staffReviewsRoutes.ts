@@ -32,7 +32,7 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
         `INSERT INTO site_reviews (
            source, clerk_user_id, author_display_name, rating, body, status,
            published_at, external_platform, imported_by_clerk_id, updated_at
-         ) VALUES ('external', NULL, $1, $2, $3, 'published', now(), $4, $5, now())
+         ) VALUES ('external', NULL, $1, $2, $3, 'pending', NULL, $4, $5, now())
          RETURNING id, author_display_name, rating, body, status, published_at, external_platform, created_at`,
         [authorDisplayName, rating, body, platform, staffId]
       )
