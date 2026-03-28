@@ -81,12 +81,16 @@ export default function About() {
               </p>
             </div>
 
-            {/* Chess-tarot philosophy box */}
             <div className="mt-6 p-4 rounded-lg border border-gold-600/20 bg-gold-600/5">
-              <p className="text-gold-400 text-xs font-semibold uppercase tracking-wider mb-2">♟️ Scacchi & Tarocchi — lo stesso metodo</p>
+              <p className="font-serif text-lg font-bold text-gold-400 mb-1">L&apos;Arte della Visione e del Rigore</p>
+              <p className="text-gold-500/85 text-xs font-medium tracking-wide mb-3">
+                Dalla complessità alla chiarezza: lo stesso metodo
+              </p>
               <p className="text-white/50 text-sm leading-relaxed italic">
-                "Riconoscere pattern, analizzare i momenti critici, mantenere la visione d'insieme.
-                Valeria porta sulla scacchiera e sulle carte lo stesso rigore — e la stessa lucidità."
+                &ldquo;Saper guardare l&apos;insieme senza perdere il dettaglio, riconoscere i momenti di svolta e mantenere
+                una lucidità assoluta. Valeria porta nella lettura delle carte lo stesso rigore analitico che applica ad ogni
+                sistema complesso: una capacità rara di vedere dove si incrociano le forze del destino e dove, invece, è
+                possibile agire per cambiare rotta.&rdquo;
               </p>
             </div>
 
