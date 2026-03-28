@@ -1,4 +1,5 @@
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, type ReactNode } from 'react'
+import { useUser } from '@clerk/clerk-react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import CosmicBackground from './components/CosmicBackground'
 import Navbar from './components/Navbar'
@@ -24,6 +25,7 @@ import ClientDetailPage from './pages/ClientDetailPage'
 import StaffBlogCommentsPage from './pages/StaffBlogCommentsPage'
 import StaffReviewsPage from './pages/StaffReviewsPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
+import { isPrivilegedClerkUser } from './lib/privilegedUser'
 
 function HomePage() {
   return (
@@ -77,14 +79,28 @@ function AppRoutes() {
   )
 }
 
+/** Spazio sotto la navbar fissa: barra staff su due righe è più alta. */
+function MainWithNavOffset({ children }: { children: ReactNode }) {
+  const { user, isLoaded } = useUser()
+  const staff = isLoaded && user ? isPrivilegedClerkUser(user) : false
+  const ptClass =
+    !isLoaded
+      ? 'pt-28 md:pt-32'
+      : staff
+        ? 'pt-40 md:pt-44 lg:pt-[11rem]'
+        : 'pt-24 md:pt-28'
+
+  return <main className={`relative z-0 ${ptClass}`}>{children}</main>
+}
+
 export default function App() {
   return (
     <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
       <CosmicBackground />
       <Navbar />
-      <main className="relative z-0">
+      <MainWithNavOffset>
         <AppRoutes />
-      </main>
+      </MainWithNavOffset>
       <Footer />
     </div>
   )
