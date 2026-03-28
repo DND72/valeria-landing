@@ -148,7 +148,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.35 }}
-          className="text-white/40 text-base mb-12 italic font-serif max-w-2xl mx-auto leading-relaxed"
+          className="text-white/40 text-base md:text-lg mb-12 italic font-serif max-w-2xl mx-auto leading-relaxed"
         >
           <span className="not-italic text-gold-400/95 font-medium tracking-wide">Esperienza, precisione e visione.</span>{' '}
           Valeria applica un{' '}
