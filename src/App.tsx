@@ -18,6 +18,8 @@ import BlogPage from './pages/BlogPage'
 import ArticlePage from './pages/ArticlePage'
 import GraziePage from './pages/GraziePage'
 import ControlRoom from './pages/ControlRoom'
+import ClientManagementPage from './pages/ClientManagementPage'
+import ClientDetailPage from './pages/ClientDetailPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 
 function HomePage() {
@@ -59,6 +61,8 @@ function AppRoutes() {
             <Route path="/registrati/*" element={<SignUpPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/control-room" element={<ControlRoom />} />
+            <Route path="/gestione-clienti" element={<ClientManagementPage />} />
+            <Route path="/gestione-clienti/:email" element={<ClientDetailPage />} />
             <Route path="/grazie" element={<GraziePage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<ArticlePage />} />

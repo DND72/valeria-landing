@@ -7,6 +7,7 @@ import {
   getStaffTodayMeetingsOrError,
 } from '../lib/calendlyScheduledMeetings.js'
 import { requireClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
+import { registerStaffClientRoutes } from './staffClientsRoutes.js'
 
 const noteBody = z.object({
   body: z.string().min(1).max(20000),
@@ -259,6 +260,8 @@ export function createStaffRouter(pool: Pool): Router {
       res.status(500).json({ error: 'Errore database' })
     }
   })
+
+  registerStaffClientRoutes(r, pool)
 
   r.post('/consults/:id/notes', async (req, res) => {
     const id = req.params.id

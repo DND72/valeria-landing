@@ -164,9 +164,14 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-wrap items-center gap-3 justify-end">
             {privileged && (
-              <Link to="/control-room" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
-                Control Room
-              </Link>
+              <>
+                <Link to="/gestione-clienti" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                  Gestione clienti
+                </Link>
+                <Link to="/control-room" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                  Control Room
+                </Link>
+              </>
             )}
           <button
             onClick={() => signOut(() => navigate('/'))}

@@ -71,12 +71,20 @@ export default function Navbar() {
           {isLoaded && user ? (
             <>
               {privileged && (
-                <Link
-                  to="/control-room"
-                  className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
-                >
-                  Control Room
-                </Link>
+                <>
+                  <Link
+                    to="/gestione-clienti"
+                    className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
+                  >
+                    Gestione clienti
+                  </Link>
+                  <Link
+                    to="/control-room"
+                    className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
+                  >
+                    Control Room
+                  </Link>
+                </>
               )}
               <button
                 onClick={() => navigate('/dashboard')}
@@ -152,13 +160,22 @@ export default function Navbar() {
                 {isLoaded && user ? (
                 <>
                   {privileged && (
-                    <Link
-                      to="/control-room"
-                      className="text-gold-500/90 hover:text-gold-300 transition-colors"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Control Room
-                    </Link>
+                    <>
+                      <Link
+                        to="/gestione-clienti"
+                        className="text-gold-500/90 hover:text-gold-300 transition-colors"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Gestione clienti
+                      </Link>
+                      <Link
+                        to="/control-room"
+                        className="text-gold-500/90 hover:text-gold-300 transition-colors"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Control Room
+                      </Link>
+                    </>
                   )}
                   <button
                     onClick={() => { navigate('/dashboard'); setMenuOpen(false) }}
