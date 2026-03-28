@@ -20,6 +20,7 @@ import GraziePage from './pages/GraziePage'
 import ControlRoom from './pages/ControlRoom'
 import ClientManagementPage from './pages/ClientManagementPage'
 import ClientDetailPage from './pages/ClientDetailPage'
+import StaffBlogCommentsPage from './pages/StaffBlogCommentsPage'
 import StaffReviewsPage from './pages/StaffReviewsPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 
@@ -65,6 +66,7 @@ function AppRoutes() {
             <Route path="/gestione-clienti" element={<ClientManagementPage />} />
             <Route path="/gestione-clienti/:email" element={<ClientDetailPage />} />
             <Route path="/gestione-recensioni" element={<StaffReviewsPage />} />
+            <Route path="/gestione-commenti-blog" element={<StaffBlogCommentsPage />} />
             <Route path="/grazie" element={<GraziePage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<ArticlePage />} />

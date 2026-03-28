@@ -213,6 +213,9 @@ export default function Dashboard() {
                 <Link to="/gestione-recensioni" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
                   Recensioni
                 </Link>
+                <Link to="/gestione-commenti-blog" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                  Commenti blog
+                </Link>
                 <Link to="/control-room" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
                   Control Room
                 </Link>

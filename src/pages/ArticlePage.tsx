@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import ArticleComments from '../components/ArticleComments'
 import { articles } from '../data/articles'
 
 export default function ArticlePage() {
@@ -126,6 +127,8 @@ export default function ArticlePage() {
             </button>
           </div>
         </motion.div>
+
+        <ArticleComments articleSlug={article.slug} />
       </div>
     </div>
   )

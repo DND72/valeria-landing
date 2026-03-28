@@ -85,6 +85,12 @@ export default function Navbar() {
                     Recensioni
                   </Link>
                   <Link
+                    to="/gestione-commenti-blog"
+                    className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
+                  >
+                    Commenti blog
+                  </Link>
+                  <Link
                     to="/control-room"
                     className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
                   >
@@ -180,6 +186,13 @@ export default function Navbar() {
                         onClick={() => setMenuOpen(false)}
                       >
                         Recensioni
+                      </Link>
+                      <Link
+                        to="/gestione-commenti-blog"
+                        className="text-gold-500/90 hover:text-gold-300 transition-colors"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Commenti blog
                       </Link>
                       <Link
                         to="/control-room"

@@ -8,6 +8,7 @@ import {
 } from '../lib/calendlyScheduledMeetings.js'
 import { requireClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 import { registerStaffClientRoutes } from './staffClientsRoutes.js'
+import { registerStaffBlogCommentRoutes } from './staffBlogCommentsRoutes.js'
 import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 
 const noteBody = z.object({
@@ -264,6 +265,7 @@ export function createStaffRouter(pool: Pool): Router {
 
   registerStaffClientRoutes(r, pool)
   registerStaffReviewRoutes(r, pool)
+  registerStaffBlogCommentRoutes(r, pool)
 
   r.post('/consults/:id/notes', async (req, res) => {
     const id = req.params.id
