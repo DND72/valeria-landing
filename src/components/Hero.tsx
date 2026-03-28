@@ -140,18 +140,21 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.25 }}
           className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
         >
-          Attrice, due lauree, percorso alchemico decennale.
-          Oltre <strong className="text-gold-400">3.000 consulti</strong> sulle più rinomate piattaforme online — ora puoi trovarla direttamente qui.
+          Oltre <strong className="text-gold-400">3.000 consulti</strong> sulle più rinomate piattaforme online — ora puoi
+          trovarla direttamente qui.
         </motion.p>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.35 }}
-          className="text-white/40 text-base mb-12 italic font-serif"
+          className="text-white/40 text-base mb-12 italic font-serif max-w-2xl mx-auto leading-relaxed"
         >
-          "Oltre la mossa: Valeria combina l'intuizione della giocatrice esperta con il rigore dell'analisi tecnica,<br className="hidden md:block" />
-          offrendo una visione profonda, moderna e in continua evoluzione."
+          <span className="not-italic text-gold-400/95 font-medium tracking-wide">Esperienza, precisione e visione.</span>{' '}
+          Valeria applica un{' '}
+          <span className="not-italic text-gold-400/90">protocollo di analisi profonda</span> che va oltre la semplice
+          lettura, offrendo uno <span className="not-italic text-gold-400/90">strumento antico</span> per comprendere le{' '}
+          <span className="not-italic text-gold-400/90">dinamiche reali</span> della tua esistenza.
         </motion.p>
 
         {/* CTAs */}
