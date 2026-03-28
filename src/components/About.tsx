@@ -1,47 +1,91 @@
 import { motion } from 'framer-motion'
 
-const credentials = [
+type PillarIcon = 'structure' | 'vision' | 'care' | 'tradition'
+
+const credentials: { icon: PillarIcon; title: string; desc: string }[] = [
   {
-    icon: '🎭',
-    title: 'Attrice Televisiva',
-    desc: 'Centovetrine, Distretto di Polizia, Squadra Mobile — Canale 5. Formata con Pupi Avati, Michele Placido, Giuliana De Sio.',
+    icon: 'structure',
+    title: 'Analisi e Struttura del Pensiero',
+    desc:
+      'Il rigore del ragionamento giuridico unito alla comprensione profonda delle dinamiche mentali. Questa base accademica permette una lettura dei simboli che non è mai casuale, ma basata su una struttura logica e psicologica ferma.',
   },
   {
-    icon: '⚖️',
-    title: 'Laurea in Giurisprudenza',
-    desc: 'Percorso accademico completo. Il rigore del pensiero giuridico applicato all\'interpretazione dei simboli.',
+    icon: 'vision',
+    title: "Visione d'Insieme e Dinamica",
+    desc:
+      'La capacità di analizzare scenari complessi e riconoscere i momenti di svolta prima che si manifestino. Valeria applica alle carte la stessa lucidità necessaria per gestire i flussi e le forze in campo.',
   },
   {
-    icon: '🧠',
-    title: 'Laurea in Psicologia',
-    desc: 'La comprensione profonda della mente umana è il cuore del suo metodo di lettura.',
+    icon: 'care',
+    title: "Cura e Ascolto dell'Individuo",
+    desc:
+      'Quindici anni di accoglienza e gestione del benessere quotidiano in Liguria. Una solida esperienza nel comprendere le necessità reali delle persone, ponendo al centro l&apos;equilibrio tra mente, corpo e spirito.',
   },
   {
-    icon: '♟️',
-    title: 'Arena International Master (FIDE)',
-    desc: 'Titolo FIDE · ID 373110313. Specialista dei finali, analisi post-partita rigorosa, riconoscimento di pattern complessi. Le stesse qualità che porta in ogni lettura dei tarocchi.',
-  },
-  {
-    icon: '🌿',
-    title: 'Parafarmacia Energia & Benessere',
-    desc: 'Titolare per 15 anni della Parafarmacia Energia & Benessere in Liguria. La cura della persona — mente, corpo e spirito — è da sempre la sua missione.',
-  },
-  {
-    icon: '⚔️',
-    title: 'Dama Templare · Commander Regionale',
-    desc: 'Grado di Commander nell\'Ordine Templare. Un percorso cavalleresco ed esoterico tra i più antichi e rigorosi.',
-  },
-  {
-    icon: '🕊️',
-    title: 'Ambasciatrice di Pace',
-    desc: 'Onorificenza conferita per impegno nel dialogo, nella cultura e nella crescita spirituale dell\'individuo.',
-  },
-  {
-    icon: '🌟',
-    title: 'Percorso Alchemico',
-    desc: 'Formazione trasmessa attraverso percorsi alchemici e tradizioni ermetiche. Una conoscenza che non si studia sui libri — si riceve e si vive.',
+    icon: 'tradition',
+    title: 'Tradizione e Conoscenza Antica',
+    desc:
+      'Un percorso esoterico decennale tra i più antichi e rigorosi. Una sapienza che non si studia solo sui libri, ma si riceve e si vive, permettendo di interpretare i Tarocchi di Marsiglia nella loro veste più autentica e operativa.',
   },
 ]
+
+function PillarIconSvg({ name }: { name: PillarIcon }) {
+  const cls = 'w-6 h-6 shrink-0 text-gold-400/70'
+  switch (name) {
+    case 'structure':
+      return (
+        <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 10.5l9.75-3m-9.75 3L12 14.25m0 0l9.75-3m-9.75 3L2.25 12"
+          />
+        </svg>
+      )
+    case 'vision':
+      return (
+        <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+          />
+        </svg>
+      )
+    case 'care':
+      return (
+        <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          />
+        </svg>
+      )
+    case 'tradition':
+      return (
+        <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
 
 export default function About() {
   return (
@@ -112,30 +156,39 @@ export default function About() {
             </div>
           </motion.div>
 
-          {/* Credentials grid */}
+          {/* Pilastri del metodo */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            className="relative rounded-2xl border border-white/[0.07] bg-gradient-to-b from-[#141418] via-[#0e0e12] to-[#09090b] p-5 sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
           >
-            {credentials.map((cred, i) => (
-              <motion.div
-                key={cred.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 + i * 0.07 }}
-                className="mystical-card group cursor-default"
-              >
-                <div className="text-2xl mb-2">{cred.icon}</div>
-                <h3 className="font-semibold text-white text-sm mb-1 group-hover:text-gold-400 transition-colors">
-                  {cred.title}
-                </h3>
-                <p className="text-white/40 text-xs leading-relaxed">{cred.desc}</p>
-              </motion.div>
-            ))}
+            <div
+              className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_75%_45%_at_50%_15%,rgba(212,160,23,0.07),transparent_60%)]"
+              aria-hidden
+            />
+            <p className="relative text-[10px] uppercase tracking-[0.2em] text-white/35 mb-4">Pilastri del metodo</p>
+            <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {credentials.map((cred, i) => (
+                <motion.div
+                  key={cred.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: 0.08 + i * 0.06 }}
+                  className="group rounded-xl border border-white/[0.08] bg-black/35 backdrop-blur-sm p-4 transition-colors hover:border-gold-600/25"
+                >
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <PillarIconSvg name={cred.icon} />
+                  </div>
+                  <h3 className="font-serif text-[15px] font-semibold leading-snug text-white/95 mb-2 group-hover:text-gold-400/95 transition-colors">
+                    {cred.title}
+                  </h3>
+                  <p className="text-white/45 text-[13px] leading-relaxed">{cred.desc}</p>
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>
