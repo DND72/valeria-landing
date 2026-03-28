@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
+import PrivacySealNote from '../components/PrivacySealNote'
 import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
 import { calendlyUrlForConsult } from '../constants/calendly'
@@ -543,6 +544,7 @@ export default function Dashboard() {
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Calendly mostra le disponibilità per il tipo di consulto scelto al punto 2. Al termine, se hai collegato PayPal in Calendly, partirà il pagamento lì.
               </p>
+              <PrivacySealNote className="mb-4 max-w-2xl" />
               <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
                 {selectedConsult ? (
                   <CalendlyEmbed

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
 import CalendlyEmbed from './CalendlyEmbed'
+import PrivacySealNote from './PrivacySealNote'
 import { CALENDLY_BOOKING_URL } from '../constants/calendly'
 
 export default function BookingSection() {
@@ -66,6 +67,8 @@ export default function BookingSection() {
             </p>
           </motion.div>
         )}
+
+        <PrivacySealNote className="mb-6" />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}

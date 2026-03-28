@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import PrivacySealNote from './PrivacySealNote'
 
 export default function Footer() {
   const year = new Date().getFullYear()
@@ -67,6 +68,8 @@ export default function Footer() {
             </div>
           </div>
         </div>
+
+        <PrivacySealNote className="mb-10 max-w-3xl mx-auto" />
 
         {/* Bottom bar */}
         <motion.div
