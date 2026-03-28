@@ -195,56 +195,64 @@ export default function Dashboard() {
           </p>
         )}
 
-        {/* Quick actions */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          {[
-            {
-              icon: '🔮',
-              title: privileged ? 'Vai al calendario' : 'Scegli il consulto',
-              desc: privileged ? 'Prenota il tuo slot' : 'Prima il tipo, poi data e ora',
-              href: privileged ? '#prenota-calendly' : '#scegli-consulto',
-              cta: privileged ? 'Scorri al calendario' : 'Scorri alle card',
-            },
-            {
-              icon: '🃏',
-              title: 'App tarocchi gratuita',
-              desc: 'Estrai le tue carte ogni giorno',
-              href: 'https://stese.nonsolotarocchi.it',
-              cta: 'Apri l\'app',
-              external: true,
-            },
-            {
-              icon: '⭐',
-              title: 'Lascia una recensione',
-              desc: 'Il tuo feedback aiuta altre persone',
-              href: 'mailto:valeria@nonsolotarocchi.it?subject=Recensione consulto',
-              cta: 'Scrivi a Valeria',
-            },
-          ].map((action, i) => (
-            <motion.a
-              key={action.title}
-              href={action.href}
-              target={action.external ? '_blank' : undefined}
-              rel={action.external ? 'noopener noreferrer' : undefined}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
-              className="mystical-card group block"
-            >
-              <div className="text-2xl mb-3">{action.icon}</div>
-              <h3 className="font-semibold text-white text-sm mb-1 group-hover:text-gold-400 transition-colors">
-                {action.title}
-              </h3>
-              <p className="text-white/40 text-xs mb-3">{action.desc}</p>
-              <span className="text-gold-500 text-xs flex items-center gap-1">
-                {action.cta}
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </motion.a>
-          ))}
-        </div>
+        {/* Quick actions — solo clienti (non ha senso per staff) */}
+        {!privileged && (
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            {[
+              {
+                icon: '🔮',
+                title: 'Scegli il consulto',
+                desc: 'Prima il tipo, poi data e ora',
+                href: '#scegli-consulto',
+                cta: 'Scorri alle card',
+              },
+              {
+                icon: '🃏',
+                title: 'App tarocchi gratuita',
+                desc: 'Estrai le tue carte ogni giorno',
+                href: 'https://stese.nonsolotarocchi.it',
+                cta: "Apri l'app",
+                external: true,
+              },
+              {
+                icon: '⭐',
+                title: 'Lascia una recensione',
+                desc: 'Il tuo feedback aiuta altre persone',
+                href: 'mailto:valeria@nonsolotarocchi.it?subject=Recensione consulto',
+                cta: 'Scrivi a Valeria',
+              },
+            ].map((action, i) => (
+              <motion.a
+                key={action.title}
+                href={action.href}
+                target={action.external ? '_blank' : undefined}
+                rel={action.external ? 'noopener noreferrer' : undefined}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
+                className="mystical-card group block"
+              >
+                <div className="text-2xl mb-3">{action.icon}</div>
+                <h3 className="font-semibold text-white text-sm mb-1 group-hover:text-gold-400 transition-colors">
+                  {action.title}
+                </h3>
+                <p className="text-white/40 text-xs mb-3">{action.desc}</p>
+                <span className="text-gold-500 text-xs flex items-center gap-1">
+                  {action.cta}
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </motion.a>
+            ))}
+          </div>
+        )}
+
+        {privileged && (
+          <p className="text-white/35 text-sm mb-8 border-l border-gold-600/25 pl-3">
+            Vista staff: qui gestisci il calendario e le note operative — senza i collegamenti pensati per le clienti.
+          </p>
+        )}
 
         {privileged ? (
           <>
