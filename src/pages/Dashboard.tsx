@@ -49,6 +49,18 @@ export default function Dashboard() {
   const [taxSubmitting, setTaxSubmitting] = useState(false)
   const [taxMessage, setTaxMessage] = useState<string | null>(null)
 
+  type MyConsultRow = {
+    id: string
+    status: string
+    is_free_consult: boolean
+    meeting_join_url: string | null
+    start_at: string | null
+    end_at: string | null
+    created_at: string
+  }
+  const [myConsults, setMyConsults] = useState<MyConsultRow[] | null>(null)
+  const [myConsultsLoading, setMyConsultsLoading] = useState(false)
+
   const { data: valeriaPresence } = useValeriaPresence(60_000)
   const presenceLabel = labelForPresence(valeriaPresence?.status)
 
@@ -81,6 +93,26 @@ export default function Dashboard() {
     }
   }, [isLoaded, user, getToken])
 
+  useEffect(() => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
+    if (!getApiBaseUrl()) return
+    let cancelled = false
+    setMyConsultsLoading(true)
+    ;(async () => {
+      try {
+        const r = await apiJson<{ consults: MyConsultRow[] }>(getToken, '/api/me/consults')
+        if (!cancelled) setMyConsults(r.consults ?? [])
+      } catch {
+        if (!cancelled) setMyConsults([])
+      } finally {
+        if (!cancelled) setMyConsultsLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [isLoaded, user, getToken])
+
   // Deve stare prima del return: gli hook non possono essere dopo if (!user) return null
   const showFreeCard = !freeHidden
 
@@ -101,6 +133,15 @@ export default function Dashboard() {
   const privileged = isPrivilegedClerkUser(user)
   const firstName = displayFirstName(user)
   const consultChoicesForClient = CONSULT_CHOICES.filter((c) => c.kind !== 'free' || !freeHidden)
+
+  function formatConsultWhen(iso: string | null): string {
+    if (!iso) return '—'
+    try {
+      return new Intl.DateTimeFormat('it-IT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(iso))
+    } catch {
+      return iso
+    }
+  }
 
   async function handleTaxSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -375,6 +416,74 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.38 }}
+              className="mb-10 scroll-mt-28"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-1">I tuoi consulti</h2>
+              <p className="text-white/40 text-sm mb-4 max-w-2xl">
+                Storico degli appuntamenti collegati al tuo account (stessa email con cui prenoti su Calendly). Le note
+                interne di Valeria non sono visibili qui.
+              </p>
+              {!getApiBaseUrl() && (
+                <p className="text-amber-200/80 text-sm">Servizio storico non disponibile senza connessione al server.</p>
+              )}
+              {getApiBaseUrl() && myConsultsLoading && (
+                <p className="text-white/45 text-sm">Caricamento elenco…</p>
+              )}
+              {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length === 0 && (
+                <div className="mystical-card border border-white/10">
+                  <p className="text-white/50 text-sm">
+                    Non risultano ancora consulti collegati. Dopo una prenotazione tramite Calendly con la stessa email
+                    del tuo accesso, l&apos;appuntamento comparirà qui.
+                  </p>
+                </div>
+              )}
+              {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length > 0 && (
+                <div className="mystical-card p-0 overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[320px]">
+                    <thead>
+                      <tr className="border-b border-white/10 text-white/45 text-xs uppercase tracking-wide">
+                        <th className="py-3 px-4 font-medium">Data / ora</th>
+                        <th className="py-3 px-4 font-medium">Tipo</th>
+                        <th className="py-3 px-4 font-medium">Stato</th>
+                        <th className="py-3 px-4 font-medium">Link</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {myConsults.map((c) => (
+                        <tr key={c.id} className="border-t border-white/[0.06]">
+                          <td className="py-2.5 px-4 text-white/85 whitespace-nowrap">
+                            {formatConsultWhen(c.start_at)}
+                          </td>
+                          <td className="py-2.5 px-4 text-white/60">
+                            {c.is_free_consult ? 'Omaggio' : 'A pagamento'}
+                          </td>
+                          <td className="py-2.5 px-4 text-white/50 text-xs uppercase">{c.status}</td>
+                          <td className="py-2.5 px-4">
+                            {c.meeting_join_url ? (
+                              <a
+                                href={c.meeting_join_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gold-500/90 hover:underline text-xs"
+                              >
+                                Entra
+                              </a>
+                            ) : (
+                              <span className="text-white/25">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </motion.section>
           </>
         )}

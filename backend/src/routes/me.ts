@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
-import { requireClerkAuth } from '../middleware/clerkAuth.js'
+import { clerkClient, requireClerkAuth } from '../middleware/clerkAuth.js'
 
 const taxCodeBody = z.object({
   firstName: z.string().min(1).max(200),
@@ -20,14 +20,32 @@ export function createMeRouter(pool: Pool): Router {
       return
     }
     try {
+      let emailNorm: string | null = null
+      if (clerkClient) {
+        try {
+          const u = await clerkClient.users.getUser(userId)
+          const primaryId = u.primaryEmailAddressId
+          const emails = u.emailAddresses ?? []
+          const primary =
+            (primaryId && emails.find((e) => e.id === primaryId)?.emailAddress) || emails[0]?.emailAddress
+          if (typeof primary === 'string' && primary.trim()) {
+            emailNorm = primary.trim().toLowerCase()
+          }
+        } catch {
+          // solo clerk_user_id
+        }
+      }
+
       const { rows } = await pool.query(
         `SELECT id, status, is_free_consult, meeting_join_url, meeting_provider,
                 invitee_email, invitee_name, start_at, end_at, created_at, updated_at
          FROM consults
          WHERE clerk_user_id = $1
+            OR ($2::text IS NOT NULL AND invitee_email IS NOT NULL
+                AND LOWER(TRIM(invitee_email)) = $2)
          ORDER BY start_at DESC NULLS LAST, created_at DESC
          LIMIT 100`,
-        [userId]
+        [userId, emailNorm]
       )
       res.json({ consults: rows })
     } catch (e) {
