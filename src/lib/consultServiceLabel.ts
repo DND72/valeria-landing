@@ -14,7 +14,9 @@ export function serviceKindFromEventName(name: string | null | undefined): Servi
     'seduta',
     'sessione',
     '70',
+    '80',
     '350',
+    '400',
     '5 sedute',
     '5 x',
   ]

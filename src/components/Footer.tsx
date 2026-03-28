@@ -1,18 +1,30 @@
 import { motion } from 'framer-motion'
+import { useLocation } from 'react-router-dom'
 import PrivacySealNote from './PrivacySealNote'
 
 export default function Footer() {
   const year = new Date().getFullYear()
+  const { pathname } = useLocation()
+  const coachingFooter = pathname === '/crescita-personale'
 
   return (
-    <footer className="relative pt-16 pb-8 px-6 border-t border-white/5">
+    <footer
+      className={`relative pt-16 pb-8 px-6 border-t ${coachingFooter ? 'border-white/15' : 'border-white/5'}`}
+    >
+      {coachingFooter && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-[rgba(10,14,26,0.45)] via-[rgba(10,14,26,0.82)] to-[#0a0e1a]"
+        />
+      )}
+
       {/* Top gradient */}
       <div
-        className="absolute top-0 left-0 right-0 h-px"
+        className="absolute top-0 left-0 right-0 z-[2] h-px"
         style={{ background: 'linear-gradient(90deg, transparent, rgba(212,160,23,0.4), transparent)' }}
       />
 
-      <div className="max-w-6xl mx-auto">
+      <div className="relative z-[2] max-w-6xl mx-auto">
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div>

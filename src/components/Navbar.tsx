@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 
 const links = [
@@ -17,7 +17,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { user, isLoaded } = useUser()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const privileged = isLoaded && user ? isPrivilegedClerkUser(user) : false
+  /** Sfondo chiaro (es. Crescita personale): barra scura sempre, come dopo lo scroll */
+  const isCoachingPage = pathname === '/crescita-personale'
+  const barSolid = scrolled || isCoachingPage
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40)
@@ -32,7 +36,7 @@ export default function Navbar() {
       transition={{ duration: 0.4 }}
       style={{ zIndex: 2147483640 }}
       className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
-        scrolled
+        barSolid
           ? 'py-3 bg-dark-500/90 backdrop-blur-md border-b border-gold-600/20 shadow-lg shadow-black/50'
           : 'py-5 bg-transparent'
       }`}
