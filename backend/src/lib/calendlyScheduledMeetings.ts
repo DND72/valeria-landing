@@ -34,7 +34,8 @@ export type StaffScheduledMeetingsResponse =
       message: string
     }
 
-const MAX_EVENTS = 25
+const MAX_EVENTS_DEFAULT = 25
+const MAX_EVENTS_WIDE = 100
 
 async function fetchInviteeLabel(token: string, eventUri: string): Promise<string> {
   const uuid = eventUuidFromUri(eventUri)
@@ -69,7 +70,15 @@ type CalendlyEventResource = {
   location?: { join_url?: string; type?: string }
 }
 
-export async function fetchStaffScheduledMeetings(token: string): Promise<StaffScheduledMeetingsResponse> {
+/** Elenco eventi Calendly in una finestra temporale (ISO UTC). */
+export async function fetchStaffScheduledMeetings(
+  token: string,
+  opts: {
+    minStartTime: string
+    maxStartTime?: string
+    count?: number
+  }
+): Promise<StaffScheduledMeetingsResponse> {
   const me = (await calendlyFetch('/users/me', token)) as {
     resource?: { uri?: string; current_organization?: string }
   }
@@ -90,14 +99,14 @@ export async function fetchStaffScheduledMeetings(token: string): Promise<StaffS
     }
   }
 
-  const minStart = new Date().toISOString()
   const qs = new URLSearchParams()
   qs.set('organization', orgUri)
   qs.set('user', userUri)
   qs.set('status', 'active')
   qs.set('sort', 'start_time:asc')
-  qs.set('min_start_time', minStart)
-  qs.set('count', String(MAX_EVENTS))
+  qs.set('min_start_time', opts.minStartTime)
+  if (opts.maxStartTime) qs.set('max_start_time', opts.maxStartTime)
+  qs.set('count', String(opts.count ?? MAX_EVENTS_DEFAULT))
 
   const list = (await calendlyFetch(`/scheduled_events?${qs.toString()}`, token)) as {
     collection?: Array<{ resource?: CalendlyEventResource } & CalendlyEventResource>
@@ -126,9 +135,34 @@ export async function fetchStaffScheduledMeetings(token: string): Promise<StaffS
   return { configured: true, meetings: rows }
 }
 
-export async function getStaffScheduledMeetingsOrError(token: string | undefined): Promise<StaffScheduledMeetingsResponse> {
-  const t = token?.trim()
-  if (!t) {
+/** Prossimi appuntamenti (da ora in poi). */
+export async function fetchStaffScheduledMeetingsUpcoming(token: string): Promise<StaffScheduledMeetingsResponse> {
+  return fetchStaffScheduledMeetings(token, {
+    minStartTime: new Date().toISOString(),
+    count: MAX_EVENTS_DEFAULT,
+  })
+}
+
+/** Appuntamenti il cui orario di inizio cade nel giorno solare corrente (Europe/Rome). */
+export async function fetchStaffScheduledMeetingsToday(token: string): Promise<StaffScheduledMeetingsResponse> {
+  const min = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+  const max = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+  const res = await fetchStaffScheduledMeetings(token, {
+    minStartTime: min,
+    maxStartTime: max,
+    count: MAX_EVENTS_WIDE,
+  })
+  if (!res.configured) return res
+  const todayRome = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' }).format(new Date())
+  const meetings = res.meetings.filter((m) => {
+    const d = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' }).format(new Date(m.startAt))
+    return d === todayRome
+  })
+  return { configured: true, meetings }
+}
+
+function calendlyMeetingsError(t: string | undefined, e: unknown): StaffScheduledMeetingsResponse {
+  if (!t?.trim()) {
     return {
       configured: false,
       meetings: [],
@@ -136,28 +170,43 @@ export async function getStaffScheduledMeetingsOrError(token: string | undefined
         'Manca CALENDLY_PERSONAL_ACCESS_TOKEN sul server. Aggiungilo in backend/.env (scope: users:read, scheduled_events:read).',
     }
   }
+  const status = (e as Error & { status?: number })?.status
+  const body = (e as Error & { body?: { message?: string; title?: string } })?.body
+  const hint =
+    status === 403
+      ? ' Verifica che il Personal Access Token includa lo scope scheduled_events:read.'
+      : ''
+  const msg =
+    typeof body?.message === 'string'
+      ? body.message
+      : typeof body?.title === 'string'
+        ? body.title
+        : e instanceof Error
+          ? e.message
+          : 'Errore Calendly'
+  return {
+    configured: false,
+    meetings: [],
+    message: `Impossibile leggere gli appuntamenti da Calendly: ${msg}.${hint}`,
+  }
+}
 
+export async function getStaffScheduledMeetingsOrError(token: string | undefined): Promise<StaffScheduledMeetingsResponse> {
+  const t = token?.trim()
+  if (!t) return calendlyMeetingsError(undefined, null)
   try {
-    return await fetchStaffScheduledMeetings(t)
+    return await fetchStaffScheduledMeetingsUpcoming(t)
   } catch (e) {
-    const status = (e as Error & { status?: number })?.status
-    const body = (e as Error & { body?: { message?: string; title?: string } })?.body
-    const hint =
-      status === 403
-        ? ' Verifica che il Personal Access Token includa lo scope scheduled_events:read.'
-        : ''
-    const msg =
-      typeof body?.message === 'string'
-        ? body.message
-        : typeof body?.title === 'string'
-          ? body.title
-          : e instanceof Error
-            ? e.message
-            : 'Errore Calendly'
-    return {
-      configured: false,
-      meetings: [],
-      message: `Impossibile leggere gli appuntamenti da Calendly: ${msg}.${hint}`,
-    }
+    return calendlyMeetingsError(t, e)
+  }
+}
+
+export async function getStaffTodayMeetingsOrError(token: string | undefined): Promise<StaffScheduledMeetingsResponse> {
+  const t = token?.trim()
+  if (!t) return calendlyMeetingsError(undefined, null)
+  try {
+    return await fetchStaffScheduledMeetingsToday(t)
+  } catch (e) {
+    return calendlyMeetingsError(t, e)
   }
 }

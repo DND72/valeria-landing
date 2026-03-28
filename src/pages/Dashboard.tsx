@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
-import { CALENDLY_BOOKING_URL, calendlyUrlForConsult } from '../constants/calendly'
+import StaffPersonalSpace from '../components/StaffPersonalSpace'
+import { calendlyUrlForConsult } from '../constants/calendly'
 import { CONSULT_CHOICES, type ConsultKind } from '../constants/consultations'
+import { useValeriaPresence } from '../hooks/useValeriaPresence'
+import { labelForPresence } from '../lib/valeriaPresence'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import { apiJson, ApiError } from '../lib/api'
@@ -45,6 +48,9 @@ export default function Dashboard() {
   const [taxCf, setTaxCf] = useState('')
   const [taxSubmitting, setTaxSubmitting] = useState(false)
   const [taxMessage, setTaxMessage] = useState<string | null>(null)
+
+  const { data: valeriaPresence } = useValeriaPresence(60_000)
+  const presenceLabel = labelForPresence(valeriaPresence?.status)
 
   useEffect(() => {
     try {
@@ -174,6 +180,25 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        {!privileged && getApiBaseUrl() && (
+          <p className="text-sm text-white/55 mb-6 flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-block h-2 w-2 shrink-0 rounded-full ${
+                valeriaPresence?.status === 'online'
+                  ? 'bg-emerald-500/90'
+                  : valeriaPresence?.status === 'busy'
+                    ? 'bg-amber-500/90'
+                    : 'bg-white/30'
+              }`}
+              aria-hidden
+            />
+            <span>
+              Valeria in questo momento: <strong className="text-gold-400/95">{presenceLabel}</strong>
+              <span className="text-white/35 text-xs ml-2">(utile per capire se può rispondere subito)</span>
+            </span>
+          </p>
+        )}
+
         {!privileged && showFreeCard && (
           <p className="text-white/35 text-xs mb-4 border-l border-gold-600/25 pl-3">
             🎁 Consulto omaggio 7 min: è l’ultima card nella griglia. Puoi{' '}
@@ -248,53 +273,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {privileged && (
-          <p className="text-white/35 text-sm mb-8 border-l border-gold-600/25 pl-3">
-            Vista staff: qui gestisci il calendario e le note operative — senza i collegamenti pensati per le clienti.
-          </p>
-        )}
-
         {privileged ? (
-          <>
-            <motion.section
-              id="prenota-calendly"
-              ref={calendarSectionRef}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.35 }}
-              className="mb-8 scroll-mt-28"
-            >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Calendario</h2>
-              <p className="text-white/40 text-sm mb-4">
-                Scegli data e ora. Per il tuo account staff non è richiesto il pagamento tramite questa pagina.
-              </p>
-              <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
-                <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={700} />
-              </div>
-            </motion.section>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.35 }}
-              className="mb-8 relative z-30 isolate"
-            >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">Note staff</h2>
-              <p className="text-white/40 text-sm mb-2">
-                La gestione economica resta diretta con Valeria; qui non compaiono i flussi cliente.
-              </p>
-              <div
-                className="mystical-card border border-gold-600/25"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(212,160,23,0.08) 0%, rgba(13,27,42,0.6) 100%)',
-                }}
-              >
-                <p className="text-white/80 text-sm leading-relaxed">
-                  Se serve modificare lo slot, torna al calendario sopra e scegli un’altra disponibilità.
-                </p>
-              </div>
-            </motion.div>
-          </>
+          <StaffPersonalSpace />
         ) : (
           <>
             <motion.section
@@ -346,6 +326,11 @@ export default function Dashboard() {
                       >
                         Continua
                       </button>
+                      {getApiBaseUrl() && (
+                        <p className="text-[10px] text-white/35 mt-3 pt-2 border-t border-white/10 text-center leading-snug">
+                          Valeria ora: <span className="text-gold-500/85">{presenceLabel}</span>
+                        </p>
+                      )}
                     </div>
                   )
                 })}

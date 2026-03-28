@@ -33,6 +33,22 @@ app.post(
 
 app.use(express.json())
 
+app.get('/api/public/valeria-presence', async (_req, res) => {
+  try {
+    const { rows } = await pool.query<{ status: string; updated_at: Date }>(
+      `SELECT status, updated_at FROM staff_presence_singleton WHERE id = 1`
+    )
+    const row = rows[0]
+    res.json({
+      status: row?.status ?? 'offline',
+      updatedAt: row?.updated_at ? new Date(row.updated_at).toISOString() : null,
+    })
+  } catch (e) {
+    console.error('[public valeria-presence]', e)
+    res.status(500).json({ error: 'Errore server' })
+  }
+})
+
 app.use('/api/staff', createStaffRouter(pool))
 app.use('/api/me', createMeRouter(pool))
 
