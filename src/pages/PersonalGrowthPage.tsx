@@ -14,22 +14,16 @@ const PACKAGE_BLURBS: Record<string, string> = {
     'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento Calendly a sé — al momento della prenotazione si paga quella seduta (70€). Cinque prenotazioni = cinque pagamenti; totale indicativo 350€. Non esiste un unico addebito che sblocca tutte le date: prenoti (e paghi) una seduta alla volta.',
 }
 
-const COACHING_BG = '#dfe5df'
-
-/**
- * Sfondo fisso a tutta viewport: immagine intera (contain), orizzonte in basso.
- * Sostituisce la galassia solo su questa route (CosmicBackground disattivato in App).
- */
-function CoachingPageBackground() {
+/** Alba fotografica (public/crescita-alba.png) + overlay per leggibilità testi */
+function CoachingDawnBackground() {
   return (
-    <div className="fixed inset-0 z-[1] pointer-events-none overflow-hidden" aria-hidden>
-      <div className="absolute inset-0" style={{ backgroundColor: COACHING_BG }} />
+    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
       <div
         className="absolute inset-0 bg-no-repeat"
         style={{
-          backgroundColor: COACHING_BG,
+          backgroundColor: '#dfe5df',
           backgroundImage: 'url(/crescita-alba.png)',
-          backgroundSize: 'contain',
+          backgroundSize: 'cover',
           backgroundPosition: 'bottom center',
         }}
       />
@@ -50,10 +44,10 @@ export default function PersonalGrowthPage() {
   const { user, isLoaded } = useUser()
 
   return (
-    <>
-      <CoachingPageBackground />
-      <div className="coaching-light-page relative z-10 min-h-screen w-full text-slate-800">
-      <div className="relative max-w-5xl mx-auto px-6 py-24">
+    <div className="coaching-light-page relative left-1/2 w-screen -translate-x-1/2 min-h-screen overflow-hidden text-slate-800">
+      <CoachingDawnBackground />
+
+      <div className="relative z-10 max-w-5xl mx-auto px-6 py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -248,7 +242,6 @@ export default function PersonalGrowthPage() {
           </Link>
         </motion.div>
       </div>
-      </div>
-    </>
+    </div>
   )
 }
