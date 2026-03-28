@@ -163,6 +163,8 @@ export default function Dashboard() {
   if (!user) return <Navigate to="/" replace />
 
   const privileged = isPrivilegedClerkUser(user)
+  /** Accento soft per il settore coaching: stesso Diario scuro, alone salvia in basso (tarocchi resta dominante). */
+  const coachingAccent = !privileged && offerCategory === 'crescita'
   const firstName = displayFirstName(user)
   const consultChoicesForClient = CONSULT_CHOICES.filter((c) => c.kind !== 'free' || !freeHidden)
   const consultChoicesInSector =
@@ -207,12 +209,19 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-24">
+    <div className="relative min-h-screen px-6 py-24">
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none transition-[background] duration-500"
         style={{
-          background: 'radial-gradient(ellipse 70% 40% at 50% 20%, rgba(212,160,23,0.05) 0%, transparent 70%)',
+          background: coachingAccent
+            ? [
+                'radial-gradient(ellipse 72% 38% at 50% 18%, rgba(212,160,23,0.045) 0%, transparent 68%)',
+                'radial-gradient(ellipse 95% 58% at 50% 100%, rgba(45, 212, 191, 0.09) 0%, rgba(6, 78, 59, 0.14) 42%, transparent 72%)',
+                'linear-gradient(to bottom, transparent 0%, rgba(4, 30, 24, 0.2) 100%)',
+              ].join(', ')
+            : 'radial-gradient(ellipse 70% 40% at 50% 20%, rgba(212,160,23,0.05) 0%, transparent 70%)',
         }}
+        aria-hidden
       />
 
       <div className="relative z-10 max-w-4xl mx-auto">
