@@ -74,7 +74,7 @@ export default function Dashboard() {
     }
   }, [])
 
-  /** Es. /dashboard?consult=coaching dalla pagina Crescita personale */
+  /** Es. /dashboard?consult=coaching_60 dalla pagina Crescita personale */
   useEffect(() => {
     const raw = searchParams.get('consult')
     if (!raw) return
@@ -355,7 +355,7 @@ export default function Dashboard() {
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Tocca <strong className="text-gold-500/90">Continua</strong>: si apre sotto il calendario giusto per quel tipo (anche omaggio). Il pagamento avviene in Calendly quando hai scelto data e ora, come da tua configurazione (es. PayPal).
               </p>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {consultChoicesForClient.map((c) => {
                   const selected = selectedConsult === c.kind
                   return (

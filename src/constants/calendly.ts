@@ -7,7 +7,9 @@ import type { ConsultKind } from './consultations'
  *
  * Opzionale in .env / Railway (poi rebuild):
  *   VITE_CALENDLY_CONSULTO_BREVE, VITE_CALENDLY_CONSULTO_ONLINE, VITE_CALENDLY_CONSULTO_COMPLETO
- *   VITE_CALENDLY_COACHING (crescita personale / coaching)
+ *   VITE_CALENDLY_COACHING_INTRO (10 min gratuiti · conoscenza)
+ *   VITE_CALENDLY_COACHING_60 (1 h · es. 80€)
+ *   VITE_CALENDLY_COACHING_PACK5 (pacchetto 5 sedute · es. 350€)
  *   VITE_CALENDLY_FREE
  */
 const DEFAULT_BOOKING =
@@ -37,8 +39,12 @@ export function calendlyUrlForConsult(kind: ConsultKind): string {
       return envTrim('VITE_CALENDLY_CONSULTO_ONLINE') ?? CALENDLY_BOOKING_URL
     case 'completo':
       return envTrim('VITE_CALENDLY_CONSULTO_COMPLETO') ?? CALENDLY_BOOKING_URL
-    case 'coaching':
-      return envTrim('VITE_CALENDLY_COACHING') ?? CALENDLY_BOOKING_URL
+    case 'coaching_intro':
+      return envTrim('VITE_CALENDLY_COACHING_INTRO') ?? CALENDLY_BOOKING_URL
+    case 'coaching_60':
+      return envTrim('VITE_CALENDLY_COACHING_60') ?? CALENDLY_BOOKING_URL
+    case 'coaching_pack5':
+      return envTrim('VITE_CALENDLY_COACHING_PACK5') ?? CALENDLY_BOOKING_URL
     case 'free':
       return envTrim('VITE_CALENDLY_FREE') ?? DEFAULT_FREE
   }

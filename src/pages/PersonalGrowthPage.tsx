@@ -1,6 +1,18 @@
 import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { CONSULT_CHOICES } from '../constants/consultations'
+
+const COACHING_PACKAGES = CONSULT_CHOICES.filter((c) => c.kind.startsWith('coaching_'))
+
+const PACKAGE_BLURBS: Record<string, string> = {
+  coaching_intro:
+    'Per conoscervi, capire cosa vi serve e iniziare a definire obiettivi. Dieci minuti senza impegno: capite con chi avete a che fare e Valeria capisce voi.',
+  coaching_60:
+    'Una sessione intera dedicata al percorso: lavoro sulle priorità, le abitudini e la direzione che volete dare — in video o al telefono.',
+  coaching_pack5:
+    'Percorso strutturato su cinque incontri. Prenotate le date direttamente su Calendly (come da configurazione del vostro evento): un punto fermo per costruire risultati nel tempo.',
+}
 
 export default function PersonalGrowthPage() {
   const { user, isLoaded } = useUser()
@@ -14,7 +26,7 @@ export default function PersonalGrowthPage() {
         }}
       />
 
-      <div className="relative z-10 max-w-3xl mx-auto">
+      <div className="relative z-10 max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -27,7 +39,7 @@ export default function PersonalGrowthPage() {
           </h1>
           <p className="text-white/50 text-lg max-w-xl mx-auto leading-relaxed">
             Oltre alle letture con i tarocchi, Valeria accompagna percorsi di chiarezza e obiettivi — con la stessa
-            cura e lo stesso schema: ascolto, strumenti, un passo alla volta.
+            cura: ascolto, strumenti, un passo alla volta.
           </p>
         </motion.div>
 
@@ -35,7 +47,7 @@ export default function PersonalGrowthPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, delay: 0.08 }}
-          className="mystical-card border border-emerald-600/20 mb-8"
+          className="mystical-card border border-emerald-600/20 mb-10"
         >
           <h2 className="font-serif text-xl font-bold text-white mb-3">Di cosa si tratta</h2>
           <p className="text-white/60 text-sm leading-relaxed mb-4">
@@ -53,7 +65,80 @@ export default function PersonalGrowthPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.14 }}
+          transition={{ duration: 0.55, delay: 0.12 }}
+          className="mb-6"
+        >
+          <h2
+            id="pacchetti"
+            className="font-serif text-2xl md:text-3xl font-bold text-white text-center mb-2 scroll-mt-28"
+          >
+            Pacchetti
+          </h2>
+          <p className="text-white/40 text-sm text-center max-w-2xl mx-auto mb-8">
+            Tre modalità: una conoscenza gratuita, sedute da un&apos;ora, oppure un pacchetto di cinque incontri con
+            date scelte su Calendly.
+          </p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {COACHING_PACKAGES.map((pkg, i) => {
+              const isFree = pkg.kind === 'coaching_intro'
+              return (
+                <motion.div
+                  key={pkg.kind}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: 0.08 + i * 0.06 }}
+                  className={`mystical-card flex flex-col text-center border ${
+                    isFree ? 'border-emerald-600/35 bg-emerald-950/10' : 'border-white/10'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">{pkg.icon}</div>
+                  <h3 className="font-serif text-lg font-bold text-white mb-1">{pkg.name}</h3>
+                  <p className="text-gold-500/90 text-xs mb-2">{pkg.duration}</p>
+                  <p
+                    className="font-serif text-2xl font-bold mb-4"
+                    style={{
+                      background: isFree
+                        ? 'linear-gradient(135deg, #86efac, #22c55e)'
+                        : 'linear-gradient(135deg, #ffe066, #ffd700)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {pkg.priceLabel}
+                  </p>
+                  <p className="text-white/50 text-sm leading-relaxed flex-1 mb-5 text-left">
+                    {PACKAGE_BLURBS[pkg.kind]}
+                  </p>
+                  {isLoaded && user && (
+                    <Link
+                      to={`/dashboard?consult=${pkg.kind}`}
+                      className="btn-gold text-sm px-4 py-2.5 w-full mt-auto"
+                    >
+                      Prenota questo pacchetto
+                    </Link>
+                  )}
+                  {isLoaded && !user && (
+                    <p className="text-white/35 text-xs mt-auto">
+                      <Link to="/registrati" className="text-gold-500/90 underline underline-offset-2">
+                        Registrati
+                      </Link>{' '}
+                      o{' '}
+                      <Link to="/accedi" className="text-gold-500/90 underline underline-offset-2">
+                        accedi
+                      </Link>{' '}
+                      per prenotare.
+                    </p>
+                  )}
+                </motion.div>
+              )
+            })}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.2 }}
           className="mystical-card border border-white/10 mb-8"
         >
           <h2 className="font-serif text-xl font-bold text-white mb-3">Come funziona</h2>
@@ -62,21 +147,21 @@ export default function PersonalGrowthPage() {
               <span className="text-emerald-500/90 shrink-0">1.</span>
               <span>
                 <strong className="text-white/75">Account</strong> — come per le letture, la prenotazione passa dal tuo
-                spazio personale sul sito.
+                spazio personale.
               </span>
             </li>
             <li className="flex gap-3">
               <span className="text-emerald-500/90 shrink-0">2.</span>
               <span>
-                <strong className="text-white/75">Tipo di sessione</strong> — scegli la card &quot;Crescita
-                personale&quot; nel tuo profilo e poi data e ora su Calendly.
+                <strong className="text-white/75">Scegli il pacchetto</strong> — sopra o tra le card nel profilo: poi si
+                apre il Calendly corretto (durata, prezzo e pagamento come da evento configurato).
               </span>
             </li>
             <li className="flex gap-3">
               <span className="text-emerald-500/90 shrink-0">3.</span>
               <span>
-                <strong className="text-white/75">Incontro</strong> — video o telefono, secondo disponibilità e
-                impostazioni concordate.
+                <strong className="text-white/75">Pacchetto 5 sedute</strong> — su Calendly puoi impostare più
+                prenotazioni consecutive o far prenotare le cinque date a scelta; Valeria allinea lì il flusso con te.
               </span>
             </li>
           </ul>
@@ -85,7 +170,7 @@ export default function PersonalGrowthPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.2 }}
+          transition={{ duration: 0.55, delay: 0.24 }}
           className="rounded-lg border border-white/10 bg-white/[0.03] px-5 py-4 mb-10"
         >
           <p className="text-white/40 text-xs leading-relaxed">
@@ -98,15 +183,15 @@ export default function PersonalGrowthPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.26 }}
+          transition={{ duration: 0.55, delay: 0.28 }}
           className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center"
         >
           {isLoaded && user && (
             <Link
-              to="/dashboard?consult=coaching"
+              to="/dashboard?consult=coaching_intro"
               className="btn-gold text-center px-8 py-3 text-sm"
             >
-              Prenota dal tuo spazio
+              Vai al tuo spazio (10 min conoscenza)
             </Link>
           )}
           {isLoaded && !user && (
@@ -119,9 +204,7 @@ export default function PersonalGrowthPage() {
               </Link>
             </>
           )}
-          {!isLoaded && (
-            <span className="text-white/35 text-sm px-4 py-2">Caricamento…</span>
-          )}
+          {!isLoaded && <span className="text-white/35 text-sm px-4 py-2">Caricamento…</span>}
           <Link to="/" className="btn-outline text-center px-8 py-3 text-sm border-white/15 text-white/50">
             Torna alla home
           </Link>
