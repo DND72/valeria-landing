@@ -33,6 +33,44 @@ app.post(
 
 app.use(express.json())
 
+app.get('/api/public/reviews', async (_req, res) => {
+  try {
+    const st = await pool.query<{ c: string; avg: string }>(
+      `SELECT COUNT(*)::text AS c, COALESCE(AVG(rating)::numeric, 0)::text AS avg
+       FROM site_reviews WHERE status = 'published'`
+    )
+    const row = st.rows[0]
+    const count = Number(row?.c ?? 0)
+    const average = count === 0 ? 0 : Math.round(Number(row?.avg ?? 0) * 100) / 100
+
+    const { rows } = await pool.query(
+      `SELECT id, author_display_name, rating, body, staff_response, staff_responded_at, published_at, created_at
+       FROM site_reviews
+       WHERE status = 'published'
+       ORDER BY published_at DESC NULLS LAST, created_at DESC
+       LIMIT 60`
+    )
+    res.json({
+      stats: { count, average },
+      reviews: rows.map((r) => ({
+        id: r.id,
+        authorDisplayName: r.author_display_name,
+        rating: r.rating,
+        body: r.body,
+        staffResponse: r.staff_response,
+        staffRespondedAt: r.staff_responded_at
+          ? new Date(r.staff_responded_at).toISOString()
+          : null,
+        publishedAt: r.published_at ? new Date(r.published_at).toISOString() : null,
+        createdAt: new Date(r.created_at).toISOString(),
+      })),
+    })
+  } catch (e) {
+    console.error('[public reviews]', e)
+    res.status(500).json({ error: 'Errore server' })
+  }
+})
+
 app.get('/api/public/valeria-presence', async (_req, res) => {
   try {
     const { rows } = await pool.query<{ status: string; updated_at: Date }>(

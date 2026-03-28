@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
+import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
 import { calendlyUrlForConsult } from '../constants/calendly'
 import { CONSULT_CHOICES, type ConsultKind } from '../constants/consultations'
@@ -208,6 +209,9 @@ export default function Dashboard() {
               <>
                 <Link to="/gestione-clienti" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
                   Gestione clienti
+                </Link>
+                <Link to="/gestione-recensioni" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                  Recensioni
                 </Link>
                 <Link to="/control-room" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
                   Control Room
@@ -484,6 +488,16 @@ export default function Dashboard() {
                   </table>
                 </div>
               )}
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mb-10 scroll-mt-28"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-3">Recensione sul sito</h2>
+              <SiteReviewComposer />
             </motion.section>
           </>
         )}

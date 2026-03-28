@@ -79,6 +79,12 @@ export default function Navbar() {
                     Gestione clienti
                   </Link>
                   <Link
+                    to="/gestione-recensioni"
+                    className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
+                  >
+                    Recensioni
+                  </Link>
+                  <Link
                     to="/control-room"
                     className="text-sm text-gold-500/90 hover:text-gold-300 transition-colors tracking-wide"
                   >
@@ -167,6 +173,13 @@ export default function Navbar() {
                         onClick={() => setMenuOpen(false)}
                       >
                         Gestione clienti
+                      </Link>
+                      <Link
+                        to="/gestione-recensioni"
+                        className="text-gold-500/90 hover:text-gold-300 transition-colors"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Recensioni
                       </Link>
                       <Link
                         to="/control-room"

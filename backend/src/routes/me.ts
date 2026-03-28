@@ -2,6 +2,7 @@ import { Router } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
 import { clerkClient, requireClerkAuth } from '../middleware/clerkAuth.js'
+import { registerMeReviewRoutes } from './meReviews.js'
 
 const taxCodeBody = z.object({
   firstName: z.string().min(1).max(200),
@@ -114,6 +115,8 @@ export function createMeRouter(pool: Pool): Router {
       res.status(500).json({ error: 'Errore database' })
     }
   })
+
+  registerMeReviewRoutes(r, pool)
 
   return r
 }
