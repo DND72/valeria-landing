@@ -78,9 +78,16 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const { pathname } = useLocation()
+  const isCoachingPage = pathname === '/crescita-personale'
+
   return (
-    <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
-      <CosmicBackground />
+    <div
+      className={`relative min-h-screen overflow-x-hidden ${
+        isCoachingPage ? 'bg-[#dfe5df] text-slate-800' : 'bg-dark-500 text-white'
+      }`}
+    >
+      {!isCoachingPage && <CosmicBackground />}
       <Navbar />
       <main className="relative z-0 pt-24 md:pt-28">
         <AppRoutes />
