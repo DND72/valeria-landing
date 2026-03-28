@@ -37,8 +37,8 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
   {
     kind: 'coaching_pack5',
     name: 'Coaching · 5 sedute',
-    duration: '5 × 1 h · 70€/ora · tot. 350€',
-    priceLabel: '350€',
+    duration: '5 appuntamenti separati · 1 h ciascuno',
+    priceLabel: '70€ / seduta',
     icon: '🌳',
   },
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Omaggio', icon: '🎁' },

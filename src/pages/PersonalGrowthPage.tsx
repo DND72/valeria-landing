@@ -11,7 +11,7 @@ const PACKAGE_BLURBS: Record<string, string> = {
   coaching_60:
     'Una sessione da un’ora (70€ su Calendly, come da evento): lavoro su priorità, abitudini e direzione — video o telefono.',
   coaching_pack5:
-    'Cinque sedute da un’ora ciascuna (70€ l’ora in Calendly, totale 350€). Su PayPal impostiamo cinque pagamenti; le date delle sedute le affineremo con Calendly (o un altro flusso) appena definito.',
+    'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento Calendly a sé — al momento della prenotazione si paga quella seduta (70€). Cinque prenotazioni = cinque pagamenti; totale indicativo 350€. Non esiste un unico addebito che sblocca tutte le date: prenoti (e paghi) una seduta alla volta.',
 }
 
 export default function PersonalGrowthPage() {
@@ -75,9 +75,9 @@ export default function PersonalGrowthPage() {
             Pacchetti
           </h2>
           <p className="text-white/40 text-sm text-center max-w-2xl mx-auto mb-8">
-            Conoscenza gratuita (10 min), sedute da un&apos;ora a <strong className="text-white/55">70€</strong>, oppure
-            pacchetto cinque sedute a <strong className="text-white/55">350€</strong> (5 × 70€, pagamenti PayPal da
-            concordare sul flusso).
+            Conoscenza gratuita (10 min), sedute singole a <strong className="text-white/55">70€</strong>, oppure un
+            percorso di <strong className="text-white/55">cinque sedute</strong>: cinque appuntamenti distinti,{' '}
+            <strong className="text-white/55">70€ a ogni prenotazione</strong> (totale indicativo 350€).
           </p>
           <div className="grid md:grid-cols-3 gap-5">
             {COACHING_PACKAGES.map((pkg, i) => {
@@ -161,9 +161,11 @@ export default function PersonalGrowthPage() {
             <li className="flex gap-3">
               <span className="text-emerald-500/90 shrink-0">3.</span>
               <span>
-                <strong className="text-white/75">Pagamenti</strong> — su Calendly resta l&apos;ora a 70€; per il
-                pacchetto, su PayPal si possono impostare i cinque pagamenti. Come far scegliere tutte le date ai
-                clienti si può evolvere in seguito (Calendly, crediti, altro).
+                <strong className="text-white/75">Pacchetto 5 sedute</strong> — il cliente prenota (e paga){' '}
+                <strong className="text-white/80">una seduta alla volta</strong> sullo stesso tipo di evento Calendly
+                (70€ per appuntamento, di solito con PayPal in checkout). Ripete per le cinque date. Il sito non
+                &quot;blocca&quot; in automatico le cinque prenotazioni: il percorso è chiaro dalle regole e dal
+                dialogo con Valeria.
               </span>
             </li>
           </ul>
