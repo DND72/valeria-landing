@@ -2,7 +2,7 @@
 /**
  * Registra su Calendly l'URL del webhook verso questo backend (una tantum).
  * Usa il Personal Access Token con scope webhooks:write (e users:read).
- * Per la Control Room serve anche availability:read sullo stesso PAT.
+ * Per la Control Room servono anche availability:read e scheduled_events:read sullo stesso PAT.
  *
  * In backend/.env:
  *   CALENDLY_PERSONAL_ACCESS_TOKEN=...

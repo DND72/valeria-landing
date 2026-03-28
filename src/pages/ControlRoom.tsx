@@ -7,6 +7,8 @@ import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 
 const CALENDLY_SCHEDULES_URL = 'https://calendly.com/app/availability/schedules'
+/** Portale Calendly: Meeting / appuntamenti programmati (stessa area dove si gestiscono riprogrammazioni, note, ecc.). */
+const CALENDLY_MEETINGS_URL = 'https://calendly.com/app/scheduled_events/user/me?period=upcoming'
 
 type StaffCalendlyAvailability =
   | {
@@ -23,6 +25,23 @@ type StaffCalendlyAvailability =
       configured: false
       userTimeZone: null
       schedules: []
+      message: string
+    }
+
+type StaffCalendlyMeetings =
+  | {
+      configured: true
+      meetings: Array<{
+        startAt: string
+        endAt: string | null
+        eventName: string
+        inviteeSummary: string
+        joinUrl: string | null
+      }>
+    }
+  | {
+      configured: false
+      meetings: []
       message: string
     }
 
@@ -103,6 +122,27 @@ export default function ControlRoom() {
     }
   }, [getToken, apiConfigured])
 
+  const [meetings, setMeetings] = useState<StaffCalendlyMeetings | null>(null)
+  const [meetingsLoading, setMeetingsLoading] = useState(() => Boolean(getApiBaseUrl()))
+
+  const loadMeetings = useCallback(async () => {
+    if (!apiConfigured) return
+    setMeetingsLoading(true)
+    try {
+      const data = await apiJson<StaffCalendlyMeetings>(getToken, '/api/staff/calendly-scheduled-meetings')
+      setMeetings(data)
+    } catch (e) {
+      setMeetings({
+        configured: false,
+        meetings: [],
+        message:
+          e instanceof ApiError ? String(e.message) : 'Impossibile caricare gli appuntamenti da Calendly.',
+      })
+    } finally {
+      setMeetingsLoading(false)
+    }
+  }, [getToken, apiConfigured])
+
   const loadList = useCallback(async () => {
     if (!apiConfigured) {
       setLoading(false)
@@ -150,7 +190,8 @@ export default function ControlRoom() {
     }
     void loadList()
     void loadAvailability()
-  }, [isLoaded, user, navigate, loadList, loadAvailability])
+    void loadMeetings()
+  }, [isLoaded, user, navigate, loadList, loadAvailability, loadMeetings])
 
   useEffect(() => {
     if (!selectedId) {
@@ -353,6 +394,108 @@ export default function ControlRoom() {
                 )}
               </div>
             ))}
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.04 }}
+          className="mystical-card mb-8"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+            <div>
+              <h2 className="font-serif text-lg text-white">Prossimi appuntamenti</h2>
+              <p className="text-white/45 text-sm mt-1 max-w-2xl">
+                Promemoria degli appuntamenti <strong className="text-white/55 font-medium">scheduled</strong> su
+                Calendly (stessa fonte della sezione Meeting). Per cancellare, riprogrammare o usare le azioni native
+                di Calendly apri il portale con il pulsante qui sotto.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => void loadMeetings()}
+                className="btn-outline text-sm px-4 py-2"
+                disabled={!apiConfigured || meetingsLoading}
+              >
+                {meetingsLoading ? 'Sincronizzazione…' : 'Sincronizza da Calendly'}
+              </button>
+              <a
+                href={CALENDLY_MEETINGS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-gold text-sm px-4 py-2 text-center"
+              >
+                Apri meeting in Calendly
+              </a>
+            </div>
+          </div>
+
+          {!apiConfigured && (
+            <p className="text-amber-200/85 text-sm">
+              Collega il backend (<code className="text-amber-300/90">VITE_API_URL</code>) per leggere gli appuntamenti
+              da Calendly.
+            </p>
+          )}
+
+          {apiConfigured && meetingsLoading && !meetings && (
+            <p className="text-white/45 text-sm">Caricamento appuntamenti…</p>
+          )}
+
+          {apiConfigured && meetings && !meetings.configured && (
+            <div className="rounded-lg border border-amber-600/25 bg-amber-950/20 px-4 py-3 text-sm text-amber-100/90">
+              {meetings.message}
+            </div>
+          )}
+
+          {meetings?.configured && meetings.meetings.length === 0 && !meetingsLoading && (
+            <p className="text-white/45 text-sm">Nessun appuntamento futuro in elenco.</p>
+          )}
+
+          {meetings?.configured && meetings.meetings.length > 0 && (
+            <>
+              <div className="overflow-x-auto rounded-lg border border-white/10">
+                <table className="w-full text-sm text-left min-w-[320px]">
+                  <thead>
+                    <tr className="bg-white/[0.04] text-white/50 text-xs uppercase tracking-wide">
+                      <th className="py-2.5 px-3 font-medium whitespace-nowrap">Data e ora</th>
+                      <th className="py-2.5 px-3 font-medium">Cliente</th>
+                      <th className="py-2.5 px-3 font-medium">Tipo</th>
+                      <th className="py-2.5 px-3 font-medium">Link</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {meetings.meetings.map((m, i) => (
+                      <tr key={`${m.startAt}-${i}`} className="border-t border-white/[0.06]">
+                        <td className="py-2 px-3 text-white/85 whitespace-nowrap">{formatWhen(m.startAt)}</td>
+                        <td className="py-2 px-3 text-white/70">{m.inviteeSummary}</td>
+                        <td className="py-2 px-3 text-white/55">{m.eventName}</td>
+                        <td className="py-2 px-3">
+                          {m.joinUrl ? (
+                            <a
+                              href={m.joinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gold-400 hover:underline text-xs"
+                            >
+                              Entra
+                            </a>
+                          ) : (
+                            <span className="text-white/25">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {meetings.meetings.length >= 25 && (
+                <p className="text-xs text-white/35 mt-3">
+                  Mostrati al massimo 25 appuntamenti; per l&apos;elenco completo usa Calendly.
+                </p>
+              )}
+            </>
+          )}
         </motion.section>
 
         {!apiConfigured && (

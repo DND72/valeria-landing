@@ -3,7 +3,7 @@
  * Richiede CALENDLY_PERSONAL_ACCESS_TOKEN con scope availability:read (e users:read).
  */
 
-const CALENDLY_API = 'https://api.calendly.com'
+import { calendlyFetch } from './calendlyClient.js'
 
 const WDAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 const WDAY_IT: Record<(typeof WDAY_ORDER)[number], string> = {
@@ -80,32 +80,6 @@ function buildWeekdayRows(rules: Array<RuleWday | RuleDate> | undefined) {
   }))
 
   return { weekdays, exceptions }
-}
-
-async function calendlyFetch(path: string, token: string): Promise<unknown> {
-  const url = path.startsWith('http') ? path : `${CALENDLY_API}${path.startsWith('/') ? path : `/${path}`}`
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  })
-  const text = await res.text()
-  let data: unknown = {}
-  if (text) {
-    try {
-      data = JSON.parse(text) as unknown
-    } catch {
-      data = { raw: text }
-    }
-  }
-  if (!res.ok) {
-    const err = new Error(`Calendly API ${res.status}`)
-    ;(err as Error & { status: number; body: unknown }).status = res.status
-    ;(err as Error & { status: number; body: unknown }).body = data
-    throw err
-  }
-  return data
 }
 
 export type StaffAvailabilityDayRow = {
