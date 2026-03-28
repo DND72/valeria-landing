@@ -6,7 +6,12 @@ import CalendlyEmbed from '../components/CalendlyEmbed'
 import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
 import { calendlyUrlForConsult } from '../constants/calendly'
-import { CONSULT_CHOICES, type ConsultKind } from '../constants/consultations'
+import {
+  CONSULT_CHOICES,
+  consultOfferCategory,
+  type ConsultKind,
+  type OfferCategory,
+} from '../constants/consultations'
 import { useValeriaPresence } from '../hooks/useValeriaPresence'
 import { labelForPresence } from '../lib/valeriaPresence'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
@@ -37,6 +42,8 @@ export default function Dashboard() {
   const calendarSectionRef = useRef<HTMLElement | null>(null)
 
   const [freeHidden, setFreeHidden] = useState(false)
+  /** Flusso cliente: settore → tipo consulto → Calendly. */
+  const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
   /** Flusso cliente: prima card dorata, poi Calendly con URL per quel tipo di consulto. */
   const [selectedConsult, setSelectedConsult] = useState<ConsultKind | null>(null)
 
@@ -80,12 +87,21 @@ export default function Dashboard() {
     if (!raw) return
     const match = CONSULT_CHOICES.find((c) => c.kind === raw)
     if (match) {
+      setOfferCategory(consultOfferCategory(match.kind))
       setSelectedConsult(match.kind)
       window.setTimeout(() => {
         calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 350)
     }
   }, [searchParams])
+
+  function selectOfferCategory(cat: OfferCategory) {
+    setOfferCategory(cat)
+    setSelectedConsult((prev) => {
+      if (!prev) return null
+      return consultOfferCategory(prev) === cat ? prev : null
+    })
+  }
 
   useEffect(() => {
     if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
@@ -148,6 +164,10 @@ export default function Dashboard() {
   const privileged = isPrivilegedClerkUser(user)
   const firstName = displayFirstName(user)
   const consultChoicesForClient = CONSULT_CHOICES.filter((c) => c.kind !== 'free' || !freeHidden)
+  const consultChoicesInSector =
+    offerCategory === null
+      ? []
+      : consultChoicesForClient.filter((c) => consultOfferCategory(c.kind) === offerCategory)
 
   function formatConsultWhen(iso: string | null): string {
     if (!iso) return '—'
@@ -294,7 +314,7 @@ export default function Dashboard() {
               {
                 icon: '🔮',
                 title: 'Scegli il consulto',
-                desc: 'Prima il tipo, poi data e ora',
+                desc: 'Settore (Tarocchi o Crescita), poi tipo e data',
                 href: '#scegli-consulto',
                 cta: 'Scorri alle card',
               },
@@ -351,12 +371,119 @@ export default function Dashboard() {
               transition={{ duration: 0.6, delay: 0.25 }}
               className="mb-10 scroll-mt-28"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli il consulto</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli il settore</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
-                Tocca <strong className="text-gold-500/90">Continua</strong>: si apre sotto il calendario giusto per quel tipo (anche omaggio). Il pagamento avviene in Calendly quando hai scelto data e ora, come da tua configurazione (es. PayPal).
+                Due ambiti distinti: <strong className="text-white/55">letture con i Tarocchi</strong> (consulti brevi,
+                online, completi, omaggio) e <strong className="text-white/55">crescita personale · coaching</strong>{' '}
+                (conoscenza gratuita, sedute, pacchetto). Scegli sotto il settore che ti interessa: compariranno solo le
+                opzioni coerenti e, per il coaching, gli avvisi professionali obbligatori.
               </p>
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <button
+                  type="button"
+                  onClick={() => selectOfferCategory('tarocchi')}
+                  className={`mystical-card text-left p-5 transition-all border ${
+                    offerCategory === 'tarocchi'
+                      ? 'ring-2 ring-gold-500/45 border-gold-600/35'
+                      : 'border-white/10 hover:border-gold-600/25'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-3xl shrink-0" aria-hidden>
+                      🃏
+                    </span>
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-white mb-1">Tarocchi &amp; letture</h3>
+                      <p className="text-white/50 text-sm leading-relaxed mb-3">
+                        Consulti con i Tarocchi di Marsiglia: breve (30 min telefono), online (video 30 min), completo (60
+                        min telefono), più eventuale consulto omaggio (7 min). Focus su simboli, situazioni e orientamento
+                        rispetto alle domande che porti.
+                      </p>
+                      <span className="text-gold-500 text-xs font-medium">Apri le opzioni Tarocchi →</span>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selectOfferCategory('crescita')}
+                  className={`mystical-card text-left p-5 transition-all border ${
+                    offerCategory === 'crescita'
+                      ? 'ring-2 ring-emerald-500/35 border-emerald-600/35'
+                      : 'border-white/10 hover:border-emerald-600/25'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-3xl shrink-0" aria-hidden>
+                      🌱
+                    </span>
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-white mb-1">Crescita personale · coaching</h3>
+                      <p className="text-white/50 text-sm leading-relaxed mb-3">
+                        Percorsi su obiettivi, abitudini, scelte e direzione: conoscenza gratuita (10 min), seduta singola
+                        (60 min) o pacchetto da cinque sedute (prenotazione e pagamento una seduta alla volta). Sessioni in
+                        video o telefono — non centrate necessariamente su una stesa di carte.
+                      </p>
+                      <span className="text-emerald-400/90 text-xs font-medium">Apri le opzioni Coaching →</span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {offerCategory === 'tarocchi' && (
+                <p className="text-white/38 text-xs leading-relaxed mb-6 border-l border-gold-600/25 pl-3 max-w-3xl">
+                  Le letture hanno natura simbolica e di orientamento:{' '}
+                  <strong className="text-white/55">non sostituiscono</strong> pareri medici, psicologici specialistici,
+                  legali né trattamenti sanitari.
+                </p>
+              )}
+
+              {offerCategory === 'crescita' && (
+                <div className="mystical-card border border-emerald-600/25 mb-6">
+                  <h3 className="font-serif text-base font-bold text-white mb-2">Informativa sul servizio di coaching</h3>
+                  <p className="text-white/60 text-sm leading-relaxed mb-3">
+                    Valeria ha una formazione in psicologia; in questo ambito offre{' '}
+                    <strong className="text-white/80">accompagnamento di crescita personale e coaching</strong>. Il
+                    servizio <strong className="text-white/80">non costituisce psicoterapia</strong>, né consulenza
+                    psicologica riservata agli iscritti all&apos;Ordine degli Psicologi, né consulenza medica o legale.
+                  </p>
+                  <p className="text-white/45 text-xs leading-relaxed mb-3">
+                    Se stai attraversando una difficoltà che richiede supporto clinico o psicoterapeutico, rivolgiti a un
+                    professionista abilitato nella tua zona. Questo percorso non sostituisce il parere medico né
+                    trattamenti sanitari. In caso di emergenza, contatta i servizi competenti (es. 112, 118).
+                  </p>
+                  <p className="text-white/35 text-xs">
+                    Proseguendo con la prenotazione dichiari di aver preso visione di quanto sopra. Per approfondimenti:{' '}
+                    <Link to="/crescita-personale" className="text-emerald-400/90 underline underline-offset-2">
+                      pagina Crescita personale
+                    </Link>
+                    .
+                  </p>
+                </div>
+              )}
+
+              <h2 className="font-serif text-xl font-bold text-white mb-1 mt-2">2) Scegli il tipo di consulto</h2>
+              <p className="text-white/40 text-sm mb-4 max-w-2xl">
+                Tocca <strong className="text-gold-500/90">Continua</strong>: sotto si apre il calendario giusto per quel
+                tipo (anche omaggio, se incluso nel settore). Il pagamento avviene in Calendly quando scegli data e ora,
+                come da configurazione (es. PayPal).
+              </p>
+              {!offerCategory && (
+                <div
+                  className="mystical-card border border-dashed border-white/15 text-center py-12 px-4"
+                  aria-live="polite"
+                >
+                  <p className="text-white/45 text-sm max-w-md mx-auto">
+                    Seleziona prima <strong className="text-white/65">Tarocchi &amp; letture</strong> o{' '}
+                    <strong className="text-white/65">Crescita personale · coaching</strong> nel punto 1: qui compariranno
+                    le card prenotabili per quel settore.
+                  </p>
+                </div>
+              )}
+              {offerCategory && consultChoicesInSector.length === 0 && (
+                <p className="text-amber-200/80 text-sm">Nessuna opzione disponibile in questo settore con le impostazioni attuali.</p>
+              )}
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {consultChoicesForClient.map((c) => {
+                {consultChoicesInSector.map((c) => {
                   const selected = selectedConsult === c.kind
                   return (
                     <div
@@ -412,9 +539,9 @@ export default function Dashboard() {
               transition={{ duration: 0.6, delay: 0.35 }}
               className="mb-8 scroll-mt-28 relative z-30 isolate"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">2) Scegli data e ora</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">3) Scegli data e ora</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
-                Calendly mostra le disponibilità per il consulto che hai scelto sopra. Al termine, se hai collegato PayPal in Calendly, partirà il pagamento lì.
+                Calendly mostra le disponibilità per il tipo di consulto scelto al punto 2. Al termine, se hai collegato PayPal in Calendly, partirà il pagamento lì.
               </p>
               <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
                 {selectedConsult ? (
@@ -432,7 +559,8 @@ export default function Dashboard() {
                       👆
                     </span>
                     <p className="max-w-sm text-sm leading-relaxed">
-                      Seleziona prima un consulto nella sezione <strong className="text-white/70">1) Scegli il consulto</strong>, poi il calendario apparirà qui.
+                      Seleziona settore e tipo di consulto nelle sezioni <strong className="text-white/70">1</strong> e{' '}
+                      <strong className="text-white/70">2</strong>, poi il calendario apparirà qui.
                     </p>
                   </div>
                 )}
