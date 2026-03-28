@@ -7,12 +7,61 @@ const staffReviewPatch = z.object({
   staffResponse: z.string().max(8000).nullable().optional(),
 })
 
+const externalImportBody = z.object({
+  authorDisplayName: z.string().min(2).max(80).trim(),
+  rating: z.number().int().min(1).max(5),
+  body: z.string().min(20).max(8000),
+  platform: z.string().min(2).max(80).trim(),
+})
+
 export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
+  r.post('/reviews/external', async (req, res) => {
+    const staffId = req.auth?.userId
+    if (!staffId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+    const parsed = externalImportBody.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Dati non validi', details: parsed.error.flatten() })
+      return
+    }
+    const { authorDisplayName, rating, body, platform } = parsed.data
+    try {
+      const ins = await pool.query(
+        `INSERT INTO site_reviews (
+           source, clerk_user_id, author_display_name, rating, body, status,
+           published_at, external_platform, imported_by_clerk_id, updated_at
+         ) VALUES ('external', NULL, $1, $2, $3, 'published', now(), $4, $5, now())
+         RETURNING id, author_display_name, rating, body, status, published_at, external_platform, created_at`,
+        [authorDisplayName, rating, body, platform, staffId]
+      )
+      const r0 = ins.rows[0]
+      res.status(201).json({
+        review: {
+          id: r0.id,
+          source: 'external',
+          authorDisplayName: r0.author_display_name,
+          rating: r0.rating,
+          body: r0.body,
+          status: r0.status,
+          publishedAt: r0.published_at ? new Date(r0.published_at).toISOString() : null,
+          externalPlatform: r0.external_platform,
+          createdAt: new Date(r0.created_at).toISOString(),
+        },
+      })
+    } catch (e) {
+      console.error('[staff reviews external]', e)
+      res.status(500).json({ error: 'Errore database' })
+    }
+  })
+
   r.get('/reviews', async (_req, res) => {
     try {
       const { rows } = await pool.query(
-        `SELECT id, clerk_user_id, author_display_name, rating, body, status,
-                staff_response, staff_responded_at, published_at, created_at, updated_at
+        `SELECT id, source, clerk_user_id, author_display_name, rating, body, status,
+                staff_response, staff_responded_at, published_at, external_platform, imported_by_clerk_id,
+                created_at, updated_at
          FROM site_reviews
          ORDER BY created_at DESC
          LIMIT 300`
@@ -20,6 +69,7 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
       res.json({
         reviews: rows.map((row) => ({
           id: row.id,
+          source: row.source,
           clerkUserId: row.clerk_user_id,
           authorDisplayName: row.author_display_name,
           rating: row.rating,
@@ -30,6 +80,8 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
             ? new Date(row.staff_responded_at).toISOString()
             : null,
           publishedAt: row.published_at ? new Date(row.published_at).toISOString() : null,
+          externalPlatform: row.external_platform,
+          importedByClerkId: row.imported_by_clerk_id,
           createdAt: new Date(row.created_at).toISOString(),
           updatedAt: new Date(row.updated_at).toISOString(),
         })),
@@ -80,8 +132,9 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
       await pool.query(`UPDATE site_reviews SET ${sets.join(', ')} WHERE id = $${i}`, vals)
 
       const row = await pool.query(
-        `SELECT id, clerk_user_id, author_display_name, rating, body, status,
-                staff_response, staff_responded_at, published_at, created_at, updated_at
+        `SELECT id, source, clerk_user_id, author_display_name, rating, body, status,
+                staff_response, staff_responded_at, published_at, external_platform, imported_by_clerk_id,
+                created_at, updated_at
          FROM site_reviews WHERE id = $1`,
         [id]
       )
@@ -89,6 +142,7 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
       res.json({
         review: {
           id: r0.id,
+          source: r0.source,
           clerkUserId: r0.clerk_user_id,
           authorDisplayName: r0.author_display_name,
           rating: r0.rating,
@@ -99,6 +153,8 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
             ? new Date(r0.staff_responded_at).toISOString()
             : null,
           publishedAt: r0.published_at ? new Date(r0.published_at).toISOString() : null,
+          externalPlatform: r0.external_platform,
+          importedByClerkId: r0.imported_by_clerk_id,
           createdAt: new Date(r0.created_at).toISOString(),
           updatedAt: new Date(r0.updated_at).toISOString(),
         },

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import type { ValeriaPresenceStatus } from '../lib/valeriaPresence'
 import { getApiBaseUrl } from '../constants/api'
+import StaffExternalReviewImport from './StaffExternalReviewImport'
 
 type MeetingsPayload =
   | {
@@ -181,6 +182,8 @@ export default function StaffPersonalSpace() {
           </>
         )}
       </motion.section>
+
+      <StaffExternalReviewImport />
 
       {/* Oggi Calendly */}
       <motion.section

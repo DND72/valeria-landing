@@ -16,22 +16,31 @@ export async function getPrimaryEmailNormalized(userId: string): Promise<string 
   return null
 }
 
-/** Almeno un consulto a pagamento completato (status done). */
-export async function hasCompletedPaidConsult(
+/** Consulti a pagamento con esito "done" (stesso criterio /api/me/consults). */
+export async function countPaidDoneConsults(
   pool: Pool,
   clerkUserId: string,
   emailNorm: string | null
-): Promise<boolean> {
-  const { rows } = await pool.query<{ ok: boolean }>(
-    `SELECT EXISTS (
-       SELECT 1 FROM consults c
-       WHERE (c.clerk_user_id = $1
-         OR ($2::text IS NOT NULL AND c.invitee_email IS NOT NULL
-             AND LOWER(TRIM(c.invitee_email)) = $2))
-         AND c.is_free_consult = false
-         AND c.status = 'done'
-     ) AS ok`,
+): Promise<number> {
+  const { rows } = await pool.query<{ n: string }>(
+    `SELECT COUNT(*)::text AS n
+     FROM consults c
+     WHERE (c.clerk_user_id = $1
+       OR ($2::text IS NOT NULL AND c.invitee_email IS NOT NULL
+           AND LOWER(TRIM(c.invitee_email)) = $2))
+       AND c.is_free_consult = false
+       AND c.status = 'done'`,
     [clerkUserId, emailNorm]
   )
-  return Boolean(rows[0]?.ok)
+  return Number(rows[0]?.n ?? 0)
+}
+
+/**
+ * Quante recensioni "cliente" può aver lasciato in base al percorso:
+ * prima dopo il 3° consulto a pagamento completato, poi al massimo una ogni 2 consulti così.
+ * Esempi: 3 consulti → 1 recensione; 5 → 2; 7 → 3 …
+ */
+export function maxClientReviewsAllowed(paidDoneCount: number): number {
+  if (paidDoneCount < 3) return 0
+  return 1 + Math.floor((paidDoneCount - 3) / 2)
 }

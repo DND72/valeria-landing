@@ -44,6 +44,9 @@ type ApiReview = {
   staffRespondedAt: string | null
   publishedAt: string | null
   createdAt: string
+  source?: string
+  externalPlatform?: string | null
+  fromOtherPlatform?: boolean
 }
 
 function formatAverage(n: number): string {
@@ -98,13 +101,14 @@ export default function Reviews() {
     ? apiReviews.slice(0, visibleCount).map((r) => ({
         key: r.id,
         name: r.authorDisplayName,
-        platform: 'Sul sito',
+        platform: r.fromOtherPlatform ? (r.externalPlatform?.trim() || 'Altra piattaforma') : 'Sul sito',
         rating: r.rating,
         text: r.body,
         date: r.publishedAt
           ? new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(new Date(r.publishedAt))
           : new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(new Date(r.createdAt)),
         staffResponse: r.staffResponse,
+        fromOtherPlatform: Boolean(r.fromOtherPlatform),
       }))
     : legacyReviews.slice(0, visibleCount).map((r, i) => ({
         key: `legacy-${i}`,
@@ -114,6 +118,7 @@ export default function Reviews() {
         text: r.text,
         date: r.date,
         staffResponse: null as string | null,
+        fromOtherPlatform: false,
       }))
 
   const hasMore = showSiteCards ? visibleCount < apiReviews.length : visibleCount < legacyReviews.length
@@ -130,13 +135,13 @@ export default function Reviews() {
           transition={{ duration: 0.6 }}
           className="text-center mb-4"
         >
-          <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-4">Cosa dicono</p>
+          <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-4">Dicono di me</p>
           <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4">
-            Le <span className="gold-text">testimonianze</span>
+            Voci dal <span className="gold-text">percorso</span>
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto mb-2">
-            Oltre 1.000 feedback raccolti sulle più rinomate piattaforme online. Sul sito pubblichiamo le recensioni
-            verificate delle clienti registrate.
+            Recensioni delle clienti sul sito e testimonianze importate da altre piattaforme (Kang, Profetum e simili),
+            insieme alle statistiche storiche.
           </p>
         </motion.div>
 
@@ -196,8 +201,15 @@ export default function Reviews() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <div className="font-semibold text-white text-sm">{review.name}</div>
-                  <div className="text-white/30 text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-white text-sm">{review.name}</span>
+                    {review.fromOtherPlatform && (
+                      <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border border-amber-500/35 text-amber-200/90 bg-amber-950/25">
+                        Altra piattaforma
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-white/30 text-xs mt-0.5">
                     {review.date} · {review.platform}
                   </div>
                 </div>
@@ -211,10 +223,14 @@ export default function Reviews() {
                 </div>
               )}
               <div className="mt-4 pt-3 border-t border-white/5 text-xs text-white/20 flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {review.platform === 'Sul sito' ? 'Recensione verificata sul sito' : `Esempio da ${review.platform}`}
+                {review.fromOtherPlatform
+                  ? 'Recensione da altra piattaforma (importata da Valeria)'
+                  : review.platform === 'Sul sito'
+                    ? 'Recensione verificata sul sito'
+                    : `Esempio da ${review.platform}`}
               </div>
             </motion.div>
           ))}

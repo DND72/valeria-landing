@@ -37,23 +37,26 @@ app.get('/api/public/reviews', async (_req, res) => {
   try {
     const st = await pool.query<{ c: string; avg: string }>(
       `SELECT COUNT(*)::text AS c, COALESCE(AVG(rating)::numeric, 0)::text AS avg
-       FROM site_reviews WHERE status = 'published'`
+       FROM site_reviews
+       WHERE status = 'published'`
     )
     const row = st.rows[0]
     const count = Number(row?.c ?? 0)
     const average = count === 0 ? 0 : Math.round(Number(row?.avg ?? 0) * 100) / 100
 
     const { rows } = await pool.query(
-      `SELECT id, author_display_name, rating, body, staff_response, staff_responded_at, published_at, created_at
+      `SELECT id, source, author_display_name, rating, body, staff_response, staff_responded_at,
+              published_at, created_at, external_platform
        FROM site_reviews
        WHERE status = 'published'
        ORDER BY published_at DESC NULLS LAST, created_at DESC
-       LIMIT 60`
+       LIMIT 80`
     )
     res.json({
       stats: { count, average },
       reviews: rows.map((r) => ({
         id: r.id,
+        source: r.source,
         authorDisplayName: r.author_display_name,
         rating: r.rating,
         body: r.body,
@@ -63,6 +66,8 @@ app.get('/api/public/reviews', async (_req, res) => {
           : null,
         publishedAt: r.published_at ? new Date(r.published_at).toISOString() : null,
         createdAt: new Date(r.created_at).toISOString(),
+        externalPlatform: r.external_platform,
+        fromOtherPlatform: r.source === 'external',
       })),
     })
   } catch (e) {

@@ -9,7 +9,8 @@ import { getApiBaseUrl } from '../constants/api'
 
 type ReviewRow = {
   id: string
-  clerkUserId: string
+  clerkUserId: string | null
+  source: string
   authorDisplayName: string
   rating: number
   body: string
@@ -18,6 +19,7 @@ type ReviewRow = {
   staffRespondedAt: string | null
   publishedAt: string | null
   createdAt: string
+  externalPlatform: string | null
 }
 
 export default function StaffReviewsPage() {
@@ -132,9 +134,19 @@ export default function StaffReviewsPage() {
               <li key={r.id} className="mystical-card border border-white/10">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <StarsRating value={r.rating} size="sm" />
                       <span className="text-white font-medium text-sm">{r.authorDisplayName}</span>
+                      {r.source === 'external' && (
+                        <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border border-amber-500/35 text-amber-200/90 bg-amber-950/20">
+                          {r.externalPlatform || 'Esterna'}
+                        </span>
+                      )}
+                      {r.source === 'client' && (
+                        <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border border-white/15 text-white/45">
+                          Cliente sito
+                        </span>
+                      )}
                     </div>
                     <span
                       className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded ${
