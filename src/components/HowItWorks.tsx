@@ -18,7 +18,7 @@ const steps = [
     number: '03',
     icon: '💳',
     title: 'Continua dal tuo profilo',
-    desc: 'Se ti sei trovata bene, acquista altri consulti direttamente dal tuo spazio personale, in sicurezza via PayPal.',
+    desc: 'Se ti sei trovata bene, dal tuo spazio scegli di nuovo il tipo di consulto e poi il calendario — come la prima volta.',
   },
 ]
 

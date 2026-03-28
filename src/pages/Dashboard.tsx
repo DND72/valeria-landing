@@ -1,10 +1,10 @@
 import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import { PAYPAL_CONSULTI, paypalHostedCheckoutUrl } from '../constants/paypal'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
-import { CALENDLY_BOOKING_URL } from '../constants/calendly'
+import { CALENDLY_BOOKING_URL, calendlyUrlForConsult } from '../constants/calendly'
+import { CONSULT_CHOICES, type ConsultKind } from '../constants/consultations'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import { apiJson, ApiError } from '../lib/api'
@@ -32,6 +32,8 @@ export default function Dashboard() {
   const calendarSectionRef = useRef<HTMLElement | null>(null)
 
   const [freeHidden, setFreeHidden] = useState(false)
+  /** Flusso cliente: prima card dorata, poi Calendly con URL per quel tipo di consulto. */
+  const [selectedConsult, setSelectedConsult] = useState<ConsultKind | null>(null)
 
   const [taxInfo, setTaxInfo] = useState<{
     showReminder: boolean
@@ -92,6 +94,7 @@ export default function Dashboard() {
 
   const privileged = isPrivilegedClerkUser(user)
   const firstName = displayFirstName(user)
+  const consultChoicesForClient = CONSULT_CHOICES.filter((c) => c.kind !== 'free' || !freeHidden)
 
   async function handleTaxSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -171,73 +174,25 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Free consultation card */}
-        {showFreeCard && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="relative rounded-2xl overflow-hidden mb-8 p-8"
-            style={{
-              background: 'linear-gradient(135deg, rgba(212,160,23,0.15) 0%, rgba(13,27,42,0.9) 100%)',
-              border: '1px solid rgba(212,160,23,0.35)',
-            }}
-          >
-            {/* Glow */}
-            <div
-              className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20 blur-3xl pointer-events-none"
-              style={{ background: 'radial-gradient(circle, #fcd34d, #d4a017)' }}
-            />
-
-            <div className="relative z-10 flex flex-col gap-6">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 text-xs font-medium mb-4">
-                    🎁 Regalo di benvenuto
-                  </div>
-                  <h2 className="font-serif text-2xl md:text-3xl font-bold text-white mb-2">
-                    Il tuo consulto gratuito<br />
-                    <span className="gold-text">7 minuti con Valeria</span>
-                  </h2>
-                  <p className="text-white/50 text-sm max-w-md">
-                    Benvenuta nella famiglia. Valeria ti aspetta per una lettura gratuita di 7 minuti —
-                    il tuo primo passo nel mondo delle carte.
-                  </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-                  <button
-                    type="button"
-                    className="btn-gold whitespace-nowrap"
-                    onClick={() => {
-                      setTimeout(() => calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
-                    }}
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Prenota ora — Gratis
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn-outline whitespace-nowrap"
-                    onClick={() => {
-                      setFreeHidden(true)
-                      try {
-                        window.localStorage.setItem('freeConsultHidden', '1')
-                      } catch {
-                        // ignore
-                      }
-                    }}
-                  >
-                    Non mostrarlo più
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </motion.div>
+        {!privileged && showFreeCard && (
+          <p className="text-white/35 text-xs mb-4 border-l border-gold-600/25 pl-3">
+            🎁 Consulto omaggio 7 min: è l’ultima card nella griglia. Puoi{' '}
+            <button
+              type="button"
+              className="text-gold-500/90 underline underline-offset-2 hover:text-gold-400"
+              onClick={() => {
+                setFreeHidden(true)
+                try {
+                  window.localStorage.setItem('freeConsultHidden', '1')
+                } catch {
+                  // ignore
+                }
+              }}
+            >
+              nascondere questa riga
+            </button>
+            .
+          </p>
         )}
 
         {/* Quick actions */}
@@ -245,10 +200,10 @@ export default function Dashboard() {
           {[
             {
               icon: '🔮',
-              title: 'Scegli prima la data',
-              desc: 'Controlla subito disponibilita',
-              href: '#prenota-calendly',
-              cta: 'Scorri al calendario',
+              title: privileged ? 'Vai al calendario' : 'Scegli il consulto',
+              desc: privileged ? 'Prenota il tuo slot' : 'Prima il tipo, poi data e ora',
+              href: privileged ? '#prenota-calendly' : '#scegli-consulto',
+              cta: privileged ? 'Scorri al calendario' : 'Scorri alle card',
             },
             {
               icon: '🃏',
@@ -291,41 +246,34 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Calendario completo — primo step */}
-        <motion.section
-          id="prenota-calendly"
-          ref={calendarSectionRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="mb-8 scroll-mt-28"
-        >
-          <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli data e ora</h2>
-          <p className="text-white/40 text-sm mb-4">
-            {privileged
-              ? 'Scegli data e ora dal calendario. Per il tuo account non è richiesto il pagamento tramite questa pagina.'
-              : 'Controlla disponibilita e scegli il tuo slot. Subito dopo puoi completare il pagamento del consulto scelto.'}
-          </p>
-          <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
-            <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={700} />
-          </div>
-        </motion.section>
-
-        {/* Acquista consulti — nascosto per account staff (pagamento fuori dal sito). z-index sopra eventuali layer Calendly. */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="mb-8 relative z-30 isolate"
-        >
-          {privileged ? (
-            <>
-              <h2 className="font-serif text-xl font-bold text-white mb-1">2) Prenotazione staff</h2>
-              <p className="text-white/40 text-sm mb-2">
-                Questo account non richiede il pagamento tramite PayPal sul sito. Dopo aver scelto data e ora, la gestione economica resta diretta con Valeria.
+        {privileged ? (
+          <>
+            <motion.section
+              id="prenota-calendly"
+              ref={calendarSectionRef}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              className="mb-8 scroll-mt-28"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Calendario</h2>
+              <p className="text-white/40 text-sm mb-4">
+                Scegli data e ora. Per il tuo account staff non è richiesto il pagamento tramite questa pagina.
               </p>
-              <p className="text-white/30 text-xs mb-5 border-l border-gold-600/30 pl-3">
-                I tre pulsanti PayPal compaiono solo ai clienti (account senza privilegio staff in Clerk). Se qui non li vedi, è normale: non sono “spariti” da PayPal.
+              <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
+                <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={700} />
+              </div>
+            </motion.section>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              className="mb-8 relative z-30 isolate"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-1">Note staff</h2>
+              <p className="text-white/40 text-sm mb-2">
+                La gestione economica resta diretta con Valeria; qui non compaiono i flussi cliente.
               </p>
               <div
                 className="mystical-card border border-gold-600/25"
@@ -334,44 +282,104 @@ export default function Dashboard() {
                 }}
               >
                 <p className="text-white/80 text-sm leading-relaxed">
-                  Se serve modificare lo slot scelto, puoi tornare al calendario sopra e selezionare una disponibilita diversa.
+                  Se serve modificare lo slot, torna al calendario sopra e scegli un’altra disponibilità.
                 </p>
               </div>
-            </>
-          ) : (
-            <>
-              <h2 className="font-serif text-xl font-bold text-white mb-1">2) Scegli il consulto e completa il pagamento</h2>
-              <p className="text-white/40 text-sm mb-2">
-                Pagamento sicuro su PayPal (si apre in una nuova scheda) · anche con carta, senza caricare script PayPal in questa pagina.
+            </motion.div>
+          </>
+        ) : (
+          <>
+            <motion.section
+              id="scegli-consulto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="mb-10 scroll-mt-28"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli il consulto</h2>
+              <p className="text-white/40 text-sm mb-4 max-w-2xl">
+                Tocca <strong className="text-gold-500/90">Continua</strong>: si apre sotto il calendario giusto per quel tipo (anche omaggio). Il pagamento avviene in Calendly quando hai scelto data e ora, come da tua configurazione (es. PayPal).
               </p>
-              <p className="text-white/30 text-xs mb-5 max-w-2xl">
-                Quantità e prezzo dei pulsanti: account PayPal → Pulsanti PayPal → modifica il pulsante. Slot e calendario: Calendly → Tipi di evento → il tuo evento.
-              </p>
-              <div className="grid md:grid-cols-3 gap-4">
-                {PAYPAL_CONSULTI.map((c) => (
-                  <div key={c.id} className="mystical-card text-center flex flex-col">
-                    <div className="text-3xl mb-2">{c.icon}</div>
-                    <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
-                    <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
-                    <p className="font-serif text-2xl font-bold mb-4" style={{
-                      background: 'linear-gradient(135deg, #ffe066, #ffd700)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}>{c.price}</p>
-                    <a
-                      href={paypalHostedCheckoutUrl(c.id)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-gold text-sm px-4 py-2.5 inline-flex items-center justify-center gap-2 w-full mt-auto"
+              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                {consultChoicesForClient.map((c) => {
+                  const selected = selectedConsult === c.kind
+                  return (
+                    <div
+                      key={c.kind}
+                      className={`mystical-card text-center flex flex-col transition-shadow ${
+                        selected ? 'ring-2 ring-gold-500/50 shadow-[0_0_24px_rgba(212,160,23,0.15)]' : ''
+                      }`}
                     >
-                      Paga con PayPal
-                    </a>
-                  </div>
-                ))}
+                      <div className="text-3xl mb-2">{c.icon}</div>
+                      <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
+                      <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
+                      <p
+                        className="font-serif text-2xl font-bold mb-4"
+                        style={{
+                          background:
+                            c.kind === 'free'
+                              ? 'linear-gradient(135deg, #86efac, #22c55e)'
+                              : 'linear-gradient(135deg, #ffe066, #ffd700)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      >
+                        {c.priceLabel}
+                      </p>
+                      <button
+                        type="button"
+                        className="btn-gold text-sm px-4 py-2.5 inline-flex items-center justify-center gap-2 w-full mt-auto"
+                        onClick={() => {
+                          setSelectedConsult(c.kind)
+                          window.setTimeout(() => {
+                            calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }, 80)
+                        }}
+                      >
+                        Continua
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
-            </>
-          )}
-        </motion.div>
+            </motion.section>
+
+            <motion.section
+              id="prenota-calendly"
+              ref={calendarSectionRef}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              className="mb-8 scroll-mt-28 relative z-30 isolate"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-1">2) Scegli data e ora</h2>
+              <p className="text-white/40 text-sm mb-4 max-w-2xl">
+                Calendly mostra le disponibilità per il consulto che hai scelto sopra. Al termine, se hai collegato PayPal in Calendly, partirà il pagamento lì.
+              </p>
+              <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
+                {selectedConsult ? (
+                  <CalendlyEmbed
+                    key={selectedConsult}
+                    url={calendlyUrlForConsult(selectedConsult)}
+                    minHeight={700}
+                  />
+                ) : (
+                  <div
+                    className="flex min-h-[min(420px,70vh)] flex-col items-center justify-center gap-3 px-6 py-16 text-center text-white/45"
+                    style={{ background: 'linear-gradient(180deg, rgba(13,27,42,0.5) 0%, rgba(6,6,8,0.9) 100%)' }}
+                  >
+                    <span className="text-3xl" aria-hidden>
+                      👆
+                    </span>
+                    <p className="max-w-sm text-sm leading-relaxed">
+                      Seleziona prima un consulto nella sezione <strong className="text-white/70">1) Scegli il consulto</strong>, poi il calendario apparirà qui.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.section>
+          </>
+        )}
 
         {!privileged && taxInfo?.showReminder && (
           <motion.div
