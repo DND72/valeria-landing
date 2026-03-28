@@ -155,7 +155,7 @@ export default function Dashboard() {
           className="h-10 w-10 rounded-full border-2 border-gold-500/30 border-t-gold-400 animate-spin"
           aria-hidden
         />
-        <p className="text-white/60 text-sm">Caricamento del tuo spazio…</p>
+        <p className="text-white/60 text-sm">Caricamento del tuo diario…</p>
       </div>
     )
   }
@@ -224,7 +224,9 @@ export default function Dashboard() {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12"
         >
           <div>
-            <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Il tuo spazio</p>
+            <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">
+              Il tuo Diario d&apos;Evoluzione
+            </p>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
                 Ciao, <span className="gold-text">{firstName}</span> ✨

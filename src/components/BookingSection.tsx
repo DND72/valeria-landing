@@ -51,7 +51,7 @@ export default function BookingSection() {
           >
             <p className="text-white/70 text-lg mb-2 max-w-lg mx-auto leading-relaxed">
               Per prenotare una lettura serve un account: così Valeria sa dove contattarti,
-              puoi usare i minuti gratuiti e pagare i consulti in sicurezza dal tuo spazio personale.
+              puoi usare i minuti gratuiti e pagare i consulti in sicurezza dal tuo Diario.
             </p>
             <p className="text-white/40 text-sm mb-6 max-w-md mx-auto">
               Anche se non vuoi il consulto omaggio, l’iscrizione resta il primo passo — è la nostra porta di ingresso.

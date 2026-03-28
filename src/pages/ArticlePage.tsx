@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ArticleComments from '../components/ArticleComments'
+import ArticleDeepenCta from '../components/ArticleDeepenCta'
 import { articles } from '../data/articles'
 
 export default function ArticlePage() {
@@ -102,6 +103,16 @@ export default function ArticlePage() {
           ))}
         </motion.div>
 
+        <ArticleDeepenCta
+          config={
+            article.deepenCta ?? {
+              question: 'Vuoi approfondire questo tema con una sessione dedicata?',
+              consultKind: 'online',
+              track: 'tarocchi',
+            }
+          }
+        />
+
         {/* Author box */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -109,7 +120,7 @@ export default function ArticlePage() {
           transition={{ delay: 0.6 }}
           className="mt-16 p-6 rounded-lg border border-gold-600/20 bg-gold-600/5"
         >
-          <p className="text-gold-500 text-xs font-semibold uppercase tracking-wider mb-2">L\'autrice</p>
+          <p className="text-gold-500 text-xs font-semibold uppercase tracking-wider mb-2">L&apos;autrice</p>
           <p className="text-white font-semibold mb-1">Valeria Di Pace</p>
           <p className="text-white/40 text-sm leading-relaxed">
             Tarologa, psicologa, attrice. Arena International Master (FIDE). Dama Templare.

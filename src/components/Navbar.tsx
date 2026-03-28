@@ -75,7 +75,7 @@ export default function Navbar() {
               className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
             >
               {user.imageUrl && <img src={user.imageUrl} alt="" className="w-5 h-5 rounded-full" />}
-              Il mio spazio
+              Il tuo Diario
               {privileged && (
                 <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
                   Staff
@@ -148,7 +148,7 @@ export default function Navbar() {
                     }}
                     className="text-left text-white/80 hover:text-gold-400 transition-colors flex items-center gap-2 flex-wrap"
                   >
-                    Il mio spazio ✨
+                    Il tuo Diario ✨
                     {privileged && (
                       <span className="text-[10px] uppercase tracking-wide text-gold-500/80 border border-gold-600/30 rounded px-1.5 py-0.5">
                         Staff

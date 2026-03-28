@@ -18,7 +18,7 @@ export default function SignInPage() {
       >
         <div className="text-center">
           <h1 className="font-serif text-3xl font-bold gold-text mb-2">Bentornata</h1>
-          <p className="text-white/50 text-sm">Accedi al tuo spazio personale</p>
+          <p className="text-white/50 text-sm">Accedi al tuo Diario d&apos;Evoluzione</p>
         </div>
         <SignIn
           routing="path"

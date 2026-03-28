@@ -67,7 +67,7 @@ export default function GraziePage() {
             Torna alla homepage
           </Link>
           <Link to="/registrati" className="btn-outline">
-            Crea il tuo spazio personale
+            Crea il tuo Diario
           </Link>
         </div>
       </motion.div>

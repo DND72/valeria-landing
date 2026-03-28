@@ -122,7 +122,7 @@ export default function ClientManagementPage() {
               {loading ? 'Aggiornamento…' : 'Aggiorna'}
             </button>
             <Link to="/dashboard" className="btn-gold text-sm px-4 py-2 text-center">
-              Il mio spazio
+              Il tuo Diario
             </Link>
           </div>
         </motion.div>

@@ -6,7 +6,7 @@ const steps = [
     number: '01',
     icon: '✨',
     title: 'Iscriviti gratis',
-    desc: 'Crea il tuo spazio personale in pochi secondi. Ricevi subito 7 minuti di consulto gratuito con Valeria.',
+    desc: 'Crea il tuo Diario in pochi secondi. Ricevi subito 7 minuti di consulto gratuito con Valeria.',
   },
   {
     number: '02',
@@ -18,7 +18,7 @@ const steps = [
     number: '03',
     icon: '💳',
     title: 'Continua dal tuo profilo',
-    desc: 'Se ti sei trovata bene, dal tuo spazio scegli di nuovo il tipo di consulto e poi il calendario — come la prima volta.',
+    desc: 'Se ti sei trovata bene, dal tuo Diario scegli di nuovo il tipo di consulto e poi il calendario — come la prima volta.',
   },
 ]
 

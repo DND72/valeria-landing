@@ -22,7 +22,8 @@ export default function PersonalGrowthPage() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 60% 40% at 50% 18%, rgba(34,197,94,0.06) 0%, transparent 65%)',
+          background:
+            'radial-gradient(ellipse 58% 42% at 50% 16%, rgba(74, 94, 82, 0.16) 0%, rgba(34, 55, 48, 0.08) 45%, transparent 68%)',
         }}
       />
 
@@ -148,7 +149,7 @@ export default function PersonalGrowthPage() {
               <span className="text-emerald-500/90 shrink-0">1.</span>
               <span>
                 <strong className="text-white/75">Account</strong> — come per le letture, la prenotazione passa dal tuo
-                spazio personale.
+                Diario.
               </span>
             </li>
             <li className="flex gap-3">
@@ -195,7 +196,7 @@ export default function PersonalGrowthPage() {
               to="/dashboard?consult=coaching_intro"
               className="btn-gold text-center px-8 py-3 text-sm"
             >
-              Vai al tuo spazio (10 min conoscenza)
+              Vai al tuo Diario (10 min conoscenza)
             </Link>
           )}
           {isLoaded && !user && (

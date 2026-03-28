@@ -167,7 +167,7 @@ export default function ClientDetailPage() {
             ← Elenco clienti
           </Link>
           <Link to="/dashboard" className="text-sm text-white/40 hover:text-white/60">
-            Il mio spazio
+            Il tuo Diario
           </Link>
         </div>
 

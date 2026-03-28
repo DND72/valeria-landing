@@ -44,7 +44,7 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Omaggio', icon: '🎁' },
 ]
 
-/** Settore offerta nello spazio cliente: letture vs coaching/crescita personale. */
+/** Settore offerta nel Diario cliente: letture vs coaching/crescita personale. */
 export type OfferCategory = 'tarocchi' | 'crescita'
 
 export function consultOfferCategory(kind: ConsultKind): OfferCategory {

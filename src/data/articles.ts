@@ -1,3 +1,5 @@
+import type { ConsultKind } from '../constants/consultations'
+
 export interface Article {
   slug: string
   title: string
@@ -7,6 +9,12 @@ export interface Article {
   category: string
   excerpt: string
   sections: Section[]
+  /** CTA in fondo all’articolo: domanda + pre-selezione consulto nel diario */
+  deepenCta?: {
+    question: string
+    consultKind: ConsultKind
+    track: 'tarocchi' | 'coaching'
+  }
 }
 
 interface Section {
@@ -74,6 +82,12 @@ export const articles: Article[] = [
         ],
       },
     ],
+    deepenCta: {
+      question:
+        'Vuoi approfondire questo pattern nella tua vita? Una lettura strutturata può mostrare dove la tua psiche sta già muovendosi.',
+      consultKind: 'completo',
+      track: 'tarocchi',
+    },
   },
   {
     slug: 'sillogismo-scacchistico-disciplina-interiore',
@@ -134,5 +148,11 @@ export const articles: Article[] = [
         quote: '"La scacchiera è il mondo. I pezzi sono i fenomeni dell\'universo. Le regole del gioco sono quelle che chiamiamo leggi di natura." — Thomas Huxley',
       },
     ],
+    deepenCta: {
+      question:
+        'Vuoi vedere dove si annidano i momenti critici nelle tue scelte — e quale struttura emerge dalle carte?',
+      consultKind: 'online',
+      track: 'tarocchi',
+    },
   },
 ]

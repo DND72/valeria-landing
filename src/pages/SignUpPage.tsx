@@ -19,7 +19,7 @@ export default function SignUpPage() {
         <div className="text-center">
           <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-2">Benvenuta</p>
           <h1 className="font-serif text-3xl font-bold text-white mb-2">
-            Crea il tuo <span className="gold-text">spazio</span>
+            Crea il tuo <span className="gold-text">Diario</span>
           </h1>
           <p className="text-white/50 text-sm max-w-xs mx-auto">
             Registrati e ricevi subito un <strong className="text-gold-400">consulto gratuito di 7 minuti</strong> con Valeria
