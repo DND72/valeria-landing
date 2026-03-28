@@ -14,58 +14,25 @@ const PACKAGE_BLURBS: Record<string, string> = {
     'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento Calendly a sé — al momento della prenotazione si paga quella seduta (70€). Cinque prenotazioni = cinque pagamenti; totale indicativo 350€. Non esiste un unico addebito che sblocca tutte le date: prenoti (e paghi) una seduta alla volta.',
 }
 
-/** Sfondo “alba astratta”: gradienti soffusi + texture SVG leggerissima + overlay luminoso */
+/** Alba fotografica (public/crescita-alba.png) + overlay per leggibilità testi */
 function CoachingDawnBackground() {
-  const softTexture =
-    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\")"
-
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
-      {/* Base: grigio seta → salvia molto chiaro */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 bg-no-repeat"
         style={{
-          background: 'linear-gradient(165deg, #dce3de 0%, #d4dcd4 28%, #c8d0c8 52%, #c5c9c0 100%)',
-        }}
-      />
-      {/* Alba in basso: bianco sporco e pesca gelido */}
-      <div
-        className="absolute inset-0 opacity-[0.92]"
-        style={{
-          background:
-            'radial-gradient(ellipse 95% 65% at 50% 108%, rgba(255, 252, 248, 0.98) 0%, rgba(245, 240, 232, 0.55) 42%, transparent 72%)',
+          backgroundColor: '#dfe5df',
+          backgroundImage: 'url(/crescita-alba.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'bottom center',
         }}
       />
       <div
         className="absolute inset-0"
         style={{
-          background:
-            'radial-gradient(ellipse 70% 45% at 50% 92%, rgba(255, 245, 230, 0.45) 0%, rgba(255, 250, 240, 0.12) 50%, transparent 68%)',
+          background: 'linear-gradient(to top, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.8) 100%)',
         }}
       />
-      {/* Orizzonte: striscia luminosa (inizio giornata) */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(to top, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 18%, transparent 42%)',
-        }}
-      />
-      {/* Cielo superiore: ancora un velo di notte → chiarezza */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(148, 163, 158, 0.22) 0%, transparent 38%)',
-        }}
-      />
-      {/* Texture quasi astratta */}
-      <div
-        className="absolute inset-0 mix-blend-soft-light opacity-[0.35]"
-        style={{ backgroundImage: softTexture }}
-      />
-      {/* Overlay chiaro: leggibilità e tono “studio / professionale” */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/45 via-white/25 to-white/50" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_30%,rgba(255,255,255,0.35)_0%,transparent_55%)]" />
     </div>
   )
 }
