@@ -66,20 +66,18 @@ export default function About() {
             </h2>
             <div className="space-y-4 text-white/60 leading-relaxed">
               <p>
-                Valeria Di Pace non è la solita tarologa. Prima di sedersi davanti alle carte,
-                ha attraversato tre università, calcato i set televisivi di Canale 5, gestito
-                per 15 anni una parafarmacia e attraversato percorsi alchemici ed ermetici
-                tra i più profondi che esistano.
+                Valeria Di Pace non è la solita tarologa. Il suo metodo nasce dall&apos;unione tra tre diversi percorsi
+                accademici e una ricerca interiore profonda durata oltre un ventennio.
               </p>
               <p>
-                La sua lettura dei Tarocchi di Marsiglia unisce la psicologia junghiana,
-                il pensiero strutturato del giurista, la conoscenza del corpo e della salute
-                e l'intuito affinato attraverso anni di trasmissione alchemica.
-                Non interpreta simboli a caso — legge pattern, come fa con gli scacchi.
+                La sua analisi dei Tarocchi di Marsiglia integra la psicologia del profondo con una straordinaria capacità
+                di visione d&apos;insieme. Valeria non legge simboli isolati: individua i fili invisibili che collegano gli
+                eventi, decodificando la realtà con la precisione di chi sa guardare oltre l&apos;apparenza.
               </p>
               <p>
-                Mente, corpo, spirito. Valeria conosce tutti e tre i livelli — e nelle carte
-                li vede tutti insieme. I suoi clienti tornano perché sentono la differenza.
+                Mente, corpo, spirito. Valeria conosce l&apos;interazione tra questi livelli e nelle carte li vede agire
+                simultaneamente. Chi si rivolge a lei avverte subito la differenza: non riceve solo una lettura, ma una
+                mappa chiara della propria situazione e una direzione precisa per l&apos;azione.
               </p>
             </div>
 
