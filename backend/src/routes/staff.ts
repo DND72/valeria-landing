@@ -8,6 +8,7 @@ import {
 } from '../lib/calendlyScheduledMeetings.js'
 import { requireClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 import { registerStaffClientRoutes } from './staffClientsRoutes.js'
+import { serviceKindFromEventName } from '../lib/consultServiceLabel.js'
 import { registerStaffBlogCommentRoutes } from './staffBlogCommentsRoutes.js'
 import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 
@@ -181,12 +182,19 @@ export function createStaffRouter(pool: Pool): Router {
       const { rows } = await pool.query(
         `SELECT id, clerk_user_id, calendly_event_uri, status, is_free_consult,
                 meeting_join_url, meeting_provider, invitee_email, invitee_name,
-                start_at, end_at, paypal_order_id, created_at, updated_at
+                start_at, end_at, paypal_order_id, calendly_event_name, created_at, updated_at
          FROM consults
          ORDER BY start_at DESC NULLS LAST, created_at DESC
          LIMIT 200`
       )
-      res.json({ consults: rows })
+      res.json({
+        consults: rows.map((row) => ({
+          ...row,
+          service_kind: serviceKindFromEventName(
+            typeof row.calendly_event_name === 'string' ? row.calendly_event_name : null
+          ),
+        })),
+      })
     } catch (e) {
       console.error('[staff consults]', e)
       res.status(500).json({ error: 'Errore database' })
@@ -226,11 +234,19 @@ export function createStaffRouter(pool: Pool): Router {
       await pool.query(`UPDATE consults SET ${sets.join(', ')} WHERE id = $${i}`, vals)
       const row = await pool.query(
         `SELECT id, clerk_user_id, calendly_event_uri, status, is_free_consult,
-                meeting_join_url, invitee_email, start_at, end_at, updated_at
+                meeting_join_url, invitee_email, start_at, end_at, calendly_event_name, updated_at
          FROM consults WHERE id = $1`,
         [id]
       )
-      res.json({ consult: row.rows[0] })
+      const r0 = row.rows[0]!
+      res.json({
+        consult: {
+          ...r0,
+          service_kind: serviceKindFromEventName(
+            typeof r0.calendly_event_name === 'string' ? r0.calendly_event_name : null
+          ),
+        },
+      })
     } catch (e) {
       console.error('[staff patch consult]', e)
       res.status(500).json({ error: 'Errore database' })
@@ -243,7 +259,7 @@ export function createStaffRouter(pool: Pool): Router {
       const c = await pool.query(
         `SELECT id, clerk_user_id, calendly_event_uri, calendly_invitee_uri, status, is_free_consult,
                 meeting_join_url, meeting_provider, invitee_email, invitee_name,
-                start_at, end_at, paypal_order_id, raw_payload, created_at, updated_at
+                start_at, end_at, paypal_order_id, calendly_event_name, raw_payload, created_at, updated_at
          FROM consults WHERE id = $1`,
         [id]
       )
@@ -256,7 +272,16 @@ export function createStaffRouter(pool: Pool): Router {
          FROM consult_notes WHERE consult_id = $1 ORDER BY created_at ASC`,
         [id]
       )
-      res.json({ consult: c.rows[0], notes: notes.rows })
+      const row = c.rows[0]!
+      res.json({
+        consult: {
+          ...row,
+          service_kind: serviceKindFromEventName(
+            typeof row.calendly_event_name === 'string' ? row.calendly_event_name : null
+          ),
+        },
+        notes: notes.rows,
+      })
     } catch (e) {
       console.error('[staff consult detail]', e)
       res.status(500).json({ error: 'Errore database' })

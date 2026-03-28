@@ -1,8 +1,14 @@
 import { useAuth, useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
+import {
+  clientServiceMixFromKinds,
+  type ClientServiceMix,
+  type ServiceKind,
+  serviceKindFromEventName,
+} from '../lib/consultServiceLabel'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 
@@ -49,6 +55,7 @@ type ConsultRow = {
   id: string
   clerk_user_id: string | null
   calendly_event_uri: string | null
+  calendly_event_name?: string | null
   status: string
   is_free_consult: boolean
   meeting_join_url: string | null
@@ -60,6 +67,26 @@ type ConsultRow = {
   paypal_order_id: string | null
   created_at: string
   updated_at: string
+  service_kind?: ServiceKind
+}
+
+function badgeClassService(kind: ServiceKind): string {
+  if (kind === 'tarocchi') return 'bg-violet-500/20 text-violet-200 border-violet-500/35'
+  if (kind === 'coaching') return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/35'
+  return 'bg-white/10 text-white/45 border-white/15'
+}
+
+function labelService(kind: ServiceKind): string {
+  if (kind === 'tarocchi') return 'Tarocchi'
+  if (kind === 'coaching') return 'Coaching'
+  return 'Non class.'
+}
+
+function labelClientMix(mix: ClientServiceMix): string {
+  if (mix === 'entrambi') return 'Cliente: tarocchi e coaching'
+  if (mix === 'tarocchi') return 'Cliente: solo tarocchi'
+  if (mix === 'coaching') return 'Cliente: solo coaching'
+  return 'Cliente: tipo non chiaro'
 }
 
 type NoteRow = {
@@ -213,6 +240,23 @@ export default function ControlRoom() {
     }, 60_000)
     return () => clearInterval(t)
   }, [user, isLoaded, loadList])
+
+  const clientMixByEmail = useMemo(() => {
+    const kindsByEmail = new Map<string, ServiceKind[]>()
+    for (const c of list) {
+      const em = (c.invitee_email || '').toLowerCase().trim()
+      if (!em) continue
+      const k = c.service_kind ?? 'unknown'
+      const arr = kindsByEmail.get(em) ?? []
+      arr.push(k)
+      kindsByEmail.set(em, arr)
+    }
+    const out = new Map<string, ClientServiceMix>()
+    for (const [em, kinds] of kindsByEmail) {
+      out.set(em, clientServiceMixFromKinds(kinds))
+    }
+    return out
+  }, [list])
 
   if (!isLoaded || !user) return null
   if (!isPrivilegedClerkUser(user)) return null
@@ -460,32 +504,43 @@ export default function ControlRoom() {
                     <tr className="bg-white/[0.04] text-white/50 text-xs uppercase tracking-wide">
                       <th className="py-2.5 px-3 font-medium whitespace-nowrap">Data e ora</th>
                       <th className="py-2.5 px-3 font-medium">Cliente</th>
-                      <th className="py-2.5 px-3 font-medium">Tipo</th>
+                      <th className="py-2.5 px-3 font-medium">Tipo evento</th>
+                      <th className="py-2.5 px-3 font-medium">Indicativo</th>
                       <th className="py-2.5 px-3 font-medium">Link</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {meetings.meetings.map((m, i) => (
-                      <tr key={`${m.startAt}-${i}`} className="border-t border-white/[0.06]">
-                        <td className="py-2 px-3 text-white/85 whitespace-nowrap">{formatWhen(m.startAt)}</td>
-                        <td className="py-2 px-3 text-white/70">{m.inviteeSummary}</td>
-                        <td className="py-2 px-3 text-white/55">{m.eventName}</td>
-                        <td className="py-2 px-3">
-                          {m.joinUrl ? (
-                            <a
-                              href={m.joinUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gold-400 hover:underline text-xs"
+                    {meetings.meetings.map((m, i) => {
+                      const sk = serviceKindFromEventName(m.eventName)
+                      return (
+                        <tr key={`${m.startAt}-${i}`} className="border-t border-white/[0.06]">
+                          <td className="py-2 px-3 text-white/85 whitespace-nowrap">{formatWhen(m.startAt)}</td>
+                          <td className="py-2 px-3 text-white/70">{m.inviteeSummary}</td>
+                          <td className="py-2 px-3 text-white/55">{m.eventName}</td>
+                          <td className="py-2 px-3">
+                            <span
+                              className={`inline-block text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border ${badgeClassService(sk)}`}
                             >
-                              Entra
-                            </a>
-                          ) : (
-                            <span className="text-white/25">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                              {labelService(sk)}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3">
+                            {m.joinUrl ? (
+                              <a
+                                href={m.joinUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gold-400 hover:underline text-xs"
+                              >
+                                Entra
+                              </a>
+                            ) : (
+                              <span className="text-white/25">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -538,12 +593,20 @@ export default function ControlRoom() {
                   >
                     <p className="text-white text-sm font-medium truncate">{c.invitee_name || c.invitee_email || 'Senza nome'}</p>
                     <p className="text-white/40 text-xs truncate">{c.invitee_email}</p>
-                    <div className="flex flex-wrap gap-2 mt-1.5">
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
                       <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-white/10 text-white/70">
                         {c.status}
                       </span>
+                      <span
+                        className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border ${badgeClassService(c.service_kind ?? 'unknown')}`}
+                      >
+                        {labelService(c.service_kind ?? 'unknown')}
+                      </span>
                       <span className="text-[10px] text-white/35">{formatWhen(c.start_at)}</span>
                     </div>
+                    {c.invitee_email && clientMixByEmail.get(c.invitee_email.toLowerCase().trim()) === 'entrambi' && (
+                      <p className="text-[10px] text-gold-500/85 mt-1.5">Percorso misto (tarocchi + coaching)</p>
+                    )}
                   </button>
                 </li>
               ))}
@@ -588,6 +651,30 @@ export default function ControlRoom() {
                       <dt className="text-white/40">Clerk cliente</dt>
                       <dd className="text-white/90 font-mono text-xs break-all">{detailConsult.clerk_user_id || '—'}</dd>
                     </div>
+                    <div>
+                      <dt className="text-white/40">Tipo evento (Calendly)</dt>
+                      <dd className="text-white/90">{detailConsult.calendly_event_name?.trim() || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-white/40">Indicativo</dt>
+                      <dd>
+                        <span
+                          className={`inline-block text-xs uppercase tracking-wide px-2 py-0.5 rounded border ${badgeClassService(detailConsult.service_kind ?? 'unknown')}`}
+                        >
+                          {labelService(detailConsult.service_kind ?? 'unknown')}
+                        </span>
+                      </dd>
+                    </div>
+                    {detailConsult.invitee_email && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-white/40">Profilo cliente (da elenco)</dt>
+                        <dd className="text-white/75 text-sm">
+                          {labelClientMix(
+                            clientMixByEmail.get(detailConsult.invitee_email.toLowerCase().trim()) ?? 'sconosciuto'
+                          )}
+                        </dd>
+                      </div>
+                    )}
                     <div className="sm:col-span-2">
                       <dt className="text-white/40">Link riunione</dt>
                       <dd className="text-white/90">

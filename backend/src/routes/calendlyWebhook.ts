@@ -54,6 +54,7 @@ function pickJoinUrl(payload: unknown): { url: string | null; provider: string |
 
 function pickEventFields(payload: unknown): {
   eventUri: string | null
+  eventName: string | null
   inviteeUri: string | null
   inviteeEmail: string | null
   inviteeName: string | null
@@ -62,6 +63,7 @@ function pickEventFields(payload: unknown): {
 } {
   const out = {
     eventUri: null as string | null,
+    eventName: null as string | null,
     inviteeUri: null as string | null,
     inviteeEmail: null as string | null,
     inviteeName: null as string | null,
@@ -77,6 +79,7 @@ function pickEventFields(payload: unknown): {
   if (ev && typeof ev === 'object') {
     const e = ev as Record<string, unknown>
     if (typeof e.uri === 'string') out.eventUri = e.uri
+    if (typeof e.name === 'string' && e.name.trim()) out.eventName = e.name.trim()
     if (typeof e.start_time === 'string') out.startAt = e.start_time
     if (typeof e.end_time === 'string') out.endAt = e.end_time
   }
@@ -141,8 +144,8 @@ export function createCalendlyWebhookHandler(pool: Pool): RequestHandler {
         `INSERT INTO consults (
           calendly_event_uri, calendly_invitee_uri, status,
           meeting_join_url, meeting_provider,
-          invitee_email, invitee_name, start_at, end_at, raw_payload, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, now())
+          invitee_email, invitee_name, start_at, end_at, calendly_event_name, raw_payload, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, now())
         ON CONFLICT (calendly_event_uri) DO UPDATE SET
           calendly_invitee_uri = COALESCE(EXCLUDED.calendly_invitee_uri, consults.calendly_invitee_uri),
           status = EXCLUDED.status,
@@ -152,6 +155,7 @@ export function createCalendlyWebhookHandler(pool: Pool): RequestHandler {
           invitee_name = COALESCE(EXCLUDED.invitee_name, consults.invitee_name),
           start_at = COALESCE(EXCLUDED.start_at, consults.start_at),
           end_at = COALESCE(EXCLUDED.end_at, consults.end_at),
+          calendly_event_name = COALESCE(EXCLUDED.calendly_event_name, consults.calendly_event_name),
           raw_payload = EXCLUDED.raw_payload,
           updated_at = now()`,
         [
@@ -164,6 +168,7 @@ export function createCalendlyWebhookHandler(pool: Pool): RequestHandler {
           fields.inviteeName,
           fields.startAt,
           fields.endAt,
+          fields.eventName,
           JSON.stringify(body),
         ]
       )
