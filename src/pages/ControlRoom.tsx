@@ -6,6 +6,26 @@ import { apiJson, ApiError } from '../lib/api'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 
+const CALENDLY_SCHEDULES_URL = 'https://calendly.com/app/availability/schedules'
+
+type StaffCalendlyAvailability =
+  | {
+      configured: true
+      userTimeZone: string | null
+      schedules: Array<{
+        name: string
+        timeZone: string | null
+        weekdays: Array<{ key: string; label: string; intervals: string[] }>
+        exceptions: string[]
+      }>
+    }
+  | {
+      configured: false
+      userTimeZone: null
+      schedules: []
+      message: string
+    }
+
 type ConsultRow = {
   id: string
   clerk_user_id: string | null
@@ -61,6 +81,28 @@ export default function ControlRoom() {
 
   const [statusDraft, setStatusDraft] = useState<string>('scheduled')
 
+  const [availability, setAvailability] = useState<StaffCalendlyAvailability | null>(null)
+  const [availabilityLoading, setAvailabilityLoading] = useState(() => Boolean(getApiBaseUrl()))
+
+  const loadAvailability = useCallback(async () => {
+    if (!apiConfigured) return
+    setAvailabilityLoading(true)
+    try {
+      const data = await apiJson<StaffCalendlyAvailability>(getToken, '/api/staff/calendly-availability')
+      setAvailability(data)
+    } catch (e) {
+      setAvailability({
+        configured: false,
+        userTimeZone: null,
+        schedules: [],
+        message:
+          e instanceof ApiError ? String(e.message) : 'Impossibile caricare le disponibilità da Calendly.',
+      })
+    } finally {
+      setAvailabilityLoading(false)
+    }
+  }, [getToken, apiConfigured])
+
   const loadList = useCallback(async () => {
     if (!apiConfigured) {
       setLoading(false)
@@ -107,7 +149,8 @@ export default function ControlRoom() {
       return
     }
     void loadList()
-  }, [isLoaded, user, navigate, loadList])
+    void loadAvailability()
+  }, [isLoaded, user, navigate, loadList, loadAvailability])
 
   useEffect(() => {
     if (!selectedId) {
@@ -206,6 +249,111 @@ export default function ControlRoom() {
             </Link>
           </div>
         </motion.div>
+
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.02 }}
+          className="mystical-card mb-8"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+            <div>
+              <h2 className="font-serif text-lg text-white">Disponibilità settimanale</h2>
+              <p className="text-white/45 text-sm mt-1 max-w-2xl">
+                Riepilogo informativo di quanto è già impostato su Calendly (fasce ricorrenti e, se presenti, date
+                specifiche). Per modificare orari e settimana usa il pulsante qui sotto.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => void loadAvailability()}
+                className="btn-outline text-sm px-4 py-2"
+                disabled={!apiConfigured || availabilityLoading}
+              >
+                {availabilityLoading ? 'Sincronizzazione…' : 'Sincronizza da Calendly'}
+              </button>
+              <a
+                href={CALENDLY_SCHEDULES_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-gold text-sm px-4 py-2 text-center"
+              >
+                Aggiorna disponibilità
+              </a>
+            </div>
+          </div>
+
+          {!apiConfigured && (
+            <p className="text-amber-200/85 text-sm">
+              Collega il backend (<code className="text-amber-300/90">VITE_API_URL</code>) per leggere le disponibilità
+              da Calendly.
+            </p>
+          )}
+
+          {apiConfigured && availabilityLoading && !availability && (
+            <p className="text-white/45 text-sm">Caricamento disponibilità…</p>
+          )}
+
+          {apiConfigured && availability && !availability.configured && (
+            <div className="rounded-lg border border-amber-600/25 bg-amber-950/20 px-4 py-3 text-sm text-amber-100/90">
+              {availability.message}
+            </div>
+          )}
+
+          {apiConfigured && availability?.configured && availability.userTimeZone && (
+            <p className="text-xs text-white/35 mb-3">Fuso orario account Calendly: {availability.userTimeZone}</p>
+          )}
+
+          {apiConfigured && availability?.configured && availability.schedules.length === 0 && !availabilityLoading && (
+            <p className="text-white/45 text-sm">Nessun programma di disponibilità restituito dall&apos;API Calendly.</p>
+          )}
+
+          {availability?.configured &&
+            availability.schedules.map((sched, idx) => (
+              <div
+                key={`${sched.name}-${idx}`}
+                className={idx === 0 ? '' : 'mt-6 pt-6 border-t border-white/10'}
+              >
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                  <h3 className="font-semibold text-white text-sm">{sched.name}</h3>
+                  {sched.timeZone && (
+                    <span className="text-[11px] text-white/35 uppercase tracking-wide">· {sched.timeZone}</span>
+                  )}
+                </div>
+                <div className="overflow-x-auto rounded-lg border border-white/10">
+                  <table className="w-full text-sm text-left min-w-[280px]">
+                    <thead>
+                      <tr className="bg-white/[0.04] text-white/50 text-xs uppercase tracking-wide">
+                        <th className="py-2.5 px-3 font-medium w-[40%]">Giorno</th>
+                        <th className="py-2.5 px-3 font-medium">Fasce orarie</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sched.weekdays.map((row) => (
+                        <tr key={row.key} className="border-t border-white/[0.06]">
+                          <td className="py-2 px-3 text-white/85 whitespace-nowrap">{row.label}</td>
+                          <td className="py-2 px-3 text-white/55">
+                            {row.intervals.length > 0 ? row.intervals.join(' · ') : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {sched.exceptions.length > 0 && (
+                  <div className="mt-3 text-xs text-white/45">
+                    <p className="font-medium text-white/55 mb-1.5">Regole su date specifiche</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {sched.exceptions.map((ex, i) => (
+                        <li key={i}>{ex}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+        </motion.section>
 
         {!apiConfigured && (
           <div className="mystical-card border border-amber-600/30 text-amber-200/90 text-sm mb-8">

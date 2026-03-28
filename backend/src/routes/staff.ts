@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
+import { getStaffAvailabilityOrError } from '../lib/calendlyAvailability.js'
 import { requireClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 
 const noteBody = z.object({
@@ -20,6 +21,17 @@ const patchConsult = z
 export function createStaffRouter(pool: Pool): Router {
   const r = Router()
   r.use(requireClerkAuth, requireStaff)
+
+  r.get('/calendly-availability', async (_req, res) => {
+    try {
+      const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN
+      const payload = await getStaffAvailabilityOrError(token)
+      res.json(payload)
+    } catch (e) {
+      console.error('[staff calendly-availability]', e)
+      res.status(500).json({ error: 'Errore server' })
+    }
+  })
 
   r.get('/consults', async (_req, res) => {
     try {

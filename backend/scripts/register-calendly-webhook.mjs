@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Registra su Calendly l'URL del webhook verso questo backend (una tantum).
- * Usa il Personal Access Token con scope webhooks:write.
+ * Usa il Personal Access Token con scope webhooks:write (e users:read).
+ * Per la Control Room serve anche availability:read sullo stesso PAT.
  *
  * In backend/.env:
  *   CALENDLY_PERSONAL_ACCESS_TOKEN=...
