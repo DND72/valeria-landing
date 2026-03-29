@@ -9,7 +9,7 @@ import type { ConsultKind } from './consultations'
  *   VITE_CALENDLY_CONSULTO_BREVE, VITE_CALENDLY_CONSULTO_ONLINE, VITE_CALENDLY_CONSULTO_COMPLETO
  *   VITE_CALENDLY_COACHING_INTRO (10 min gratuiti · conoscenza)
  *   VITE_CALENDLY_COACHING_60 (1 h · es. 80€)
- *   VITE_CALENDLY_COACHING_PACK5 (pacchetto 5 sedute · es. 400€ indicativi)
+ *   VITE_CALENDLY_COACHING_PACK5 (pacchetto 5 sedute · 60€/seduta · es. 300€ indicativi)
  *   VITE_CALENDLY_FREE
  */
 const DEFAULT_BOOKING =

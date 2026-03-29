@@ -11,7 +11,7 @@ const PACKAGE_BLURBS: Record<string, string> = {
   coaching_60:
     'Una sessione da un’ora (80€ su Calendly, come da evento): lavoro su priorità, abitudini e direzione — video o telefono.',
   coaching_pack5:
-    'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento Calendly a sé — al momento della prenotazione si paga quella seduta (80€). Cinque prenotazioni = cinque pagamenti; totale indicativo 400€. Non esiste un unico addebito che sblocca tutte le date: prenoti (e paghi) una seduta alla volta.',
+    'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento Calendly a sé — al momento della prenotazione si paga quella seduta (60€). Cinque prenotazioni = cinque pagamenti; totale indicativo 300€. Non esiste un unico addebito che sblocca tutte le date: prenoti (e paghi) una seduta alla volta.',
 }
 
 /** Alba fotografica (public/crescita-alba.png) + overlay per leggibilità testi */
@@ -97,9 +97,9 @@ export default function PersonalGrowthPage() {
             Pacchetti
           </h2>
           <p className="text-slate-500 text-sm text-center max-w-2xl mx-auto mb-8">
-            Conoscenza gratuita (10 min), sedute singole a <strong className="text-slate-700">80€</strong>, oppure un
-            percorso di <strong className="text-slate-700">cinque sedute</strong>: cinque appuntamenti distinti,{' '}
-            <strong className="text-slate-700">80€ a ogni prenotazione</strong> (totale indicativo 400€).
+            Conoscenza gratuita (10 min), <strong className="text-slate-700">seduta singola 80€</strong>, oppure
+            percorso <strong className="text-slate-700">cinque sedute</strong> a{' '}
+            <strong className="text-slate-700">60€ a ogni prenotazione</strong> (totale indicativo 300€).
           </p>
           <div className="grid md:grid-cols-3 gap-5">
             {COACHING_PACKAGES.map((pkg, i) => {
@@ -185,7 +185,7 @@ export default function PersonalGrowthPage() {
               <span>
                 <strong className="text-slate-800">Pacchetto 5 sedute</strong> — il cliente prenota (e paga){' '}
                 <strong className="text-slate-800">una seduta alla volta</strong> sullo stesso tipo di evento Calendly
-                (80€ per appuntamento, di solito con PayPal in checkout). Ripete per le cinque date. Il sito non
+                (60€ per appuntamento del pacchetto 5 sedute, di solito con PayPal in checkout). Ripete per le cinque date. Il sito non
                 &quot;blocca&quot; in automatico le cinque prenotazioni: il percorso è chiaro dalle regole e dal
                 dialogo con Valeria.
               </span>
