@@ -23,8 +23,8 @@ function CoachingDawnBackground() {
         style={{
           backgroundColor: '#dfe5df',
           backgroundImage: 'url(/crescita-alba.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'bottom center',
+          backgroundSize: 'contain',
+          backgroundPosition: 'center top',
         }}
       />
       <div
