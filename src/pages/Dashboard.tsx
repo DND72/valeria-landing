@@ -597,6 +597,16 @@ export default function Dashboard() {
               className="mb-10 scroll-mt-28"
             >
               <h2 className="font-serif text-xl font-bold text-white mb-1">I tuoi consulti</h2>
+              <div className="flex flex-wrap items-center gap-3 text-white/60 text-xs mt-2 mb-4 px-4 py-2.5 border border-white/10 rounded-lg bg-white/[0.02] w-fit">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-gold-500 text-sm">⭐</span> 
+                  <span>Valutazione media <strong className="text-gold-400/90 font-medium">4,97/5</strong> su 261 recensioni · <strong className="text-white font-medium">776</strong> commenti positivi</span>
+                </span>
+                <span className="text-white/20 hidden sm:inline">|</span>
+                <Link to="/#recensioni" className="text-gold-500/80 hover:text-gold-400 hover:underline transition-colors">
+                  Leggi alcune recensioni
+                </Link>
+              </div>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Storico degli appuntamenti collegati al tuo account (stessa email con cui prenoti su Calendly). Le note
                 interne di Valeria non sono visibili qui.

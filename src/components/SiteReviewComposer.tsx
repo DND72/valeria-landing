@@ -119,7 +119,7 @@ export default function SiteReviewComposer() {
         <h3 className="font-serif text-lg text-white mb-2">Recensione sul sito</h3>
         <p className="text-white/45 text-sm mb-2">
           La prima recensione si sblocca dopo il <strong className="text-white/70">terzo consulto a pagamento</strong>{' '}
-          completato nel sistema — così riflette un percorso, non un primo incontro a caldo.
+          completato nel sistema. Ci teniamo molto: questo ci permette di avere un'opinione basata su un percorso vero e condiviso, e non solo su una singola chiamata a caldo.
         </p>
         <p className="text-white/35 text-xs">
           Consulti a pagamento completati finora: <strong>{paidConsultsCompleted}</strong> / 3
