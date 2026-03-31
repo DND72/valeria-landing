@@ -13,6 +13,10 @@ export default function PrivacySealNote({ className = '' }: Props) {
         <strong className="font-medium text-gold-400/90">segreto professionale</strong> e dalla tecnologia più avanzata.
         La tua privacy è il nostro{' '}
         <span className="font-serif italic text-gold-400/95">Sigillo del Silenzio</span>.
+        <span className="block mt-2 text-xs text-white/40">
+          Dati gestiti secondo GDPR, privacy policy Iubenda. <span className="hidden sm:inline">| </span>
+          <br className="sm:hidden" />Le letture dei tarocchi sono offerte a scopo di orientamento e intrattenimento.
+        </span>
       </p>
     </div>
   )

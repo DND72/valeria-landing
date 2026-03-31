@@ -421,7 +421,7 @@ export default function Dashboard() {
                         min telefono), più eventuale consulto omaggio (7 min). Focus su simboli, situazioni e orientamento
                         rispetto alle domande che porti.
                       </p>
-                      <span className="text-gold-500 text-xs font-medium">Apri le opzioni Tarocchi →</span>
+                      <span className="text-gold-500 text-sm font-medium hover:underline">Scegli un consulto Tarocchi →</span>
                     </div>
                   </div>
                 </button>
@@ -442,10 +442,10 @@ export default function Dashboard() {
                       <h3 className="font-serif text-lg font-bold text-white mb-1">Crescita personale · coaching</h3>
                       <p className="text-white/50 text-sm leading-relaxed mb-3">
                         Percorsi su obiettivi, abitudini, scelte e direzione: conoscenza gratuita (10 min), seduta singola
-                        (60 min) o pacchetto da cinque sedute (prenotazione e pagamento una seduta alla volta). Sessioni in
-                        video o telefono — non centrate necessariamente su una stesa di carte.
+                        (60 min) o pacchetto da cinque sedute. Se dalle Carte è emerso un tema forte (lavoro, amore, cambiamento), 
+                        qui lo trasformiamo in azione con strumenti di coaching.
                       </p>
-                      <span className="text-emerald-400/90 text-xs font-medium">Apri le opzioni Coaching →</span>
+                      <span className="text-emerald-400/90 text-sm font-medium hover:underline">Scegli una consulenza di coaching →</span>
                     </div>
                   </div>
                 </button>
