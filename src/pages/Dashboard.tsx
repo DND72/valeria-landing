@@ -721,17 +721,53 @@ export default function Dashboard() {
                       }
                     </p>
 
-                    <div className="flex flex-wrap gap-3">
-                      <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 inline-block hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-shadow">
-                        Inizia il percorso da questa lettura
-                      </a>
-                      
-                      {myConsults && myConsults.length > 0 && (
-                        <a href="#storico" onClick={(e)=>e.preventDefault()} className="btn-outline text-sm px-5 py-2 inline-block border-white/20 text-white/70 hover:bg-white/5">
-                          Rivedi le tue letture e scegli
+                    {myConsults && myConsults.length > 0 ? (
+                      <div className="mt-6 border-t border-emerald-500/20 pt-5">
+                        <h4 className="text-white/90 text-sm font-semibold mb-3 uppercase tracking-wider">Cosa puoi fare adesso</h4>
+                        <div className="grid md:grid-cols-2 gap-4 mb-5">
+                          {/* Opzione 1 */}
+                          <div className="bg-dark-400/50 border border-white/10 rounded-lg p-4 hover:border-gold-500/30 transition-colors">
+                            <h5 className="text-gold-400 font-medium text-sm mb-1.5 flex items-center gap-2">
+                              <span aria-hidden>🔮</span> Approfondimento mirato
+                            </h5>
+                            <p className="text-white/50 text-xs leading-relaxed">
+                              Consulto breve focalizzato esclusivamente sulla domanda di oggi per sciogliere gli ultimi dubbi.
+                            </p>
+                          </div>
+                          {/* Opzione 2 */}
+                          <div className="bg-dark-400/50 border border-emerald-500/20 rounded-lg p-4 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+                            <h5 className="text-emerald-400 font-medium text-sm mb-1.5 flex items-center gap-2">
+                              <span aria-hidden>🌱</span> Percorso di trasformazione
+                            </h5>
+                            <p className="text-white/50 text-xs leading-relaxed">
+                              Inizia un percorso (2-3 incontri) in cui usiamo i Tarocchi come bussola e il dialogo come strumento per trasformare ciò che è emerso in azioni concrete.
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-4 items-center">
+                          <button 
+                            onClick={() => {
+                              setOfferCategory('crescita');
+                              document.getElementById('scegli-consulto')?.scrollIntoView({ behavior: 'smooth' });
+                            }} 
+                            className="btn-gold text-sm px-6 py-2.5 inline-block font-medium hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-shadow"
+                          >
+                            Inizia il tuo percorso da questa lettura
+                          </button>
+                          <a href="#storico" onClick={(e)=>e.preventDefault()} className="text-white/40 hover:text-white/70 text-xs underline transition-colors">
+                            Rivedi le letture passate
+                          </a>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-3 mt-4">
+                        <a href="#scegli-consulto" className="btn-gold text-sm px-6 py-2.5 inline-block font-medium hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-shadow">
+                          Prenota il tuo primo consulto
                         </a>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
