@@ -145,7 +145,7 @@ export default function Reviews() {
           </p>
         </motion.div>
 
-        {/* Rating sito (dinamico) + legacy piattaforme */}
+        {/* Rating sito (dinamico) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -161,24 +161,6 @@ export default function Reviews() {
             <p className="text-white/40 text-xs mt-1">
               {apiLoaded ? `${siteCount} recensioni sul sito` : '…'}
             </p>
-          </div>
-          <div className="w-px h-16 bg-white/10 hidden sm:block" />
-          <div className="text-center">
-            <div className="font-serif text-5xl gold-number">4,97</div>
-            <StarsRating value={5} size="md" className="justify-center mt-1" />
-            <p className="text-white/40 text-xs mt-1">261 recensioni certificate</p>
-          </div>
-          <div className="w-px h-16 bg-white/10 hidden sm:block" />
-          <div className="text-center">
-            <div className="font-serif text-5xl gold-number">776</div>
-            <p className="text-white/60 text-sm font-medium mt-1">commenti positivi</p>
-            <p className="text-white/40 text-xs mt-0.5">Piattaforma certificata</p>
-          </div>
-          <div className="w-px h-16 bg-white/10 hidden sm:block" />
-          <div className="text-center">
-            <div className="font-serif text-5xl gold-number">3.359</div>
-            <p className="text-white/60 text-sm font-medium mt-1">consulti completati</p>
-            <p className="text-white/40 text-xs mt-0.5">su piattaforme certificate</p>
           </div>
         </motion.div>
 

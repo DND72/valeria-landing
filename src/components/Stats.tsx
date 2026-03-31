@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 interface StatItem {
-  value: number
-  suffix: string
+  value: string
   label: string
   sublabel: string
   icon: string
@@ -11,78 +9,35 @@ interface StatItem {
 
 const stats: StatItem[] = [
   {
-    value: 3359,
-    suffix: '',
+    value: '3.359',
     label: 'Consulti effettuati',
-    sublabel: 'su piattaforme certificate',
+    sublabel: 'su piattaforma certificata',
     icon: '📞',
   },
   {
-    value: 497,
-    suffix: '',
+    value: '4,97/5',
     label: 'Media recensioni',
-    sublabel: '4,97 / 5 · su 261 valutazioni',
+    sublabel: 'su 261 valutazioni',
     icon: '⭐',
   },
   {
-    value: 1037,
-    suffix: '+',
-    label: 'Feedback positivi',
-    sublabel: 'sulle principali piattaforme',
+    value: '776',
+    label: 'Commenti positivi',
+    sublabel: 'su piattaforma certificata',
     icon: '💬',
   },
   {
-    value: 10,
-    suffix: '+',
+    value: '10+',
     label: 'Anni di pratica',
     sublabel: 'con trasmissione alchemica',
     icon: '🌙',
   },
 ]
 
-function AnimatedNumber({ target, suffix, active }: { target: number; suffix: string; active: boolean }) {
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    if (!active) return
-    const duration = 2000
-    const steps = 60
-    const increment = target / steps
-    let current = 0
-    const timer = setInterval(() => {
-      current += increment
-      if (current >= target) {
-        setCount(target)
-        clearInterval(timer)
-      } else {
-        setCount(Math.floor(current))
-      }
-    }, duration / steps)
-    return () => clearInterval(timer)
-  }, [active, target])
-
-  if (target === 497) {
-    return (
-      <span>
-        {active ? '4,97' : '0,00'}
-      </span>
-    )
-  }
-
-  return (
-    <span>
-      {count.toLocaleString('it-IT')}
-      {suffix}
-    </span>
-  )
-}
 
 export default function Stats() {
-  const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-100px' })
-
   return (
-    <section id="numeri" className="py-24 px-6 relative" ref={ref}>
+    <section id="numeri" className="py-24 px-6 relative">
       <div className="section-divider" />
 
       <div className="max-w-6xl mx-auto">
@@ -113,7 +68,7 @@ export default function Stats() {
             >
               <div className="text-4xl mb-3">{stat.icon}</div>
               <div className="font-serif text-3xl md:text-4xl gold-number mb-1">
-                <AnimatedNumber target={stat.value} suffix={stat.suffix} active={inView} />
+                {stat.value}
               </div>
               <div className="text-white font-medium text-sm mb-1">{stat.label}</div>
               <div className="text-white/40 text-xs">{stat.sublabel}</div>
