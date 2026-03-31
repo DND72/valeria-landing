@@ -620,50 +620,52 @@ export default function Dashboard() {
               {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length === 0 && (
                 <div className="mystical-card border border-white/10">
                   <p className="text-white/50 text-sm">
-                    Non risultano ancora consulti collegati. Dopo una prenotazione tramite Calendly con la stessa email
-                    del tuo accesso, l&apos;appuntamento comparirà qui.
+                    Non risultano ancora consulti collegati. Quando prenoterai tramite Calendly con la stessa email del tuo account, l'avanzare del tuo percorso comparirà proprio qui.
                   </p>
+                  
+                  {/* Anteprima visiva della timeline futura (vuoto/onboarding) */}
+                  <div className="relative mt-8 mb-2 mx-2 pl-5 border-l-2 border-white/10 space-y-6 opacity-30 select-none pointer-events-none">
+                    <div className="relative">
+                      <div className="absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full bg-white/20 ring-4 ring-dark-500" />
+                      <div className="border border-white/5 bg-white/[0.01] rounded-lg p-3">
+                        <span className="text-white/30 text-xs font-mono">Data futura</span>
+                        <h4 className="text-white/50 font-medium text-sm">Il tuo primo consulto</h4>
+                        <div className="mt-2 pt-2 border-t border-white/5">
+                          <p className="text-white/30 text-[11px] uppercase tracking-wide mb-1">Focus del consulto:</p>
+                          <p className="text-white/40 text-sm italic">&ldquo;Es. Svolta di lavoro o Relazione&rdquo;</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
               {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length > 0 && (
-                <div className="mystical-card p-0 overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[320px]">
-                    <thead>
-                      <tr className="border-b border-white/10 text-white/45 text-xs uppercase tracking-wide">
-                        <th className="py-3 px-4 font-medium">Data / ora</th>
-                        <th className="py-3 px-4 font-medium">Tipo</th>
-                        <th className="py-3 px-4 font-medium">Stato</th>
-                        <th className="py-3 px-4 font-medium">Link</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {myConsults.map((c) => (
-                        <tr key={c.id} className="border-t border-white/[0.06]">
-                          <td className="py-2.5 px-4 text-white/85 whitespace-nowrap">
-                            {formatConsultWhen(c.start_at)}
-                          </td>
-                          <td className="py-2.5 px-4 text-white/60">
-                            {c.is_free_consult ? 'Omaggio' : 'A pagamento'}
-                          </td>
-                          <td className="py-2.5 px-4 text-white/50 text-xs uppercase">{c.status}</td>
-                          <td className="py-2.5 px-4">
-                            {c.meeting_join_url ? (
-                              <a
-                                href={c.meeting_join_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gold-500/90 hover:underline text-xs"
-                              >
-                                Entra
-                              </a>
-                            ) : (
-                              <span className="text-white/25">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="relative pl-5 border-l-2 border-gold-600/30 space-y-6 my-6 ml-2">
+                  {myConsults.map((c) => (
+                    <div key={c.id} className="relative">
+                      <div className="absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full bg-gold-400 ring-4 ring-dark-500" />
+                      <div className="mystical-card bg-white/[0.02] border border-white/10 p-4 shadow-sm">
+                        <div className="flex flex-wrap justify-between items-start gap-4 mb-2">
+                          <div>
+                            <span className="text-gold-500/80 text-xs font-mono">{formatConsultWhen(c.start_at)}</span>
+                            <h4 className="text-white font-medium text-sm mt-0.5">{c.is_free_consult ? 'Consulto Omaggio (7m)' : 'Consulto a Pagamento'}</h4>
+                          </div>
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-white/10 text-white/40">{c.status}</span>
+                        </div>
+                        
+                        <div className="mt-3 pt-3 border-t border-white/5">
+                          <p className="text-white/40 text-[11px] uppercase tracking-wide mb-1">Focus del consulto:</p>
+                          <p className="text-white/70 text-sm italic">&ldquo;Di cosa abbiamo parlato (potrai inserirlo a breve o verrà aggiornato in automatico)&rdquo;</p>
+                        </div>
+                        
+                        {c.meeting_join_url && (
+                          <div className="mt-3 pt-3 border-t border-white/5 items-center flex">
+                            <a href={c.meeting_join_url} target="_blank" rel="noopener noreferrer" className="text-gold-500 hover:underline text-xs flex items-center gap-1">Entra nella stanza video <span aria-hidden>→</span></a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </motion.section>
@@ -762,6 +764,38 @@ export default function Dashboard() {
             <div>
               <p className="text-white font-medium">{user.fullName || firstName}</p>
               <p className="text-white/40 text-sm">{user.emailAddresses[0]?.emailAddress}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-white/10 grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <label className="block">
+                <span className="text-white/45 text-xs block mb-1">Preferenza di contatto</span>
+                <select className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white appearance-none">
+                  <option>Telefono</option>
+                  <option>Videochiamata online</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-white/45 text-xs block mb-1">Fuso orario (per i consulti)</span>
+                <select className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white appearance-none">
+                  <option>Europa/Roma (CET)</option>
+                  <option>Europa/Londra (GMT)</option>
+                  <option>America/New York (EST)</option>
+                </select>
+              </label>
+            </div>
+            <div>
+              <label className="block h-full flex flex-col">
+                <span className="text-white/45 text-xs block mb-1">La mia intenzione principale</span>
+                <textarea 
+                  className="w-full flex-1 min-h-[105px] bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white resize-none"
+                  placeholder="Es. Voglio fare chiarezza sulla mia situazione lavorativa o capire le dinamiche di una relazione..."
+                />
+              </label>
+            </div>
+            <div className="md:col-span-2 text-right">
+              <button type="button" className="btn-gold text-xs px-5 py-2 opacity-50 cursor-not-allowed" title="In fase di sviluppo">Salva preferenze</button>
             </div>
           </div>
         </motion.div>
