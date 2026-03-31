@@ -43,8 +43,9 @@ export default function Dashboard() {
   const calendarSectionRef = useRef<HTMLElement | null>(null)
 
   const [freeHidden, setFreeHidden] = useState(false)
-  /** Flusso cliente: settore → tipo consulto → Calendly. */
-  const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
+  /** Flusso cliente: settore  // Stato per settore e consulto scelti */
+  const [offerCategory, setOfferCategory] = useState<'tarocchi' | 'crescita' | null>(null)
+  const [lastConsultTheme, setLastConsultTheme] = useState<'generico' | 'amore' | 'lavoro' | 'crescita'>('generico')
   /** Flusso cliente: prima card dorata, poi Calendly con URL per quel tipo di consulto. */
   const [selectedConsult, setSelectedConsult] = useState<ConsultKind | null>(null)
 
@@ -670,30 +671,67 @@ export default function Dashboard() {
               )}
             </motion.section>
 
-            {/* Cross-Selling: Il Tuo Prossimo Passo */}
+            {/* Cross-Selling: Il Tuo Prossimo Passo (Ora Dinamico in base al Consulto) */}
             <motion.section
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35 }}
               className="mb-10"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-3">Il tuo prossimo passo</h2>
+              <div className="flex flex-wrap justify-between items-end mb-3">
+                <h2 className="font-serif text-xl font-bold text-white">Il tuo prossimo passo</h2>
+                
+                {/* Dev toggle block: Simulatore dinamico del tema per l'anteprima */}
+                {myConsults && myConsults.length > 0 && (
+                  <div className="flex gap-2">
+                    {(['generico', 'amore', 'lavoro', 'crescita'] as const).map(theme => (
+                      <button 
+                        key={theme} 
+                        onClick={() => setLastConsultTheme(theme)}
+                        className={`text-[10px] uppercase font-mono tracking-wider px-2 py-1 rounded border ${
+                          lastConsultTheme === theme 
+                            ? 'bg-gold-500/20 border-gold-500/50 text-gold-300' 
+                            : 'bg-white/5 border-white/10 text-white/40 hover:text-white'
+                        }`}
+                      >
+                        Tema: {theme}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="mystical-card border border-emerald-600/30 bg-emerald-900/10">
                 <div className="flex items-start gap-4">
-                  <span className="text-4xl shrink-0" aria-hidden>🌱</span>
+                  <span className="text-4xl shrink-0" aria-hidden>
+                    {lastConsultTheme === 'amore' ? '❤️' : lastConsultTheme === 'lavoro' ? '🎯' : lastConsultTheme === 'crescita' ? '🦋' : '🌱'}
+                  </span>
                   <div>
                     <h3 className="text-white font-medium text-lg mb-1">
-                      {myConsults && myConsults.length > 0 ? "Dal pensiero all'azione" : "Inizia con un Consulto Completo"}
+                      {myConsults && myConsults.length > 0 ? "Dalla lettura alla scelta concreta" : "Inizia con un Consulto Completo"}
                     </h3>
-                    <p className="text-white/60 text-sm mb-4">
+                    
+                    <p className="text-white/70 text-sm mb-5 leading-relaxed">
                       {myConsults && myConsults.length > 0 
-                        ? "Hai già fatto una o più letture? Se hai svolto un consulto breve, un Consulto Completo ti darà maggiore profondità. Se invece è emerso un tema sfidante dalle Carte, una Sessione di Coaching è lo step naturale per sbloccare la situazione."
-                        : "Un consulto completo di 60 minuti ti permette di analizzare a fondo la tua situazione e delineare i prossimi passi."
+                        ? (lastConsultTheme === 'amore' && "Le Carte hanno messo a fuoco dinamiche, paure e desideri nelle tue relazioni. Se senti che è il momento di smettere di ripetere gli stessi schemi, possiamo trasformare questa lettura in un percorso accompagnato: cosa lasciare andare e come aprirti a legami più sani.")
+                        : myConsults && myConsults.length > 0 && lastConsultTheme === 'lavoro' ? "Dal consulto sono emerse strade possibili, blocchi e talenti che forse non stavi vedendo. Il passo successivo è passare dalla visione alla decisione: preparare azioni concrete invece di restare ferma nel dubbio."
+                        : myConsults && myConsults.length > 0 && lastConsultTheme === 'crescita' ? "La lettura ha illuminato parti di te che chiedono ascolto e cura. Possiamo usare questa consapevolezza per costruire un percorso di evoluzione: piccoli impegni, nuove abitudini, modi diversi di stare nelle situazioni."
+                        : myConsults && myConsults.length > 0 ? "Le Carte ti hanno mostrato un pezzo importante della tua storia. Ora il vero cambiamento nasce da ciò che decidi di fare con questa consapevolezza: possiamo usare ciò che è emerso per costruire il tuo prossimo passo nella realtà di tutti i giorni."
+                        : "Un consulto completo ti permette di analizzare a fondo la tua situazione. Oppure inizia subito un percorso esplorativo su di te."
                       }
                     </p>
-                    <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 inline-block hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-shadow">
-                      {myConsults && myConsults.length > 0 ? "Vedi le opzioni del percorso" : "Prenota il tuo primo consulto"}
-                    </a>
+
+                    <div className="flex flex-wrap gap-3">
+                      <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 inline-block hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-shadow">
+                        Inizia il percorso da questa lettura
+                      </a>
+                      
+                      {myConsults && myConsults.length > 0 && (
+                        <a href="#storico" onClick={(e)=>e.preventDefault()} className="btn-outline text-sm px-5 py-2 inline-block border-white/20 text-white/70 hover:bg-white/5">
+                          Rivedi le tue letture e scegli
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
