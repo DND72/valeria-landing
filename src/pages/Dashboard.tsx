@@ -670,6 +670,57 @@ export default function Dashboard() {
               )}
             </motion.section>
 
+            {/* Cross-Selling: Il Tuo Prossimo Passo */}
+            <motion.section
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="mb-10"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-3">Il tuo prossimo passo</h2>
+              <div className="mystical-card border border-emerald-600/30 bg-emerald-900/10">
+                <div className="flex items-start gap-4">
+                  <span className="text-4xl shrink-0" aria-hidden>🌱</span>
+                  <div>
+                    <h3 className="text-white font-medium text-lg mb-1">
+                      {myConsults && myConsults.length > 0 ? "Dal pensiero all'azione" : "Inizia con un Consulto Completo"}
+                    </h3>
+                    <p className="text-white/60 text-sm mb-4">
+                      {myConsults && myConsults.length > 0 
+                        ? "Hai già fatto una o più letture? Se hai svolto un consulto breve, un Consulto Completo ti darà maggiore profondità. Se invece è emerso un tema sfidante dalle Carte, una Sessione di Coaching è lo step naturale per sbloccare la situazione."
+                        : "Un consulto completo di 60 minuti ti permette di analizzare a fondo la tua situazione e delineare i prossimi passi."
+                      }
+                    </p>
+                    <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 inline-block hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-shadow">
+                      {myConsults && myConsults.length > 0 ? "Vedi le opzioni del percorso" : "Prenota il tuo primo consulto"}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Contenuti Consigliati */}
+            <motion.section
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.38 }}
+              className="mb-10"
+            >
+              <h2 className="font-serif text-xl font-bold text-white mb-3">Risorse per il tuo percorso</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <a href="#blog-preparazione" onClick={(e)=>e.preventDefault()} className="mystical-card p-4 border border-white/5 hover:border-gold-500/40 transition-colors group">
+                  <span className="text-gold-500/80 text-[10px] uppercase font-mono tracking-wider mb-1.5 block">Guida pratica</span>
+                  <h4 className="text-white font-medium text-sm group-hover:text-gold-400 transition-colors">Come prepararsi al consulto</h4>
+                  <p className="text-white/40 text-xs mt-2 line-clamp-2">Centrarsi prima di una divinazione aiuta a formulare bene la domanda d'intenzione.</p>
+                </a>
+                <a href="#blog-matto" onClick={(e)=>e.preventDefault()} className="mystical-card p-4 border border-white/5 hover:border-gold-500/40 transition-colors group">
+                  <span className="text-gold-500/80 text-[10px] uppercase font-mono tracking-wider mb-1.5 block">Arcani Maggiori</span>
+                  <h4 className="text-white font-medium text-sm group-hover:text-gold-400 transition-colors">Il significato del Matto</h4>
+                  <p className="text-white/40 text-xs mt-2 line-clamp-2">L'energia del salto nel vuoto: quando è davvero il momento di rischiare e ripartire.</p>
+                </a>
+              </div>
+            </motion.section>
+
             <motion.section
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -743,6 +794,28 @@ export default function Dashboard() {
             )}
           </motion.div>
         )}
+
+          {/* Banner App Tarocchi (Daily resource) */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
+            className="mystical-card border border-gold-600/20 bg-gradient-to-b from-[rgba(15,20,30,0.6)] to-dark-500 relative overflow-hidden group"
+          >
+            <div className="absolute -top-4 -right-4 text-7xl opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity duration-500">
+              ✨
+            </div>
+            <div className="relative z-10">
+              <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-gold-500/30 text-gold-400/90 inline-block mb-3 bg-dark-600/50">Risorsa Quotidiana</span>
+              <h3 className="font-serif text-lg font-bold text-white mb-1">Le Carte di Stella</h3>
+              <p className="text-white/50 text-sm mb-4 leading-relaxed">
+                Non sai cosa ti riserva la giornata? Usa l'App gratuita per pescare la tua carta quotidiana e ricevere un rapido consiglio ovunque tu sia.
+              </p>
+              <a href="https://stese.nonsolotarocchi.it" target="_blank" rel="noopener noreferrer" className="btn-outline text-sm px-4 py-2 text-center w-full block">
+                Apri la Web App (Gratis)
+              </a>
+            </div>
+          </motion.div>
 
         {/* Profile info */}
         <motion.div
