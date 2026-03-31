@@ -249,6 +249,16 @@ export default function Dashboard() {
                 </span>
               )}
             </div>
+            {!privileged && (
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 text-center">
+                  Prenota un consulto
+                </a>
+                <a href="https://stese.nonsolotarocchi.it" target="_blank" rel="noopener noreferrer" className="btn-outline text-sm px-5 py-2 text-center">
+                  Apri l'app tarocchi gratuita
+                </a>
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-3 justify-end">
             {privileged && (
@@ -383,7 +393,7 @@ export default function Dashboard() {
               transition={{ duration: 0.6, delay: 0.25 }}
               className="mb-10 scroll-mt-28"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli il settore</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli il settore: Tarocchi o Coaching</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Due ambiti distinti: <strong className="text-white/55">letture con i Tarocchi</strong> (consulti brevi,
                 online, completi, omaggio) e <strong className="text-white/55">crescita personale · coaching</strong>{' '}
@@ -473,7 +483,7 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <h2 className="font-serif text-xl font-bold text-white mb-1 mt-2">2) Scegli il tipo di consulto</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1 mt-2">2) Scegli il consulto: breve, online, completo…</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Tocca <strong className="text-gold-500/90">Continua</strong>: sotto si apre il calendario giusto per quel
                 tipo (anche omaggio, se incluso nel settore). Il pagamento avviene in Calendly quando scegli data e ora,
@@ -551,7 +561,7 @@ export default function Dashboard() {
               transition={{ duration: 0.6, delay: 0.35 }}
               className="mb-8 scroll-mt-28 relative z-30 isolate"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">3) Scegli data e ora</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">3) Scegli data e ora su Calendly</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Calendly mostra le disponibilità per il tipo di consulto scelto al punto 2. Al termine, se hai collegato PayPal in Calendly, partirà il pagamento lì.
               </p>
