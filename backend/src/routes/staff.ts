@@ -11,6 +11,7 @@ import { registerStaffClientRoutes } from './staffClientsRoutes.js'
 import { serviceKindFromEventName } from '../lib/consultServiceLabel.js'
 import { registerStaffBlogCommentRoutes } from './staffBlogCommentsRoutes.js'
 import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
+import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
 
 const noteBody = z.object({
   body: z.string().min(1).max(20000),
@@ -291,6 +292,7 @@ export function createStaffRouter(pool: Pool): Router {
   registerStaffClientRoutes(r, pool)
   registerStaffReviewRoutes(r, pool)
   registerStaffBlogCommentRoutes(r, pool)
+  registerStaffAnalyticsRoutes(r, pool)
 
   r.post('/consults/:id/notes', async (req, res) => {
     const id = req.params.id

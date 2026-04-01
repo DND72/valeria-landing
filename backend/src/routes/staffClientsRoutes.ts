@@ -8,6 +8,8 @@ const profilePatch = z.object({
   /** ISO 8601 o null per azzerare la data ultima fattura */
   lastInvoicedAt: z.union([z.string().datetime(), z.null()]).optional(),
   markInvoicedNow: z.boolean().optional(),
+  manualBonusCredits: z.number().int().min(0).optional(),
+  unlockReviewOverride: z.boolean().optional(),
 })
 
 function normalizeEmail(email: string): string {
@@ -140,7 +142,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       const prof = await pool.query(
-        `SELECT email_normalized, general_notes, last_invoiced_at, updated_at
+        `SELECT email_normalized, general_notes, last_invoiced_at, updated_at, manual_bonus_credits, unlock_review_override
          FROM client_profiles WHERE email_normalized = $1`,
         [email]
       )
@@ -155,6 +157,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
               lastInvoicedAt: profile.last_invoiced_at
                 ? new Date(profile.last_invoiced_at).toISOString()
                 : null,
+              manualBonusCredits: profile.manual_bonus_credits ?? 0,
+              unlockReviewOverride: profile.unlock_review_override ?? false,
               updatedAt: profile.updated_at ? new Date(profile.updated_at).toISOString() : null,
             }
           : null,
@@ -179,15 +183,17 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       res.status(400).json({ error: 'Payload non valido', details: parsed.error.flatten() })
       return
     }
-    const { email, generalNotes, lastInvoicedAt, markInvoicedNow } = parsed.data
+    const { email, generalNotes, lastInvoicedAt, markInvoicedNow, manualBonusCredits, unlockReviewOverride } = parsed.data
     const norm = normalizeEmail(email)
 
     if (
       generalNotes === undefined &&
       lastInvoicedAt === undefined &&
-      !markInvoicedNow
+      !markInvoicedNow &&
+      manualBonusCredits === undefined &&
+      unlockReviewOverride === undefined
     ) {
-      res.status(400).json({ error: 'Specifica generalNotes, lastInvoicedAt o markInvoicedNow' })
+      res.status(400).json({ error: 'Specifica un campo da modificare' })
       return
     }
 
@@ -198,10 +204,11 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         return
       }
 
-      const prev = await pool.query<{ general_notes: string | null; last_invoiced_at: Date | null }>(
-        `SELECT general_notes, last_invoiced_at FROM client_profiles WHERE email_normalized = $1`,
+      const prev = await pool.query(
+        `SELECT general_notes, last_invoiced_at, manual_bonus_credits, unlock_review_override FROM client_profiles WHERE email_normalized = $1`,
         [norm]
       )
+      
       let notes = prev.rows[0]?.general_notes ?? null
       if (generalNotes !== undefined) notes = generalNotes
 
@@ -209,18 +216,26 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       if (markInvoicedNow) lastInv = new Date()
       else if (lastInvoicedAt !== undefined) lastInv = lastInvoicedAt === null ? null : new Date(lastInvoicedAt)
 
+      let bonus = prev.rows[0]?.manual_bonus_credits ?? 0
+      if (manualBonusCredits !== undefined) bonus = manualBonusCredits
+
+      let uRev = prev.rows[0]?.unlock_review_override ?? false
+      if (unlockReviewOverride !== undefined) uRev = unlockReviewOverride
+
       await pool.query(
-        `INSERT INTO client_profiles (email_normalized, general_notes, last_invoiced_at, updated_at)
-         VALUES ($1, $2, $3, now())
+        `INSERT INTO client_profiles (email_normalized, general_notes, last_invoiced_at, manual_bonus_credits, unlock_review_override, updated_at)
+         VALUES ($1, $2, $3, $4, $5, now())
          ON CONFLICT (email_normalized) DO UPDATE SET
            general_notes = EXCLUDED.general_notes,
            last_invoiced_at = EXCLUDED.last_invoiced_at,
+           manual_bonus_credits = EXCLUDED.manual_bonus_credits,
+           unlock_review_override = EXCLUDED.unlock_review_override,
            updated_at = now()`,
-        [norm, notes, lastInv]
+        [norm, notes, lastInv, bonus, uRev]
       )
 
       const row = await pool.query(
-        `SELECT email_normalized, general_notes, last_invoiced_at, updated_at
+        `SELECT email_normalized, general_notes, last_invoiced_at, manual_bonus_credits, unlock_review_override, updated_at
          FROM client_profiles WHERE email_normalized = $1`,
         [norm]
       )
@@ -230,6 +245,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         profile: {
           generalNotes: p.general_notes,
           lastInvoicedAt: p.last_invoiced_at ? new Date(p.last_invoiced_at).toISOString() : null,
+          manualBonusCredits: p.manual_bonus_credits,
+          unlockReviewOverride: p.unlock_review_override,
           updatedAt: p.updated_at ? new Date(p.updated_at).toISOString() : null,
         },
       })

@@ -23,7 +23,16 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
     try {
       const emailNorm = await getPrimaryEmailNormalized(userId)
       const paidDone = await countPaidDoneConsults(pool, userId, emailNorm)
-      const maxAllowed = maxClientReviewsAllowed(paidDone)
+
+      // Controlla se lo staff ha forzato lo sblocco per questo cliente
+      const overrideRow = await pool.query<{ unlock_review_override: boolean }>(
+        `SELECT unlock_review_override FROM client_profiles WHERE email_normalized = $1`,
+        [emailNorm ?? '']
+      )
+      const forceUnlocked = overrideRow.rows[0]?.unlock_review_override ?? false
+
+      const effectivePaidDone = forceUnlocked ? Math.max(paidDone, 3) : paidDone
+      const maxAllowed = maxClientReviewsAllowed(effectivePaidDone)
 
       const cnt = await pool.query<{ pub: string; pend: string }>(
         `SELECT
@@ -58,7 +67,7 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
       const canEditPending = Boolean(pend)
 
       let reasonHint: string | null = null
-      if (paidDone < 3) {
+      if (effectivePaidDone < 3) {
         reasonHint =
           'La prima recensione sul sito si sblocca dopo il terzo consulto a pagamento completato, così riflette un percorso.'
       } else if (!canSubmitNew && !canEditPending) {
@@ -67,6 +76,7 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
 
       res.json({
         paidConsultsCompleted: paidDone,
+        reviewUnlockOverride: forceUnlocked,
         maxReviewsAllowed: maxAllowed,
         clientReviewsPublished: published,
         hasPendingReview: pending > 0,
@@ -120,7 +130,13 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
     try {
       const emailNorm = await getPrimaryEmailNormalized(userId)
       const paidDone = await countPaidDoneConsults(pool, userId, emailNorm)
-      const maxAllowed = maxClientReviewsAllowed(paidDone)
+      const overrideRow2 = await pool.query<{ unlock_review_override: boolean }>(
+        `SELECT unlock_review_override FROM client_profiles WHERE email_normalized = $1`,
+        [emailNorm ?? '']
+      )
+      const forceUnlocked2 = overrideRow2.rows[0]?.unlock_review_override ?? false
+      const effectivePaid2 = forceUnlocked2 ? Math.max(paidDone, 3) : paidDone
+      const maxAllowed = maxClientReviewsAllowed(effectivePaid2)
       if (maxAllowed === 0) {
         res.status(403).json({
           error:

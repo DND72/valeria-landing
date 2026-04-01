@@ -354,9 +354,9 @@ export default function Dashboard() {
               {
                 icon: '⭐',
                 title: 'Lascia una recensione',
-                desc: 'Il tuo feedback aiuta altre persone',
-                href: 'mailto:valeria@nonsolotarocchi.it?subject=Recensione consulto',
-                cta: 'Scrivi a Valeria',
+                desc: 'Racconta come ti sei trovata',
+                href: '#recensioni',
+                cta: 'Scrivi la recensione',
               },
             ].map((action, i) => (
               <motion.a
@@ -817,7 +817,6 @@ export default function Dashboard() {
               transition={{ duration: 0.5, delay: 0.38 }}
               className="mb-10"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-3">Risorse per il tuo percorso</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <a href="#blog-preparazione" onClick={(e)=>e.preventDefault()} className="mystical-card p-4 border border-white/5 hover:border-gold-500/40 transition-colors group">
                   <span className="text-gold-500/80 text-[10px] uppercase font-mono tracking-wider mb-1.5 block">Guida pratica</span>
@@ -831,14 +830,15 @@ export default function Dashboard() {
                 </a>
               </div>
             </motion.section>
-
+            {/* Recensioni in-app integrate */}
             <motion.section
+              id="recensioni"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
               className="mb-10 scroll-mt-28"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-3">Recensione sul sito</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-4">La tua opinione è preziosa</h2>
               <SiteReviewComposer />
             </motion.section>
           </>
