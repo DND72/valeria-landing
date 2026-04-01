@@ -4,6 +4,7 @@ import express from 'express'
 import { pool } from './db.js'
 import { isValidArticleSlug } from './lib/articleSlugs.js'
 import { createCalendlyWebhookHandler } from './routes/calendlyWebhook.js'
+import { createPaymentsRouter } from './routes/payments.js'
 import { createMeRouter } from './routes/me.js'
 import { createStaffRouter } from './routes/staff.js'
 
@@ -31,6 +32,10 @@ app.post(
   express.raw({ type: 'application/json' }),
   createCalendlyWebhookHandler(pool)
 )
+
+// Stripe webhook deve ricevere il body RAW (prima di express.json)
+const paymentsRouter = createPaymentsRouter(pool)
+app.use('/api/payments', paymentsRouter)
 
 app.use(express.json())
 

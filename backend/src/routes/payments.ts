@@ -1,0 +1,321 @@
+import Stripe from 'stripe'
+import { Router, raw } from 'express'
+import type { Pool } from 'pg'
+import { z } from 'zod'
+import { requireClerkAuth, clerkClient } from '../middleware/clerkAuth.js'
+import { CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
+
+// ---------------------------------------------------------------------------
+// Stripe client — creato una sola volta al caricamento del modulo.
+// La chiave viene da process.env.STRIPE_SECRET_KEY (configurata su Railway).
+// ---------------------------------------------------------------------------
+function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) {
+    throw new Error('STRIPE_SECRET_KEY non configurata nelle variabili d\'ambiente')
+  }
+  return new Stripe(key, { apiVersion: '2026-03-25.dahlia' })
+}
+
+// ---------------------------------------------------------------------------
+// Validazione body per la creazione della sessione
+// ---------------------------------------------------------------------------
+const createSessionSchema = z.object({
+  consultKind: z.string().min(1),
+  successUrl: z.string().url(),
+  cancelUrl: z.string().url(),
+})
+
+// ---------------------------------------------------------------------------
+// Router factory — esportato e montato in index.ts
+// ---------------------------------------------------------------------------
+export function createPaymentsRouter(pool: Pool): Router {
+  const r = Router()
+
+  // -------------------------------------------------------------------------
+  // POST /api/payments/create-checkout-session
+  //
+  // Richiede autenticazione Clerk (Bearer token).
+  // Crea una Stripe Checkout Session per il tipo di consulto richiesto.
+  //
+  // Body JSON:
+  //   { consultKind: string, successUrl: string, cancelUrl: string }
+  //
+  // Risposta:
+  //   { sessionId: string, url: string }
+  // -------------------------------------------------------------------------
+  r.post('/create-checkout-session', requireClerkAuth, async (req, res) => {
+    const parsed = createSessionSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Payload non valido', details: parsed.error.flatten() })
+      return
+    }
+
+    const { consultKind, successUrl, cancelUrl } = parsed.data
+    const userId = req.auth?.userId
+
+    if (!isValidConsultKind(consultKind)) {
+      res.status(400).json({ error: `Tipo di consulto non valido: ${consultKind}` })
+      return
+    }
+
+    const meta = CONSULT_META[consultKind]
+
+    if (meta.isFree) {
+      res.status(400).json({
+        error: 'Questo consulto è gratuito e non richiede pagamento.',
+        isFree: true,
+      })
+      return
+    }
+
+    // Recupera l'email del cliente da Clerk per pre-compilare il checkout Stripe
+    let customerEmail: string | undefined
+    if (clerkClient && userId) {
+      try {
+        const u = await clerkClient.users.getUser(userId)
+        const primary =
+          (u.primaryEmailAddressId &&
+            u.emailAddresses.find((e) => e.id === u.primaryEmailAddressId)?.emailAddress) ||
+          u.emailAddresses[0]?.emailAddress
+        if (typeof primary === 'string' && primary.trim()) {
+          customerEmail = primary.trim().toLowerCase()
+        }
+      } catch (e) {
+        console.warn('[payments] impossibile recuperare email Clerk:', e)
+      }
+    }
+
+    let stripe: Stripe
+    try {
+      stripe = getStripe()
+    } catch (e) {
+      console.error('[payments] Stripe non configurato:', e)
+      res.status(503).json({ error: 'Servizio di pagamento non configurato sul server.' })
+      return
+    }
+
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        ...(customerEmail ? { customer_email: customerEmail } : {}),
+        line_items: [
+          {
+            price_data: {
+              currency: 'eur',
+              unit_amount: meta.amountCents,
+              product_data: {
+                name: meta.name,
+                description: meta.description,
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        // Passa i metadati che useremo nel webhook per creare il record consulto
+        metadata: {
+          consultKind,
+          clerkUserId: userId ?? '',
+          customerEmail: customerEmail ?? '',
+        },
+        // success_url e cancel_url vengono dal frontend (assoluti)
+        // Il {CHECKOUT_SESSION_ID} viene sostituito automaticamente da Stripe
+        success_url: successUrl.includes('{CHECKOUT_SESSION_ID}')
+          ? successUrl
+          : `${successUrl}${successUrl.includes('?') ? '&' : '?'}stripe_session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: cancelUrl,
+        // Scadenza della sessione: 30 minuti
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+        // Localizzazione italiana
+        locale: 'it',
+      })
+
+      if (!session.url) {
+        throw new Error('Stripe non ha restituito un URL di checkout')
+      }
+
+      res.json({ sessionId: session.id, url: session.url })
+    } catch (e) {
+      console.error('[payments create-checkout-session]', e)
+      res.status(500).json({ error: 'Errore nella creazione della sessione di pagamento' })
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // GET /api/payments/session-status?session_id=cs_xxx
+  //
+  // Usato dalla pagina /grazie per verificare l'esito del pagamento.
+  // Non richiede autenticazione (la session_id è già un segreto monouso).
+  // -------------------------------------------------------------------------
+  r.get('/session-status', async (req, res) => {
+    const sessionId = typeof req.query.session_id === 'string' ? req.query.session_id.trim() : ''
+    if (!sessionId || !sessionId.startsWith('cs_')) {
+      res.status(400).json({ error: 'session_id mancante o non valido' })
+      return
+    }
+
+    let stripe: Stripe
+    try {
+      stripe = getStripe()
+    } catch {
+      res.status(503).json({ error: 'Servizio di pagamento non configurato' })
+      return
+    }
+
+    try {
+      const session = await stripe.checkout.sessions.retrieve(sessionId)
+      const consultKind = session.metadata?.consultKind ?? null
+      const meta = consultKind && isValidConsultKind(consultKind) ? CONSULT_META[consultKind] : null
+
+      res.json({
+        status: session.payment_status,           // 'paid' | 'unpaid' | 'no_payment_required'
+        paymentStatus: session.payment_status,
+        consultKind,
+        consultName: meta?.name ?? null,
+        amountTotal: session.amount_total,        // centesimi
+        currency: session.currency,
+        customerEmail: session.customer_email,
+      })
+    } catch (e) {
+      console.error('[payments session-status]', e)
+      res.status(500).json({ error: 'Errore nel recupero dello stato della sessione' })
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // POST /api/payments/webhook
+  //
+  // Endpoint per i webhook Stripe (DEVE usare raw body, NON express.json()).
+  // Monta PRIMA di express.json() in index.ts.
+  //
+  // Gestisce:
+  //   checkout.session.completed  → crea record in consults
+  //   checkout.session.expired    → log (nessun record da creare)
+  //   payment_intent.payment_failed → log
+  // -------------------------------------------------------------------------
+  r.post(
+    '/webhook',
+    raw({ type: 'application/json' }),
+    async (req, res) => {
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+      const sig = req.headers['stripe-signature']
+
+      let stripe: Stripe
+      try {
+        stripe = getStripe()
+      } catch {
+        res.status(503).json({ error: 'Stripe non configurato' })
+        return
+      }
+
+      let event: Stripe.Event
+
+      if (webhookSecret && sig) {
+        // Verifica firma in produzione
+        try {
+          event = stripe.webhooks.constructEvent(
+            req.body as Buffer,
+            sig,
+            webhookSecret
+          )
+        } catch (e) {
+          console.error('[stripe webhook] Firma non valida:', e)
+          res.status(400).json({ error: 'Firma webhook non valida' })
+          return
+        }
+      } else if (process.env.NODE_ENV === 'production') {
+        // In produzione è obbligatorio verificare la firma
+        console.warn('[stripe webhook] STRIPE_WEBHOOK_SECRET mancante in produzione — webhook rifiutato')
+        res.status(503).json({ error: 'Webhook non configurato' })
+        return
+      } else {
+        // In sviluppo locale senza firma: parse manuale
+        try {
+          event = JSON.parse((req.body as Buffer).toString('utf8')) as Stripe.Event
+        } catch {
+          res.status(400).json({ error: 'JSON non valido' })
+          return
+        }
+      }
+
+      // -----------------------------------------------------------------------
+      // Gestione evento: checkout.session.completed
+      // -----------------------------------------------------------------------
+      if (event.type === 'checkout.session.completed') {
+        const session = event.data.object as Stripe.Checkout.Session
+
+        if (session.payment_status !== 'paid') {
+          // Pagamento non ancora completato (es. fattura in sospeso)
+          res.json({ ok: true, skipped: true, reason: 'payment_not_paid' })
+          return
+        }
+
+        const consultKind = session.metadata?.consultKind ?? null
+        const clerkUserId = session.metadata?.clerkUserId || null
+        const customerEmail = session.metadata?.customerEmail || session.customer_email || null
+        const stripeSessionId = session.id
+        const paymentIntentId =
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? null
+        const amountTotal = session.amount_total ?? null
+
+        try {
+          await pool.query(
+            `INSERT INTO consults (
+               stripe_session_id,
+               stripe_payment_intent,
+               consult_kind,
+               amount_cents,
+               clerk_user_id,
+               invitee_email,
+               status,
+               is_free_consult,
+               updated_at
+             ) VALUES ($1, $2, $3, $4, $5, $6, 'pending_booking', false, now())
+             ON CONFLICT (stripe_session_id) DO UPDATE SET
+               stripe_payment_intent = COALESCE(EXCLUDED.stripe_payment_intent, consults.stripe_payment_intent),
+               clerk_user_id         = COALESCE(EXCLUDED.clerk_user_id, consults.clerk_user_id),
+               invitee_email         = COALESCE(EXCLUDED.invitee_email, consults.invitee_email),
+               amount_cents          = COALESCE(EXCLUDED.amount_cents, consults.amount_cents),
+               updated_at            = now()`,
+            [
+              stripeSessionId,
+              paymentIntentId,
+              consultKind,
+              amountTotal,
+              clerkUserId,
+              customerEmail,
+            ]
+          )
+          console.log(`[stripe webhook] ✅ Consulto creato/aggiornato — session: ${stripeSessionId}, kind: ${consultKind}`)
+        } catch (e) {
+          console.error('[stripe webhook] Errore salvataggio consulto:', e)
+          res.status(500).json({ error: 'Errore salvataggio' })
+          return
+        }
+      }
+
+      // -----------------------------------------------------------------------
+      // Gestione evento: checkout.session.expired
+      // -----------------------------------------------------------------------
+      else if (event.type === 'checkout.session.expired') {
+        const session = event.data.object as Stripe.Checkout.Session
+        console.log(`[stripe webhook] Sessione scaduta senza pagamento: ${session.id}`)
+      }
+
+      // -----------------------------------------------------------------------
+      // Gestione evento: payment_intent.payment_failed
+      // -----------------------------------------------------------------------
+      else if (event.type === 'payment_intent.payment_failed') {
+        const pi = event.data.object as Stripe.PaymentIntent
+        console.warn(`[stripe webhook] Pagamento fallito: ${pi.id} — ${pi.last_payment_error?.message ?? 'motivo sconosciuto'}`)
+      }
+
+      res.json({ received: true })
+    }
+  )
+
+  return r
+}
