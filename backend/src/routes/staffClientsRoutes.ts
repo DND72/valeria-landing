@@ -148,9 +148,43 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       )
       const profile = prof.rows[0] ?? null
 
+      // Recupera stato VM18 da client_billing_profiles (per clerk_user_id)
+      const clerkUserIds = [...new Set(
+        consultRows
+          .map((c: Record<string, unknown>) => c.clerk_user_id)
+          .filter((id): id is string => typeof id === 'string' && id.length > 0)
+      )]
+      let ageVerified = false
+      let ageVerifiedAt: string | null = null
+      let declaredBirthday: string | null = null
+      if (clerkUserIds.length > 0) {
+        try {
+          const bpRes = await pool.query(
+            `SELECT age_verified, age_verified_at, declared_birthday
+             FROM client_billing_profiles
+             WHERE clerk_user_id = ANY($1::text[])
+             ORDER BY age_verified DESC, age_verified_at DESC NULLS LAST
+             LIMIT 1`,
+            [clerkUserIds]
+          )
+          const bp = bpRes.rows[0]
+          if (bp) {
+            ageVerified = bp.age_verified ?? false
+            ageVerifiedAt = bp.age_verified_at ? new Date(bp.age_verified_at).toISOString() : null
+            declaredBirthday = bp.declared_birthday
+              ? new Date(bp.declared_birthday).toISOString().slice(0, 10)
+              : null
+          }
+        } catch { /* non bloccante */ }
+      }
+
       res.json({
         email,
         displayName: consultRows[0]?.invitee_name ?? null,
+        // Badge VM18
+        ageVerified,
+        ageVerifiedAt,
+        declaredBirthday,
         profile: profile
           ? {
               generalNotes: profile.general_notes,

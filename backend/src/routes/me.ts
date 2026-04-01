@@ -117,6 +117,113 @@ export function createMeRouter(pool: Pool): Router {
     }
   })
 
+  // -------------------------------------------------------------------------
+  // POST /api/me/legal-declaration
+  //
+  // Registra l'autocertificazione legale sull'eta' maggiore.
+  // Salva timestamp e IP per l'audit trail (tutela legale Valeria).
+  // -------------------------------------------------------------------------
+  r.post('/legal-declaration', async (req, res) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+    const { declaredBirthday } = (req.body ?? {}) as { declaredBirthday?: string }
+    const ip =
+      (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ??
+      req.socket.remoteAddress ??
+      null
+
+    try {
+      // Salva il profilo con data di nascita dichiarata e timestamp accettazione
+      await pool.query(
+        `INSERT INTO client_billing_profiles (clerk_user_id, declared_birthday, legal_declaration_at, legal_declaration_ip, updated_at)
+         VALUES ($1, $2::date, now(), $3, now())
+         ON CONFLICT (clerk_user_id) DO UPDATE SET
+           declared_birthday    = COALESCE($2::date, client_billing_profiles.declared_birthday),
+           legal_declaration_at = now(),
+           legal_declaration_ip = $3,
+           updated_at           = now()`,
+        [userId, declaredBirthday ?? null, ip]
+      )
+
+      // Registra nel log di audit
+      let declaredAge: number | null = null
+      if (declaredBirthday) {
+        const bd = new Date(declaredBirthday)
+        if (!isNaN(bd.getTime())) {
+          const today = new Date()
+          declaredAge = today.getFullYear() - bd.getFullYear()
+          const m = today.getMonth() - bd.getMonth()
+          if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) declaredAge--
+        }
+      }
+
+      await pool.query(
+        `INSERT INTO age_verifications
+           (clerk_user_id, declared_birthday, declared_age, outcome, detail, ip_address)
+         VALUES ($1, $2::date, $3, 'declaration_only', 'Autocertificazione art. 76 DPR 445/2000', $4)`,
+        [userId, declaredBirthday ?? null, declaredAge, ip]
+      )
+
+      // Aggiorna Clerk publicMetadata con la data dichiarata
+      if (clerkClient) {
+        try {
+          const u = await clerkClient.users.getUser(userId)
+          const meta = (u.publicMetadata ?? {}) as Record<string, unknown>
+          await clerkClient.users.updateUserMetadata(userId, {
+            publicMetadata: {
+              ...meta,
+              legalDeclarationAt: new Date().toISOString(),
+              ...(declaredBirthday ? { declaredBirthday } : {}),
+            },
+          })
+        } catch {
+          // Non bloccante
+        }
+      }
+
+      res.json({ ok: true })
+    } catch (e) {
+      console.error('[me legal-declaration]', e)
+      res.status(500).json({ error: 'Errore salvataggio dichiarazione' })
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // GET /api/me/age-status
+  //
+  // Ritorna lo stato VM18 dell'utente autenticato.
+  // Usato dalla Dashboard cliente e dal componente AgeGate.
+  // -------------------------------------------------------------------------
+  r.get('/age-status', async (req, res) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+    try {
+      const { rows } = await pool.query(
+        `SELECT age_verified, age_verified_at, declared_birthday, legal_declaration_at
+         FROM client_billing_profiles
+         WHERE clerk_user_id = $1`,
+        [userId]
+      )
+      const row = rows[0]
+      res.json({
+        ageVerified:        row?.age_verified         ?? false,
+        ageVerifiedAt:      row?.age_verified_at      ?? null,
+        declaredBirthday:   row?.declared_birthday    ?? null,
+        legalDeclarationAt: row?.legal_declaration_at ?? null,
+        hasLegalDeclaration: !!(row?.legal_declaration_at),
+      })
+    } catch (e) {
+      console.error('[me age-status]', e)
+      res.status(500).json({ error: 'Errore database' })
+    }
+  })
+
   registerMeReviewRoutes(r, pool)
   registerMeBlogCommentRoutes(r, pool)
 

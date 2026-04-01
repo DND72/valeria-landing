@@ -4,6 +4,7 @@ import type { Pool } from 'pg'
 import { z } from 'zod'
 import { requireClerkAuth, clerkClient } from '../middleware/clerkAuth.js'
 import { CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
+import { verifyAgeFromCF } from '../lib/codiceFiscale.js'
 
 // ---------------------------------------------------------------------------
 // Stripe client — singleton lazy per evitare errori di startup senza chiave
@@ -398,6 +399,135 @@ export function createPaymentsRouter(pool: Pool): Router {
             ? session.payment_intent
             : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? null
         const amountTotal = session.amount_total ?? null
+
+        // -----------------------------------------------------------------------
+        // ✅ STRATO 3 — Verifica Codice Fiscale (VM18 Check)
+        //
+        // Estrae il tax_id fornito da Stripe Checkout, decodifica la data di
+        // nascita dal CF italiano e verifica la maggiore eta'.
+        // Se minore: rimborso immediato e blocco dell'ordine.
+        // -----------------------------------------------------------------------
+        const taxIds = (session as unknown as {
+          customer_details?: { tax_ids?: Array<{ type: string; value: string }> }
+        }).customer_details?.tax_ids ?? []
+        const cfRaw = taxIds.find((t) => t.value?.trim())?.value?.trim().toUpperCase() ?? null
+
+        if (cfRaw) {
+          const ageCheck = verifyAgeFromCF(cfRaw)
+
+          // Determina l'outcome per il log audit
+          const outcome = ageCheck.verified
+            ? 'verified_major'
+            : ageCheck.reason === 'minor'
+            ? 'rejected_minor'
+            : ageCheck.reason === 'cf_invalid'
+            ? 'rejected_cf_invalid'
+            : 'rejected_cf_anomaly'
+
+          // Recupera la data dichiarata dal DB per confronto
+          let declaredBirthday: string | null = null
+          if (clerkUserId) {
+            try {
+              const pr = await pool.query(
+                `SELECT declared_birthday FROM client_billing_profiles WHERE clerk_user_id = $1`,
+                [clerkUserId]
+              )
+              declaredBirthday = pr.rows[0]?.declared_birthday
+                ? new Date(pr.rows[0].declared_birthday).toISOString().slice(0, 10)
+                : null
+            } catch { /* non bloccante */ }
+          }
+
+          // Log audit nella tabella age_verifications
+          try {
+            await pool.query(
+              `INSERT INTO age_verifications
+                 (clerk_user_id, declared_birthday, cf_used, cf_birth_date, cf_age, outcome, detail)
+               VALUES ($1, $2::date, $3, $4::date, $5, $6, $7)`,
+              [
+                clerkUserId,
+                declaredBirthday,
+                cfRaw,
+                ageCheck.birthDateISO,
+                ageCheck.age,
+                outcome,
+                ageCheck.verified ? null : (ageCheck.error ?? `CF indica eta': ${ageCheck.age ?? '?'} anni`),
+              ]
+            )
+          } catch (e) {
+            console.error('[stripe webhook] Errore log age_verifications:', e)
+          }
+
+          if (!ageCheck.verified) {
+            // ❌ MINORE RILEVATO — rimborso immediato e blocco
+            console.warn(
+              `[stripe webhook] ⚠️  MINORE — session ${stripeSessionId} | CF: ${cfRaw} | eta': ${ageCheck.age ?? '?'} | motivo: ${ageCheck.reason}`
+            )
+
+            if (paymentIntentId) {
+              try {
+                await stripe.refunds.create({
+                  payment_intent: paymentIntentId,
+                  reason: 'fraudulent',
+                })
+                console.log(`[stripe webhook] Rimborso emesso per payment_intent: ${paymentIntentId}`)
+              } catch (e) {
+                console.error('[stripe webhook] Errore durante il rimborso:', e)
+              }
+            }
+
+            // Segna il consulto come annullato (se già inserito per qualsiasi motivo)
+            try {
+              await pool.query(
+                `UPDATE consults SET status = 'cancelled', updated_at = now()
+                 WHERE stripe_session_id = $1`,
+                [stripeSessionId]
+              )
+            } catch { /* non bloccante */ }
+
+            res.json({
+              received: true,
+              blocked: true,
+              reason: `age_verification_failed:${ageCheck.reason}`,
+            })
+            return
+          }
+
+          // ✅ Maggiorenne verificato — aggiorna il profilo
+          if (clerkUserId) {
+            try {
+              await pool.query(
+                `INSERT INTO client_billing_profiles (clerk_user_id, age_verified, age_verified_at, updated_at)
+                 VALUES ($1, true, now(), now())
+                 ON CONFLICT (clerk_user_id) DO UPDATE SET
+                   age_verified    = true,
+                   age_verified_at = now(),
+                   updated_at      = now()`,
+                [clerkUserId]
+              )
+            } catch (e) {
+              console.error('[stripe webhook] Errore aggiornamento age_verified:', e)
+            }
+
+            // Aggiorna anche Clerk publicMetadata
+            if (clerkClient) {
+              try {
+                const u = await clerkClient.users.getUser(clerkUserId)
+                const meta = (u.publicMetadata ?? {}) as Record<string, unknown>
+                await clerkClient.users.updateUserMetadata(clerkUserId, {
+                  publicMetadata: {
+                    ...meta,
+                    ageVerified: true,
+                    ageVerifiedAt: new Date().toISOString(),
+                  },
+                })
+              } catch { /* non bloccante */ }
+            }
+          }
+        } else {
+          // Nessun CF fornito — non blocchiamo ma logghiamo
+          console.warn(`[stripe webhook] Nessun tax_id nella sessione: ${stripeSessionId}`)
+        }
 
         // 1. Crea / aggiorna il record consulto
         try {
