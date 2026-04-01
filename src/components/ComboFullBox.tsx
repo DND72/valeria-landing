@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 
-export default function ComboFullBox() {
+export default function ComboFullBox({ onSelect }: { onSelect: () => void }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 16 }}
@@ -37,22 +37,23 @@ export default function ComboFullBox() {
         </div>
         
         <div className="flex flex-col items-center justify-center p-6 bg-dark-500/50 rounded-xl border border-white/5 min-w-[280px]">
-          <p className="text-white/80 font-medium mb-4 text-center text-sm">Acquista la combo full</p>
+          <p className="text-white/80 font-medium mb-4 text-center text-sm">Prenota la tua combo full</p>
 
           <div className="w-full flex justify-center items-center">
-            <form action="https://www.paypal.com/ncp/payment/BANPY4Q3ZEJUN" method="post" target="_blank" style={{display: 'inline-grid', justifyItems: 'center', alignContent: 'start', gap: '0.5rem'}}>
-              <input 
-                type="submit" 
-                value="Acquista ora" 
-                className="bg-[#FFD140] hover:bg-[#e6bb39] text-black font-bold py-2 px-8 rounded cursor-pointer min-w-[11.625rem] h-[2.625rem] text-base transition-colors"
-              />
-              <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-              <section className="text-xs text-white/50 flex items-center justify-center mt-1"> 
-                Con tecnologia <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style={{height: '0.875rem', marginLeft: '0.3rem', verticalAlign: 'middle'}}/>
-              </section>
-            </form>
+            <button 
+              onClick={onSelect}
+              className="bg-[#FFD140] hover:bg-[#e6bb39] text-black font-bold py-2.5 px-8 rounded cursor-pointer min-w-[11.625rem] text-sm transition-colors shadow-sm inline-flex items-center justify-center gap-2"
+            >
+              <span>Scegli data e ora</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
           </div>
           
+          <p className="text-white/40 text-[10px] mt-4 text-center max-w-[200px]">
+            L'acquisto si completa <strong className="text-white/70">su Calendly</strong> dopo aver scelto il giorno e l'orario del tuo primo consulto.
+          </p>
         </div>
       </div>
     </motion.div>

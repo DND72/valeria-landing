@@ -45,6 +45,10 @@ export function calendlyUrlForConsult(kind: ConsultKind): string {
       return envTrim('VITE_CALENDLY_COACHING_60') ?? CALENDLY_BOOKING_URL
     case 'coaching_pack5':
       return envTrim('VITE_CALENDLY_COACHING_PACK5') ?? CALENDLY_BOOKING_URL
+    case 'combo_light':
+      return envTrim('VITE_CALENDLY_COMBO_LIGHT') ?? CALENDLY_BOOKING_URL
+    case 'combo_full':
+      return envTrim('VITE_CALENDLY_COMBO_FULL') ?? CALENDLY_BOOKING_URL
     case 'free':
       return envTrim('VITE_CALENDLY_FREE') ?? DEFAULT_FREE
   }

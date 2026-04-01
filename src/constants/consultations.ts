@@ -6,6 +6,8 @@ export type ConsultKind =
   | 'coaching_intro'
   | 'coaching_60'
   | 'coaching_pack5'
+  | 'combo_light'
+  | 'combo_full'
   | 'free'
 
 export type ConsultChoice = {
@@ -44,9 +46,11 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Omaggio', icon: '🎁' },
 ]
 
-/** Settore offerta nel Diario cliente: letture vs coaching/crescita personale. */
-export type OfferCategory = 'tarocchi' | 'crescita'
+/** Settore offerta nel Diario cliente: letture vs coaching/crescita personale vs combo. */
+export type OfferCategory = 'tarocchi' | 'crescita' | 'combo'
 
 export function consultOfferCategory(kind: ConsultKind): OfferCategory {
-  return kind.startsWith('coaching_') ? 'crescita' : 'tarocchi'
+  if (kind.startsWith('combo_')) return 'combo'
+  if (kind.startsWith('coaching_')) return 'crescita'
+  return 'tarocchi'
 }

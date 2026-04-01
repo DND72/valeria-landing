@@ -46,7 +46,7 @@ export default function Dashboard() {
 
   const [freeHidden, setFreeHidden] = useState(false)
   /** Flusso cliente: settore  // Stato per settore e consulto scelti */
-  const [offerCategory, setOfferCategory] = useState<'tarocchi' | 'crescita' | null>(null)
+  const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
   const [lastConsultTheme, setLastConsultTheme] = useState<'generico' | 'amore' | 'lavoro' | 'crescita'>('generico')
   /** Flusso cliente: prima card dorata, poi Calendly con URL per quel tipo di consulto. */
   const [selectedConsult, setSelectedConsult] = useState<ConsultKind | null>(null)
@@ -389,11 +389,6 @@ export default function Dashboard() {
           <StaffPersonalSpace />
         ) : (
           <>
-            <div className="flex flex-col gap-6 mb-10">
-              <ComboLightBox />
-              <ComboFullBox />
-            </div>
-
             <motion.section
               id="scegli-consulto"
               initial={{ opacity: 0, y: 20 }}
@@ -401,20 +396,19 @@ export default function Dashboard() {
               transition={{ duration: 0.6, delay: 0.25 }}
               className="mb-10 scroll-mt-28"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli il settore: Tarocchi o Coaching</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">1) Scegli il tuo percorso</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
-                Due ambiti distinti: <strong className="text-white/55">letture con i Tarocchi</strong> (consulti brevi,
-                online, completi, omaggio) e <strong className="text-white/55">crescita personale · coaching</strong>{' '}
-                (conoscenza gratuita, sedute, pacchetto). Scegli sotto il settore che ti interessa: compariranno solo le
-                opzioni coerenti e, per il coaching, gli avvisi professionali obbligatori.
+                Tre ambiti distinti: <strong className="text-white/55">letture con i Tarocchi</strong> (focus sulla consapevolezza), <strong className="text-white/55">crescita personale · coaching</strong>{' '}
+                (focus sull'azione), e <strong className="text-white/55">percorsi evolutivi (Combo)</strong> (l'unione dei due). Scegli sotto il percorso che ti interessa: compariranno le
+                opzioni pertinenti.
               </p>
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
                 <button
                   type="button"
                   onClick={() => selectOfferCategory('tarocchi')}
                   className={`mystical-card text-left p-5 transition-all border ${
                     offerCategory === 'tarocchi'
-                      ? 'ring-2 ring-gold-500/45 border-gold-600/35'
+                      ? 'ring-2 ring-gold-500/45 border-gold-600/35 shadow-[0_0_20px_rgba(212,160,23,0.1)]'
                       : 'border-white/10 hover:border-gold-600/25'
                   }`}
                 >
@@ -424,12 +418,10 @@ export default function Dashboard() {
                     </span>
                     <div>
                       <h3 className="font-serif text-lg font-bold text-white mb-1">Tarocchi &amp; letture</h3>
-                      <p className="text-white/50 text-sm leading-relaxed mb-3">
-                        Consulti con i Tarocchi di Marsiglia: breve (30 min telefono), online (video 30 min), completo (60
-                        min telefono), più eventuale consulto omaggio (7 min). Focus su simboli, situazioni e orientamento
-                        rispetto alle domande che porti.
+                      <p className="text-white/50 text-xs xl:text-sm leading-relaxed mb-3">
+                        Consulti tramite Carte: breve (30m), online (30m video), completo (60m). Fare chiarezza sulle domande e capire come orientarsi.
                       </p>
-                      <span className="text-gold-500 text-sm font-medium hover:underline">Scegli un consulto Tarocchi →</span>
+                      <span className="text-gold-500 text-sm font-medium hover:underline">Vedi i consulti →</span>
                     </div>
                   </div>
                 </button>
@@ -438,7 +430,7 @@ export default function Dashboard() {
                   onClick={() => selectOfferCategory('crescita')}
                   className={`mystical-card text-left p-5 transition-all border ${
                     offerCategory === 'crescita'
-                      ? 'ring-2 ring-emerald-500/35 border-emerald-600/35'
+                      ? 'ring-2 ring-emerald-500/35 border-emerald-600/35 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
                       : 'border-white/10 hover:border-emerald-600/25'
                   }`}
                 >
@@ -447,13 +439,33 @@ export default function Dashboard() {
                       🌱
                     </span>
                     <div>
-                      <h3 className="font-serif text-lg font-bold text-white mb-1">Crescita personale · coaching</h3>
-                      <p className="text-white/50 text-sm leading-relaxed mb-3">
-                        Percorsi su obiettivi, abitudini, scelte e direzione: conoscenza gratuita (10 min), seduta singola
-                        (60 min) o pacchetto da cinque sedute. Se dalle Carte è emerso un tema forte (lavoro, amore, cambiamento), 
-                        qui lo trasformiamo in azione con strumenti di coaching.
+                      <h3 className="font-serif text-lg font-bold text-white mb-1">Coaching &amp; Crescita</h3>
+                      <p className="text-white/50 text-xs xl:text-sm leading-relaxed mb-3">
+                        Percorsi focalizzati sull'azione: definire obiettivi, superare le paure o cambiare abitudini per agire davvero.
                       </p>
-                      <span className="text-emerald-400/90 text-sm font-medium hover:underline">Scegli una consulenza di coaching →</span>
+                      <span className="text-emerald-400/90 text-sm font-medium hover:underline">Vedi il coaching →</span>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selectOfferCategory('combo')}
+                  className={`mystical-card text-left p-5 transition-all border ${
+                    offerCategory === 'combo'
+                      ? 'ring-2 ring-blue-500/35 border-blue-600/35 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
+                      : 'border-white/10 hover:border-blue-600/25'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-3xl shrink-0" aria-hidden>
+                      🦋
+                    </span>
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-white mb-1">Percorsi (Combo)</h3>
+                      <p className="text-white/50 text-xs xl:text-sm leading-relaxed mb-3">
+                        L'unione dei due strumenti. Sii consapevole (Tarocchi) e poi struttura un vero piano pratico a lungo termine (Coaching).
+                      </p>
+                      <span className="text-blue-400/90 text-sm font-medium hover:underline">Scopri le combo →</span>
                     </div>
                   </div>
                 </button>
@@ -509,10 +521,27 @@ export default function Dashboard() {
                   </p>
                 </div>
               )}
-              {offerCategory && consultChoicesInSector.length === 0 && (
+              {offerCategory && offerCategory !== 'combo' && consultChoicesInSector.length === 0 && (
                 <p className="text-amber-200/80 text-sm">Nessuna opzione disponibile in questo settore con le impostazioni attuali.</p>
               )}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              
+              {offerCategory === 'combo' ? (
+                <div className="flex flex-col gap-6">
+                  <ComboLightBox onSelect={() => {
+                    setSelectedConsult('combo_light')
+                    window.setTimeout(() => {
+                      calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }, 80)
+                  }} />
+                  <ComboFullBox onSelect={() => {
+                    setSelectedConsult('combo_full')
+                    window.setTimeout(() => {
+                      calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }, 80)
+                  }} />
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {consultChoicesInSector.map((c) => {
                   const selected = selectedConsult === c.kind
                   return (
@@ -559,6 +588,7 @@ export default function Dashboard() {
                   )
                 })}
               </div>
+              )}
             </motion.section>
 
             <motion.section
