@@ -37,7 +37,16 @@ export default function ComboFullBox({ onSelect }: { onSelect: () => void }) {
         </div>
         
         <div className="flex flex-col items-center justify-center p-6 bg-dark-500/50 rounded-xl border border-white/5 min-w-[280px]">
-          <p className="text-white/80 font-medium mb-4 text-center text-sm">Prenota la tua combo full</p>
+          <p className="text-white/80 font-medium mb-1 text-center text-sm">Prenota la tua combo full</p>
+          <p
+            className="font-serif text-3xl font-bold mb-4 text-center"
+            style={{ background: 'linear-gradient(135deg, #6ee7b7, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+          >
+            160€
+          </p>
+          <p className="text-white/35 text-[10px] mb-4 text-center">
+            2× Consulto completo (60') · 1× Coaching (60')
+          </p>
 
           <div className="w-full flex justify-center items-center">
             <button 

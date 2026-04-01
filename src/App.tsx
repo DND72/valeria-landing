@@ -23,6 +23,9 @@ import ClientManagementPage from './pages/ClientManagementPage'
 import ClientDetailPage from './pages/ClientDetailPage'
 import StaffBlogCommentsPage from './pages/StaffBlogCommentsPage'
 import StaffReviewsPage from './pages/StaffReviewsPage'
+import FaqPage from './pages/FaqPage'
+import TermsPage from './pages/TermsPage'
+import ProfilePage from './pages/ProfilePage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 
 function HomePage() {
@@ -72,6 +75,9 @@ function AppRoutes() {
             <Route path="/crescita-personale" element={<PersonalGrowthPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<ArticlePage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/termini" element={<TermsPage />} />
+            <Route path="/profilo" element={<ProfilePage />} />
       </Routes>
     </RouteErrorBoundary>
   )

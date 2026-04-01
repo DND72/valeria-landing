@@ -257,6 +257,9 @@ export default function Dashboard() {
                 <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 text-center">
                   Prenota un consulto
                 </a>
+                <Link to="/profilo" className="btn-outline text-sm px-5 py-2">
+                  Il mio profilo
+                </Link>
               </div>
             )}
           </div>
@@ -625,7 +628,7 @@ export default function Dashboard() {
               <h2 className="font-serif text-xl font-bold text-white mb-1">I tuoi consulti</h2>
               <div className="flex flex-wrap items-center gap-3 text-white/60 text-xs mt-2 mb-4 px-4 py-2.5 border border-white/10 rounded-lg bg-white/[0.02] w-fit">
                 <span className="flex items-center gap-1.5">
-                  <span className="text-gold-500 text-sm">⭐</span> 
+                  <span className="text-gold-500 text-sm">⭐</span>
                   <span>Valutazione media <strong className="text-gold-400/90 font-medium">4,97/5</strong> su 261 recensioni · <strong className="text-white font-medium">776</strong> commenti positivi</span>
                 </span>
                 <span className="text-white/20 hidden sm:inline">|</span>
@@ -637,6 +640,37 @@ export default function Dashboard() {
                 Storico degli appuntamenti collegati al tuo account (stessa email con cui prenoti su Calendly). Le note
                 interne di Valeria non sono visibili qui.
               </p>
+
+              {/* Contatori aggregati */}
+              {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length > 0 && (() => {
+                const total = myConsults.length
+                const paid = myConsults.filter((c) => !c.is_free_consult).length
+                const free = myConsults.filter((c) => c.is_free_consult).length
+                const done = myConsults.filter((c) => c.status === 'done').length
+                const upcoming = myConsults.filter((c) => c.status === 'scheduled' && c.start_at && new Date(c.start_at) > new Date()).length
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    {[
+                      { label: 'Totale', value: total, color: 'text-white' },
+                      { label: 'A pagamento', value: paid, color: 'text-gold-400' },
+                      { label: 'Omaggio', value: free, color: 'text-emerald-400' },
+                      { label: 'Completati', value: done, color: 'text-white/60' },
+                    ].map((s) => (
+                      <div key={s.label} className="mystical-card text-center py-3 px-2 border border-white/8">
+                        <p className={`font-serif text-2xl font-bold ${s.color}`}>{s.value}</p>
+                        <p className="text-white/35 text-[11px] mt-0.5">{s.label}</p>
+                      </div>
+                    ))}
+                    {upcoming > 0 && (
+                      <div className="sm:col-span-4 text-xs text-gold-400/80 flex items-center gap-2 pl-1">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold-400 animate-pulse" />
+                        {upcoming} appuntament{upcoming === 1 ? 'o' : 'i'} in programma
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
               {!getApiBaseUrl() && (
                 <p className="text-amber-200/80 text-sm">Servizio storico non disponibile senza connessione al server.</p>
               )}
@@ -646,20 +680,14 @@ export default function Dashboard() {
               {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length === 0 && (
                 <div className="mystical-card border border-white/10">
                   <p className="text-white/50 text-sm">
-                    Non risultano ancora consulti collegati. Quando prenoterai tramite Calendly con la stessa email del tuo account, l'avanzare del tuo percorso comparirà proprio qui.
+                    Non risultano ancora consulti collegati. Quando prenoterai tramite Calendly con la stessa email del tuo account, il tuo percorso comparirà proprio qui.
                   </p>
-                  
-                  {/* Anteprima visiva della timeline futura (vuoto/onboarding) */}
                   <div className="relative mt-8 mb-2 mx-2 pl-5 border-l-2 border-white/10 space-y-6 opacity-30 select-none pointer-events-none">
                     <div className="relative">
                       <div className="absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full bg-white/20 ring-4 ring-dark-500" />
                       <div className="border border-white/5 bg-white/[0.01] rounded-lg p-3">
                         <span className="text-white/30 text-xs font-mono">Data futura</span>
                         <h4 className="text-white/50 font-medium text-sm">Il tuo primo consulto</h4>
-                        <div className="mt-2 pt-2 border-t border-white/5">
-                          <p className="text-white/30 text-[11px] uppercase tracking-wide mb-1">Focus del consulto:</p>
-                          <p className="text-white/40 text-sm italic">&ldquo;Es. Svolta di lavoro o Relazione&rdquo;</p>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -667,31 +695,48 @@ export default function Dashboard() {
               )}
               {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length > 0 && (
                 <div className="relative pl-5 border-l-2 border-gold-600/30 space-y-6 my-6 ml-2">
-                  {myConsults.map((c) => (
-                    <div key={c.id} className="relative">
-                      <div className="absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full bg-gold-400 ring-4 ring-dark-500" />
-                      <div className="mystical-card bg-white/[0.02] border border-white/10 p-4 shadow-sm">
-                        <div className="flex flex-wrap justify-between items-start gap-4 mb-2">
-                          <div>
-                            <span className="text-gold-500/80 text-xs font-mono">{formatConsultWhen(c.start_at)}</span>
-                            <h4 className="text-white font-medium text-sm mt-0.5">{c.is_free_consult ? 'Consulto Omaggio (7m)' : 'Consulto a Pagamento'}</h4>
+                  {myConsults.map((c) => {
+                    const isPast = !c.start_at || new Date(c.start_at) < new Date()
+                    const statusBadge = c.status === 'done'
+                      ? { label: 'Completato', cls: 'border-emerald-600/30 text-emerald-400/80', dot: 'bg-emerald-400' }
+                      : c.status === 'cancelled'
+                      ? { label: 'Cancellato', cls: 'border-red-800/30 text-red-400/60', dot: 'bg-red-400' }
+                      : c.status === 'scheduled'
+                      ? { label: isPast ? 'Passato' : 'In programma', cls: isPast ? 'border-white/15 text-white/35' : 'border-gold-600/35 text-gold-400/80', dot: isPast ? 'bg-white/30' : 'bg-gold-400 animate-pulse' }
+                      : { label: c.status, cls: 'border-white/15 text-white/35', dot: 'bg-white/20' }
+                    return (
+                      <div key={c.id} className="relative">
+                        <div className={`absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-dark-500 ${statusBadge.dot}`} />
+                        <div className="mystical-card bg-white/[0.02] border border-white/10 p-4 shadow-sm">
+                          <div className="flex flex-wrap justify-between items-start gap-3 mb-2">
+                            <div>
+                              <span className="text-gold-500/80 text-xs font-mono">{formatConsultWhen(c.start_at)}</span>
+                              <h4 className="text-white font-medium text-sm mt-0.5">
+                                {c.is_free_consult ? '🎁 Consulto Omaggio (7 min)' : '🔮 Consulto a Pagamento'}
+                              </h4>
+                            </div>
+                            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border flex items-center gap-1.5 ${statusBadge.cls}`}>
+                              <span className={`w-1 h-1 rounded-full inline-block ${statusBadge.dot}`} />
+                              {statusBadge.label}
+                            </span>
                           </div>
-                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-white/10 text-white/40">{c.status}</span>
-                        </div>
-                        
-                        <div className="mt-3 pt-3 border-t border-white/5">
-                          <p className="text-white/40 text-[11px] uppercase tracking-wide mb-1">Focus del consulto:</p>
-                          <p className="text-white/70 text-sm italic">&ldquo;Di cosa abbiamo parlato (potrai inserirlo a breve o verrà aggiornato in automatico)&rdquo;</p>
-                        </div>
-                        
-                        {c.meeting_join_url && (
-                          <div className="mt-3 pt-3 border-t border-white/5 items-center flex">
-                            <a href={c.meeting_join_url} target="_blank" rel="noopener noreferrer" className="text-gold-500 hover:underline text-xs flex items-center gap-1">Entra nella stanza video <span aria-hidden>→</span></a>
+
+                          <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-white/5 items-center justify-between">
+                            {c.meeting_join_url && !isPast && (
+                              <a href={c.meeting_join_url} target="_blank" rel="noopener noreferrer" className="text-gold-500 hover:underline text-xs flex items-center gap-1">
+                                Entra nella stanza video <span aria-hidden>→</span>
+                              </a>
+                            )}
+                            {isPast && c.status !== 'cancelled' && (
+                              <a href="#scegli-consulto" className="text-gold-500/70 hover:text-gold-400 text-xs hover:underline transition-colors">
+                                Prenota di nuovo →
+                              </a>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </motion.section>

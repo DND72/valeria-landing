@@ -1,5 +1,6 @@
 import { SignUp } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 
 export default function SignUpPage() {
   return (
@@ -26,6 +27,16 @@ export default function SignUpPage() {
           </p>
           <p className="text-white/30 text-xs max-w-xs mx-auto mt-2">
             🔒 Scegli una password di almeno 8 caratteri — quella che preferisci. Riceverai un codice via email per confermare il tuo account.
+          </p>
+          <p className="text-white/25 text-xs max-w-sm mx-auto mt-3 leading-relaxed">
+            Registrandoti accetti i nostri{' '}
+            <Link to="/termini" className="text-gold-500/70 hover:text-gold-400 underline underline-offset-2">
+              Termini di servizio
+            </Link>
+            {' '}e la nostra{' '}
+            <a href="https://www.iubenda.com/privacy-policy/XXXXXXXX" target="_blank" rel="noopener noreferrer" className="text-gold-500/70 hover:text-gold-400 underline underline-offset-2">
+              Privacy Policy
+            </a>.
           </p>
         </div>
         <SignUp

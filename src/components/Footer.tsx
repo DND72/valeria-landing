@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import PrivacySealNote from './PrivacySealNote'
 
 export default function Footer() {
@@ -62,6 +62,16 @@ export default function Footer() {
                   </a>
                 </li>
               ))}
+              <li>
+                <Link to="/faq" className="text-white/40 text-sm hover:text-gold-400 transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/termini" className="text-white/40 text-sm hover:text-gold-400 transition-colors">
+                  Termini di servizio
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -98,7 +108,7 @@ export default function Footer() {
           </p>
         </motion.div>
 
-        {/* Legal — link testuali (quando attivi Iubenda, sostituisci href con gli ID reali) */}
+        {/* Legal — link testuali */}
         <div className="flex flex-wrap items-center justify-center gap-3 mt-6 text-white/20 text-xs">
           <a
             href="https://www.iubenda.com/privacy-policy/XXXXXXXX"
@@ -115,6 +125,20 @@ export default function Footer() {
           >
             Cookie Policy
           </a>
+          <span className="text-white/10">·</span>
+          <Link
+            to="/termini"
+            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
+          >
+            Termini di servizio
+          </Link>
+          <span className="text-white/10">·</span>
+          <Link
+            to="/faq"
+            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
+          >
+            FAQ
+          </Link>
         </div>
 
         {/* Disclaimer */}
