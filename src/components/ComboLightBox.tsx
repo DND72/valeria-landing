@@ -6,7 +6,7 @@ export default function ComboLightBox() {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-dark-400/80 border border-gold-500/30 rounded-2xl p-6 md:p-8 shadow-sm overflow-hidden relative"
+      className="bg-amber-900/10 border border-gold-500/30 rounded-2xl p-6 md:p-8 shadow-sm overflow-hidden relative"
     >
       <div 
         className="absolute inset-0 pointer-events-none"

@@ -20,12 +20,11 @@ export default function ComboFullBox() {
           <p className="text-emerald-500/90 text-xs font-mono tracking-widest uppercase mb-2">
             Il percorso intensivo
           </p>
-          <h3 className="font-serif text-2xl font-bold text-white mb-3">
-            Combo Full <span className="text-emerald-400">"Trasformazione"</span>
+          <h3 className="font-serif text-2xl font-bold text-white mb-3 flex items-center gap-2 flex-wrap">
+            Combo Full <span className="text-emerald-400 italic tracking-wider drop-shadow-[0_0_12px_rgba(52,211,153,0.5)]">"TRASFORMAZIONE"</span>
           </h3>
           <p className="text-white/70 text-sm leading-relaxed mb-4">
-            Un percorso combinato per chi sente la necessità di andare più in profondità e farsi affiancare più da vicino. 
-            Combina <strong className="text-white">lettura estesa e dettagliata con i Tarocchi</strong> e <strong className="text-white">sessioni di Coaching avanzate</strong> per definire obiettivi, superare blocchi e misurare i progressi nel tempo.
+            Un percorso immersivo per chi non vuole solo risposte, ma un cambiamento duraturo. Include <strong className="text-white">2 consulti di Tarocchi (60')</strong> per un'analisi profonda di ogni aspetto della tua situazione e <strong className="text-white">1 sessione di Coaching (60')</strong> per strutturare un piano d'azione solido e superare i blocchi che ti frenano.
           </p>
           <ul className="space-y-2">
             <li className="flex items-center gap-2 text-white/50 text-xs">
