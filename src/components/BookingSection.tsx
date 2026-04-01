@@ -1,9 +1,7 @@
 import { motion } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
-import CalendlyEmbed from './CalendlyEmbed'
 import PrivacySealNote from './PrivacySealNote'
-import { CALENDLY_BOOKING_URL } from '../constants/calendly'
 
 export default function BookingSection() {
   const { user, isLoaded } = useUser()
@@ -34,56 +32,54 @@ export default function BookingSection() {
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto">
             {user
-              ? 'Scegli giorno e ora dal calendario. Valeria ti aspetta.'
-              : isLoaded
-                ? 'Qui sotto vedi le disponibilità in tempo reale. Per completare la prenotazione e il pagamento dal profilo serve un account.'
-                : 'Qui sotto trovi il calendario con le disponibilità aggiornate.'}
+              ? 'Vai al tuo Spazio privato per prenotare una lettura con Valeria.'
+              : 'Per prenotare una lettura con Valeria e accedere ai servizi riservati è necessario registrarsi.'}
           </p>
         </motion.div>
 
-        {!user && isLoaded && (
+        {isLoaded && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="mystical-card text-center p-6 md:p-8 mb-6"
+            className="mystical-card text-center p-8 md:p-12 mb-6"
           >
-            <p className="text-white/70 text-lg mb-2 max-w-lg mx-auto leading-relaxed">
-              Per prenotare una lettura serve un account: così Valeria sa dove contattarti,
-              puoi usare i minuti gratuiti e pagare i consulti in sicurezza dal tuo Diario.
-            </p>
-            <p className="text-white/40 text-sm mb-6 max-w-md mx-auto">
-              Anche se non vuoi il consulto omaggio, l’iscrizione resta il primo passo — è la nostra porta di ingresso.
-            </p>
-            <p className="text-white/50 text-sm">
-              <Link to="/registrati" className="text-gold-400 hover:text-gold-300 underline underline-offset-4 font-medium">
-                Crea il tuo account
-              </Link>
-              <span className="text-white/25 mx-2">·</span>
-              <Link to="/accedi" className="text-white/55 hover:text-white/75 underline underline-offset-4">
-                Ho già un account
-              </Link>
-            </p>
+            {user ? (
+               <div className="flex flex-col items-center justify-center">
+                 <p className="text-white/70 text-lg mb-6 max-w-lg mx-auto leading-relaxed">
+                   Hai già effettuato l'accesso. Visita la tua Dashboard per vedere le disponibilità di Valeria e prenotare il tuo prossimo consulto in pochi click.
+                 </p>
+                 <Link to="/dashboard" className="px-8 py-4 bg-gold-600 hover:bg-gold-500 text-dark-500 font-medium rounded-full transition-colors flex items-center justify-center gap-2">
+                   Vai allo Spazio privato
+                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                 </Link>
+               </div>
+            ) : (
+              <>
+                <p className="text-white/70 text-lg mb-4 max-w-lg mx-auto leading-relaxed">
+                  L'iscrizione è il primo passo ed è la nostra porta di ingresso.
+                </p>
+                <p className="text-white/40 text-sm mb-8 max-w-md mx-auto">
+                  Per prenotare una lettura serve un account: così Valeria sa dove contattarti, 
+                  puoi usare i minuti gratuiti e gestire i consulti in sicurezza dal tuo Diario privato.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Link to="/registrati" className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-gray-100 text-dark-500 font-medium rounded-full transition-colors order-1 sm:order-2">
+                    Crea il tuo account
+                  </Link>
+                  <Link to="/accedi" className="w-full sm:w-auto px-8 py-4 border border-white/20 hover:bg-white/5 text-white font-medium rounded-full transition-colors order-2 sm:order-1">
+                    Accedi
+                  </Link>
+                </div>
+              </>
+            )}
           </motion.div>
         )}
 
         <PrivacySealNote className="mb-6" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className={`mystical-card p-0 overflow-hidden rounded-lg ${isLoaded && !user ? 'ring-1 ring-white/10' : ''}`}
-        >
-          <CalendlyEmbed url={CALENDLY_BOOKING_URL} minHeight={680} />
-          {isLoaded && !user && (
-            <p className="text-center text-white/35 text-xs px-4 py-2 border-t border-white/5 bg-dark-500/50">
-              Non sei ancora dentro? Puoi comunque sfogliare date e orari; per confermare lo slot usa i link sopra quando sei pronta.
-            </p>
-          )}
-        </motion.div>
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -96,7 +92,7 @@ export default function BookingSection() {
             <svg className="w-4 h-4 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            Nel profilo: prima scegli il consulto (card), poi Calendly e pagamento come da impostazione
+            Pagamento sicuro dal profilo
           </span>
           <span className="flex items-center gap-1.5">
             <svg className="w-4 h-4 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
