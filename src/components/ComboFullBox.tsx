@@ -1,20 +1,6 @@
-import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 export default function ComboFullBox() {
-  const paypalContainerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    // @ts-ignore
-    const win = window as any
-    if (win.paypal && win.paypal.HostedButtons && paypalContainerRef.current) {
-      paypalContainerRef.current.innerHTML = ''
-      win.paypal.HostedButtons({
-        hostedButtonId: "BANPY4Q3ZEJUN",
-      }).render(paypalContainerRef.current)
-    }
-  }, [])
-
   return (
     <motion.div 
       initial={{ opacity: 0, y: 16 }}
@@ -53,12 +39,21 @@ export default function ComboFullBox() {
         
         <div className="flex flex-col items-center justify-center p-6 bg-dark-500/50 rounded-xl border border-white/5 min-w-[280px]">
           <p className="text-white/80 font-medium mb-4 text-center text-sm">Acquista la combo full</p>
-          <div ref={paypalContainerRef} id="paypal-container-BANPY4Q3ZEJUN" className="w-full flex justify-center items-center min-h-[50px]">
-            {/* Il bottone PayPal verrà renderizzato qui */}
+
+          <div className="w-full flex justify-center items-center">
+            <form action="https://www.paypal.com/ncp/payment/BANPY4Q3ZEJUN" method="post" target="_blank" style={{display: 'inline-grid', justifyItems: 'center', alignContent: 'start', gap: '0.5rem'}}>
+              <input 
+                type="submit" 
+                value="Acquista ora" 
+                className="bg-[#FFD140] hover:bg-[#e6bb39] text-black font-bold py-2 px-8 rounded cursor-pointer min-w-[11.625rem] h-[2.625rem] text-base transition-colors"
+              />
+              <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+              <section className="text-xs text-white/50 flex items-center justify-center mt-1"> 
+                Con tecnologia <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style={{height: '0.875rem', marginLeft: '0.3rem', verticalAlign: 'middle'}}/>
+              </section>
+            </form>
           </div>
-          <p className="text-white/30 text-[10px] mt-4 text-center max-w-[200px]">
-            Pagamento tramite circuito sicuro PayPal. Riceverai le istruzioni dopo l'acquisto.
-          </p>
+          
         </div>
       </div>
     </motion.div>
