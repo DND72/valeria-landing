@@ -7,6 +7,7 @@ import PrivacySealNote from '../components/PrivacySealNote'
 import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
 import ComboLightBox from '../components/ComboLightBox'
+import ComboFullBox from '../components/ComboFullBox'
 import { calendlyUrlForConsult } from '../constants/calendly'
 import {
   CONSULT_CHOICES,
@@ -388,7 +389,10 @@ export default function Dashboard() {
           <StaffPersonalSpace />
         ) : (
           <>
-            <ComboLightBox />
+            <div className="flex flex-col gap-6 mb-10">
+              <ComboLightBox />
+              <ComboFullBox />
+            </div>
 
             <motion.section
               id="scegli-consulto"
