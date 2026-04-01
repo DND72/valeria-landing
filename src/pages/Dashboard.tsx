@@ -6,6 +6,7 @@ import CalendlyEmbed from '../components/CalendlyEmbed'
 import PrivacySealNote from '../components/PrivacySealNote'
 import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
+import ComboLightBox from '../components/ComboLightBox'
 import { calendlyUrlForConsult } from '../constants/calendly'
 import {
   CONSULT_CHOICES,
@@ -387,6 +388,8 @@ export default function Dashboard() {
           <StaffPersonalSpace />
         ) : (
           <>
+            <ComboLightBox />
+
             <motion.section
               id="scegli-consulto"
               initial={{ opacity: 0, y: 20 }}
