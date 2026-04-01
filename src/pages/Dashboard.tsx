@@ -257,9 +257,6 @@ export default function Dashboard() {
                 <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 text-center">
                   Prenota un consulto
                 </a>
-                <a href="https://stese.nonsolotarocchi.it" target="_blank" rel="noopener noreferrer" className="btn-outline text-sm px-5 py-2 text-center">
-                  Apri l'app tarocchi gratuita
-                </a>
               </div>
             )}
           </div>
@@ -344,14 +341,6 @@ export default function Dashboard() {
                 cta: 'Scorri alle card',
               },
               {
-                icon: '🃏',
-                title: 'App tarocchi gratuita',
-                desc: 'Estrai le tue carte ogni giorno',
-                href: 'https://stese.nonsolotarocchi.it',
-                cta: "Apri l'app",
-                external: true,
-              },
-              {
                 icon: '⭐',
                 title: 'Lascia una recensione',
                 desc: 'Racconta come ti sei trovata',
@@ -362,8 +351,7 @@ export default function Dashboard() {
               <motion.a
                 key={action.title}
                 href={action.href}
-                target={action.external ? '_blank' : undefined}
-                rel={action.external ? 'noopener noreferrer' : undefined}
+                target="_self"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
@@ -906,27 +894,6 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-          {/* Banner App Tarocchi (Daily resource) */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="mystical-card border border-gold-600/20 bg-gradient-to-b from-[rgba(15,20,30,0.6)] to-dark-500 relative overflow-hidden group"
-          >
-            <div className="absolute -top-4 -right-4 text-7xl opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity duration-500">
-              ✨
-            </div>
-            <div className="relative z-10">
-              <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-gold-500/30 text-gold-400/90 inline-block mb-3 bg-dark-600/50">Risorsa Quotidiana</span>
-              <h3 className="font-serif text-lg font-bold text-white mb-1">Le Carte di Stella</h3>
-              <p className="text-white/50 text-sm mb-4 leading-relaxed">
-                Non sai cosa ti riserva la giornata? Usa l'App gratuita per pescare la tua carta quotidiana e ricevere un rapido consiglio ovunque tu sia.
-              </p>
-              <a href="https://stese.nonsolotarocchi.it" target="_blank" rel="noopener noreferrer" className="btn-outline text-sm px-4 py-2 text-center w-full block">
-                Apri la Web App (Gratis)
-              </a>
-            </div>
-          </motion.div>
 
         {/* Profile info */}
         <motion.div
