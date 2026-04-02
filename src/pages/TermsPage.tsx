@@ -60,17 +60,20 @@ export default function TermsPage() {
               <li>Mantenere la riservatezza delle credenziali di accesso.</li>
               <li>L'utente è l'unico responsabile di qualsiasi utilizzo effettuato tramite il proprio account.</li>
             </ul>
-            <p className="text-red-400/80 text-xs mt-2 italic">
-              Attenzione: La fornitura di informazioni false può comportare la sospensione immediata dell'account.
+            <p className="text-gold-400/80 text-xs mt-2 italic">
+              <strong>Sicurezza:</strong> Il Gestore si riserva il diritto di richiedere la modifica delle credenziali per ragioni tecniche o di sicurezza. In caso di sospetto accesso non autorizzato, l'Utente deve informare immediatamente il Servizio Clienti.
             </p>
           </Section>
 
           <Section title="Art. 3 — Modalità di erogazione e Ruolo della Piattaforma">
             <p>
-              Le sessioni si svolgono a distanza via telefono o videochiamata tramite <strong>Calendly</strong>. Il Gestore facilita l'incontro tecnico ma non garantisce l'esattezza o la veridicità delle previsioni fornite.
+              Le sessioni si svolgono a distanza via telefono o videochiamata tramite <strong>Calendly</strong>. Il Gestore facilita l'incontro tecnico ma non garantisce l'esattezza delle previsioni fornite.
             </p>
             <p className="bg-gold-500/5 p-3 border-l-2 border-gold-500/30">
               <strong>Gestione Telefonica:</strong> Per i consulti telefonici, Valeria Di Pace risponde esclusivamente al numero fornito durante la prenotazione e <strong>unicamente negli orari concordati</strong>. Al di fuori delle finestre di prenotazione, il numero è dirottato a sistemi di segreteria automatica non presidiata.
+            </p>
+            <p className="text-white/40 text-[10px] mt-2 italic">
+              Il Gestore non è responsabile del contenuto di siti esterni raggiungibili tramite link inseriti da terzi sulla Piattaforma (es. in recensioni o blog) né di eventuali malware ad essi associati.
             </p>
           </Section>
 
@@ -135,19 +138,22 @@ export default function TermsPage() {
 
           <Section title="Art. 8 — Obblighi e Sanzioni">
             <p>
-              È vietato pubblicare contenuti razzisti, violenti o diffamatori. È espressamente vietato molestare, minacciare o ledere la privacy di altri Partecipanti.
+              È vietato pubblicare contenuti razzisti, violenti, pornografici o diffamatori. È espressamente vietato molestare, minacciare, <strong>insultare</strong> o praticare <strong>stalking</strong> verso Valeria Di Pace o altri Partecipanti.
             </p>
-            <p className="border border-white/10 p-3 bg-white/5 rounded-md">
-              <strong>DIVIETO DI CONTATTO EXTRA-CONSULTO:</strong> È tassativamente vietato tentare di chiamare, inviare messaggi o contattare Valeria Di Pace su numeri privati o canali social al di fuori degli orari e delle modalità previste dalla prenotazione. Ogni tentativo di contatto abusivo comporterà la segnalazione e il ban immediato.
+            <p className="border border-white/10 p-3 bg-white/5 rounded-md text-red-500/90 font-medium">
+              <strong>DIVIETO DI CONTATTO EXTRA-CONSULTO:</strong> È tassativamente vietato tentare di chiamare, inviare messaggi (SMS, WhatsApp) o contattare Valeria su numeri privati o social al di fuori degli orari di prenotazione. Ogni tentativo abusivo comporterà il ban immediato.
             </p>
             <p>
-              In caso di violazione, il Gestore invierà un <strong>avvertimento formale</strong> con richiesta di sanare l'inadempienza entro 48 ore. In assenza di rettifica, si procederà alla sospensione o cancellazione definitiva dell'account.
+              In caso di violazioni di entità minore, il Gestore invierà un <strong>avvertimento formale</strong> richiedendo di sanare l'inadempienza entro 48 ore. In assenza di rettifica, si procederà alla cancellazione del profilo.
             </p>
           </Section>
 
           <Section title="Art. 9 — Privacy e Proprietà Intellettuale">
             <p>
-              Il marchio <strong>nonsolotarocchi.it</strong> e tutti i contenuti del sito (testi, grafiche, loghi) sono di proprietà esclusiva di Valeria Di Pace. Il trattamento dei dati avviene secondo il Regolamento (UE) 2016/679 (GDPR). L'autenticazione è affidata a <strong>Clerk</strong>.
+              Il marchio <strong>nonsolotarocchi.it</strong>, i loghi, i testi e i Software messi a disposizione sono di proprietà esclusiva di Valeria Di Pace o dei suoi partner. È vietata qualsiasi riproduzione, anche parziale, senza previo consenso scritto.
+            </p>
+            <p>
+              Il trattamento dei dati avviene secondo il Regolamento (UE) 2016/679 (GDPR). L'autenticazione è affidata alla piattaforma certificata <strong>Clerk</strong>.
             </p>
           </Section>
 
