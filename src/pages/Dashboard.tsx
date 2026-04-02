@@ -60,6 +60,7 @@ export default function Dashboard() {
   const [taxLast, setTaxLast] = useState('')
   const [taxCf, setTaxCf] = useState('')
   const [taxSubmitting, setTaxSubmitting] = useState(false)
+  const [taxLegalChecked, setTaxLegalChecked] = useState(false)
   const [taxMessage, setTaxMessage] = useState<string | null>(null)
 
   type MyConsultRow = {
@@ -984,7 +985,22 @@ export default function Dashboard() {
                   autoComplete="off"
                 />
               </label>
-              <button type="submit" className="btn-gold text-sm px-5 py-2.5 sm:col-span-2 w-fit" disabled={taxSubmitting}>
+              <label className="flex items-start gap-2 mb-2 sm:col-span-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={taxLegalChecked}
+                  onChange={(e) => setTaxLegalChecked(e.target.checked)}
+                  className="mt-1 accent-gold-500"
+                />
+                <span className="text-white/40 text-[11px] leading-snug group-hover:text-white/60 transition-colors">
+                  Accetto i <Link to="/termini" className="text-gold-500/70 hover:underline">Termini di Servizio</Link> e confermo di aver letto la <Link to="/privacy" className="text-gold-500/70 hover:underline">Privacy Policy</Link>. Dichiaro che i dati forniti sono corretti.
+                </span>
+              </label>
+              <button 
+                type="submit" 
+                className="btn-gold text-sm px-5 py-2.5 sm:col-span-2 w-fit" 
+                disabled={taxSubmitting || !taxLegalChecked}
+              >
                 {taxSubmitting ? 'Salvataggio…' : 'Salva dati'}
               </button>
             </form>

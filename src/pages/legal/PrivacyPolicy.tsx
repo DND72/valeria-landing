@@ -74,13 +74,27 @@ export default function PrivacyPolicy() {
           </Section>
 
           <Section title="5. Condivisione dei Dati (Fornitori Terzi)">
-            <p>I dati personali potranno essere comunicati a soggetti esterni che operano in qualità di Responsabili del Trattamento, quali:</p>
+            <p>I dati personali potranno essere comunicati a soggetti esterni che operano in qualità di Responsabili del Trattamento (Data Processors), quali:</p>
             <ul>
-              <li><strong>Clerk:</strong> Per la gestione dell'autenticazione e del profilo utente.</li>
-              <li><strong>Stripe:</strong> Per la gestione sicura dei pagamenti.</li>
-              <li><strong>Calendly:</strong> Per la gestione delle prenotazioni.</li>
-              <li><strong>Consulenti Fiscali/Informatici:</strong> Per la gestione della contabilità e dell'infrastruttura web (es. Railway, Vercel).</li>
+              <li>
+                <strong>Clerk:</strong> Per la gestione dell&apos;autenticazione e del profilo utente. 
+                <a href="https://clerk.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gold-500/80 hover:underline ml-1">[Privacy Policy]</a>
+              </li>
+              <li>
+                <strong>Stripe:</strong> Per la gestione sicura dei pagamenti e prevenzione frodi. 
+                <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gold-500/80 hover:underline ml-1">[Privacy Policy]</a>
+              </li>
+              <li>
+                <strong>Calendly:</strong> Per la gestione delle prenotazioni e dell&apos;agenda. 
+                <a href="https://calendly.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gold-500/80 hover:underline ml-1">[Privacy Policy]</a>
+              </li>
+              <li>
+                <strong>Consulenti Fiscali/Informatici:</strong> Per la gestione della contabilità e dell&apos;infrastruttura web (es. Railway, Vercel).
+              </li>
             </ul>
+            <p className="mt-4 text-xs italic">
+              Nota: Alcuni di questi fornitori potrebbero trattare i dati in server situati al di fuori dello Spazio Economico Europeo (extra-UE), garantendo comunque standard di protezione adeguati (es. Data Privacy Framework).
+            </p>
           </Section>
 
           <Section title="6. Sicurezza dei Dati">
