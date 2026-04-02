@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
+import LegalDeclarationModal from '../components/LegalDeclarationModal'
 import PrivacySealNote from '../components/PrivacySealNote'
 import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
@@ -63,6 +64,15 @@ export default function Dashboard() {
   const [taxLegalChecked, setTaxLegalChecked] = useState(false)
   const [taxMessage, setTaxMessage] = useState<string | null>(null)
 
+  // Stato Legale e Bonus
+  const [ageStatus, setAgeStatus] = useState<{
+    ageVerified: boolean;
+    hasLegalDeclaration: boolean;
+    hasUsedFree7: boolean;
+    hasUsedIntro10: boolean;
+  } | null>(null)
+  const [ageStatusLoading, setAgeStatusLoading] = useState(true)
+
   type MyConsultRow = {
     id: string
     status: string
@@ -113,27 +123,6 @@ export default function Dashboard() {
     if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
     if (!getApiBaseUrl()) return
     let cancelled = false
-    ;(async () => {
-      try {
-        const r = await apiJson<{
-          showReminder: boolean
-          donePaidConsults: number
-          hasCodiceFiscale: boolean
-        }>(getToken, '/api/me/tax-reminder')
-        if (!cancelled) setTaxInfo(r)
-      } catch {
-        if (!cancelled) setTaxInfo(null)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [isLoaded, user, getToken])
-
-  useEffect(() => {
-    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
-    if (!getApiBaseUrl()) return
-    let cancelled = false
     setMyConsultsLoading(true)
     ;(async () => {
       try {
@@ -143,6 +132,33 @@ export default function Dashboard() {
         if (!cancelled) setMyConsults([])
       } finally {
         if (!cancelled) setMyConsultsLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [isLoaded, user, getToken])
+
+  // Recupero stato legale e bonus
+  useEffect(() => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) {
+      setAgeStatusLoading(false)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const r = await apiJson<{
+          ageVerified: boolean;
+          hasLegalDeclaration: boolean;
+          hasUsedFree7: boolean;
+          hasUsedIntro10: boolean;
+        }>(getToken, '/api/me/age-status')
+        if (!cancelled) setAgeStatus(r)
+      } catch (err) {
+        console.error('[dashboard age-status fetch]', err)
+      } finally {
+        if (!cancelled) setAgeStatusLoading(false)
       }
     })()
     return () => {
@@ -171,7 +187,15 @@ export default function Dashboard() {
   /** Accento soft per il settore coaching: stesso Diario scuro, alone salvia in basso (tarocchi resta dominante). */
   const coachingAccent = !privileged && offerCategory === 'crescita'
   const firstName = displayFirstName(user)
-  const consultChoicesForClient = CONSULT_CHOICES.filter((c) => c.kind !== 'free' || !freeHidden)
+  
+  
+  // Filtro dinamico consulti gratuiti
+  const consultChoicesForClient = CONSULT_CHOICES.filter((c) => {
+    if (c.kind === 'free' && (freeHidden || ageStatus?.hasUsedFree7)) return false
+    if (c.kind === 'coaching_intro' && ageStatus?.hasUsedIntro10) return false
+    return true
+  })
+
   const consultChoicesInSector =
     offerCategory === null
       ? []
@@ -612,6 +636,8 @@ export default function Dashboard() {
                     key={selectedConsult}
                     url={calendlyUrlForConsult(selectedConsult)}
                     minHeight={700}
+                    prefillName={user.fullName || firstName}
+                    prefillEmail={user.primaryEmailAddress?.emailAddress || ''}
                   />
                 ) : (
                   <div
@@ -1069,6 +1095,15 @@ export default function Dashboard() {
           </div>
         </motion.div>
       </div>
+      
+      {/* Modale Legale Obbligatorio per nuovi utenti */}
+      {!privileged && !ageStatusLoading && ageStatus && !ageStatus.hasLegalDeclaration && (
+        <LegalDeclarationModal 
+          onAccepted={() => {
+            setAgeStatus(prev => prev ? { ...prev, hasLegalDeclaration: true } : prev)
+          }} 
+        />
+      )}
     </div>
   )
 }

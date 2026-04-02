@@ -117,12 +117,6 @@ export function createMeRouter(pool: Pool): Router {
     }
   })
 
-  // -------------------------------------------------------------------------
-  // POST /api/me/legal-declaration
-  //
-  // Registra l'autocertificazione legale sull'eta' maggiore.
-  // Salva timestamp e IP per l'audit trail (tutela legale Valeria).
-  // -------------------------------------------------------------------------
   r.post('/legal-declaration', async (req, res) => {
     const userId = req.auth?.userId
     if (!userId) {
@@ -136,7 +130,6 @@ export function createMeRouter(pool: Pool): Router {
       null
 
     try {
-      // Salva il profilo con data di nascita dichiarata e timestamp accettazione
       await pool.query(
         `INSERT INTO client_billing_profiles (clerk_user_id, declared_birthday, legal_declaration_at, legal_declaration_ip, updated_at)
          VALUES ($1, $2::date, now(), $3, now())
@@ -148,7 +141,6 @@ export function createMeRouter(pool: Pool): Router {
         [userId, declaredBirthday ?? null, ip]
       )
 
-      // Registra nel log di audit
       let declaredAge: number | null = null
       if (declaredBirthday) {
         const bd = new Date(declaredBirthday)
@@ -167,7 +159,6 @@ export function createMeRouter(pool: Pool): Router {
         [userId, declaredBirthday ?? null, declaredAge, ip]
       )
 
-      // Aggiorna Clerk publicMetadata con la data dichiarata
       if (clerkClient) {
         try {
           const u = await clerkClient.users.getUser(userId)
@@ -179,9 +170,7 @@ export function createMeRouter(pool: Pool): Router {
               ...(declaredBirthday ? { declaredBirthday } : {}),
             },
           })
-        } catch {
-          // Non bloccante
-        }
+        } catch { /* ... */ }
       }
 
       res.json({ ok: true })
@@ -191,11 +180,6 @@ export function createMeRouter(pool: Pool): Router {
     }
   })
 
-  // -------------------------------------------------------------------------
-  // POST /api/me/legal-consent
-  //
-  // Registra l'accettazione esplicita dei Termini e della Privacy Policy.
-  // -------------------------------------------------------------------------
   r.post('/legal-consent', async (req, res) => {
     const userId = req.auth?.userId
     if (!userId) {
@@ -204,7 +188,6 @@ export function createMeRouter(pool: Pool): Router {
     }
     const { version } = (req.body ?? {}) as { version?: string }
     const finalVersion = version || 'v1.0-2024-04'
-
     try {
       await pool.query(
         `INSERT INTO client_billing_profiles (clerk_user_id, legal_consent_timestamp, legal_consent_version, updated_at)
@@ -222,12 +205,6 @@ export function createMeRouter(pool: Pool): Router {
     }
   })
 
-  // -------------------------------------------------------------------------
-  // GET /api/me/age-status
-  //
-  // Ritorna lo stato VM18 dell'utente autenticato.
-  // Usato dalla Dashboard cliente e dal componente AgeGate.
-  // -------------------------------------------------------------------------
   r.get('/age-status', async (req, res) => {
     const userId = req.auth?.userId
     if (!userId) {
@@ -235,12 +212,48 @@ export function createMeRouter(pool: Pool): Router {
       return
     }
     try {
+      let emailLower: string | null = null
+      if (clerkClient) {
+        try {
+          const u = await clerkClient.users.getUser(userId)
+          const primaryId = u.primaryEmailAddressId
+          const emails = u.emailAddresses ?? []
+          const primary = (primaryId && emails.find(e => e.id === primaryId)?.emailAddress) || emails[0]?.emailAddress
+          if (primary) {
+            emailLower = primary.trim().toLowerCase()
+            await pool.query(
+              `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, updated_at)
+               VALUES ($1, $2, now())
+               ON CONFLICT (clerk_user_id) DO UPDATE SET 
+                  email_normalized = EXCLUDED.email_normalized,
+                  updated_at = now()`,
+              [userId, emailLower]
+            )
+          }
+        } catch (err) {
+          console.warn('[me age-status] sync email error:', err)
+        }
+      }
+
       const { rows } = await pool.query(
-        `SELECT age_verified, age_verified_at, declared_birthday, legal_declaration_at
+        `SELECT age_verified, age_verified_at, declared_birthday, legal_declaration_at,
+                legal_consent_timestamp, legal_consent_version
          FROM client_billing_profiles
          WHERE clerk_user_id = $1`,
         [userId]
       )
+      
+      const bonusRes = await pool.query(
+        `SELECT 
+           COUNT(*) FILTER (WHERE calendly_event_name ILIKE '%7 min%') > 0 as has_used_7,
+           COUNT(*) FILTER (WHERE calendly_event_name ILIKE '%conoscenza%' OR calendly_event_name ILIKE '%10 min%') > 0 as has_used_10
+         FROM consults
+         WHERE (clerk_user_id = $1 OR (invitee_email IS NOT NULL AND LOWER(TRIM(invitee_email)) = $2))
+           AND status <> 'cancelled'`,
+        [userId, emailLower]
+      )
+      const bonus = bonusRes.rows[0] || { has_used_7: false, has_used_10: false }
+
       const row = rows[0]
       res.json({
         ageVerified:          row?.age_verified          ?? false,
@@ -248,6 +261,8 @@ export function createMeRouter(pool: Pool): Router {
         declaredBirthday:     row?.declared_birthday     ?? null,
         legalDeclarationAt:   row?.legal_declaration_at   ?? null,
         hasLegalDeclaration:  !!(row?.legal_declaration_at),
+        hasUsedFree7:         bonus.has_used_7,
+        hasUsedIntro10:       bonus.has_used_10,
         legalConsentTimestamp: row?.legal_consent_timestamp ?? null,
         legalConsentVersion:   row?.legal_consent_version   ?? null,
       })
@@ -257,8 +272,8 @@ export function createMeRouter(pool: Pool): Router {
     }
   })
 
-  registerMeReviewRoutes(r, pool)
   registerMeBlogCommentRoutes(r, pool)
+  registerMeReviewRoutes(r, pool)
 
   return r
 }

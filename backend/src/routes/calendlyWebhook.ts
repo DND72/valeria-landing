@@ -138,17 +138,26 @@ export function createCalendlyWebhookHandler(pool: Pool): RequestHandler {
     }
 
     const cancelled = eventType.includes('canceled') || eventType.includes('cancelled')
+    const lowerName = (fields.eventName ?? '').toLowerCase()
+    const isFree = lowerName.includes('7 min') || lowerName.includes('conoscenza') || lowerName.includes('10 min')
 
     try {
       await pool.query(
         `INSERT INTO consults (
-          calendly_event_uri, calendly_invitee_uri, status,
+          calendly_event_uri, calendly_invitee_uri, clerk_user_id, status,
+          is_free_consult,
           meeting_join_url, meeting_provider,
           invitee_email, invitee_name, start_at, end_at, calendly_event_name, raw_payload, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, now())
+        ) VALUES (
+          $1, $2,
+          (SELECT clerk_user_id FROM client_billing_profiles WHERE email_normalized = LOWER(TRIM($7)) LIMIT 1),
+          $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, now()
+        )
         ON CONFLICT (calendly_event_uri) DO UPDATE SET
           calendly_invitee_uri = COALESCE(EXCLUDED.calendly_invitee_uri, consults.calendly_invitee_uri),
+          clerk_user_id = COALESCE(EXCLUDED.clerk_user_id, consults.clerk_user_id),
           status = EXCLUDED.status,
+          is_free_consult = EXCLUDED.is_free_consult,
           meeting_join_url = COALESCE(EXCLUDED.meeting_join_url, consults.meeting_join_url),
           meeting_provider = COALESCE(EXCLUDED.meeting_provider, consults.meeting_provider),
           invitee_email = COALESCE(EXCLUDED.invitee_email, consults.invitee_email),
@@ -162,6 +171,7 @@ export function createCalendlyWebhookHandler(pool: Pool): RequestHandler {
           fields.eventUri,
           fields.inviteeUri,
           cancelled ? 'cancelled' : 'scheduled',
+          isFree,
           joinUrl,
           provider,
           fields.inviteeEmail,

@@ -4,6 +4,8 @@ interface Props {
   url: string
   className?: string
   minHeight?: number
+  prefillName?: string
+  prefillEmail?: string
 }
 
 function isValidCalendlyUrl(u: string): boolean {
@@ -18,23 +20,28 @@ function isValidCalendlyUrl(u: string): boolean {
 }
 
 /** Embed ufficiale via iframe — non carica widget.js (evita errori interni tipo .split su null). */
-function calendlyIframeSrc(pageUrl: string): string {
+function calendlyIframeSrc(pageUrl: string, name?: string, email?: string): string {
   const u = new URL(pageUrl.trim())
-  u.searchParams.set('embed_domain', typeof window !== 'undefined' ? window.location.hostname : 'localhost')
-  u.searchParams.set('embed_type', 'Inline')
+  const params = u.searchParams
+  params.set('embed_domain', typeof window !== 'undefined' ? window.location.hostname : 'localhost')
+  params.set('embed_type', 'Inline')
   // Allinea al tema del sito (stesso body / cosmic) per ridurre il “blocco nero” che stona col riquadro
-  u.searchParams.set('background_color', '0a0e1a')
-  u.searchParams.set('text_color', 'f5f0e8')
-  u.searchParams.set('primary_color', 'd4a017')
-  u.searchParams.set('hide_gdpr_banner', '1')
+  params.set('background_color', '0a0e1a')
+  params.set('text_color', 'f5f0e8')
+  params.set('primary_color', 'd4a017')
+  params.set('hide_gdpr_banner', '1')
+
+  if (name) params.set('name', name)
+  if (email) params.set('email', email)
+  
   return u.toString()
 }
 
-export default function CalendlyEmbed({ url, className = '', minHeight = 700 }: Props) {
+export default function CalendlyEmbed({ url, className = '', minHeight = 700, prefillName, prefillEmail }: Props) {
   const src = useMemo(() => {
     if (!isValidCalendlyUrl(url)) return null
-    return calendlyIframeSrc(url)
-  }, [url])
+    return calendlyIframeSrc(url, prefillName, prefillEmail)
+  }, [url, prefillName, prefillEmail])
 
   if (!src) {
     return (
