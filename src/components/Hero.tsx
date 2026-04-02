@@ -69,29 +69,6 @@ export default function Hero() {
         }}
       />
 
-      {/* Valeria photo — top-left, scrolls with page */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.9, delay: 0.2 }}
-        className="absolute top-20 left-4 md:left-8 z-10 pointer-events-none"
-      >
-        <div
-          className="rounded-xl overflow-hidden border border-gold-500/30"
-          style={{
-            width: '130px',
-            aspectRatio: '3/4',
-            boxShadow: '0 0 20px rgba(255,200,0,0.2), 0 8px 32px rgba(0,0,0,0.6)',
-          }}
-        >
-          <img
-            src="/valeria-navbar.png"
-            alt="Valeria Di Pace"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: '50% 20%' }}
-          />
-        </div>
-      </motion.div>
 
       {/* Decorative arc lines */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -110,6 +87,29 @@ export default function Hero() {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
+        {/* Valeria photo — centered */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8"
+        >
+          <div
+            className="mx-auto rounded-2xl overflow-hidden border border-gold-500/30 ring-1 ring-gold-500/20"
+            style={{
+              width: '160px',
+              aspectRatio: '1/1',
+              boxShadow: '0 0 40px rgba(212,160,23,0.15), 0 10px 40px rgba(0,0,0,0.8)',
+            }}
+          >
+            <img
+              src="/valeria-navbar.png"
+              alt="Valeria Di Pace"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: '50% 15%' }}
+            />
+          </div>
+        </motion.div>
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -138,7 +138,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25 }}
-          className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed"
+          className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed text-justify hyphens-auto"
         >
           Oltre <strong className="text-gold-400">3.000 consulti</strong> sulle più rinomate piattaforme online — ora puoi
           trovarla direttamente qui.
@@ -148,7 +148,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.35 }}
-          className="text-white/40 text-base md:text-lg mb-12 italic font-serif max-w-2xl mx-auto leading-relaxed"
+          className="text-white/40 text-base md:text-lg mb-12 italic font-serif max-w-2xl mx-auto leading-relaxed text-justify hyphens-auto"
         >
           <span className="not-italic text-gold-400/95 font-medium tracking-wide">Esperienza, precisione e visione.</span>{' '}
           Valeria applica un{' '}
