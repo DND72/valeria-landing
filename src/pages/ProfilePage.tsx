@@ -59,7 +59,7 @@ export default function ProfilePage() {
     }
     setPwSaving(true)
     try {
-      await user.updatePassword({ currentPassword: pwCurrent, newPassword: pwNew })
+      await user!.updatePassword({ currentPassword: pwCurrent, newPassword: pwNew })
       setPwMsg({ type: 'ok', text: 'Password aggiornata con successo.' })
       setPwCurrent('')
       setPwNew('')
@@ -79,7 +79,7 @@ export default function ProfilePage() {
     if (!deleteConfirm) return
     setDeleting(true)
     try {
-      await user.delete()
+      await user!.delete()
       await signOut(() => navigate('/'))
     } catch {
       setDeleting(false)

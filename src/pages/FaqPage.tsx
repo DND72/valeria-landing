@@ -12,26 +12,26 @@ const FAQ_SECTIONS: FaqSection[] = [
     items: [
       {
         q: 'Cosa posso fare su questo sito?',
-        a: \"Puoi registrarti gratuitamente, accedere al tuo Diario privato, scegliere il tipo di consulto con Valeria (tarocchi, coaching o percorsi combo), prenotare tramite Calendly e ricevere il link di accesso alla sessione. I servizi sono riservati ai maggiorenni (18+). Hai anche a disposizione 7 minuti di consulto omaggio per il tuo primo incontro.\",
+        a: "Puoi registrarti gratuitamente, accedere al tuo Diario privato, scegliere il tipo di consulto con Valeria (tarocchi, coaching o percorsi combo), prenotare tramite Calendly e ricevere il link di accesso alla sessione. I servizi sono riservati ai maggiorenni (18+). Hai anche a disposizione 7 minuti di consulto omaggio per il tuo primo incontro.",
       },
       {
         q: 'Devo registrarmi per prenotare?',
-        a: \"Si. La registrazione e necessaria per accedere al Diario privato, gestire i tuoi appuntamenti e usufruire del consulto omaggio. La registrazione e gratuita e richiede solo email e password.\",
+        a: "Si. La registrazione e necessaria per accedere al Diario privato, gestire i tuoi appuntamenti e usufruire del consulto omaggio. La registrazione e gratuita e richiede solo email e password.",
       },
       {
         q: 'Come funziona il consulto omaggio da 7 minuti?',
-        a: \"Al primo accesso trovi nel tuo Diario il consulto omaggio da 7 minuti. Puoi prenotarlo selezionando Tarocchi & letture, poi la card Consulto omaggio. L'orario si sceglie su Calendly, senza alcun pagamento.\",
+        a: "Al primo accesso trovi nel tuo Diario il consulto omaggio da 7 minuti. Puoi prenotarlo selezionando Tarocchi & letture, poi la card Consulto omaggio. L'orario si sceglie su Calendly, senza alcun pagamento.",
       },
       {
-        q: \"Il sito e sicuro? Come vengono protetti i miei dati?\",
+        q: "Il sito e sicuro? Come vengono protetti i miei dati?",
         a: (
           <>
             Si. L&apos;autenticazione e gestita da{' '}
-            <a href=\"https://clerk.com\" target=\"_blank\" rel=\"noopener noreferrer\" className=\"text-gold-400 hover:underline\">
+            <a href="https://clerk.com" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:underline">
               Clerk
             </a>{' '}
             (standard enterprise). I tuoi dati personali sono trattati in conformita al GDPR. Leggi la nostra{' '}
-            <Link to=\"/termini\" className=\"text-gold-400 hover:underline\">
+            <Link to="/termini" className="text-gold-400 hover:underline">
               pagina Termini di servizio
             </Link>{' '}
             per i dettagli.
@@ -46,19 +46,19 @@ const FAQ_SECTIONS: FaqSection[] = [
     items: [
       {
         q: 'Come prenoto una sessione?',
-        a: \"Nel tuo Diario (dopo il login) scegli il settore (Tarocchi, Coaching o Combo), poi il tipo di consulto preferito. Clicca Continua e si apre il widget Calendly dove selezioni giorno e fascia oraria disponibile. Per i consulti a pagamento, completi il pagamento sicuro tramite Stripe. Prenotando un consulto dichiari di avere almeno 18 anni.\",
+        a: "Nel tuo Diario (dopo il login) scegli il settore (Tarocchi, Coaching o Combo), poi il tipo di consulto preferito. Clicca Continua e si apre il widget Calendly dove selezioni giorno e fascia oraria disponibile. Per i consulti a pagamento, completi il pagamento sicuro tramite Stripe. Prenotando un consulto dichiari di avere almeno 18 anni.",
       },
       {
         q: 'Posso cambiare o cancellare un appuntamento?',
-        a: \"Si. Riceverai un'email di conferma da Calendly con il link per riprogrammare o cancellare. In alternativa, accedi al portale Calendly con la stessa email. Per le politiche di rimborso vedi la sezione Pagamenti e rimborsi qui sotto.\",
+        a: "Si. Riceverai un'email di conferma da Calendly con il link per riprogrammare o cancellare. In alternativa, accedi al portale Calendly con la stessa email. Per le politiche di rimborso vedi la sezione Pagamenti e rimborsi qui sotto.",
       },
       {
         q: 'In che modalita si svolge la sessione?',
-        a: \"Le sessioni si svolgono per telefono o videochiamata (a seconda del tipo scelto). Il link per entrare nella videochiamata ti viene inviato via email da Calendly e compare anche nel tuo Diario privato.\",
+        a: "Le sessioni si svolgono per telefono o videochiamata (a seconda del tipo scelto). Il link per entrare nella videochiamata ti viene inviato via email da Calendly e compare anche nel tuo Diario privato.",
       },
       {
         q: 'Quante volte posso prenotare?',
-        a: \"Non ci sono limiti. Puoi prenotare piu consulti nel tempo. Il consulto omaggio e disponibile una sola volta per account.\",
+        a: "Non ci sono limiti. Puoi prenotare piu consulti nel tempo. Il consulto omaggio e disponibile una sola volta per account.",
       },
     ],
   },
@@ -68,19 +68,19 @@ const FAQ_SECTIONS: FaqSection[] = [
     items: [
       {
         q: 'Come funziona il pagamento?',
-        a: \"Il pagamento avviene tramite Stripe al momento della prenotazione su Calendly. Non e necessario avere un conto Stripe: puoi pagare anche con carta di credito/debito tramite il modulo sicuro di Stripe.\",
+        a: "Il pagamento avviene tramite Stripe al momento della prenotazione su Calendly. Non e necessario avere un conto Stripe: puoi pagare anche con carta di credito/debito tramite il modulo sicuro di Stripe.",
       },
       {
         q: 'I miei dati di pagamento sono al sicuro?',
-        a: \"Si. Il pagamento e gestito interamente da Stripe, che non condivide i dati della carta con il sito. Valeria Di Pace non archivia alcun dato di pagamento.\",
+        a: "Si. Il pagamento e gestito interamente da Stripe, che non condivide i dati della carta con il sito. Valeria Di Pace non archivia alcun dato di pagamento.",
       },
       {
         q: 'Posso chiedere un rimborso?',
-        a: \"Se cancelli con almeno 24 ore di anticipo tramite il link in email, il rimborso viene elaborato tramite Stripe secondo le tempistiche standard (3-5 giorni lavorativi). Cancellazioni sotto le 24 ore non sono rimborsabili. Per situazioni straordinarie, puoi scrivere direttamente a Valeria tramite i contatti in fondo alla pagina.\",
+        a: "Se cancelli con almeno 24 ore di anticipo tramite il link in email, il rimborso viene elaborato tramite Stripe secondo le tempistiche standard (3-5 giorni lavorativi). Cancellazioni sotto le 24 ore non sono rimborsabili. Per situazioni straordinarie, puoi scrivere direttamente a Valeria tramite i contatti in fondo alla pagina.",
       },
       {
-        q: \"Ricevero una fattura o ricevuta?\",
-        a: \"Stripe invia automaticamente la conferma di pagamento via email. Se hai bisogno di documentazione fiscale, puoi richiederla a Valeria indicando i tuoi dati di fatturazione.\",
+        q: "Ricevero una fattura o ricevuta?",
+        a: "Stripe invia automaticamente la conferma di pagamento via email. Se hai bisogno di documentazione fiscale, puoi richiederla a Valeria indicando i tuoi dati di fatturazione.",
       },
     ],
   },
@@ -89,20 +89,20 @@ const FAQ_SECTIONS: FaqSection[] = [
     emoji: '🔮',
     items: [
       {
-        q: \"Qual e la differenza tra i consulti di Tarocchi e il Coaching?\",
-        a: \"I consulti di Tarocchi usano le carte come strumento simbolico di riflessione per fare chiarezza su una situazione, capire le dinamiche in corso o esplorare possibili scenari. Il Coaching e orientato all'azione concreta: obiettivi, abitudini, blocchi e strategie per il cambiamento. I Percorsi Combo uniscono entrambi gli approcci.\",
+        q: "Qual e la differenza tra i consulti di Tarocchi e il Coaching?",
+        a: "I consulti di Tarocchi usano le carte come strumento simbolico di riflessione per fare chiarezza su una situazione, capire le dinamiche in corso o esplorare possibili scenari. Il Coaching e orientato all'azione concreta: obiettivi, abitudini, blocchi e strategie per il cambiamento. I Percorsi Combo uniscono entrambi gli approcci.",
       },
       {
         q: 'I Tarocchi sono una forma di previsione del futuro?',
-        a: \"No. Le letture di Valeria con i Tarocchi di Marsiglia sono strumenti di orientamento, crescita personale e consapevolezza. Non costituiscono divinazione, ne sostituiscono il parere di medici, psicologi, avvocati o consulenti finanziari.\",
+        a: "No. Le letture di Valeria con i Tarocchi di Marsiglia sono strumenti di orientamento, crescita personale e consapevolezza. Non costituiscono divinazione, ne sostituiscono il parere di medici, psicologi, avvocati o consulenti finanziari.",
       },
       {
         q: 'Il Coaching offerto e psicoterapia?',
-        a: \"No. Valeria ha una formazione in psicologia e offre percorsi di accompagnamento e crescita personale. Il servizio non e psicoterapia ne consulenza psicologica riservata agli iscritti all'Albo degli Psicologi. Se stai attraversando un momento di difficolta clinica, ti invitiamo a rivolgerti a un professionista abilitato.\",
+        a: "No. Valeria ha una formazione in psicologia e offre percorsi di accompagnamento e crescita personale. Il servizio non e psicoterapia ne consulenza psicologica riservata agli iscritti all'Albo degli Psicologi. Se stai attraversando un momento di difficolta clinica, ti invitiamo a rivolgerti a un professionista abilitato.",
       },
       {
         q: 'Cosa sono i Percorsi Combo?',
-        a: \"I Percorsi Combo uniscono consulti di Tarocchi e sessioni di Coaching in un unico pacchetto. La Combo Light include 2 consulti brevi di Tarocchi (30 min) + 1 sessione di Coaching (30 min). La Combo Full include 2 consulti completi (60 min) + 1 sessione di Coaching (60 min). Sono ideali per chi vuole sia riflessione profonda che un piano d'azione concreto.\",
+        a: "I Percorsi Combo uniscono consulti di Tarocchi e sessioni di Coaching in un unico pacchetto. La Combo Light include 2 consulti brevi di Tarocchi (30 min) + 1 sessione di Coaching (30 min). La Combo Full include 2 consulti completi (60 min) + 1 sessione di Coaching (60 min). Sono ideali per chi vuole sia riflessione profonda che un piano d'azione concreto.",
       },
     ],
   },
@@ -115,7 +115,7 @@ const FAQ_SECTIONS: FaqSection[] = [
         a: (
           <>
             Accedi al tuo{' '}
-            <Link to=\"/profilo\" className=\"text-gold-400 hover:underline\">
+            <Link to="/profilo" className="text-gold-400 hover:underline">
               Profilo
             </Link>{' '}
             (link in alto nel Diario) e usa la sezione &quot;Sicurezza&quot; per cambiare la password. Puoi anche usare il link &quot;Password dimenticata&quot; nella pagina di accesso.
@@ -123,16 +123,16 @@ const FAQ_SECTIONS: FaqSection[] = [
         ),
       },
       {
-        q: \"Come posso cancellare il mio account?\",
-        a: \"Dalla pagina Profilo trovi l'opzione per richiedere la cancellazione dell'account. Tutti i tuoi dati verranno eliminati in conformita al GDPR.\",
+        q: "Come posso cancellare il mio account?",
+        a: "Dalla pagina Profilo trovi l'opzione per richiedere la cancellazione dell'account. Tutti i tuoi dati verranno eliminati in conformita al GDPR.",
       },
       {
         q: 'Le mie note e il mio Diario sono privati?',
-        a: \"Si. Il tuo Diario e visibile solo a te. Le note interne di Valeria sui consulti sono separate e non sono visibili ai clienti. I tuoi dati non vengono venduti ne ceduti a terzi.\",
+        a: "Si. Il tuo Diario e visibile solo a te. Le note interne di Valeria sui consulti sono separate e non sono visibili ai clienti. I tuoi dati non vengono venduti ne ceduti a terzi.",
       },
       {
         q: 'Posso usare un indirizzo email diverso da quello con cui prenoto su Calendly?',
-        a: \"Ti consigliamo di usare la stessa email sia per l'account sul sito che per le prenotazioni su Calendly. In questo modo lo storico dei tuoi consulti appare automaticamente nel Diario privato.\",
+        a: "Ti consigliamo di usare la stessa email sia per l'account sul sito che per le prenotazioni su Calendly. In questo modo lo storico dei tuoi consulti appare automaticamente nel Diario privato.",
       },
     ],
   },
@@ -140,14 +140,14 @@ const FAQ_SECTIONS: FaqSection[] = [
 
 function AccordionItem({ item, isOpen, onToggle }: { item: FaqItem; isOpen: boolean; onToggle: () => void }) {
   return (
-    <div className=\"border-b border-white/8 last:border-0\">
+    <div className="border-b border-white/8 last:border-0">
       <button
-        type=\"button\"
+        type="button"
         onClick={onToggle}
-        className=\"w-full flex items-start justify-between gap-4 py-4 text-left group\"
+        className="w-full flex items-start justify-between gap-4 py-4 text-left group"
         aria-expanded={isOpen}
       >
-        <span className=\"text-white/85 text-sm font-medium group-hover:text-white transition-colors leading-snug\">
+        <span className="text-white/85 text-sm font-medium group-hover:text-white transition-colors leading-snug">
           {item.q}
         </span>
         <span
@@ -157,11 +157,11 @@ function AccordionItem({ item, isOpen, onToggle }: { item: FaqItem; isOpen: bool
         >
           <svg
             className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`}
-            fill=\"none\"
-            viewBox=\"0 0 24 24\"
-            stroke=\"currentColor\"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2.5} d=\"M12 5v14M5 12h14\" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v14M5 12h14" />
           </svg>
         </span>
       </button>
@@ -173,9 +173,9 @@ function AccordionItem({ item, isOpen, onToggle }: { item: FaqItem; isOpen: bool
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className=\"overflow-hidden\"
+            className="overflow-hidden"
           >
-            <div className=\"pb-5 text-white/60 text-sm leading-relaxed\">{item.a}</div>
+            <div className="pb-5 text-white/60 text-sm leading-relaxed">{item.a}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -191,51 +191,51 @@ export default function FaqPage() {
   }
 
   return (
-    <div className=\"min-h-screen px-6 py-24\">
+    <div className="min-h-screen px-6 py-24">
       <div
-        className=\"absolute inset-0 pointer-events-none\"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse 70% 40% at 50% 10%, rgba(212,160,23,0.06) 0%, transparent 70%)',
         }}
       />
 
-      <div className=\"relative z-10 max-w-3xl mx-auto\">
+      <div className="relative z-10 max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className=\"text-center mb-14\"
+          className="text-center mb-14"
         >
-          <p className=\"text-gold-500 text-sm font-medium tracking-widest uppercase mb-3\">Domande frequenti</p>
-          <h1 className=\"font-serif text-4xl md:text-5xl font-bold text-white mb-4\">FAQ</h1>
-          <p className=\"text-white/50 text-base max-w-xl mx-auto leading-relaxed\">
+          <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-3">Domande frequenti</p>
+          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">FAQ</h1>
+          <p className="text-white/50 text-base max-w-xl mx-auto leading-relaxed">
             Risposte alle domande piu comuni su come funziona il sito, le prenotazioni, i pagamenti e i
             servizi di Valeria.
           </p>
-          <div className=\"mt-6 flex flex-wrap gap-3 justify-center\">
-            <Link to=\"/\" className=\"btn-outline text-sm px-4 py-2\">
+          <div className="mt-6 flex flex-wrap gap-3 justify-center">
+            <Link to="/" className="btn-outline text-sm px-4 py-2">
               &larr; Home
             </Link>
-            <Link to=\"/termini\" className=\"text-white/40 text-sm hover:text-white/70 transition-colors underline underline-offset-4 px-4 py-2\">
+            <Link to="/termini" className="text-white/40 text-sm hover:text-white/70 transition-colors underline underline-offset-4 px-4 py-2">
               Termini di servizio
             </Link>
           </div>
         </motion.div>
 
-        <div className=\"space-y-8\">
+        <div className="space-y-8">
           {FAQ_SECTIONS.map((section, si) => (
             <motion.section
               key={section.title}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.05 + si * 0.06 }}
-              className=\"mystical-card\"
+              className="mystical-card"
             >
-              <div className=\"flex items-center gap-3 mb-5\">
-                <span className=\"text-2xl\" aria-hidden>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="text-2xl" aria-hidden>
                   {section.emoji}
                 </span>
-                <h2 className=\"font-serif text-xl font-bold text-white\">{section.title}</h2>
+                <h2 className="font-serif text-xl font-bold text-white">{section.title}</h2>
               </div>
 
               <div>
@@ -259,17 +259,17 @@ export default function FaqPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className=\"text-center mt-14 mystical-card border border-gold-600/20\"
+          className="text-center mt-14 mystical-card border border-gold-600/20"
         >
-          <p className=\"text-gold-500 text-sm font-medium mb-2\">Non hai trovato risposta?</p>
-          <p className=\"text-white/55 text-sm mb-5\">
+          <p className="text-gold-500 text-sm font-medium mb-2">Non hai trovato risposta?</p>
+          <p className="text-white/55 text-sm mb-5">
             Puoi registrarti e accedere al tuo Diario dove trovi il consulto omaggio gratuito da 7 minuti.
           </p>
-          <div className=\"flex flex-wrap gap-3 justify-center\">
-            <Link to=\"/registrati\" className=\"btn-gold text-sm px-6 py-2.5\">
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link to="/registrati" className="btn-gold text-sm px-6 py-2.5">
               Crea il tuo account
             </Link>
-            <Link to=\"/accedi\" className=\"btn-outline text-sm px-6 py-2.5\">
+            <Link to="/accedi" className="btn-outline text-sm px-6 py-2.5">
               Accedi
             </Link>
           </div>
