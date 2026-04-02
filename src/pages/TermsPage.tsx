@@ -60,8 +60,12 @@ export default function TermsPage() {
                 <strong>Percorsi Combo</strong> — pacchetti che uniscono consulti di tarocchi e sessioni di coaching.
               </li>
               <li>
-                <strong>Consulto omaggio da 7 minuti</strong> — disponibile una sola volta per ogni account
+                <strong>Consulto omaggio Tarocchi (7 min)</strong> — disponibile una sola volta per ogni account
                 registrato, riservato ai nuovi utenti.
+              </li>
+              <li>
+                <strong>Consulto omaggio Coaching (10 min)</strong> — disponibile una sola volta per ogni account
+                registrato, riservato ai nuovi utenti per provare il servizio di crescita personale.
               </li>
             </ul>
           </Section>
@@ -115,13 +119,23 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="6. Natura dei servizi e limitazioni">
+          <Section title="6. Natura dei servizi e DIVIETO SALUTE/GRAVIDANZE">
             <p>
               I consulti con i Tarocchi sono offerte a <strong>scopo di intrattenimento, riflessione personale e
-              crescita interiore</strong>. Non costituiscono e non sostituiscono pareri medici, psicologici clinici,
-              legali o finanziari. Valeria Di Pace non è responsabile delle decisioni prese dall'utente in seguito
+              crescita interiore</strong>. Ogni consulto avviene sotto la piena responsabilità dell'utente.
+              Valeria Di Pace non è responsabile delle decisioni prese dall'utente in seguito
               a una sessione.
             </p>
+            <div className="bg-red-500/10 border-l-4 border-red-500 p-4 my-4">
+              <p className="text-white font-bold mb-2">DIVIETO ASSOLUTO DI CONSULTA:</p>
+              <p className="text-white/80">
+                È tassativamente vietato richiedere consulti riguardanti temi di **salute, gravidanze, fertilità, 
+                interventi medici o psicologici clinici**. Valeria Di Pace non effettua diagnosi né previsioni
+                su decorsi medici di alcun tipo. Qualsiasi richiesta in tal senso comporterà l'interruzione 
+                immediata della sessione senza diritto di rimborso. Per tali questioni, l'utente è tenuto a 
+                rivolgersi esclusivamente a personale medico o specialisti qualificati.
+              </p>
+            </div>
             <p>
               Il servizio di Coaching e Crescita personale è un accompagnamento orientato alla crescita personale.{' '}
               <strong>Non costituisce psicoterapia</strong>, né consulenza psicologica riservata ai sensi della

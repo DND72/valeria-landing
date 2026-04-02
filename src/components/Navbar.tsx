@@ -10,6 +10,7 @@ const links = [
   { label: 'Crescita personale', href: '/crescita-personale' },
   { label: 'Blog', href: '/blog' },
   { label: 'Recensioni', href: '#recensioni' },
+  { label: 'FAQ', href: '/faq' },
 ]
 
 export default function Navbar() {
