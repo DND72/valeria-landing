@@ -123,7 +123,7 @@ export default function LegalDeclarationModal({ onAccepted }: Props) {
               onChange={(e) => setBirthday(e.target.value)}
               min={minDate}
               max={today}
-              className="w-full bg-dark-600/60 border border-white/15 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-600/60 transition-colors"
+              className="w-full bg-dark-400 border border-white/15 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-600/60 transition-colors [color-scheme:dark]"
             />
             {/* Feedback real-time */}
             {birthday && isValidPastDate(birthday) && (

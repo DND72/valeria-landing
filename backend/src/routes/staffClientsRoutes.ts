@@ -11,6 +11,10 @@ const profilePatch = z.object({
   markInvoicedNow: z.boolean().optional(),
   manualBonusCredits: z.number().int().min(0).optional(),
   unlockReviewOverride: z.boolean().optional(),
+  firstName: z.string().max(100).optional(),
+  lastName: z.string().max(100).optional(),
+  declaredBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  taxId: z.string().max(50).optional(),
 })
 
 function normalizeEmail(email: string): string {
@@ -209,7 +213,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
 
       // Cerchiamo il profilo specifico per questa email
       const bpLookup = await pool.query(
-        `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday
+        `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday, codice_fiscale
          FROM client_billing_profiles
          WHERE email_normalized = $1 LIMIT 1`,
         [email]
@@ -218,6 +222,9 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       let ageVerified = bp?.age_verified ?? false
       let ageVerifiedAt: string | null = bp?.age_verified_at ? new Date(bp.age_verified_at).toISOString() : null
       let declaredBirthday: string | null = bp?.declared_birthday ? new Date(bp.declared_birthday).toISOString().slice(0, 10) : null
+      let firstName = bp?.first_name ?? null
+      let lastName = bp?.last_name ?? null
+      let taxId = bp?.codice_fiscale ?? null
       let displayName = bp ? `${bp.first_name || ''} ${bp.last_name || ''}`.trim() : (consultRows[0]?.invitee_name ?? null)
 
       if (!bp && consultRows.length > 0) {
@@ -235,6 +242,9 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       res.json({
         email,
         displayName: displayName || 'Cliente ospite',
+        firstName,
+        lastName,
+        taxId,
         // Badge VM18
         ageVerified,
         ageVerifiedAt,
@@ -271,7 +281,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       res.status(400).json({ error: 'Payload non valido', details: parsed.error.flatten() })
       return
     }
-    const { email, generalNotes, lastInvoicedAt, markInvoicedNow, manualBonusCredits, unlockReviewOverride } = parsed.data
+    const { email, generalNotes, lastInvoicedAt, markInvoicedNow, manualBonusCredits, unlockReviewOverride, firstName, lastName, declaredBirthday, taxId } = parsed.data
     const norm = normalizeEmail(email)
 
     if (
@@ -279,7 +289,11 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       lastInvoicedAt === undefined &&
       !markInvoicedNow &&
       manualBonusCredits === undefined &&
-      unlockReviewOverride === undefined
+      unlockReviewOverride === undefined &&
+      firstName === undefined &&
+      lastName === undefined &&
+      declaredBirthday === undefined &&
+      taxId === undefined
     ) {
       res.status(400).json({ error: 'Specifica un campo da modificare' })
       return
@@ -327,6 +341,33 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
            updated_at = now()`,
         [norm, notes, lastInv, bonus, uRev]
       )
+
+      // Se forniti Nome, Cognome, Compleanno o CF, salviamo in client_billing_profiles
+      if (firstName !== undefined || lastName !== undefined || declaredBirthday !== undefined || taxId !== undefined) {
+        const bpPrev = await pool.query(
+          `SELECT first_name, last_name, declared_birthday, codice_fiscale FROM client_billing_profiles WHERE email_normalized = $1 LIMIT 1`,
+          [norm]
+        )
+        const row = bpPrev.rows[0]
+        const fn = firstName !== undefined ? firstName : row?.first_name || null
+        const ln = lastName !== undefined ? lastName : row?.last_name || null
+        const db = declaredBirthday !== undefined ? (declaredBirthday || null) : row?.declared_birthday || null
+        const tf = taxId !== undefined ? taxId : row?.codice_fiscale || null
+
+        // Se non esiste ancora per questa email, lo creiamo con un clerk_user_id fake "staff-manual-EMAIL" per evitare collisioni su UNIQUE
+        // Clerk user id è NOT NULL UNIQUE.
+        await pool.query(
+          `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, first_name, last_name, declared_birthday, codice_fiscale, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, now())
+           ON CONFLICT (email_normalized) DO UPDATE SET
+             first_name = EXCLUDED.first_name,
+             last_name = EXCLUDED.last_name,
+             declared_birthday = EXCLUDED.declared_birthday,
+             codice_fiscale = EXCLUDED.codice_fiscale,
+             updated_at = now()`,
+          [`staff-manual-${norm}`, norm, fn, ln, db, tf]
+        )
+      }
 
       const row = await pool.query(
         `SELECT email_normalized, general_notes, last_invoiced_at, manual_bonus_credits, unlock_review_override, updated_at

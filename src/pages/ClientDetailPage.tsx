@@ -32,6 +32,9 @@ type DetailPayload = {
   ageVerified: boolean
   ageVerifiedAt: string | null
   declaredBirthday: string | null
+  firstName: string | null
+  lastName: string | null
+  taxId: string | null
   profile: {
     generalNotes: string | null
     lastInvoicedAt: string | null
@@ -66,8 +69,15 @@ export default function ClientDetailPage() {
   const [generalNotes, setGeneralNotes] = useState('')
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({})
   const [savingProfile, setSavingProfile] = useState(false)
+  const [savingAnagrafica, setSavingAnagrafica] = useState(false)
   const [savingInvoiced, setSavingInvoiced] = useState(false)
   const [postingNoteFor, setPostingNoteFor] = useState<string | null>(null)
+
+  // Campi anagrafici editabili
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [birthday, setBirthday] = useState('')
+  const [taxId, setTaxId] = useState('')
 
   const load = useCallback(async () => {
     if (!apiConfigured || !email) {
@@ -81,6 +91,10 @@ export default function ClientDetailPage() {
       const d = await apiJson<DetailPayload>(getToken, `/api/staff/clients/detail?${q.toString()}`)
       setData(d)
       setGeneralNotes(d.profile?.generalNotes ?? '')
+      setFirstName(d.firstName ?? '')
+      setLastName(d.lastName ?? '')
+      setBirthday(d.declaredBirthday ?? '')
+      setTaxId(d.taxId ?? '')
     } catch (e) {
       setError(e instanceof ApiError ? String(e.message) : 'Errore caricamento')
       setData(null)
@@ -111,6 +125,28 @@ export default function ClientDetailPage() {
       // ignore
     } finally {
       setSavingProfile(false)
+    }
+  }
+
+  const saveAnagrafica = async () => {
+    if (!apiConfigured || !email) return
+    setSavingAnagrafica(true)
+    try {
+      await apiJson(getToken, '/api/staff/clients/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({ 
+          email, 
+          firstName: firstName.trim() || null, 
+          lastName: lastName.trim() || null, 
+          declaredBirthday: birthday || null,
+          taxId: taxId.trim() || null 
+        }),
+      })
+      await load()
+    } catch {
+      // ignore
+    } finally {
+      setSavingAnagrafica(false)
     }
   }
 
@@ -214,6 +250,61 @@ export default function ClientDetailPage() {
 
         {!loading && data && (
           <div className="space-y-8">
+            <section className="mystical-card border-gold-600/10">
+              <h2 className="font-serif text-lg text-white mb-4 flex items-center gap-2">
+                <span className="text-xl">📋</span> Anagrafica &amp; Dati Legali
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <label className="block">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Nome</span>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Nome dichiarato..."
+                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Cognome</span>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Cognome dichiarato..."
+                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Data di Nascita</span>
+                  <input
+                    type="date"
+                    value={birthday}
+                    onChange={(e) => setBirthday(e.target.value)}
+                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none [color-scheme:dark]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Codice Fiscale</span>
+                  <input
+                    type="text"
+                    value={taxId}
+                    onChange={(e) => setTaxId(e.target.value)}
+                    placeholder="Inserisci CF..."
+                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-gold-200/80 focus:border-gold-600/40 outline-none uppercase"
+                  />
+                </label>
+              </div>
+              <button
+                type="button"
+                onClick={() => void saveAnagrafica()}
+                disabled={savingAnagrafica || !apiConfigured}
+                className="btn-gold text-xs px-5 py-2.5"
+              >
+                {savingAnagrafica ? 'Salvataggio…' : 'Aggiorna Anagrafica'}
+              </button>
+            </section>
+
             <section className="mystical-card">
               <h2 className="font-serif text-lg text-white mb-3">Situazione &amp; fatturazione</h2>
               <p className="text-white/40 text-xs mb-3">
