@@ -14,7 +14,6 @@ export default function TermsPage() {
       />
 
       <div className="relative z-10 max-w-3xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -25,7 +24,7 @@ export default function TermsPage() {
             ← Torna alla home
           </Link>
           <p className="text-gold-500 text-xs font-medium tracking-widest uppercase mb-2">Area Legale</p>
-          <h1 className="font-serif text-4xl font-bold text-white mb-2">Termini e Condizioni d'Uso</h1>
+          <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-2 uppercase">Termini e Condizioni d'Uso</h1>
           <p className="text-white/35 text-xs">Ultimo aggiornamento: {LAST_UPDATED}</p>
         </motion.div>
 
@@ -36,137 +35,81 @@ export default function TermsPage() {
           className="mystical-card space-y-10 prose-custom"
         >
           <div className="bg-gold-500/5 border border-gold-500/20 rounded-lg p-5 mb-8 italic text-white/70 text-sm leading-relaxed">
-            Il presente documento regola l'accesso e l'utilizzo della piattaforma <strong>nonsolotarocchi.it</strong>, che mette in contatto utenti e consulenti esperti in cartomanzia, tarocchi e discipline affini. Leggilo attentamente prima di registrarti o utilizzare i servizi.
+            Il presente documento regola l'accesso e l'utilizzo della piattaforma <strong>nonsolotarocchi.it</strong> (di seguito "Piattaforma"), amministrata da <strong>Valeria Di Pace</strong>, P.IVA IT08578101217 (di seguito "Gestore"). Il rapporto contrattuale si instaura tra il Gestore e l'utente finale (di seguito "Utente").
           </div>
 
-          <Section title="Art. 1 — Il Gestore e la Piattaforma">
-            <p>
-              <strong>nonsolotarocchi.it</strong> (di seguito "Piattaforma") è un servizio gestito da <strong>Valeria Di Pace</strong>, con sede in Italia, P.IVA <strong>IT08578101217</strong> (di seguito "Gestore").
-            </p>
-            <p>
-              La Piattaforma mette in contatto utenti che desiderano usufruire di servizi di consulenza ("Utenti") con esperti ("Consulenti"). La Piattaforma agisce come intermediario tecnico. I servizi sono resi attraverso strumenti di comunicazione elettronica messi a disposizione dal Gestore.
-            </p>
-            <p className="text-gold-500/90 font-medium">
-              Nota: I servizi offerti hanno finalità di intrattenimento e di supporto alla crescita personale; non sostituiscono consulenze professionali di tipo medico, legale o finanziario.
-            </p>
-          </Section>
-
-          <Section title="Art. 2 — Iscrizione e Account">
-            <p>
-              L'utilizzo della Piattaforma è riservato alle persone fisiche che abbiano compiuto il <strong>18° anno di età</strong>.
-            </p>
+          <Section title="Art. 1 — Natura del Servizio e Ruolo del Gestore">
+            <p>La Piattaforma agisce come intermediario tecnico e fornitore di servizi di consulenza olistica, cartomanzia e coaching.</p>
             <ul>
-              <li>Fornire informazioni esatte, veritiere e complete durante la registrazione.</li>
-              <li>Mantenere la riservatezza delle credenziali di accesso.</li>
-              <li>L'utente è l'unico responsabile di qualsiasi utilizzo effettuato tramite il proprio account.</li>
+              <li><strong>Finalità:</strong> I servizi hanno finalità di intrattenimento e supporto alla crescita personale; non sostituiscono in alcun modo consulenze mediche, legali o finanziarie.</li>
+              <li><strong>Obbligo di Mezzi:</strong> Il Gestore garantisce la massima diligenza professionale, ma non garantisce l'esattezza delle previsioni né il verificarsi di eventi futuri (Obbligo di mezzi, non di risultato).</li>
             </ul>
-            <p className="text-gold-400/80 text-xs mt-2 italic">
-              <strong>Sicurezza:</strong> Il Gestore si riserva il diritto di richiedere la modifica delle credenziali per ragioni tecniche o di sicurezza. In caso di sospetto accesso non autorizzato, l'Utente deve informare immediatamente il Servizio Clienti.
-            </p>
           </Section>
 
-          <Section title="Art. 3 — Modalità di erogazione e Ruolo della Piattaforma">
-            <p>
-              Le sessioni si svolgono a distanza via telefono o videochiamata tramite <strong>Calendly</strong>. Il Gestore facilita l'incontro tecnico ma non garantisce l'esattezza delle previsioni fornite.
-            </p>
+          <Section title="Art. 2 — Iscrizione, Account e Tutela dei Minori">
+            <p>L'utilizzo della Piattaforma è tassativamente riservato a persone fisiche che abbiano compiuto il <strong>18° anno di età</strong>.</p>
+            <ul>
+              <li><strong>Autocertificazione:</strong> Al momento della registrazione e dell'acquisto, l'Utente dichiara sotto la propria responsabilità penale e civile di essere maggiorenne.</li>
+              <li><strong>Manleva:</strong> Il Gestore è esonerato da ogni responsabilità per dichiarazioni mendaci fornite dall'Utente per eludere i blocchi di accesso ai minori.</li>
+            </ul>
+          </Section>
+
+          <Section title="Art. 3 — Prevenzione della Dipendenza e Consumo Responsabile">
+            <p>Il Gestore promuove un uso sano dei servizi. L'Utente riconosce i rischi di dipendenza legati a consulti eccessivi.</p>
+            <div className="bg-gold-500/5 p-4 rounded border border-gold-500/20 my-4 italic">
+              <strong>Questionario di Autovalutazione:</strong> La risposta positiva a due o più delle seguenti domande presuppone uno stato di dipendenza:<br /><br />
+              1. Consulti Valeria per più tempo del previsto?<br />
+              2. Utilizzi denaro necessario per pagamenti di prima necessità?<br />
+              3. Non prendi decisioni senza il supporto dei consulti?<br />
+              4. L'uso dei servizi ha un impatto negativo sulla tua vita familiare o lavorativa?
+            </div>
+            <p><strong>Sospensione Etica:</strong> Il Gestore ha il dovere deontologico di sospendere il servizio in caso di evidente vulnerabilità psicologica o dipendenza patologica dell'Utente.</p>
+          </Section>
+
+          <Section title="Art. 4 — Modalità di Erogazione">
+            <p>Le sessioni si svolgono via telefono o videochiamata tramite l'integrazione con <strong>Calendly</strong>.</p>
             <p className="bg-gold-500/5 p-3 border-l-2 border-gold-500/30">
-              <strong>Gestione Telefonica:</strong> Per i consulti telefonici, Valeria Di Pace risponde esclusivamente al numero fornito durante la prenotazione e <strong>unicamente negli orari concordati</strong>. Al di fuori delle finestre di prenotazione, il numero è dirottato a sistemi di segreteria automatica non presidiata.
+              <strong>Gestione Telefonica:</strong> Il Gestore risponde esclusivamente al numero fornito e negli orari concordati. Al di fuori di tali finestre, i sistemi sono automatizzati e non presidiati.
             </p>
-            <p className="text-white/40 text-[10px] mt-2 italic">
-              Il Gestore non è responsabile del contenuto di siti esterni raggiungibili tramite link inseriti da terzi sulla Piattaforma (es. in recensioni o blog) né di eventuali malware ad essi associati.
-            </p>
-          </Section>
-
-          <Section title="Art. 4 — Descrizione dei Servizi">
-            <p>Le tipologie di consulenza disponibili includono:</p>
-            <ul className="space-y-2">
-              <li><strong>Consulti Tarocchi di Marsiglia</strong>: letture simboliche (30-60 min).</li>
-              <li><strong>Coaching e Crescita Personale</strong>: sessioni orientate all'azione.</li>
-              <li><strong>Percorsi Combo</strong>: pacchetti integrati di tarocchi e coaching.</li>
-              <li><strong>Consulto omaggio Tarocchi (7 min)</strong>: riservato ai nuovi utenti registrati.</li>
-              <li><strong>Consulto omaggio Coaching (10 min)</strong>: per la prova dei percorsi di crescita personale.</li>
-            </ul>
           </Section>
 
           <Section title="Art. 5 — Pagamenti, Recesso e Fatturazione">
-            <p>
-              Il pagamento avviene tramite <strong>Stripe (PCI-DSS)</strong>. Il contratto di servizio si perfeziona nel momento in cui l'Esperto riceve e conferma la Richiesta di Contatto.
-            </p>
-            <p className="bg-gold-500/5 p-4 rounded border border-gold-500/20">
-              <strong>Fatturazione:</strong> Ai fini dell'emissione della regolare fattura, l'Utente è <strong>obbligato a fornire dati fiscali esatti</strong> (Nome, Cognome/Ragione Sociale, Indirizzo di residenza/sede, Codice Fiscale e, se applicabile, Partita IVA). Il Gestore non è responsabile per errori di fatturazione derivanti da dati errati o incompleti forniti dall'Utente.
-            </p>
+            <p>Il pagamento avviene tramite circuito sicuro <strong>Stripe (PCI-DSS)</strong>.</p>
             <ul>
-              <li><strong>Cancellazione &gt;24h</strong>: rimborso integrale.</li>
-              <li><strong>Cancellazione &lt;24h</strong>: nessun rimborso (salvo forza maggiore).</li>
-              <li><strong>No-show</strong>: la sessione è considerata erogata.</li>
-              <li><strong>Diritto di Recesso:</strong> Ai sensi dell'Art. 59 del Codice del Consumo lettera o), essendo il consulto un servizio digitale fornito immediatamente su richiesta, l'Utente <strong>rinuncia espressamente al diritto di recesso</strong> una volta che l'esecuzione del servizio è iniziata.</li>
-              <li><strong>Cancellazione Profilo</strong>: il credito residuo o i consulti non goduti non sono rimborsabili in caso di cancellazione volontaria del profilo.</li>
+              <li><strong>Diritto di Recesso:</strong> Ai sensi dell'Art. 59 lett. o) del Codice del Consumo, trattandosi di servizio digitale fornito immediatamente su richiesta, l'Utente rinuncia espressamente al diritto di recesso una volta che l'esecuzione del servizio è iniziata.</li>
+              <li><strong>Fatturazione:</strong> L'Utente è obbligato a fornire dati fiscali esatti. Il Gestore non risponde di errori derivanti da dati errati o incompleti.</li>
+              <li><strong>Cancellazioni:</strong> Rimborso integrale solo per cancellazioni &gt;24h. Sotto le 24h o in caso di No-show, la sessione è considerata erogata.</li>
             </ul>
           </Section>
 
-          <Section title="Art. 6 — Natura dei servizi e DIVIETI (Salute/Occultismo)">
-            <p>
-              I consulti sono offerte a scopo di intrattenimento e crescita interiore. <strong>Obbligo di Mezzi, non di Risultato:</strong> Valeria Di Pace garantisce la massima diligenza e professionalità nello svolgimento del consulto, ma non può garantire la realizzazione delle previsioni né il verificarsi di eventi futuri.
-            </p>
-            <div className="bg-red-500/10 border-l-4 border-red-500 p-5 my-6 backdrop-blur-sm space-y-4">
-              <div>
-                <p className="text-white font-bold mb-1 uppercase tracking-tight text-xs">Divieto Salute e Medicina:</p>
-                <p className="text-white/85 text-sm leading-relaxed">
-                  È tassativamente vietato richiedere consulti su salute, gravidanze, fertilità o interventi medici. Valeria Di Pace non effettua diagnosi né previsioni su decorsi medici.
-                </p>
-              </div>
-              <div className="pt-3 border-t border-red-500/20">
-                <p className="text-white font-bold mb-1 uppercase tracking-tight text-xs">Divieto Pratiche Occulte:</p>
-                <p className="text-white/85 text-sm leading-relaxed">
-                  È vietato richiedere o eseguire rituali di <strong>magia nera, malocchi, stregoneria</strong> o qualsiasi pratica volta a danneggiare terzi o influenzare il libero arbitrio altrui.
-                </p>
-              </div>
-              <p className="text-red-400 text-xs font-bold italic pt-2">
-                La violazione comporta l'interruzione immediata della sessione senza diritto di rimborso.
-              </p>
+          <Section title="Art. 6 — Divieti Tassativi (Salute / Occultismo / Stalking)">
+            <p>È tassativamente vietato:</p>
+            <ol className="list-decimal pl-5 space-y-3">
+              <li>Richiedere consulti su salute, gravidanze, malattie o diagnosi mediche.</li>
+              <li>Richiedere rituali di magia nera, malocchi o coercizione del libero arbitrio.</li>
+            </ol>
+            <div className="mt-4 p-3 border border-red-500/20 bg-red-500/5 rounded-md text-red-100 font-medium">
+              <strong>Contatto Extra-Consulto:</strong> È vietato contattare il Gestore su numeri privati o social (WhatsApp/SMS) al di fuori della Piattaforma. Ogni tentativo abusivo comporterà il ban immediato.
             </div>
           </Section>
 
           <Section title="Art. 7 — Limitazione di Responsabilità">
-            <p>
-              Il Gestore non potrà essere ritenuto responsabile per perdita di guadagno, mancato profitto o perdita di opportunità derivanti dai consulti.
+            <p className="bg-white/5 p-4 rounded border border-white/10 text-gold-400 font-medium italic">
+              La responsabilità civile del Gestore è limitata ai danni diretti e prevedibili, per un importo massimo di € 150,00 per singolo evento.
             </p>
-            <p className="bg-white/5 p-4 rounded border border-white/10 text-gold-400/90 font-medium italic">
-              In ogni caso, la responsabilità civile del Gestore è limitata ai danni diretti e prevedibili, per un importo massimo di € 150,00 per utente per singolo evento.
-            </p>
+            <p>Il Gestore non è responsabile per perdita di guadagno, mancato profitto o decisioni personali prese dall'Utente a seguito del consulto.</p>
           </Section>
 
-          <Section title="Art. 8 — Obblighi e Sanzioni">
-            <p>
-              È vietato pubblicare contenuti razzisti, violenti, pornografici o diffamatori. È espressamente vietato molestare, minacciare, <strong>insultare</strong> o praticare <strong>stalking</strong> verso Valeria Di Pace o altri Partecipanti.
-            </p>
-            <p className="border border-white/10 p-3 bg-white/5 rounded-md text-red-500/90 font-medium">
-              <strong>DIVIETO DI CONTATTO EXTRA-CONSULTO:</strong> È tassativamente vietato tentare di chiamare, inviare messaggi (SMS, WhatsApp) o contattare Valeria su numeri privati o social al di fuori degli orari di prenotazione. Ogni tentativo abusivo comporterà il ban immediato.
-            </p>
-            <p>
-              In caso di violazioni di entità minore, il Gestore invierà un <strong>avvertimento formale</strong> richiedendo di sanare l'inadempienza entro 48 ore. In assenza di rettifica, si procederà alla cancellazione del profilo.
-            </p>
+          <Section title="Art. 8 — Convenzione di Prova e Valore Probatorio">
+            <p>L'Utente riconosce che i <strong>Documenti Elettronici</strong> (log di connessione, metadati di Calendly, registrazioni di transazione Stripe, durata della sessione) costituiscono piena e definitiva prova legale dell'avvenuta prestazione del servizio e del relativo pagamento in qualsiasi sede di controversia.</p>
           </Section>
 
-          <Section title="Art. 9 — Privacy e Proprietà Intellettuale">
-            <p>
-              Il marchio <strong>nonsolotarocchi.it</strong>, i loghi, i testi e i Software messi a disposizione sono di proprietà esclusiva di Valeria Di Pace o dei suoi partner. È vietata qualsiasi riproduzione, anche parziale, senza previo consenso scritto.
-            </p>
-            <p>
-              Il trattamento dei dati avviene secondo il Regolamento (UE) 2016/679 (GDPR). L'autenticazione è affidata alla piattaforma certificata <strong>Clerk</strong>.
-            </p>
+          <Section title="Art. 9 — Proprietà Intellettuale">
+            <p>Il marchio <strong>nonsolotarocchi.it</strong>, i loghi e i contenuti sono di proprietà esclusiva di Valeria Di Pace. È vietata qualsiasi riproduzione senza consenso scritto.</p>
           </Section>
 
-          <Section title="Art. 10 — Deontologia e Valore Probatorio">
-            <p>
-              La Piattaforma è governata da principi di correttezza e buona fede. Valeria Di Pace ha il dovere deontologico di sospendere il servizio in caso di evidente vulnerabilità psicologica dell'Utente.
-            </p>
-            <p className="bg-white/5 p-4 rounded border border-white/10 text-xs italic text-white/50">
-              <strong>Valore Probatorio:</strong> In caso di controversia, i log di connessione, i tabulati telefonici e i metadati della sessione (durata, orario) registrati dai sistemi del Gestore sono considerati <strong>piena e definitiva prova legale</strong> dell'avvenuta prestazione del servizio.
-            </p>
-            <p>
-              I presenti Termini sono regolati dalla <strong>legge italiana</strong>. Qualsiasi controversia sarà devoluta alla competenza del <strong>Foro di Napoli</strong>.
-            </p>
+          <Section title="Art. 10 — Legge Applicabile e Foro Competente">
+            <p>I presenti Termini sono regolati dalla <strong>Legge Italiana</strong>. Qualsiasi controversia sarà devoluta alla competenza esclusiva del <strong>Foro di Napoli</strong>.</p>
           </Section>
         </motion.div>
 

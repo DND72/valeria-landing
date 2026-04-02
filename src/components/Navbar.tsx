@@ -62,12 +62,21 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-6 lg:gap-8 list-none p-0 m-0 shrink min-w-0">
           {links.map((link) => (
             <li key={link.href}>
-              <a
-                href={link.href}
-                className="text-sm text-white/70 hover:text-gold-400 transition-colors duration-200 tracking-wide whitespace-nowrap"
-              >
-                {link.label}
-              </a>
+              {link.href.startsWith('#') ? (
+                <a
+                  href={pathname === '/' ? link.href : `/${link.href}`}
+                  className="text-sm text-white/70 hover:text-gold-400 transition-colors duration-200 tracking-wide whitespace-nowrap"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  to={link.href}
+                  className="text-sm text-white/70 hover:text-gold-400 transition-colors duration-200 tracking-wide whitespace-nowrap"
+                >
+                  {link.label}
+                </Link>
+              )}
             </li>
           ))}
         </ul>
@@ -134,13 +143,23 @@ export default function Navbar() {
             <ul className="flex flex-col px-6 py-4 gap-4 list-none p-0 m-0">
               {links.map((link) => (
                 <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="text-white/80 hover:text-gold-400 transition-colors"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
+                  {link.href.startsWith('#') ? (
+                    <a
+                      href={pathname === '/' ? link.href : `/${link.href}`}
+                      className="text-white/80 hover:text-gold-400 transition-colors"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={link.href}
+                      className="text-white/80 hover:text-gold-400 transition-colors"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
               <li className="flex flex-col gap-2">

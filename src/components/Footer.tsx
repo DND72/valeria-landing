@@ -43,35 +43,36 @@ export default function Footer() {
             <h4 className="text-white/60 text-sm font-semibold uppercase tracking-wider mb-4">Navigazione</h4>
             <ul className="space-y-2">
               {[
-              { label: 'Chi sono', href: '#chi-sono' },
-              { label: 'I numeri', href: '#numeri' },
-              { label: 'Come funziona', href: '#come-funziona' },
-              { label: 'Crescita personale', href: '/crescita-personale' },
-              { label: 'Blog', href: '/blog' },
-              { label: 'Recensioni', href: '#recensioni' },
-              { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },
+                { label: 'Chi sono', href: '#chi-sono' },
+                { label: 'I numeri', href: '#numeri' },
+                { label: 'Come funziona', href: '#come-funziona' },
+                { label: 'Crescita personale', href: '/crescita-personale' },
+                { label: 'Blog', href: '/blog' },
+                { label: 'Recensioni', href: '#recensioni' },
+                { label: 'FAQ', href: '/faq' },
+                { label: 'Termini di servizio', href: '/termini' },
+                { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },
               ].map((link) => (
                 <li key={link.href}>
-                  <a
-                    href={link.href}
-                    target={link.href.startsWith('http') ? '_blank' : undefined}
-                    rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="text-white/40 text-sm hover:text-gold-400 transition-colors"
-                  >
-                    {link.label}
-                  </a>
+                  {link.href.startsWith('#') || link.href.startsWith('http') ? (
+                    <a
+                      href={link.href.startsWith('#') ? (pathname === '/' ? link.href : `/${link.href}`) : link.href}
+                      target={link.href.startsWith('http') ? '_blank' : undefined}
+                      rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      className="text-white/40 text-sm hover:text-gold-400 transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={link.href}
+                      className="text-white/40 text-sm hover:text-gold-400 transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
-              <li>
-                <Link to="/faq" className="text-white/40 text-sm hover:text-gold-400 transition-colors">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/termini" className="text-white/40 text-sm hover:text-gold-400 transition-colors">
-                  Termini di servizio
-                </Link>
-              </li>
             </ul>
           </div>
 

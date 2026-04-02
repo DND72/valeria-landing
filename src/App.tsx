@@ -57,6 +57,9 @@ function AppRoutes() {
     body.style.removeProperty('width')
     body.style.removeProperty('height')
     body.style.removeProperty('padding-right')
+    
+    // Assicura che la pagina torni in cima al cambio rotta
+    window.scrollTo(0, 0)
   }, [pathname])
 
   return (
