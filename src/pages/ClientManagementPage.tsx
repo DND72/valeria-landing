@@ -7,7 +7,6 @@ import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 
 type SortMode = 'alpha' | 'recent'
-
 type ClientRow = {
   email: string
   name: string | null
@@ -19,6 +18,7 @@ type ClientRow = {
   invoicedThisMonth: boolean
   isRegistered: boolean
   isVerified: boolean
+  lastSignInAt: string | null
 }
 
 function formatWhen(iso: string | null): string {
@@ -152,6 +152,7 @@ export default function ClientManagementPage() {
                   <th className="py-3 px-3 font-medium text-center">Consulti</th>
                   <th className="py-3 px-3 font-medium">Acquisti</th>
                   <th className="py-3 px-3 font-medium whitespace-nowrap">Ultimo in calendario</th>
+                  <th className="py-3 px-3 font-medium whitespace-nowrap">Ultimo Accesso</th>
                   <th className="py-3 px-3 font-medium">Fatt. mese</th>
                   <th className="py-3 px-3 font-medium" />
                 </tr>
@@ -159,14 +160,14 @@ export default function ClientManagementPage() {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={8} className="py-10 text-center text-white/40">
+                    <td colSpan={9} className="py-10 text-center text-white/40">
                       Caricamento…
                     </td>
                   </tr>
                 )}
                 {!loading && clients.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="py-10 text-center text-white/40">
+                    <td colSpan={9} className="py-10 text-center text-white/40">
                       Nessun cliente con email nei consulti o registrato.
                     </td>
                   </tr>
@@ -206,6 +207,9 @@ export default function ClientManagementPage() {
                       </td>
                       <td className="py-2.5 px-3 text-white/60 whitespace-nowrap text-xs">
                         {formatWhen(c.lastScheduledAt)}
+                      </td>
+                      <td className="py-2.5 px-3 text-white/60 whitespace-nowrap text-xs">
+                        {formatWhen(c.lastSignInAt)}
                       </td>
                       <td className="py-2.5 px-3 text-xs">
                         {c.invoicedThisMonth ? (

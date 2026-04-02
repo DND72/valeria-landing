@@ -1,6 +1,7 @@
 import type { Router } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
+import { clerkClient } from '../middleware/clerkAuth.js'
 
 const profilePatch = z.object({
   email: z.string().min(3).max(320),
@@ -28,6 +29,30 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
   r.get('/clients', async (req, res) => {
     const sort = req.query.sort === 'recent' ? 'recent' : 'alpha'
     try {
+      // --- 1. RECUPERO UTENTI DA CLERK ---
+      let clerkDict = new Map<string, { firstName: string | null; lastName: string | null; lastSignInAt: number | null }>()
+      if (clerkClient) {
+        try {
+          const clerkBatch = await clerkClient.users.getUserList({ limit: 499 })
+          for (const u of clerkBatch.data) {
+            const primaryId = u.primaryEmailAddressId
+            const emails = u.emailAddresses ?? []
+            const primary = (primaryId && emails.find((e) => e.id === primaryId)?.emailAddress) || emails[0]?.emailAddress
+            if (typeof primary === 'string' && primary.trim()) {
+              const norm = primary.trim().toLowerCase()
+              clerkDict.set(norm, {
+                firstName: u.firstName,
+                lastName: u.lastName,
+                lastSignInAt: u.lastSignInAt,
+              })
+            }
+          }
+        } catch (ce) {
+          console.error('[clerk sync error]', ce)
+        }
+      }
+
+      // --- 2. RECUPERO DATI DA DB (CONSULTI E BILLING) ---
       const { rows } = await pool.query<{
         email_norm: string
         name_any: string | null
@@ -35,6 +60,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         paid_consults: string
         free_consults: string
         last_scheduled: Date | null
+        is_verified: boolean
       }>(
         `SELECT
             COALESCE(bp.email_normalized, LOWER(TRIM(c.invitee_email))) AS email_norm,
@@ -43,7 +69,6 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             SUM(CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS paid_consults,
             SUM(CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS free_consults,
             MAX(c.start_at) AS last_scheduled,
-            MAX(bp.clerk_user_id) IS NOT NULL as is_registered,
             MAX(bp.age_verified) as is_verified
           FROM client_billing_profiles bp
           FULL OUTER JOIN consults c ON LOWER(TRIM(c.invitee_email)) = bp.email_normalized
@@ -71,25 +96,52 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         invoicedThisMonth: boolean
         isRegistered: boolean
         isVerified: boolean
+        lastSignInAt: string | null
       }
 
+      // --- 3. MERGE DATI ---
+      // Partiamo dalle email trovate nel DB (che include chi ha consulti e chi è in billing_profiles)
+      const dbEmails = new Set(rows.map(r => r.email_norm))
+      
       const list: Row[] = rows.map((row) => {
         const email = row.email_norm
+        const clerkInfo = clerkDict.get(email)
         const lastInv = invMap.get(email) ?? null
         const invoiced = invoicedThisMonthRome(lastInv)
+        
         return {
           email,
-          name: row.name_any,
+          name: clerkInfo ? `${clerkInfo.firstName || ''} ${clerkInfo.lastName || ''}`.trim() || row.name_any : row.name_any,
           totalConsults: Number(row.total_consults),
           paidConsults: Number(row.paid_consults),
           freeConsults: Number(row.free_consults),
           lastScheduledAt: row.last_scheduled ? new Date(row.last_scheduled).toISOString() : null,
           lastInvoicedAt: lastInv ? new Date(lastInv).toISOString() : null,
           invoicedThisMonth: invoiced,
-          isRegistered: (row as any).is_registered ?? false,
-          isVerified: (row as any).is_verified ?? false,
+          isRegistered: !!clerkInfo,
+          isVerified: row.is_verified || false,
+          lastSignInAt: clerkInfo?.lastSignInAt ? new Date(clerkInfo.lastSignInAt).toISOString() : null,
         }
       })
+
+      // Aggiungiamo eventuali utenti Clerk che NON sono ancora nel DB (0 consulti, mai entrati in dashboard)
+      for (const [email, info] of clerkDict.entries()) {
+        if (!dbEmails.has(email)) {
+          list.push({
+            email,
+            name: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'Utente registrato',
+            totalConsults: 0,
+            paidConsults: 0,
+            freeConsults: 0,
+            lastScheduledAt: null,
+            lastInvoicedAt: null,
+            invoicedThisMonth: false,
+            isRegistered: true,
+            isVerified: false,
+            lastSignInAt: info.lastSignInAt ? new Date(info.lastSignInAt).toISOString() : null,
+          })
+        }
+      }
 
       if (sort === 'alpha') {
         list.sort((a, b) => a.email.localeCompare(b.email, 'it'))
@@ -97,7 +149,11 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         list.sort((a, b) => {
           const ta = a.lastScheduledAt ? new Date(a.lastScheduledAt).getTime() : 0
           const tb = b.lastScheduledAt ? new Date(b.lastScheduledAt).getTime() : 0
-          return tb - ta
+          if (ta !== tb) return tb - ta
+          // Se non ha consulti, ordina per registrazione
+          const sa = a.lastSignInAt ? new Date(a.lastSignInAt).getTime() : 0
+          const sb = b.lastSignInAt ? new Date(b.lastSignInAt).getTime() : 0
+          return sb - sa
         })
       }
 
