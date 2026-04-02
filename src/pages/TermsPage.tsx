@@ -69,8 +69,8 @@ export default function TermsPage() {
             <p>
               Le sessioni si svolgono a distanza via telefono o videochiamata tramite <strong>Calendly</strong>. Il Gestore facilita l'incontro tecnico ma non garantisce l'esattezza o la veridicità delle previsioni fornite.
             </p>
-            <p>
-              Il Gestore si riserva il diritto di monitorare e rimuovere contenuti offensivi o contrari ai presenti Termini per garantire la sicurezza di tutti i Partecipanti.
+            <p className="bg-gold-500/5 p-3 border-l-2 border-gold-500/30">
+              <strong>Gestione Telefonica:</strong> Per i consulti telefonici, Valeria Di Pace risponde esclusivamente al numero fornito durante la prenotazione e <strong>unicamente negli orari concordati</strong>. Al di fuori delle finestre di prenotazione, il numero è dirottato a sistemi di segreteria automatica non presidiata.
             </p>
           </Section>
 
@@ -87,16 +87,14 @@ export default function TermsPage() {
 
           <Section title="Art. 5 — Pagamenti e Rimborsi">
             <p>
-              Il pagamento avviene tramite <strong>Stripe (PCI-DSS)</strong>. Il pagamento è richiesto in anticipo per confermare la prenotazione.
+              Il pagamento avviene tramite <strong>Stripe (PCI-DSS)</strong>. Il contratto di servizio si perfeziona nel momento in cui l'Esperto riceve e conferma la Richiesta di Contatto. Il Gestore si riserva il diritto di rifiutare una prenotazione rimborsando integralmente l'Utente.
             </p>
             <ul>
               <li><strong>Cancellazione &gt;24h</strong>: rimborso integrale.</li>
               <li><strong>Cancellazione &lt;24h</strong>: nessun rimborso (salvo forza maggiore).</li>
               <li><strong>No-show</strong>: la sessione è considerata erogata.</li>
+              <li><strong>Cancellazione Profilo</strong>: il credito residuo o i consulti non goduti non sono rimborsabili in caso di cancellazione volontaria del profilo da parte dell'Utente.</li>
             </ul>
-            <p className="italic">
-              Non è previsto alcun rimborso legato al contenuto della consulenza o all'avverarsi/mancato avverarsi di eventi previsti.
-            </p>
           </Section>
 
           <Section title="Art. 6 — Natura dei servizi e DIVIETO SALUTE/GRAVIDANZE">
@@ -122,10 +120,13 @@ export default function TermsPage() {
 
           <Section title="Art. 8 — Obblighi e Sanzioni">
             <p>
-              È vietato pubblicare contenuti razzisti, violenti, pornografici o diffamatori. In caso di violazione, il Gestore si riserva di sospendere temporaneamente l'account o procedere alla cancellazione definitiva senza preavviso.
+              È vietato pubblicare contenuti razzisti, violenti o diffamatori. È espressamente vietato molestare, minacciare o ledere la privacy di altri Partecipanti.
+            </p>
+            <p className="border border-white/10 p-3 bg-white/5 rounded-md">
+              <strong>DIVIETO DI CONTATTO EXTRA-CONSULTO:</strong> È tassativamente vietato tentare di chiamare, inviare messaggi o contattare Valeria Di Pace su numeri privati o canali social al di fuori degli orari e delle modalità previste dalla prenotazione. Ogni tentativo di contatto abusivo comporterà la segnalazione e il ban immediato.
             </p>
             <p>
-              Gli utenti si impegnano a non proporre o concordare transazioni al di fuori della Piattaforma per i servizi qui descritti.
+              In caso di violazione, il Gestore invierà un <strong>avvertimento formale</strong> con richiesta di sanare l'inadempienza entro 48 ore. In assenza di rettifica, si procederà alla sospensione o cancellazione definitiva dell'account.
             </p>
           </Section>
 
@@ -135,9 +136,15 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="Art. 10 — Legge Applicabile e Foro Competente">
+          <Section title="Art. 10 — Deontologia e Condizioni Professionali">
             <p>
-              I presenti Termini sono regolati dalla <strong>legge italiana</strong>. Qualsiasi controversia sarà devoluta alla competenza del <strong>Foro di Napoli</strong>, fatti salvi i diritti dei consumatori secondo l'attuale normativa vigente.
+              La Piattaforma è governata da principi di correttezza e buona fede. Valeria Di Pace si impegna a non fornire consulenze che possano arrecare danno agli Utenti.
+            </p>
+            <p className="bg-gold-500/5 p-4 rounded border-l-2 border-gold-500/50">
+              <strong>Vulnerabilità:</strong> Qualora l'Utente mostri evidenti segni di vulnerabilità psicologica, instabilità o dipendenza dal consulto, Valeria Di Pace ha il dovere deontologico di interrompere o sospendere il servizio, invitando l'Utente a rivolgersi a canali di supporto adeguati.
+            </p>
+            <p>
+              I presenti Termini sono regolati dalla <strong>legge italiana</strong>. Qualsiasi controversia sarà devoluta alla competenza del <strong>Foro di Napoli</strong>.
             </p>
           </Section>
         </motion.div>
