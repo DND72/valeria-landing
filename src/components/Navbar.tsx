@@ -46,7 +46,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3 shrink-0 min-w-0">
           <Link to="/" className="flex items-center gap-3 group">
             <img 
-              src="/logo.png" 
+              src="/logo-small.png" 
               alt="Logo Nonsolotarocchi" 
               className="w-10 h-10 md:w-12 md:h-12 object-contain nav-logo"
             />
