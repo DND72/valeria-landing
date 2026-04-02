@@ -11,3 +11,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ClerkProviderWithRouter>
   </BrowserRouter>,
 )
+
+console.log(\"Stripe PK:\", import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
