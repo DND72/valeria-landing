@@ -42,7 +42,7 @@ export default function Navbar() {
           : 'py-5 bg-transparent'
       }`}
     >
-      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-3 lg:gap-4">
         <div className="flex items-center gap-3 shrink-0 min-w-0">
           <Link to="/" className="flex items-center gap-3 group">
             <img 
@@ -72,20 +72,20 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <ul className="hidden md:flex items-center gap-6 lg:gap-8 list-none p-0 m-0 shrink min-w-0">
+        <ul className="hidden md:flex items-center gap-3 list-none p-0 m-0 shrink min-w-0">
           {links.map((link) => (
             <li key={link.href}>
               {link.href.startsWith('#') ? (
                 <a
                   href={pathname === '/' ? link.href : `/${link.href}`}
-                  className="text-sm text-white/70 hover:text-gold-400 transition-colors duration-200 tracking-wide whitespace-nowrap"
+                  className="text-[13px] text-white/70 hover:text-gold-400 transition-colors duration-200 tracking-wide whitespace-nowrap"
                 >
                   {link.label}
                 </a>
               ) : (
                 <Link
                   to={link.href}
-                  className="text-sm text-white/70 hover:text-gold-400 transition-colors duration-200 tracking-wide whitespace-nowrap"
+                  className="text-[13px] text-white/70 hover:text-gold-400 transition-colors duration-200 tracking-wide whitespace-nowrap"
                 >
                   {link.label}
                 </Link>
@@ -99,7 +99,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
             >
               {user.imageUrl && <img src={user.imageUrl} alt="" className="w-5 h-5 rounded-full" />}
               Il tuo Diario
@@ -121,7 +121,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => navigate('/registrati')}
-                className="btn-gold text-sm px-6 py-2.5"
+                className="btn-gold text-[13px] px-4 py-2"
               >
                 Iscriviti
               </button>
