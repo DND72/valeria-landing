@@ -69,7 +69,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             SUM(CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS paid_consults,
             SUM(CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS free_consults,
             MAX(c.start_at) AS last_scheduled,
-            MAX(bp.age_verified) as is_verified
+            COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified
           FROM client_billing_profiles bp
           FULL OUTER JOIN consults c ON LOWER(TRIM(c.invitee_email)) = bp.email_normalized
           GROUP BY 1`
