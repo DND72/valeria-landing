@@ -30,6 +30,7 @@ import PrivacyPolicy from './pages/legal/PrivacyPolicy'
 import CookiePolicy from './pages/legal/CookiePolicy'
 import ProfilePage from './pages/ProfilePage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
+import StaffGuard from './components/StaffGuard'
 
 function HomePage() {
   return (
@@ -72,11 +73,11 @@ function AppRoutes() {
             <Route path="/accedi/*" element={<SignInPage />} />
             <Route path="/registrati/*" element={<SignUpPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/control-room" element={<ControlRoom />} />
-            <Route path="/gestione-clienti" element={<ClientManagementPage />} />
-            <Route path="/gestione-clienti/:email" element={<ClientDetailPage />} />
-            <Route path="/gestione-recensioni" element={<StaffReviewsPage />} />
-            <Route path="/gestione-commenti-blog" element={<StaffBlogCommentsPage />} />
+            <Route path="/control-room" element={<StaffGuard><ControlRoom /></StaffGuard>} />
+            <Route path="/gestione-clienti" element={<StaffGuard><ClientManagementPage /></StaffGuard>} />
+            <Route path="/gestione-clienti/:email" element={<StaffGuard><ClientDetailPage /></StaffGuard>} />
+            <Route path="/gestione-recensioni" element={<StaffGuard><StaffReviewsPage /></StaffGuard>} />
+            <Route path="/gestione-commenti-blog" element={<StaffGuard><StaffBlogCommentsPage /></StaffGuard>} />
             <Route path="/grazie" element={<GraziePage />} />
             <Route path="/crescita-personale" element={<PersonalGrowthPage />} />
             <Route path="/blog" element={<BlogPage />} />
