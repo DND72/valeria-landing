@@ -1,5 +1,6 @@
 import { useLayoutEffect } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Link } from 'react-router-dom'
+import CookieConsent from 'react-cookie-consent'
 import CosmicBackground from './components/CosmicBackground'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -99,6 +100,48 @@ export default function App() {
         <AppRoutes />
       </main>
       <Footer />
+      <CookieConsent
+        location="bottom"
+        buttonText="Accetto"
+        declineButtonText="Rifiuta"
+        enableDeclineButton={true}
+        cookieName="valeria_landing_consent"
+        style={{ 
+          background: "rgba(10, 26, 47, 0.95)",
+          color: "#f5f0e8",
+          fontSize: "13px",
+          borderTop: "1px solid rgba(212, 160, 23, 0.3)",
+          backdropFilter: "blur(8px)",
+          alignItems: "center",
+          padding: "12px 24px",
+          zIndex: 9999
+        }}
+        buttonStyle={{ 
+          background: "linear-gradient(90deg, #d4a017, #b8860b)",
+          color: "#0a1a2f",
+          fontSize: "13px",
+          fontWeight: "600",
+          borderRadius: "6px",
+          padding: "8px 24px",
+          cursor: "pointer",
+          margin: "5px"
+        }}
+        declineButtonStyle={{
+          background: "transparent",
+          color: "rgba(245, 240, 232, 0.5)",
+          fontSize: "13px",
+          borderRadius: "6px",
+          border: "1px solid rgba(245, 240, 232, 0.2)",
+          padding: "8px 24px",
+          cursor: "pointer",
+          margin: "5px"
+        }}
+        expires={30}
+      >
+        Noi utilizziamo cookie tecnici e di terze parti (Stripe, Clerk) per garantirti la migliore esperienza di consulenza e sicurezza. 
+        Proseguendo la navigazione o cliccando su Accetto, acconsenti al loro utilizzo. 
+        Leggi la nostra <Link to="/cookie" className="text-gold-400 hover:underline">Cookie Policy</Link> per maggiori dettagli.
+      </CookieConsent>
     </div>
   )
 }
