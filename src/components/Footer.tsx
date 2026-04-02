@@ -109,33 +109,31 @@ export default function Footer() {
         </motion.div>
 
         {/* Legal — link testuali */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-6 text-white/20 text-xs">
-          <a
-            href="https://www.iubenda.com/privacy-policy/XXXXXXXX"
-            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
-            title="Privacy Policy"
-          >
-            Privacy Policy
-          </a>
-          <span className="text-white/10">·</span>
-          <a
-            href="https://www.iubenda.com/privacy-policy/XXXXXXXX/cookie-policy"
-            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
-            title="Cookie Policy"
-          >
-            Cookie Policy
-          </a>
-          <span className="text-white/10">·</span>
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-white/20 text-[10px] uppercase tracking-widest font-medium">
           <Link
             to="/termini"
-            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
+            className="hover:text-gold-500/80 transition-colors underline-offset-4 hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          <span className="text-white/10" aria-hidden>·</span>
+          <Link
+            to="/termini"
+            className="hover:text-gold-500/80 transition-colors underline-offset-4 hover:underline"
+          >
+            Cookie Policy
+          </Link>
+          <span className="text-white/10" aria-hidden>·</span>
+          <Link
+            to="/termini"
+            className="hover:text-gold-500/80 transition-colors underline-offset-4 hover:underline"
           >
             Termini di servizio
           </Link>
-          <span className="text-white/10">·</span>
+          <span className="text-white/10" aria-hidden>·</span>
           <Link
             to="/faq"
-            className="hover:text-white/40 transition-colors underline-offset-2 hover:underline"
+            className="hover:text-gold-500/80 transition-colors underline-offset-4 hover:underline"
           >
             FAQ
           </Link>
