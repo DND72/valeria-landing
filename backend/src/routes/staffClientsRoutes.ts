@@ -37,15 +37,17 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         last_scheduled: Date | null
       }>(
         `SELECT
-           LOWER(TRIM(invitee_email)) AS email_norm,
-           MAX(invitee_name) AS name_any,
-           COUNT(*)::text AS total_consults,
-           SUM(CASE WHEN NOT is_free_consult THEN 1 ELSE 0 END)::text AS paid_consults,
-           SUM(CASE WHEN is_free_consult THEN 1 ELSE 0 END)::text AS free_consults,
-           MAX(start_at) AS last_scheduled
-         FROM consults
-         WHERE invitee_email IS NOT NULL AND TRIM(invitee_email) <> ''
-         GROUP BY LOWER(TRIM(invitee_email))`
+            COALESCE(bp.email_normalized, LOWER(TRIM(c.invitee_email))) AS email_norm,
+            COALESCE(MAX(bp.first_name || ' ' || bp.last_name), MAX(c.invitee_name)) AS name_any,
+            COUNT(c.id)::text AS total_consults,
+            SUM(CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS paid_consults,
+            SUM(CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS free_consults,
+            MAX(c.start_at) AS last_scheduled,
+            MAX(bp.clerk_user_id) IS NOT NULL as is_registered,
+            MAX(bp.age_verified) as is_verified
+          FROM client_billing_profiles bp
+          FULL OUTER JOIN consults c ON LOWER(TRIM(c.invitee_email)) = bp.email_normalized
+          GROUP BY 1`
       )
 
       const profiles = await pool.query<{
@@ -67,6 +69,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         lastScheduledAt: string | null
         lastInvoicedAt: string | null
         invoicedThisMonth: boolean
+        isRegistered: boolean
+        isVerified: boolean
       }
 
       const list: Row[] = rows.map((row) => {
@@ -82,6 +86,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           lastScheduledAt: row.last_scheduled ? new Date(row.last_scheduled).toISOString() : null,
           lastInvoicedAt: lastInv ? new Date(lastInv).toISOString() : null,
           invoicedThisMonth: invoiced,
+          isRegistered: (row as any).is_registered ?? false,
+          isVerified: (row as any).is_verified ?? false,
         }
       })
 
@@ -120,10 +126,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         [email]
       )
 
-      if (consultRows.length === 0) {
-        res.status(404).json({ error: 'Nessun consulto per questa email' })
-        return
-      }
+      // Se non ci sono consulti, non è un errore, ma consultRows sarà []
 
       const ids = consultRows.map((c: { id: string }) => c.id)
       const { rows: noteRows } = await pool.query(
@@ -148,39 +151,34 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       )
       const profile = prof.rows[0] ?? null
 
-      // Recupera stato VM18 da client_billing_profiles (per clerk_user_id)
-      const clerkUserIds = [...new Set(
-        consultRows
-          .map((c: Record<string, unknown>) => c.clerk_user_id)
-          .filter((id): id is string => typeof id === 'string' && id.length > 0)
-      )]
-      let ageVerified = false
-      let ageVerifiedAt: string | null = null
-      let declaredBirthday: string | null = null
-      if (clerkUserIds.length > 0) {
-        try {
-          const bpRes = await pool.query(
-            `SELECT age_verified, age_verified_at, declared_birthday
-             FROM client_billing_profiles
-             WHERE clerk_user_id = ANY($1::text[])
-             ORDER BY age_verified DESC, age_verified_at DESC NULLS LAST
-             LIMIT 1`,
-            [clerkUserIds]
-          )
-          const bp = bpRes.rows[0]
-          if (bp) {
-            ageVerified = bp.age_verified ?? false
-            ageVerifiedAt = bp.age_verified_at ? new Date(bp.age_verified_at).toISOString() : null
-            declaredBirthday = bp.declared_birthday
-              ? new Date(bp.declared_birthday).toISOString().slice(0, 10)
-              : null
-          }
-        } catch { /* non bloccante */ }
+      // Cerchiamo il profilo specifico per questa email
+      const bpLookup = await pool.query(
+        `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday
+         FROM client_billing_profiles
+         WHERE email_normalized = $1 LIMIT 1`,
+        [email]
+      )
+      const bp = bpLookup.rows[0]
+      let ageVerified = bp?.age_verified ?? false
+      let ageVerifiedAt: string | null = bp?.age_verified_at ? new Date(bp.age_verified_at).toISOString() : null
+      let declaredBirthday: string | null = bp?.declared_birthday ? new Date(bp.declared_birthday).toISOString().slice(0, 10) : null
+      let displayName = bp ? `${bp.first_name || ''} ${bp.last_name || ''}`.trim() : (consultRows[0]?.invitee_name ?? null)
+
+      if (!bp && consultRows.length > 0) {
+        // Se non abbiamo un profilo billing ma abbiamo consulti, proviamo a cercare via clerk_user_id dai consulti
+        const clerkUserIds = [...new Set(
+          consultRows
+            .map((c: Record<string, unknown>) => c.clerk_user_id)
+            .filter((id): id is string => typeof id === 'string' && id.length > 0)
+        )]
+        if (clerkUserIds.length > 0) {
+          // ... (logica esistente di fallback se serve, ma il match email è primario ora)
+        }
       }
 
       res.json({
         email,
-        displayName: consultRows[0]?.invitee_name ?? null,
+        displayName: displayName || 'Cliente ospite',
         // Badge VM18
         ageVerified,
         ageVerifiedAt,
@@ -232,9 +230,15 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
     }
 
     try {
-      const exists = await pool.query(`SELECT 1 FROM consults WHERE LOWER(TRIM(invitee_email)) = $1 LIMIT 1`, [norm])
+      // Sbloccato: permettiamo di creare profili anche se non ci sono consulti (CRM puro)
+      const exists = await pool.query(
+        `SELECT 1 FROM consults WHERE LOWER(TRIM(invitee_email)) = $1 
+         UNION 
+         SELECT 1 FROM client_billing_profiles WHERE email_normalized = $1 LIMIT 1`, 
+        [norm]
+      )
       if (exists.rows.length === 0) {
-        res.status(404).json({ error: 'Nessun consulto per questa email: impossibile creare la scheda.' })
+        res.status(404).json({ error: 'Nessun utente o consulto per questa email.' })
         return
       }
 

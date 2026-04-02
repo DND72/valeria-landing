@@ -29,9 +29,14 @@ type ConsultDetail = {
 type DetailPayload = {
   email: string
   displayName: string | null
+  ageVerified: boolean
+  ageVerifiedAt: string | null
+  declaredBirthday: string | null
   profile: {
     generalNotes: string | null
     lastInvoicedAt: string | null
+    manualBonusCredits: number
+    unlockReviewOverride: boolean
     updatedAt: string | null
   } | null
   consults: ConsultDetail[]
@@ -175,7 +180,22 @@ export default function ClientDetailPage() {
           <h1 className="font-serif text-2xl md:text-3xl font-bold text-white mb-1">
             {data?.displayName || 'Cliente'}
           </h1>
-          <p className="text-white/45 text-sm mb-6 break-all">{email}</p>
+          <div className="flex flex-wrap gap-2 items-center mb-6">
+            <p className="text-white/45 text-sm break-all">{email}</p>
+            {data?.ageVerified ? (
+              <span className="text-[10px] bg-emerald-600/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-600/30">
+                VM18 Verificato
+              </span>
+            ) : data?.declaredBirthday ? (
+              <span className="text-[10px] bg-amber-600/20 text-amber-400 px-2 py-0.5 rounded border border-amber-600/30">
+                VM18 Dichiarato ({data.declaredBirthday})
+              </span>
+            ) : (
+              <span className="text-[10px] bg-white/5 text-white/30 px-2 py-0.5 rounded border border-white/10">
+                Età non dichiarata
+              </span>
+            )}
+          </div>
         </motion.div>
 
         {!apiConfigured && (
@@ -240,55 +260,61 @@ export default function ClientDetailPage() {
 
             <section>
               <h2 className="font-serif text-lg text-white mb-4">Storico consulti</h2>
-              <ul className="space-y-6">
-                {data.consults.map((c) => (
-                  <li key={c.id} className="mystical-card border border-white/10">
-                    <div className="flex flex-wrap gap-2 justify-between items-start mb-2">
-                      <div>
-                        <p className="text-white/90 text-sm font-medium">{formatWhen(c.start_at)}</p>
-                        <p className="text-white/35 text-xs uppercase">
-                          {c.status} · {c.is_free_consult ? 'omaggio' : 'pagamento'}
-                        </p>
+              {data.consults.length > 0 ? (
+                <ul className="space-y-6">
+                  {data.consults.map((c) => (
+                    <li key={c.id} className="mystical-card border border-white/10">
+                      <div className="flex flex-wrap gap-2 justify-between items-start mb-2">
+                        <div>
+                          <p className="text-white/90 text-sm font-medium">{formatWhen(c.start_at)}</p>
+                          <p className="text-white/35 text-xs uppercase">
+                            {c.status} · {c.is_free_consult ? 'omaggio' : 'pagamento'}
+                          </p>
+                        </div>
+                        {c.meeting_join_url && (
+                          <a
+                            href={c.meeting_join_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gold-500/90 text-xs hover:underline"
+                          >
+                            Link riunione
+                          </a>
+                        )}
                       </div>
-                      {c.meeting_join_url && (
-                        <a
-                          href={c.meeting_join_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gold-500/90 text-xs hover:underline"
-                        >
-                          Link riunione
-                        </a>
+                      {c.notes.length > 0 && (
+                        <ul className="space-y-2 mb-3 border-l-2 border-gold-600/30 pl-3">
+                          {c.notes.map((n) => (
+                            <li key={n.id} className="text-sm text-white/70">
+                              <p className="whitespace-pre-wrap">{n.body}</p>
+                              <p className="text-white/30 text-[10px] mt-1">{formatWhen(n.created_at)}</p>
+                            </li>
+                          ))}
+                        </ul>
                       )}
-                    </div>
-                    {c.notes.length > 0 && (
-                      <ul className="space-y-2 mb-3 border-l-2 border-gold-600/30 pl-3">
-                        {c.notes.map((n) => (
-                          <li key={n.id} className="text-sm text-white/70">
-                            <p className="whitespace-pre-wrap">{n.body}</p>
-                            <p className="text-white/30 text-[10px] mt-1">{formatWhen(n.created_at)}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    <textarea
-                      value={notesDraft[c.id] ?? ''}
-                      onChange={(e) => setNotesDraft((p) => ({ ...p, [c.id]: e.target.value }))}
-                      placeholder="Aggiungi nota su questo consulto…"
-                      rows={2}
-                      className="w-full bg-dark-400/80 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white mb-2"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void addConsultNote(c.id)}
-                      disabled={postingNoteFor === c.id || !(notesDraft[c.id] ?? '').trim()}
-                      className="btn-outline text-xs px-3 py-1"
-                    >
-                      {postingNoteFor === c.id ? 'Invio…' : 'Aggiungi nota'}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <textarea
+                        value={notesDraft[c.id] ?? ''}
+                        onChange={(e) => setNotesDraft((p) => ({ ...p, [c.id]: e.target.value }))}
+                        placeholder="Aggiungi nota su questo consulto…"
+                        rows={2}
+                        className="w-full bg-dark-400/80 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white mb-2"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void addConsultNote(c.id)}
+                        disabled={postingNoteFor === c.id || !(notesDraft[c.id] ?? '').trim()}
+                        className="btn-outline text-xs px-3 py-1"
+                      >
+                        {postingNoteFor === c.id ? 'Invio…' : 'Aggiungi nota'}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="mystical-card border border-white/5 py-10 text-center">
+                  <p className="text-white/30 text-sm">Nessun consulto registrato per questo indirizzo email.</p>
+                </div>
+              )}
             </section>
           </div>
         )}

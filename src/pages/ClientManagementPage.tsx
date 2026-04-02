@@ -17,6 +17,8 @@ type ClientRow = {
   lastScheduledAt: string | null
   lastInvoicedAt: string | null
   invoicedThisMonth: boolean
+  isRegistered: boolean
+  isVerified: boolean
 }
 
 function formatWhen(iso: string | null): string {
@@ -144,6 +146,7 @@ export default function ClientManagementPage() {
             <table className="w-full text-sm text-left min-w-[800px]">
               <thead>
                 <tr className="bg-white/[0.04] text-white/50 text-xs uppercase tracking-wide">
+                  <th className="py-3 px-3 font-medium">Stato</th>
                   <th className="py-3 px-3 font-medium">Cliente</th>
                   <th className="py-3 px-3 font-medium">Email</th>
                   <th className="py-3 px-3 font-medium text-center">Consulti</th>
@@ -156,26 +159,50 @@ export default function ClientManagementPage() {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={7} className="py-10 text-center text-white/40">
+                    <td colSpan={8} className="py-10 text-center text-white/40">
                       Caricamento…
                     </td>
                   </tr>
                 )}
                 {!loading && clients.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-10 text-center text-white/40">
-                      Nessun cliente con email nei consulti.
+                    <td colSpan={8} className="py-10 text-center text-white/40">
+                      Nessun cliente con email nei consulti o registrato.
                     </td>
                   </tr>
                 )}
                 {!loading &&
                   clients.map((c) => (
                     <tr key={c.email} className="border-t border-white/[0.06] hover:bg-white/[0.03]">
-                      <td className="py-2.5 px-3 text-white/90">{c.name || '—'}</td>
+                      <td className="py-2.5 px-3">
+                        <div className="flex flex-col gap-1">
+                          {c.isRegistered ? (
+                            <span className="text-[10px] bg-gold-600/20 text-gold-300 px-1.5 py-0.5 rounded border border-gold-600/30 w-fit">Registrato</span>
+                          ) : (
+                            <span className="text-[10px] bg-white/5 text-white/30 px-1.5 py-0.5 rounded border border-white/10 w-fit">Guest</span>
+                          )}
+                          {c.isVerified && (
+                             <span className="text-[10px] bg-emerald-600/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-600/30 w-fit">VM18</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <div className="text-white/90">{c.name || '—'}</div>
+                      </td>
                       <td className="py-2.5 px-3 text-white/55 text-xs break-all">{c.email}</td>
-                      <td className="py-2.5 px-3 text-center text-white/70">{c.totalConsults}</td>
+                      <td className="py-2.5 px-3 text-center text-white/70">
+                        {c.totalConsults > 0 ? (
+                          <span className="font-medium text-gold-400/90">{c.totalConsults}</span>
+                        ) : (
+                          <span className="text-white/20">0</span>
+                        )}
+                      </td>
                       <td className="py-2.5 px-3 text-white/55 text-xs">
-                        {c.paidConsults} pag. · {c.freeConsults} omag.
+                        {c.totalConsults > 0 ? (
+                          <>{c.paidConsults} pag. · {c.freeConsults} omag.</>
+                        ) : (
+                          <span className="text-white/20">—</span>
+                        )}
                       </td>
                       <td className="py-2.5 px-3 text-white/60 whitespace-nowrap text-xs">
                         {formatWhen(c.lastScheduledAt)}
