@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
-const LAST_UPDATED = '1 aprile 2026'
+const LAST_UPDATED = '2 aprile 2026'
 
 export default function TermsPage() {
   return (
@@ -80,9 +80,10 @@ export default function TermsPage() {
 
           <Section title="4. Pagamenti">
             <p>
-              Il pagamento dei consulti a titolo oneroso avviene tramite <strong>PayPal</strong> al momento della
-              prenotazione su Calendly. Il sito non archivia dati di pagamento. La transazione è gestita
-              interamente dalla piattaforma PayPal, soggetta ai propri termini di servizio.
+              Il pagamento dei consulti a titolo oneroso avviene tramite <strong>Stripe</strong> al momento della
+              prenotazione su Calendly. Il sito non archivia dati di pagamento: la transazione è gestita
+              interamente dalla piattaforma Stripe, certificata PCI-DSS Livello 1 e soggetta ai propri termini
+              di servizio.
             </p>
             <p>
               Il pagamento è richiesto in anticipo per confermare l'appuntamento. In assenza di pagamento, la
@@ -97,8 +98,8 @@ export default function TermsPage() {
             </p>
             <ul>
               <li>
-                <strong>Cancellazione con più di 24 ore di anticipo:</strong> rimborso integrale tramite PayPal
-                (3–5 giorni lavorativi).
+                <strong>Cancellazione con più di 24 ore di anticipo:</strong> rimborso integrale tramite Stripe
+                (3–5 giorni lavorativi, secondo i tempi dell'istituto bancario).
               </li>
               <li>
                 <strong>Cancellazione con meno di 24 ore di anticipo:</strong> nessun rimborso, salvo casi di
@@ -139,6 +140,27 @@ export default function TermsPage() {
               Valeria Di Pace si riserva il diritto di sospendere o cancellare account che violino i presenti
               termini, facciano uso abusivo del consulto omaggio o tengano comportamenti inappropriati durante
               le sessioni.
+            </p>
+          </Section>
+
+          <Section title="7bis. Accesso riservato ai maggiorenni — Responsabilità dell'utente">
+            <p>
+              I servizi offerti da Valeria Di Pace sono <strong>riservati esclusivamente a persone che abbiano
+              compiuto 18 anni di età</strong>. L'accesso al sito e la prenotazione di qualsiasi consulto o sessione
+              costituiscono <strong>dichiarazione implicita e irrevocabile</strong> da parte dell'utente di essere
+              maggiorenne al momento della fruizione del servizio.
+            </p>
+            <p>
+              Ai sensi dell'art. 76 del D.P.R. 445/2000, <strong>l'utente si assume piena responsabilità
+              della veridicità dei dati personali forniti</strong>, incluso il requisito della maggiore età.
+              Dichiarazioni false, mendaci o reticenti espongono l'utente alle sanzioni penali previste dalla
+              legge italiana.
+            </p>
+            <p>
+              Valeria Di Pace adotta ogni ragionevole misura per informare gli utenti di tale restrizione e
+              non è responsabile per l'accesso di minori che abbiano fornito dati falsi o fuorvianti.
+              Il log digitale dell'accettazione dei presenti termini (timestamp, IP) costituisce prova della
+              buona fede del titolare del servizio in caso di contestazione.
             </p>
           </Section>
 

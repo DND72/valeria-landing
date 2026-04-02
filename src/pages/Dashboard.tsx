@@ -1,6 +1,6 @@
 import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { type FormEvent, useEffect, useRef, useState, useCallback } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import PrivacySealNote from '../components/PrivacySealNote'
@@ -8,7 +8,6 @@ import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
 import ComboLightBox from '../components/ComboLightBox'
 import ComboFullBox from '../components/ComboFullBox'
-import LegalDeclarationModal from '../components/LegalDeclarationModal'
 import { calendlyUrlForConsult } from '../constants/calendly'
 import {
   CONSULT_CHOICES,
@@ -77,62 +76,6 @@ export default function Dashboard() {
 
   const { data: valeriaPresence } = useValeriaPresence(60_000)
   const presenceLabel = labelForPresence(valeriaPresence?.status)
-
-  // -----------------------------------------------------------------------
-  // Strato 2: controllo dichiarazione legale (una volta per account)
-  // -----------------------------------------------------------------------
-  const [showLegalModal, setShowLegalModal] = useState(false)
-
-  const onLegalAccepted = useCallback(() => {
-    setShowLegalModal(false)
-  }, [])
-
-  useEffect(() => {
-    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
-    // Gia' accettata in questa sessione?
-    if (sessionStorage.getItem('valeria_legal_ok') === '1') return
-    // Controlla lato API (per sessioni successive)
-    if (!getApiBaseUrl()) return
-    let cancelled = false
-    ;(async () => {
-      try {
-        const token = await getToken()
-        if (!token) return
-        const res = await fetch(`${getApiBaseUrl()}/api/me/age-status`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const data = (await res.json()) as { hasLegalDeclaration?: boolean }
-        if (!cancelled && !data.hasLegalDeclaration) {
-          setShowLegalModal(true)
-        } else if (!cancelled && data.hasLegalDeclaration) {
-          sessionStorage.setItem('valeria_legal_ok', '1')
-        }
-      } catch {
-        // Non mostriamo la modale se il backend non risponde
-      }
-    })()
-    return () => { cancelled = true }
-  }, [isLoaded, user, getToken])
-
-  // Recupera la data di nascita salvata nell'age gate al signup
-  useEffect(() => {
-    if (!isLoaded || !user) return
-    const savedBirthday = sessionStorage.getItem('valeria_signup_birthday')
-    if (!savedBirthday || !getApiBaseUrl()) return
-    sessionStorage.removeItem('valeria_signup_birthday')
-    // Invia la data al backend (fire-and-forget)
-    ;(async () => {
-      try {
-        const token = await getToken()
-        if (!token) return
-        await fetch(`${getApiBaseUrl()}/api/me/legal-declaration`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ declaredBirthday: savedBirthday }),
-        })
-      } catch { /* non bloccante */ }
-    })()
-  }, [isLoaded, user, getToken])
 
   useEffect(() => {
     try {
@@ -270,10 +213,6 @@ export default function Dashboard() {
 
   return (
     <div className="relative min-h-screen px-6 py-24">
-      {/* Strato 2: modale dichiarazione legale — mostrata una sola volta */}
-      {showLegalModal && !privileged && (
-        <LegalDeclarationModal onAccepted={onLegalAccepted} />
-      )}
       <div
         className="absolute inset-0 pointer-events-none transition-[background] duration-500"
         style={{
@@ -558,8 +497,16 @@ export default function Dashboard() {
               <h2 className="font-serif text-xl font-bold text-white mb-1 mt-2">2) Scegli il consulto: breve, online, completo…</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Tocca <strong className="text-gold-500/90">Continua</strong>: sotto si apre il calendario giusto per quel
-                tipo (anche omaggio, se incluso nel settore). Il pagamento avviene in Calendly quando scegli data e ora,
-                come da configurazione (es. PayPal).
+                tipo (anche omaggio, se incluso nel settore). Il pagamento avviene in Calendly quando scegli data e ora
+                tramite <strong className="text-white/55">Stripe</strong> (carta di credito).
+              </p>
+              {/* Disclaimer legale statico — nessuna azione richiesta */}
+              <p className="text-white/28 text-[11px] mb-5 max-w-2xl leading-relaxed">
+                Prenotando un consulto dichiari di avere almeno 18 anni e di accettare i{' '}
+                <Link to="/termini" className="text-gold-500/50 hover:text-gold-400 underline underline-offset-2">
+                  Termini di servizio
+                </Link>
+                .
               </p>
               {!offerCategory && (
                 <div
@@ -653,7 +600,8 @@ export default function Dashboard() {
             >
               <h2 className="font-serif text-xl font-bold text-white mb-1">3) Scegli data e ora su Calendly</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
-                Calendly mostra le disponibilità per il tipo di consulto scelto al punto 2. Al termine, se hai collegato PayPal in Calendly, partirà il pagamento lì.
+                Calendly mostra le disponibilità per il tipo di consulto scelto al punto 2. Al termine partirà il
+                pagamento sicuro tramite <strong className="text-white/55">Stripe</strong>.
               </p>
               <PrivacySealNote className="mb-4 max-w-2xl" />
               <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
