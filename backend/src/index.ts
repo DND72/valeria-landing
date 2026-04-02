@@ -136,5 +136,4 @@ app.use((_req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`API in ascolto su http://0.0.0.0:${port}`)
-  console.log("Stripe Secret Key caricata: " + (process.env.STRIPE_SECRET_KEY ? "SI" : "NO"))
 })
