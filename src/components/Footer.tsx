@@ -52,6 +52,8 @@ export default function Footer() {
                 { label: 'Recensioni', href: '#recensioni' },
                 { label: 'FAQ', href: '/faq' },
                 { label: 'Termini di servizio', href: '/termini' },
+                { label: 'Privacy Policy', href: '/privacy' },
+                { label: 'Cookie Policy', href: '/cookie' },
                 { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },
               ].map((link) => (
                 <li key={link.href}>

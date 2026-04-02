@@ -62,6 +62,7 @@ export default function SignUpPage() {
               footerActionLink: 'text-gold-400 hover:text-gold-300',
               formFieldErrorText: 'text-red-400 text-sm',
               alertText: 'text-red-300 text-sm',
+              footer: 'hidden',
             },
           }}
           signInUrl="/accedi"
