@@ -52,6 +52,23 @@
       drop-shadow(0 0 28px rgba(255, 180, 0, 0.8));
   }
 
+  .glow-text-gold {
+    color: #fff5a0;
+    text-shadow: 
+      0 0 10px rgba(255, 215, 100, 0.8),
+      0 0 20px rgba(212, 160, 23, 0.4),
+      0 0 30px rgba(212, 160, 23, 0.2);
+    font-weight: 700;
+  }
+
+  .nav-logo {
+    filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.4));
+    transition: transform 0.3s ease;
+  }
+  .nav-logo:hover {
+    transform: scale(1.05) rotate(5deg);
+  }
+
   .gold-border {
     border-image: linear-gradient(135deg, #d4a017, #fcd34d, #b8860b) 1;
   }

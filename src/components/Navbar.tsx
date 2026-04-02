@@ -43,20 +43,33 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 shrink-0 min-w-0">
-          <Link to="/" className="font-serif text-xl font-semibold gold-text">
-            Valeria Di Pace
+        <div className="flex items-center gap-3 shrink-0 min-w-0">
+          <Link to="/" className="flex items-center gap-3 group">
+            <img 
+              src="/logo.png" 
+              alt="Logo Nonsolotarocchi" 
+              className="w-10 h-10 md:w-12 md:h-12 object-contain nav-logo"
+            />
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-2">
+                <span className="font-serif text-xl md:text-2xl font-bold glow-text-gold tracking-tight">
+                  Nonsolotarocchi.it
+                </span>
+                <span className="text-[10px] md:text-xs text-white/40 font-light tracking-widest uppercase">
+                  by Valeria Di Pace
+                </span>
+              </div>
+              <span
+                className="text-[9px] uppercase font-bold tracking-[0.2em] w-fit"
+                style={{
+                  color: 'rgba(255, 210, 80, 0.6)',
+                  animation: 'devPulse 2s ease-in-out infinite',
+                }}
+              >
+                site in developing
+              </span>
+            </div>
           </Link>
-          <span
-            className="hidden sm:inline text-[11px] italic tracking-wide border rounded px-2 py-0.5 leading-none shrink-0"
-            style={{
-              color: 'rgba(255, 210, 80, 0.7)',
-              borderColor: 'rgba(255, 210, 80, 0.25)',
-              animation: 'devPulse 2s ease-in-out infinite',
-            }}
-          >
-            site in developing
-          </span>
         </div>
 
         <ul className="hidden md:flex items-center gap-6 lg:gap-8 list-none p-0 m-0 shrink min-w-0">
