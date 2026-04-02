@@ -192,6 +192,37 @@ export function createMeRouter(pool: Pool): Router {
   })
 
   // -------------------------------------------------------------------------
+  // POST /api/me/legal-consent
+  //
+  // Registra l'accettazione esplicita dei Termini e della Privacy Policy.
+  // -------------------------------------------------------------------------
+  r.post('/legal-consent', async (req, res) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+    const { version } = (req.body ?? {}) as { version?: string }
+    const finalVersion = version || 'v1.0-2024-04'
+
+    try {
+      await pool.query(
+        `INSERT INTO client_billing_profiles (clerk_user_id, legal_consent_timestamp, legal_consent_version, updated_at)
+         VALUES ($1, now(), $2, now())
+         ON CONFLICT (clerk_user_id) DO UPDATE SET
+           legal_consent_timestamp = now(),
+           legal_consent_version   = $2,
+           updated_at             = now()`,
+        [userId, finalVersion]
+      )
+      res.json({ ok: true })
+    } catch (e) {
+      console.error('[me legal-consent]', e)
+      res.status(500).json({ error: 'Errore salvataggio consenso' })
+    }
+  })
+
+  // -------------------------------------------------------------------------
   // GET /api/me/age-status
   //
   // Ritorna lo stato VM18 dell'utente autenticato.
@@ -212,11 +243,13 @@ export function createMeRouter(pool: Pool): Router {
       )
       const row = rows[0]
       res.json({
-        ageVerified:        row?.age_verified         ?? false,
-        ageVerifiedAt:      row?.age_verified_at      ?? null,
-        declaredBirthday:   row?.declared_birthday    ?? null,
-        legalDeclarationAt: row?.legal_declaration_at ?? null,
-        hasLegalDeclaration: !!(row?.legal_declaration_at),
+        ageVerified:          row?.age_verified          ?? false,
+        ageVerifiedAt:        row?.age_verified_at       ?? null,
+        declaredBirthday:     row?.declared_birthday     ?? null,
+        legalDeclarationAt:   row?.legal_declaration_at   ?? null,
+        hasLegalDeclaration:  !!(row?.legal_declaration_at),
+        legalConsentTimestamp: row?.legal_consent_timestamp ?? null,
+        legalConsentVersion:   row?.legal_consent_version   ?? null,
       })
     } catch (e) {
       console.error('[me age-status]', e)

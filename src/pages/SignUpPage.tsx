@@ -29,21 +29,14 @@ export default function SignUpPage() {
           <p className="text-white/30 text-xs max-w-xs mx-auto mt-2">
             🔒 Scegli una password di almeno 8 caratteri. Riceverai un codice via email per confermare il tuo account.
           </p>
-          <p className="text-white/25 text-xs max-w-sm mx-auto mt-3 leading-relaxed">
-            Registrandoti dichiari di avere almeno 18 anni e accetti i nostri{' '}
-            <Link to="/termini" className="text-gold-500/70 hover:text-gold-400 underline underline-offset-2">
-              Termini di servizio
-            </Link>
-            {' '}e la nostra{' '}
-            <a
-              href="https://www.iubenda.com/privacy-policy/XXXXXXXX"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gold-500/70 hover:text-gold-400 underline underline-offset-2"
-            >
-              Privacy Policy
-            </a>
-            .
+          <p className="text-white/25 text-[11px] max-w-sm mx-auto mt-4 leading-relaxed bg-white/5 p-3 rounded border border-white/10">
+            Accetto i <Link to="/termini" className="text-gold-500/70 hover:text-gold-400 underline underline-offset-2">Termini di Servizio</Link> 
+            {' '}e confermo di aver letto la <Link to="/privacy" className="text-gold-500/70 hover:text-gold-400 underline underline-offset-2">Privacy Policy</Link>. 
+            Dichiaro di essere maggiorenne. 
+            <br />
+            <span className="text-[10px] opacity-60">
+              Registrandoti, i tuoi dati saranno trattati da Valeria Di Pace secondo le norme vigenti.
+            </span>
           </p>
         </div>
 

@@ -1,4 +1,5 @@
 import { useAuth } from '@clerk/clerk-react'
+import { Link } from 'react-router-dom'
 import { useCallback, useEffect, useState } from 'react'
 import { apiJson, ApiError } from '../lib/api'
 import { getApiBaseUrl } from '../constants/api'
@@ -36,6 +37,7 @@ export default function SiteReviewComposer() {
   const [body, setBody] = useState('')
   const [authorDisplayName, setAuthorDisplayName] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [legalChecked, setLegalChecked] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -246,10 +248,21 @@ export default function SiteReviewComposer() {
             className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white mb-3"
             minLength={20}
           />
+          <label className="flex items-start gap-2 mb-4 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={legalChecked}
+              onChange={(e) => setLegalChecked(e.target.checked)}
+              className="mt-1 accent-gold-500"
+            />
+            <span className="text-white/40 text-[11px] leading-snug group-hover:text-white/60 transition-colors">
+              Accetto i <Link to="/termini" className="text-gold-500/70 hover:underline">Termini di Servizio</Link> e confermo di aver letto la <Link to="/privacy" className="text-gold-500/70 hover:underline">Privacy Policy</Link>. Dichiaro di essere maggiorenne.
+            </span>
+          </label>
           <button
             type="button"
             onClick={() => void submit('POST')}
-            disabled={submitting || body.trim().length < 20}
+            disabled={submitting || body.trim().length < 20 || !legalChecked}
             className="btn-gold text-sm px-5 py-2"
           >
             {submitting ? 'Invio…' : 'Invia recensione'}

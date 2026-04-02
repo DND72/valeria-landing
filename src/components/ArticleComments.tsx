@@ -34,6 +34,7 @@ export default function ArticleComments({ articleSlug }: { articleSlug: string }
   const [body, setBody] = useState('')
   const [authorDisplayName, setAuthorDisplayName] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [legalChecked, setLegalChecked] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
 
@@ -218,9 +219,20 @@ export default function ArticleComments({ articleSlug }: { articleSlug: string }
               placeholder="Riflessioni sul tema dell’articolo…"
             />
           </label>
+          <label className="flex items-start gap-2 mb-4 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={legalChecked}
+              onChange={(e) => setLegalChecked(e.target.checked)}
+              className="mt-1 accent-gold-500"
+            />
+            <span className="text-white/40 text-[11px] leading-snug group-hover:text-white/60 transition-colors">
+              Accetto i <Link to="/termini" className="text-gold-500/70 hover:underline">Termini di Servizio</Link> e confermo di aver letto la <Link to="/privacy" className="text-gold-500/70 hover:underline">Privacy Policy</Link>. Dichiaro di essere maggiorenne.
+            </span>
+          </label>
           <button
             type="button"
-            disabled={submitting || body.trim().length < 10}
+            disabled={submitting || body.trim().length < 10 || !legalChecked}
             onClick={() => void submit()}
             className="btn-gold text-sm px-5 py-2"
           >

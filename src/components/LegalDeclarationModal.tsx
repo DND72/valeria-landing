@@ -51,6 +51,13 @@ export default function LegalDeclarationModal({ onAccepted }: Props) {
             const body = (await res.json().catch(() => ({}))) as { error?: string }
             throw new Error(body.error ?? `Errore server (${res.status})`)
           }
+
+          // Salva anche il consenso legale esplicito
+          await fetch(`${apiBase}/api/me/legal-consent`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ version: 'v1.0-2024-04' }),
+          })
         }
       }
       // Salva anche in sessionStorage per evitare la modale nel resto della sessione
@@ -158,7 +165,8 @@ export default function LegalDeclarationModal({ onAccepted }: Props) {
             <span className="text-white/65 text-xs leading-relaxed">
               Dichiaro sotto la mia responsabilita&apos;, ai sensi dell&apos;art. 76 del DPR 445/2000,
               di essere <strong className="text-white/80">maggiorenne</strong> e che i dati forniti
-              corrispondono al vero. Sono consapevole che l&apos;erogazione del servizio{' '}
+              corrispondono al vero. <strong>Accetto i Termini di Servizio e confermo di aver letto la Privacy Policy.</strong>
+              Sono consapevole che l&apos;erogazione del servizio{' '}
               <strong className="text-white/80">e&apos; vietata ai minori</strong> e che
               dichiarazioni false comportano responsabilita&apos; penale.
             </span>

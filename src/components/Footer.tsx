@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
+import CookieConsent from 'react-cookie-consent'
 import PrivacySealNote from './PrivacySealNote'
 
 export default function Footer() {
@@ -146,6 +147,33 @@ export default function Footer() {
           Non costituiscono consulenza medica, legale o finanziaria.
         </p>
       </div>
+      <CookieConsent
+        location="bottom"
+        buttonText="Accetto"
+        cookieName="valeria_landing_consent"
+        style={{ 
+          background: "rgba(10, 26, 47, 0.95)",
+          color: "#f5f0e8",
+          fontSize: "13px",
+          borderTop: "1px solid rgba(212, 160, 23, 0.3)",
+          backdropFilter: "blur(8px)",
+          alignItems: "center",
+          padding: "10px 20px"
+        }}
+        buttonStyle={{ 
+          background: "linear-gradient(90deg, #d4a017, #b8860b)",
+          color: "#0a1a2f",
+          fontSize: "13px",
+          fontWeight: "600",
+          borderRadius: "6px",
+          padding: "8px 24px",
+          cursor: "pointer"
+        }}
+        expires={150}
+      >
+        Questo sito utilizza cookie tecnici e di terze parti (Stripe/Clerk) per migliorare l'esperienza e gestire i pagamenti. 
+        Leggi la nostra <Link to="/privacy" className="text-gold-400 hover:underline">Privacy Policy</Link> per maggiori dettagli.
+      </CookieConsent>
     </footer>
   )
 }
