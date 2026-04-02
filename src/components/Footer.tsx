@@ -112,14 +112,14 @@ export default function Footer() {
         {/* Legal — link testuali */}
         <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-white/20 text-[10px] uppercase tracking-widest font-medium">
           <Link
-            to="/termini"
+            to="/privacy"
             className="hover:text-gold-500/80 transition-colors underline-offset-4 hover:underline"
           >
             Privacy Policy
           </Link>
           <span className="text-white/10" aria-hidden>·</span>
           <Link
-            to="/termini"
+            to="/privacy"
             className="hover:text-gold-500/80 transition-colors underline-offset-4 hover:underline"
           >
             Cookie Policy

@@ -25,6 +25,7 @@ import StaffBlogCommentsPage from './pages/StaffBlogCommentsPage'
 import StaffReviewsPage from './pages/StaffReviewsPage'
 import FaqPage from './pages/FaqPage'
 import TermsPage from './pages/TermsPage'
+import PrivacyPage from './pages/PrivacyPage'
 import ProfilePage from './pages/ProfilePage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 
@@ -80,6 +81,7 @@ function AppRoutes() {
             <Route path="/blog/:slug" element={<ArticlePage />} />
             <Route path="/faq" element={<FaqPage />} />
             <Route path="/termini" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/profilo" element={<ProfilePage />} />
       </Routes>
     </RouteErrorBoundary>
