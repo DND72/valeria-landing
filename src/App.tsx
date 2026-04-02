@@ -26,6 +26,7 @@ import StaffReviewsPage from './pages/StaffReviewsPage'
 import FaqPage from './pages/FaqPage'
 import TermsOfService from './pages/legal/TermsOfService'
 import PrivacyPolicy from './pages/legal/PrivacyPolicy'
+import CookiePolicy from './pages/legal/CookiePolicy'
 import ProfilePage from './pages/ProfilePage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 
@@ -82,6 +83,7 @@ function AppRoutes() {
             <Route path="/faq" element={<FaqPage />} />
             <Route path="/termini" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/cookie" element={<CookiePolicy />} />
             <Route path="/profilo" element={<ProfilePage />} />
       </Routes>
     </RouteErrorBoundary>

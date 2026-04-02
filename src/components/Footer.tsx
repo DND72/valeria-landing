@@ -120,7 +120,7 @@ export default function Footer() {
           </Link>
           <span className="text-white/10" aria-hidden>·</span>
           <Link
-            to="/privacy"
+            to="/cookie"
             className="hover:text-gold-500/80 transition-colors underline-offset-4 hover:underline"
           >
             Cookie Policy
@@ -169,10 +169,11 @@ export default function Footer() {
           padding: "8px 24px",
           cursor: "pointer"
         }}
-        expires={150}
+        expires={30}
       >
-        Questo sito utilizza cookie tecnici e di terze parti (Stripe/Clerk) per migliorare l'esperienza e gestire i pagamenti. 
-        Leggi la nostra <Link to="/privacy" className="text-gold-400 hover:underline">Privacy Policy</Link> per maggiori dettagli.
+        Noi utilizziamo cookie tecnici e di terze parti (Stripe, Clerk) per garantirti la migliore esperienza di consulenza e sicurezza. 
+        Proseguendo la navigazione o cliccando su Accetto, acconsenti al loro utilizzo. 
+        Leggi la nostra <Link to="/cookie" className="text-gold-400 hover:underline">Cookie Policy</Link> per maggiori dettagli.
       </CookieConsent>
     </footer>
   )
