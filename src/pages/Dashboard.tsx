@@ -67,6 +67,7 @@ export default function Dashboard() {
     status: string
     is_free_consult: boolean
     meeting_join_url: string | null
+    meeting_provider: string | null
     start_at: string | null
     end_at: string | null
     created_at: string
@@ -703,9 +704,12 @@ export default function Dashboard() {
                 </div>
               )}
               {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length > 0 && (
-                <div className="relative pl-5 border-l-2 border-gold-600/30 space-y-6 my-6 ml-2">
+                <div className="relative pl-5 border-l-2 border-gold-600/30 space-y-8 my-10 ml-2">
                   {myConsults.map((c) => {
-                    const isPast = !c.start_at || new Date(c.start_at) < new Date()
+                    const startDate = c.start_at ? new Date(c.start_at) : null
+                    const isPast = !startDate || startDate < new Date()
+                    const isSoon = !isPast && startDate && (startDate.getTime() - new Date().getTime() < 15 * 60 * 1000)
+                    
                     const statusBadge = c.status === 'done'
                       ? { label: 'Completato', cls: 'border-emerald-600/30 text-emerald-400/80', dot: 'bg-emerald-400' }
                       : c.status === 'cancelled'
@@ -713,29 +717,73 @@ export default function Dashboard() {
                       : c.status === 'scheduled'
                       ? { label: isPast ? 'Passato' : 'In programma', cls: isPast ? 'border-white/15 text-white/35' : 'border-gold-600/35 text-gold-400/80', dot: isPast ? 'bg-white/30' : 'bg-gold-400 animate-pulse' }
                       : { label: c.status, cls: 'border-white/15 text-white/35', dot: 'bg-white/20' }
+
+                    // Logica icone e testi in base al provider
+                    let callIcon = '🔮'
+                    let callDetail = ''
+                    let callActionLabel = 'Partecipa'
+                    
+                    if (c.meeting_provider === 'phone' || (!c.meeting_join_url && c.status === 'scheduled')) {
+                      callIcon = '📞'
+                      callDetail = 'Valeria ti chiamerà al numero fornito durante la prenotazione.'
+                    } else if (c.meeting_provider === 'google_conference' || c.meeting_join_url?.includes('meet.google.com')) {
+                      callIcon = '📽️'
+                      callDetail = 'Si svolge su Google Meet (anche da browser senza app).'
+                      callActionLabel = isSoon ? 'Entra ora' : 'Vai alla stanza'
+                    } else if (c.meeting_provider === 'zoom_conference' || c.meeting_join_url?.includes('zoom.us')) {
+                      callIcon = '📱'
+                      callDetail = 'Si svolge su Zoom. Si consiglia di avere l\'app installata.'
+                      callActionLabel = isSoon ? 'Entra ora' : 'Apri Zoom'
+                    } else if (c.meeting_join_url) {
+                      callIcon = '🌐'
+                      callDetail = 'Sessione online tramite link fornito.'
+                    }
+
                     return (
                       <div key={c.id} className="relative">
                         <div className={`absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-dark-500 ${statusBadge.dot}`} />
-                        <div className="mystical-card bg-white/[0.02] border border-white/10 p-4 shadow-sm">
-                          <div className="flex flex-wrap justify-between items-start gap-3 mb-2">
-                            <div>
-                              <span className="text-gold-500/80 text-xs font-mono">{formatConsultWhen(c.start_at)}</span>
-                              <h4 className="text-white font-medium text-sm mt-0.5">
-                                {c.is_free_consult ? '🎁 Consulto Omaggio (7 min)' : '🔮 Consulto a Pagamento'}
-                              </h4>
+                        <div className={`mystical-card p-0 overflow-hidden border transition-all duration-300 ${
+                          isSoon ? 'border-gold-500/50 shadow-[0_0_20px_rgba(212,160,23,0.1)] bg-gold-500/[0.03]' : 'border-white/10 bg-white/[0.02]'
+                        }`}>
+                          <div className="p-4">
+                            <div className="flex flex-wrap justify-between items-start gap-3 mb-2">
+                              <div>
+                                <span className="text-gold-500/80 text-xs font-mono font-medium">{formatConsultWhen(c.start_at)}</span>
+                                <h4 className="text-white font-medium text-sm mt-0.5 flex items-center gap-2">
+                                  <span className="text-lg">{callIcon}</span>
+                                  {c.is_free_consult ? 'Consulto Omaggio (7 min)' : 'Consulto con Valeria'}
+                                </h4>
+                              </div>
+                              <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border flex items-center gap-1.5 ${statusBadge.cls}`}>
+                                <span className={`w-1 h-1 rounded-full inline-block ${statusBadge.dot}`} />
+                                {statusBadge.label}
+                              </span>
                             </div>
-                            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border flex items-center gap-1.5 ${statusBadge.cls}`}>
-                              <span className={`w-1 h-1 rounded-full inline-block ${statusBadge.dot}`} />
-                              {statusBadge.label}
-                            </span>
+                            
+                            {callDetail && c.status === 'scheduled' && (
+                              <p className="text-white/50 text-[11px] mt-1 italic">{callDetail}</p>
+                            )}
                           </div>
 
-                          <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-white/5 items-center justify-between">
-                            {c.meeting_join_url && !isPast && (
-                              <a href={c.meeting_join_url} target="_blank" rel="noopener noreferrer" className="text-gold-500 hover:underline text-xs flex items-center gap-1">
-                                Entra nella stanza video <span aria-hidden>→</span>
+                          <div className="flex flex-wrap gap-3 p-3 bg-white/[0.03] border-t border-white/5 items-center justify-between">
+                            {c.meeting_join_url && !isPast && c.status === 'scheduled' ? (
+                              <a 
+                                href={c.meeting_join_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
+                                  isSoon 
+                                    ? 'bg-gold-500 text-dark-500 hover:bg-gold-400 shadow-[0_0_12px_rgba(212,160,23,0.3)]' 
+                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                }`}
+                              >
+                                {callActionLabel}
+                                <span aria-hidden>→</span>
                               </a>
-                            )}
+                            ) : c.status === 'scheduled' && !isPast ? (
+                              <span className="text-white/30 text-xs">In attesa della chiamata</span>
+                            ) : null}
+
                             {isPast && c.status !== 'cancelled' && (
                               <a href="#scegli-consulto" className="text-gold-500/70 hover:text-gold-400 text-xs hover:underline transition-colors">
                                 Prenota di nuovo →
