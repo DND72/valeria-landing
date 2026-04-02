@@ -85,26 +85,41 @@ export default function TermsPage() {
             </ul>
           </Section>
 
-          <Section title="Art. 5 — Pagamenti e Rimborsi">
+          <Section title="Art. 5 — Pagamenti, Recesso e Fatturazione">
             <p>
-              Il pagamento avviene tramite <strong>Stripe (PCI-DSS)</strong>. Il contratto di servizio si perfeziona nel momento in cui l'Esperto riceve e conferma la Richiesta di Contatto. Il Gestore si riserva il diritto di rifiutare una prenotazione rimborsando integralmente l'Utente.
+              Il pagamento avviene tramite <strong>Stripe (PCI-DSS)</strong>. Il contratto di servizio si perfeziona nel momento in cui l'Esperto riceve e conferma la Richiesta di Contatto.
+            </p>
+            <p className="bg-gold-500/5 p-4 rounded border border-gold-500/20">
+              <strong>Fatturazione:</strong> Ai fini dell'emissione della regolare fattura, l'Utente è <strong>obbligato a fornire dati fiscali esatti</strong> (Nome, Cognome/Ragione Sociale, Indirizzo di residenza/sede, Codice Fiscale e, se applicabile, Partita IVA). Il Gestore non è responsabile per errori di fatturazione derivanti da dati errati o incompleti forniti dall'Utente.
             </p>
             <ul>
               <li><strong>Cancellazione &gt;24h</strong>: rimborso integrale.</li>
               <li><strong>Cancellazione &lt;24h</strong>: nessun rimborso (salvo forza maggiore).</li>
               <li><strong>No-show</strong>: la sessione è considerata erogata.</li>
-              <li><strong>Cancellazione Profilo</strong>: il credito residuo o i consulti non goduti non sono rimborsabili in caso di cancellazione volontaria del profilo da parte dell'Utente.</li>
+              <li><strong>Diritto di Recesso:</strong> Ai sensi dell'Art. 59 del Codice del Consumo lettera o), essendo il consulto un servizio digitale fornito immediatamente su richiesta, l'Utente <strong>rinuncia espressamente al diritto di recesso</strong> una volta che l'esecuzione del servizio è iniziata.</li>
+              <li><strong>Cancellazione Profilo</strong>: il credito residuo o i consulti non goduti non sono rimborsabili in caso di cancellazione volontaria del profilo.</li>
             </ul>
           </Section>
 
-          <Section title="Art. 6 — Natura dei servizi e DIVIETO SALUTE/GRAVIDANZE">
+          <Section title="Art. 6 — Natura dei servizi e DIVIETI (Salute/Occultismo)">
             <p>
-              I consulti sono offerte a scopo di intrattenimento e crescita interiore. Ogni consulto avviene sotto la piena responsabilità dell'utente.
+              I consulti sono offerte a scopo di intrattenimento e crescita interiore. <strong>Obbligo di Mezzi, non di Risultato:</strong> Valeria Di Pace garantisce la massima diligenza e professionalità nello svolgimento del consulto, ma non può garantire la realizzazione delle previsioni né il verificarsi di eventi futuri.
             </p>
-            <div className="bg-red-500/10 border-l-4 border-red-500 p-5 my-6 backdrop-blur-sm">
-              <p className="text-white font-bold mb-2 uppercase tracking-tight">DIVIETO ASSOLUTO DI CONSULTA:</p>
-              <p className="text-white/85 leading-relaxed">
-                È tassativamente vietato richiedere consulti riguardanti temi di <strong>salute, gravidanze, fertilità, interventi medici o psicologici clinici</strong>. Valeria Di Pace non effettua diagnosi né previsioni su decorsi medici di alcun tipo. Qualsiasi richiesta in tal senso comporterà l'<strong>interruzione immediata</strong> della sessione senza diritto di rimborso. Per tali questioni, l'utente è tenuto a rivolgersi esclusivamente a personale medico qualificato.
+            <div className="bg-red-500/10 border-l-4 border-red-500 p-5 my-6 backdrop-blur-sm space-y-4">
+              <div>
+                <p className="text-white font-bold mb-1 uppercase tracking-tight text-xs">Divieto Salute e Medicina:</p>
+                <p className="text-white/85 text-sm leading-relaxed">
+                  È tassativamente vietato richiedere consulti su salute, gravidanze, fertilità o interventi medici. Valeria Di Pace non effettua diagnosi né previsioni su decorsi medici.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-red-500/20">
+                <p className="text-white font-bold mb-1 uppercase tracking-tight text-xs">Divieto Pratiche Occulte:</p>
+                <p className="text-white/85 text-sm leading-relaxed">
+                  È vietato richiedere o eseguire rituali di <strong>magia nera, malocchi, stregoneria</strong> o qualsiasi pratica volta a danneggiare terzi o influenzare il libero arbitrio altrui.
+                </p>
+              </div>
+              <p className="text-red-400 text-xs font-bold italic pt-2">
+                La violazione comporta l'interruzione immediata della sessione senza diritto di rimborso.
               </p>
             </div>
           </Section>
@@ -136,12 +151,12 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="Art. 10 — Deontologia e Condizioni Professionali">
+          <Section title="Art. 10 — Deontologia e Valore Probatorio">
             <p>
-              La Piattaforma è governata da principi di correttezza e buona fede. Valeria Di Pace si impegna a non fornire consulenze che possano arrecare danno agli Utenti.
+              La Piattaforma è governata da principi di correttezza e buona fede. Valeria Di Pace ha il dovere deontologico di sospendere il servizio in caso di evidente vulnerabilità psicologica dell'Utente.
             </p>
-            <p className="bg-gold-500/5 p-4 rounded border-l-2 border-gold-500/50">
-              <strong>Vulnerabilità:</strong> Qualora l'Utente mostri evidenti segni di vulnerabilità psicologica, instabilità o dipendenza dal consulto, Valeria Di Pace ha il dovere deontologico di interrompere o sospendere il servizio, invitando l'Utente a rivolgersi a canali di supporto adeguati.
+            <p className="bg-white/5 p-4 rounded border border-white/10 text-xs italic text-white/50">
+              <strong>Valore Probatorio:</strong> In caso di controversia, i log di connessione, i tabulati telefonici e i metadati della sessione (durata, orario) registrati dai sistemi del Gestore sono considerati <strong>piena e definitiva prova legale</strong> dell'avvenuta prestazione del servizio.
             </p>
             <p>
               I presenti Termini sono regolati dalla <strong>legge italiana</strong>. Qualsiasi controversia sarà devoluta alla competenza del <strong>Foro di Napoli</strong>.
