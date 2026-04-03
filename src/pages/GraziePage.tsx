@@ -17,18 +17,18 @@ export default function GraziePage() {
           transition={{ duration: 0.5, delay: 0.2, type: 'spring' }}
           className="text-7xl mb-6"
         >
-          🔮
+          ✨
         </motion.div>
 
         {/* Heading */}
         <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
-          Pagamento <span className="gold-text">ricevuto!</span>
+          La Magia è <span className="gold-text">pronta!</span>
         </h1>
 
         <p className="text-white/60 text-lg mb-8 leading-relaxed">
-          Grazie per aver prenotato il tuo consulto con Valeria.
+          Grazie della tua fiducia, ricarica andata a buon fine.
           <br />
-          Riceverai una conferma via email entro pochi minuti.
+          I tuoi Crediti (CR) sono stati versati istantaneamente nel tuo Wallet.
         </p>
 
         {/* Info box */}
@@ -36,38 +36,35 @@ export default function GraziePage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mystical-card text-left mb-8 space-y-3"
+          className="mystical-card text-left mb-8 space-y-4"
         >
+          <div className="flex items-start gap-3">
+            <span className="text-gold-400 text-lg">⏳</span>
+            <p className="text-white/60 text-sm">
+              I tuoi crediti <strong className="text-white/80 font-medium">non hanno una data di scadenza</strong>. Conservali nel Diario e utilizzali non appena il tuo intuito ti chiamerà per un consulto.
+            </p>
+          </div>
           <div className="flex items-start gap-3">
             <span className="text-gold-400 text-lg">📅</span>
             <p className="text-white/60 text-sm">
-              Valeria ti contatterà al numero che hai indicato per confermare data e orario.
+              Dalla Dashboard, ora potrai scegliere con un clic il giorno e l'ora che preferisci e bloccare l'appuntamento <strong className="text-white/80 font-medium">senza doverlo pagare una seconda volta</strong>.
             </p>
           </div>
           <div className="flex items-start gap-3">
-            <span className="text-gold-400 text-lg">📞</span>
+            <span className="text-gold-400 text-lg">🛡️</span>
             <p className="text-white/60 text-sm">
-              Il consulto avverrà via telefono o videochiamata — a tua scelta.
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="text-gold-400 text-lg">✉️</span>
-            <p className="text-white/60 text-sm">
-              Per qualsiasi necessità scrivi a{' '}
-              <a href="mailto:info@nonsolotarocchi.it" className="text-gold-400 hover:underline">
-                info@nonsolotarocchi.it
-              </a>
+              Il nostro sistema tutela te e Valeria: puoi disdire o spostare il consulto autonomamente <strong className="text-white/80 font-medium">se mancano almeno 24 ore</strong>, e i crediti ti torneranno sempre in tasca.
             </p>
           </div>
         </motion.div>
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/" className="btn-gold">
-            Torna alla homepage
+          <Link to="/dashboard" className="btn-gold">
+            Torna al tuo Diario
           </Link>
-          <Link to="/registrati" className="btn-outline">
-            Crea il tuo Diario
+          <Link to="/wallet" className="btn-outline">
+            Rivedi il tuo saldo
           </Link>
         </div>
       </motion.div>
