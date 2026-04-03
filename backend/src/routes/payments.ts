@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { Router, raw } from 'express'
+import { Router, raw, json } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
 import { requireClerkAuth, clerkClient } from '../middleware/clerkAuth.js'
@@ -173,7 +173,7 @@ export function createPaymentsRouter(pool: Pool): Router {
   // Risposta:
   //   { sessionId: string, url: string }
   // -------------------------------------------------------------------------
-  r.post('/create-checkout-session', requireClerkAuth, async (req, res) => {
+  r.post('/create-checkout-session', json(), requireClerkAuth, async (req, res) => {
     const parsed = createSessionSchema.safeParse(req.body)
     if (!parsed.success) {
       res.status(400).json({ error: 'Payload non valido', details: parsed.error.flatten() })
