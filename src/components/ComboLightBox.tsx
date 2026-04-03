@@ -44,7 +44,7 @@ export default function ComboLightBox({ onSelect }: { onSelect: () => void }) {
             className="font-serif text-3xl font-bold mb-4 text-center"
             style={{ background: 'linear-gradient(135deg, #ffe066, #ffd700)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
           >
-            90€
+            90 CR
           </p>
           <p className="text-white/35 text-[10px] mb-4 text-center">
             2× Conulto breve (30') · 1× Coaching (30')

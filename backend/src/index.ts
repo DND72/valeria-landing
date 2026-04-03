@@ -8,6 +8,8 @@ import { createPaymentsRouter } from './routes/payments.js'
 import { createMeRouter } from './routes/me.js'
 import { createStaffRouter } from './routes/staff.js'
 import { createWalletRouter } from './routes/wallet.js'
+import { createBookingRouter } from './routes/booking.js'
+import { startWalletTimeoutCron } from './cron/walletTimeout.js'
 
 const app = express()
 const port = Number(process.env.PORT) || 8787
@@ -131,6 +133,7 @@ app.get('/api/public/valeria-presence', async (_req, res) => {
 app.use('/api/staff', createStaffRouter(pool))
 app.use('/api/me', createMeRouter(pool))
 app.use('/api/wallet', createWalletRouter(pool))
+app.use('/api/booking', createBookingRouter(pool))
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Non trovato' })
@@ -138,4 +141,5 @@ app.use((_req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`API in ascolto su http://0.0.0.0:${port}`)
+  startWalletTimeoutCron()
 })

@@ -42,7 +42,7 @@ export default function ComboFullBox({ onSelect }: { onSelect: () => void }) {
             className="font-serif text-3xl font-bold mb-4 text-center"
             style={{ background: 'linear-gradient(135deg, #6ee7b7, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
           >
-            160€
+            160 CR
           </p>
           <p className="text-white/35 text-[10px] mb-4 text-center">
             2× Consulto completo (60') · 1× Coaching (60')

@@ -64,6 +64,11 @@ export default function Dashboard() {
   const [taxLegalChecked, setTaxLegalChecked] = useState(false)
   const [taxMessage, setTaxMessage] = useState<string | null>(null)
 
+  // Booking Flow tramite Link Monouso Calendly
+  const [bookingUrl, setBookingUrl] = useState<string | null>(null)
+  const [bookingLoading, setBookingLoading] = useState(false)
+  const [bookingErr, setBookingErr] = useState<string | null>(null)
+
   // Stato Legale e Bonus
   const [ageStatus, setAgeStatus] = useState<{
     ageVerified: boolean;
@@ -113,6 +118,8 @@ export default function Dashboard() {
 
   function selectOfferCategory(cat: OfferCategory) {
     setOfferCategory(cat)
+    setBookingUrl(null)
+    setBookingErr(null)
     setSelectedConsult((prev) => {
       if (!prev) return null
       return consultOfferCategory(prev) === cat ? prev : null
@@ -614,6 +621,8 @@ export default function Dashboard() {
                         className="btn-gold text-sm px-4 py-2.5 inline-flex items-center justify-center gap-2 w-full mt-auto"
                         onClick={() => {
                           setSelectedConsult(c.kind)
+                          setBookingUrl(null)
+                          setBookingErr(null)
                           window.setTimeout(() => {
                             calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                           }, 80)
@@ -641,24 +650,75 @@ export default function Dashboard() {
               transition={{ duration: 0.6, delay: 0.35 }}
               className="mb-8 scroll-mt-28 relative z-30 isolate"
             >
-              <h2 className="font-serif text-xl font-bold text-white mb-1">3) Scegli data e ora su Calendly</h2>
+              <h2 className="font-serif text-xl font-bold text-white mb-1">3) Scegli data e ora</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
-                Calendly mostra le disponibilità per il tipo di consulto scelto al punto 2. Al termine partirà il
-                pagamento sicuro tramite <strong className="text-white/55">Stripe</strong>.
+                I crediti vengono momentaneamente bloccati dal Wallet e si trasformano nel tuo appuntamento fisso.
               </p>
               <PrivacySealNote className="mb-4 max-w-2xl" />
-              <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)]">
-                {selectedConsult ? (
-                  <CalendlyEmbed
-                    key={selectedConsult}
-                    url={calendlyUrlForConsult(selectedConsult)}
-                    minHeight={700}
-                    prefillName={user.fullName || firstName}
-                    prefillEmail={user.primaryEmailAddress?.emailAddress || ''}
-                  />
-                ) : (
+              <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)] bg-[#0d1627] min-h-[400px]">
+                {selectedConsult && !bookingUrl && (
+                  <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-[400px]">
+                     <span className="text-4xl shadow-gold shadow-lg rounded-full mb-4">💳</span>
+                     <h3 className="text-xl text-white font-serif mb-2">Sei a un passo dal Calendario</h3>
+                     <p className="text-white/50 text-sm mb-6 max-w-sm">Per aprire il calendario Calendly e scegliere l'orario, l'app prima verificherà ed impegnerà i Crediti (CR) necessari dal tuo Wallet.</p>
+                     
+                     {bookingErr && (
+                       <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-md text-sm mb-5">
+                         {bookingErr}
+                       </div>
+                     )}
+
+                     <div className="flex flex-col sm:flex-row gap-3">
+                       <button
+                         disabled={bookingLoading}
+                         onClick={async () => {
+                           setBookingLoading(true)
+                           setBookingErr(null)
+                           try {
+                             const res = await apiJson<{ bookingUrl: string }>(getToken, '/api/booking/start', {
+                               method: 'POST',
+                               body: JSON.stringify({ consultKind: selectedConsult })
+                             })
+                             setBookingUrl(res.bookingUrl)
+                           } catch (err: any) {
+                             setBookingErr(err.message || "Errore sconosciuto durante la prenotazione.")
+                           } finally {
+                             setBookingLoading(false)
+                           }
+                         }}
+                         className="btn-gold px-8 py-2.5 text-sm"
+                       >
+                         {bookingLoading ? 'Verifica disponibilità Wallet...' : 'Impegna Crediti ed Apri Calendario'}
+                       </button>
+                       {bookingErr && bookingErr.toLowerCase().includes('saldo') && (
+                         <Link to="/wallet" className="btn-outline px-6 py-2.5 text-sm whitespace-nowrap">
+                           Ricarica Saldo
+                         </Link>
+                       )}
+                     </div>
+                     <p className="text-white/30 text-[10px] mt-6 max-w-lg">Hai 60 minuti dal momento in cui clicchi qui per completare la scelta sulla data Calendly, poi i crediti verranno sbloccati ed in automatico torneranno nei 'Disponibili'.</p>
+                  </div>
+                )}
+                {bookingUrl && (
+                  <div className="w-full h-full relative">
+                    <button 
+                       className="absolute top-2 right-4 z-50 text-xs bg-dark-500/80 px-3 py-1 rounded text-white/50 hover:text-white transition-colors"
+                       onClick={() => setBookingUrl(null)}
+                    >
+                      Annulla e Chiudi
+                    </button>
+                    <CalendlyEmbed
+                      key={selectedConsult}
+                      url={bookingUrl}
+                      minHeight={700}
+                      prefillName={user.fullName || firstName}
+                      prefillEmail={user.primaryEmailAddress?.emailAddress || ''}
+                    />
+                  </div>
+                )}
+                {!selectedConsult && (
                   <div
-                    className="flex min-h-[min(420px,70vh)] flex-col items-center justify-center gap-3 px-6 py-16 text-center text-white/45"
+                    className="flex min-h-[400px] flex-col items-center justify-center gap-3 px-6 py-16 text-center text-white/45"
                     style={{ background: 'linear-gradient(180deg, rgba(13,27,42,0.5) 0%, rgba(6,6,8,0.9) 100%)' }}
                   >
                     <span className="text-3xl" aria-hidden>

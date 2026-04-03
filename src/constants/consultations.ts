@@ -16,34 +16,38 @@ export type ConsultChoice = {
   duration: string
   priceLabel: string
   icon: string
+  costCredits: number
 }
 
 export const CONSULT_CHOICES: ConsultChoice[] = [
-  { kind: 'breve', name: 'Consulto breve', duration: '30 min · Telefonico', priceLabel: '30€', icon: '🌙' },
-  { kind: 'online', name: 'Consulto online', duration: '30 min · Videochiamata', priceLabel: '40€', icon: '🌐' },
-  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Telefonico', priceLabel: '50€', icon: '✨' },
+  { kind: 'breve', name: 'Consulto breve', duration: '30 min · Telefonico', priceLabel: '30 CR', icon: '🌙', costCredits: 30 },
+  { kind: 'online', name: 'Consulto online', duration: '30 min · Videochiamata', priceLabel: '40 CR', icon: '🌐', costCredits: 40 },
+  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Telefonico', priceLabel: '50 CR', icon: '✨', costCredits: 50 },
   {
     kind: 'coaching_intro',
     name: 'Coaching · Conoscenza',
     duration: '10 min · Video o telefono',
     priceLabel: 'Gratis',
     icon: '🌱',
+    costCredits: 0
   },
   {
     kind: 'coaching_60',
     name: 'Coaching · Sessione',
     duration: '60 min · Video o telefono',
-    priceLabel: '80€',
+    priceLabel: '80 CR',
     icon: '🌿',
+    costCredits: 80
   },
   {
     kind: 'coaching_pack5',
     name: 'Coaching · 5 sedute',
     duration: '5 appuntamenti separati · 1 h ciascuno',
-    priceLabel: '60€ / seduta',
+    priceLabel: '300 CR (60/sed)',
     icon: '🌳',
+    costCredits: 300
   },
-  { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Omaggio', icon: '🎁' },
+  { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Free', icon: '🎁', costCredits: 0 },
 ]
 
 /** Settore offerta nel Diario cliente: letture vs coaching/crescita personale vs combo. */

@@ -1,0 +1,65 @@
+import { calendlyFetch, calendlyPost } from './calendlyClient.js'
+import { CONSULT_META, type ConsultKind } from './consultPrices.js'
+
+let myUserUri: string | null = null
+const eventTypeCache: Record<string, string> = {}
+
+/** 
+ * Cerca l'evento nell'account Calendly in base a una keyword (slug)
+ * e genera un Single-Use Link (valido solo per 1 prenotazione).
+ */
+export async function getSingleUseCalendlyLink(token: string, kind: ConsultKind): Promise<string> {
+  const targetSlug = mapKindToCalendlySlug(kind)
+
+  if (!myUserUri) {
+    const me = (await calendlyFetch('/users/me', token)) as { resource: { uri: string } }
+    myUserUri = me.resource.uri
+  }
+
+  // Fetch / update cache se non c'è match
+  if (!eventTypeCache[targetSlug]) {
+    const typesRes = (await calendlyFetch(`/event_types?user=${myUserUri}`, token)) as {
+      collection: { uri: string; slug: string }[]
+    }
+    
+    for (const et of typesRes.collection) {
+      if (et.slug) {
+        eventTypeCache[et.slug] = et.uri
+      }
+    }
+  }
+
+  const ownerUri = eventTypeCache[targetSlug]
+  if (!ownerUri) {
+    throw new Error(`Calendly: Evento con slug '${targetSlug}' non trovato. L'hai creato su Calendly?`)
+  }
+
+  // Genera link monouso
+  const result = (await calendlyPost('/scheduling_links', token, {
+    max_event_count: 1,
+    owner: ownerUri,
+    owner_type: 'EventType',
+  })) as { resource: { booking_url: string } }
+
+  return result.resource.booking_url
+}
+
+/** 
+ * Mappa logica tra i consulti di Valeria e gli slug finali dei suoi URL Calendly.
+ * (es. https://calendly.com/valeriadipace/breve -> slug "breve")
+ */
+function mapKindToCalendlySlug(kind: ConsultKind): string {
+  // Valeria dovrà assicurarsi che i permalinks su Calendly abbiano esattamente queste estensioni
+  const map: Record<ConsultKind, string> = {
+    breve: 'breve',
+    online: 'online',
+    completo: 'completo',
+    coaching_intro: 'coaching-intro',
+    coaching_60: 'coaching-60',
+    coaching_pack5: 'coaching-pack5',
+    combo_light: 'combo-light',
+    combo_full: 'combo-full',
+    free: 'free',
+  }
+  return map[kind]
+}

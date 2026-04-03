@@ -141,7 +141,26 @@ export function createCalendlyWebhookHandler(pool: Pool): RequestHandler {
     const lowerName = (fields.eventName ?? '').toLowerCase()
     const isFree = lowerName.includes('7 min') || lowerName.includes('conoscenza') || lowerName.includes('10 min')
 
+    // Leggiamo un nostro identificativo personalizzato (se passato dalla route booking)
+    const rootBody = body as any
+    const bookingId = rootBody?.payload?.tracking?.salesforce_uuid || null
+
     try {
+      if (bookingId && eventType.includes('created')) {
+        // Flusso link generato tramite wallet pre-autorizzato
+        await pool.query(
+          `UPDATE consults SET
+            calendly_event_uri = $1, calendly_invitee_uri = $2, status = $3,
+            meeting_join_url = $4, meeting_provider = $5, invitee_email = $6, invitee_name = $7,
+            start_at = $8, end_at = $9, calendly_event_name = $10, raw_payload = $11::jsonb, updated_at = now()
+           WHERE stripe_session_id = $12 AND status = 'pending_booking_calendly'`,
+           [fields.eventUri, fields.inviteeUri, 'scheduled', joinUrl, provider, fields.inviteeEmail, fields.inviteeName, fields.startAt, fields.endAt, fields.eventName, JSON.stringify(body), bookingId]
+        )
+        res.status(200).json({ ok: true, matched_wallet: true })
+        return
+      }
+
+      // Old flow o Cancellazione Calendly
       await pool.query(
         `INSERT INTO consults (
           calendly_event_uri, calendly_invitee_uri, clerk_user_id, status,
