@@ -655,6 +655,7 @@ export default function Dashboard() {
                                 : 'linear-gradient(180deg, #fffde0 0%, #fff5a0 55%, #ffdd00 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
+                            textShadow: 'none',
                           }}
                         >
                           {c.priceLabel}
