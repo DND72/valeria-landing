@@ -40,7 +40,7 @@ export default function ComboFullBox({ onSelect }: { onSelect: () => void }) {
           <p className="text-white/80 font-medium mb-1 text-center text-sm">Prenota la tua combo full</p>
           <p
             className="font-serif text-3xl font-bold mb-4 text-center"
-            style={{ background: 'linear-gradient(135deg, #f5a623 0%, #ffe066 50%, #e07b00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+            style={{ background: 'linear-gradient(135deg, #ffff00 0%, #ffcc00 50%, #ff4d00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
           >
             1,15 €/min
           </p>
