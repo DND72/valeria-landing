@@ -90,12 +90,12 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         invMap.set(p.email_normalized, p.last_invoiced_at)
       }
 
-      const walletsRows = await pool.query<{ clerk_user_id: string; balance: number; locked_balance: number }>(
-        `SELECT clerk_user_id, balance, locked_balance FROM wallets`
+      const walletsRows = await pool.query<{ clerk_user_id: string; balance_available: number; balance_locked: number }>(
+        `SELECT clerk_user_id, balance_available, balance_locked FROM wallets`
       )
       const walletsMap = new Map<string, { balance: number; lockedBalance: number }>()
       for (const w of walletsRows.rows) {
-        walletsMap.set(w.clerk_user_id, { balance: Number(w.balance), lockedBalance: Number(w.locked_balance) })
+        walletsMap.set(w.clerk_user_id, { balance: Number(w.balance_available), lockedBalance: Number(w.balance_locked) })
       }
 
       type Row = {
@@ -262,11 +262,11 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       
       let walletInfo: { balance: number; lockedBalance: number } | null = null
       if (clrkIdToUse && !clrkIdToUse.startsWith('staff-manual-')) {
-        const wRes = await pool.query(`SELECT balance, locked_balance FROM wallets WHERE clerk_user_id = $1`, [clrkIdToUse])
+        const wRes = await pool.query(`SELECT balance_available, balance_locked FROM wallets WHERE clerk_user_id = $1`, [clrkIdToUse])
         if (wRes.rows.length > 0) {
           walletInfo = {
-            balance: Number(wRes.rows[0].balance),
-            lockedBalance: Number(wRes.rows[0].locked_balance)
+            balance: Number(wRes.rows[0].balance_available),
+            lockedBalance: Number(wRes.rows[0].balance_locked)
           }
         }
       }
@@ -452,23 +452,21 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         await client.query('BEGIN')
         
         const walletQuery = await client.query(`
-          INSERT INTO wallets (clerk_user_id, balance, locked_balance, created_at, updated_at)
+          INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, created_at, updated_at)
           VALUES ($1, $2, 0, now(), now())
           ON CONFLICT (clerk_user_id) DO UPDATE SET 
-            balance = wallets.balance + $2,
+            balance_available = wallets.balance_available + $2,
             updated_at = now()
-          RETURNING id, balance
+          RETURNING id, balance_available
         `, [cid, amount])
 
-        const walletId = walletQuery.rows[0].id
-
         await client.query(`
-          INSERT INTO wallet_transactions (wallet_id, sum_amount, tx_type, description, created_at)
-          VALUES ($1, $2, 'bonus', 'Bonus erogato dallo Staff', now())
-        `, [walletId, amount])
+          INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id, created_at)
+          VALUES ($1, $2, 'bonus', 'Staff Bonus', now())
+        `, [cid, amount])
 
         await client.query('COMMIT')
-        res.json({ success: true, newBalance: walletQuery.rows[0].balance })
+        res.json({ success: true, newBalance: walletQuery.rows[0].balance_available })
       } catch (err) {
         await client.query('ROLLBACK')
         throw err
