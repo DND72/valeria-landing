@@ -33,6 +33,8 @@ export const CALENDLY_BOOKING_URL = envBooking(DEFAULT_BOOKING)
 /** Calendly per tipo di consulto — dopo la scelta dalla card dorata. */
 export function calendlyUrlForConsult(kind: ConsultKind): string {
   switch (kind) {
+    case 'rapido':
+      return envTrim('VITE_CALENDLY_CONSULTO_RAPIDO') ?? CALENDLY_BOOKING_URL
     case 'breve':
       return envTrim('VITE_CALENDLY_CONSULTO_BREVE') ?? CALENDLY_BOOKING_URL
     case 'online':
@@ -41,6 +43,8 @@ export function calendlyUrlForConsult(kind: ConsultKind): string {
       return envTrim('VITE_CALENDLY_CONSULTO_COMPLETO') ?? CALENDLY_BOOKING_URL
     case 'coaching_intro':
       return envTrim('VITE_CALENDLY_COACHING_INTRO') ?? CALENDLY_BOOKING_URL
+    case 'coaching_30':
+      return envTrim('VITE_CALENDLY_COACHING_30') ?? CALENDLY_BOOKING_URL
     case 'coaching_60':
       return envTrim('VITE_CALENDLY_COACHING_60') ?? CALENDLY_BOOKING_URL
     case 'coaching_pack5':
@@ -51,5 +55,7 @@ export function calendlyUrlForConsult(kind: ConsultKind): string {
       return envTrim('VITE_CALENDLY_COMBO_FULL') ?? CALENDLY_BOOKING_URL
     case 'free':
       return envTrim('VITE_CALENDLY_FREE') ?? DEFAULT_FREE
+    default:
+      return CALENDLY_BOOKING_URL
   }
 }
