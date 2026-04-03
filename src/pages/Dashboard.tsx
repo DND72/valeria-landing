@@ -626,7 +626,7 @@ export default function Dashboard() {
                             background:
                               c.kind === 'free'
                                 ? 'linear-gradient(135deg, #86efac, #22c55e)'
-                                : 'linear-gradient(135deg, #fffde0, #fff5a0, #ffcc00)',
+                                : 'linear-gradient(135deg, #f5a623 0%, #ffe066 50%, #e07b00 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                           }}
