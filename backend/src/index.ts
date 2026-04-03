@@ -7,6 +7,7 @@ import { createCalendlyWebhookHandler } from './routes/calendlyWebhook.js'
 import { createPaymentsRouter } from './routes/payments.js'
 import { createMeRouter } from './routes/me.js'
 import { createStaffRouter } from './routes/staff.js'
+import { createWalletRouter } from './routes/wallet.js'
 
 const app = express()
 const port = Number(process.env.PORT) || 8787
@@ -129,6 +130,7 @@ app.get('/api/public/valeria-presence', async (_req, res) => {
 
 app.use('/api/staff', createStaffRouter(pool))
 app.use('/api/me', createMeRouter(pool))
+app.use('/api/wallet', createWalletRouter(pool))
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Non trovato' })

@@ -3,7 +3,7 @@ import { Router, raw } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
 import { requireClerkAuth, clerkClient } from '../middleware/clerkAuth.js'
-import { CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
+import { TOPUP_META, isValidTopUpKind } from '../lib/walletPrices.js'
 
 // ---------------------------------------------------------------------------
 // Stripe client — singleton lazy per evitare errori di startup senza chiave
@@ -18,7 +18,7 @@ function getStripe(): Stripe {
 // Validazione body per la creazione della sessione
 // ---------------------------------------------------------------------------
 const createSessionSchema = z.object({
-  consultKind: z.string().min(1),
+  topUpKind: z.string().min(1),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
 })
@@ -180,18 +180,18 @@ export function createPaymentsRouter(pool: Pool): Router {
       return
     }
 
-    const { consultKind, successUrl, cancelUrl } = parsed.data
+    const { topUpKind, successUrl, cancelUrl } = parsed.data
     const userId = req.auth?.userId
 
-    if (!isValidConsultKind(consultKind)) {
-      res.status(400).json({ error: `Tipo di consulto non valido: ${consultKind}` })
+    if (!isValidTopUpKind(topUpKind)) {
+      res.status(400).json({ error: `Pacchetto ricarica non valido: ${topUpKind}` })
       return
     }
 
-    const meta = CONSULT_META[consultKind]
+    const meta = TOPUP_META[topUpKind]
 
-    if (meta.isFree) {
-      res.status(400).json({ error: 'Questo consulto è gratuito e non richiede pagamento.', isFree: true })
+    if (meta.amountCents === 0) {
+      res.status(400).json({ error: 'Errore: pacchetto gratuito', isFree: true })
       return
     }
 
@@ -243,9 +243,9 @@ export function createPaymentsRouter(pool: Pool): Router {
           },
         ],
 
-        // Metadati che passano al webhook per creare il record consulto
+        // Metadati che passano al webhook per accreditare i fondi
         metadata: {
-          consultKind,
+          topUpKind,
           clerkUserId: userId ?? '',
           customerEmail: customerEmail ?? '',
         },
@@ -295,14 +295,15 @@ export function createPaymentsRouter(pool: Pool): Router {
 
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId)
-      const consultKind = session.metadata?.consultKind ?? null
-      const meta = consultKind && isValidConsultKind(consultKind) ? CONSULT_META[consultKind] : null
+      const topUpKind = session.metadata?.topUpKind ?? null
+      const meta = topUpKind && isValidTopUpKind(topUpKind) ? TOPUP_META[topUpKind] : null
 
       res.json({
         status: session.payment_status,          // 'paid' | 'unpaid' | 'no_payment_required'
         paymentStatus: session.payment_status,
-        consultKind,
-        consultName: meta?.name ?? null,
+        topUpKind,
+        topUpName: meta?.name ?? null,
+        credits: meta?.credits ?? 0,
         amountTotal: session.amount_total,        // centesimi
         currency: session.currency,
         customerEmail: session.customer_email,
@@ -377,43 +378,46 @@ export function createPaymentsRouter(pool: Pool): Router {
           return
         }
 
-        const consultKind    = session.metadata?.consultKind    ?? null
+        const topUpKind      = session.metadata?.topUpKind      ?? null
         const clerkUserId    = session.metadata?.clerkUserId    || null
-        const customerEmail  = session.metadata?.customerEmail  || session.customer_email || null
         const stripeSessionId = session.id
-        const paymentIntentId =
-          typeof session.payment_intent === 'string'
-            ? session.payment_intent
-            : (session.payment_intent as Stripe.PaymentIntent | null)?.id ?? null
-        const amountTotal = session.amount_total ?? null
 
-        // 1. Crea / aggiorna il record consulto
-        try {
-          await pool.query(
-            `INSERT INTO consults (
-               stripe_session_id,
-               stripe_payment_intent,
-               consult_kind,
-               amount_cents,
-               clerk_user_id,
-               invitee_email,
-               status,
-               is_free_consult,
-               updated_at
-             ) VALUES ($1, $2, $3, $4, $5, $6, 'pending_booking', false, now())
-             ON CONFLICT (stripe_session_id) DO UPDATE SET
-               stripe_payment_intent = COALESCE(EXCLUDED.stripe_payment_intent, consults.stripe_payment_intent),
-               clerk_user_id         = COALESCE(EXCLUDED.clerk_user_id,         consults.clerk_user_id),
-               invitee_email         = COALESCE(EXCLUDED.invitee_email,         consults.invitee_email),
-               amount_cents          = COALESCE(EXCLUDED.amount_cents,           consults.amount_cents),
-               updated_at            = now()`,
-            [stripeSessionId, paymentIntentId, consultKind, amountTotal, clerkUserId, customerEmail]
-          )
-          console.log(`[stripe webhook] ✅ Consulto registrato — session: ${stripeSessionId}, kind: ${consultKind}`)
-        } catch (e) {
-          console.error('[stripe webhook] Errore salvataggio consulto:', e)
-          res.status(500).json({ error: 'Errore salvataggio consulto' })
-          return
+
+        // 1. Aggiungi i crediti al wallet dell'utente
+        if (clerkUserId && topUpKind && isValidTopUpKind(topUpKind)) {
+          const meta = TOPUP_META[topUpKind]
+          const creditsToAdd = meta.credits
+
+          try {
+            await pool.query('BEGIN')
+            
+            // Upsert sul wallet
+            await pool.query(
+              `INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, updated_at)
+               VALUES ($1, $2, 0, now())
+               ON CONFLICT (clerk_user_id) DO UPDATE SET
+                 balance_available = wallets.balance_available + EXCLUDED.balance_available,
+                 updated_at = now()`,
+              [clerkUserId, creditsToAdd]
+            )
+
+            // Registra la transazione di tipo top_up
+            await pool.query(
+              `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id, created_at)
+               VALUES ($1, $2, 'top_up', $3, now())`,
+              [clerkUserId, creditsToAdd, stripeSessionId]
+            )
+
+            await pool.query('COMMIT')
+            console.log(`[stripe webhook] ✅ Ricarica completata — session: ${stripeSessionId}, \n  +${creditsToAdd} crediti / pkg: ${topUpKind} / user: ${clerkUserId}`)
+          } catch (e) {
+            await pool.query('ROLLBACK')
+            console.error('[stripe webhook] Errore inserimento crediti:', e)
+            res.status(500).json({ error: 'Errore inserimento crediti' })
+            return
+          }
+        } else {
+           console.warn(`[stripe webhook] ⚠️ Ignorato accredito, sessionId: ${stripeSessionId} manca userID o topUpKind.`)
         }
 
         // 2. Estrae e salva i dati di fatturazione (non bloccante per il webhook)
@@ -427,18 +431,8 @@ export function createPaymentsRouter(pool: Pool): Router {
       // viene confermato in un secondo momento.
       // -----------------------------------------------------------------------
       else if (event.type === 'payment_intent.succeeded') {
-        const pi = event.data.object as Stripe.PaymentIntent
-        try {
-          await pool.query(
-            `UPDATE consults
-             SET status = 'pending_booking', updated_at = now()
-             WHERE stripe_payment_intent = $1
-               AND status IN ('scheduled', 'pending_payment')`,
-            [pi.id]
-          )
-        } catch (e) {
-          console.error('[stripe webhook] Errore aggiornamento stato da payment_intent.succeeded:', e)
-        }
+        // Nessun'azione sul payment_intent perchè il wallet viene aggiornato sulla checkout.session.completed 
+        // che copre la quasi totalità degli use cases. Per SEPA delayed, stripe solleverebbe config di default.
       }
 
       // -----------------------------------------------------------------------
