@@ -1,6 +1,6 @@
 import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState, useCallback } from 'react'
 import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom'
 import CalendlyEmbed from '../components/CalendlyEmbed'
 import LegalDeclarationModal from '../components/LegalDeclarationModal'
@@ -9,7 +9,6 @@ import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
 import ComboLightBox from '../components/ComboLightBox'
 import ComboFullBox from '../components/ComboFullBox'
-import { calendlyUrlForConsult } from '../constants/calendly'
 import {
   CONSULT_CHOICES,
   consultOfferCategory,
@@ -87,6 +86,8 @@ export default function Dashboard() {
     start_at: string | null
     end_at: string | null
     created_at: string
+    cost_credits?: number
+    reschedule_count?: number
   }
   const [myConsults, setMyConsults] = useState<MyConsultRow[] | null>(null)
   const [myConsultsLoading, setMyConsultsLoading] = useState(false)
@@ -126,25 +127,40 @@ export default function Dashboard() {
     })
   }
 
-  useEffect(() => {
+  const loadMyConsults = useCallback(async () => {
     if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
     if (!getApiBaseUrl()) return
-    let cancelled = false
     setMyConsultsLoading(true)
-    ;(async () => {
-      try {
-        const r = await apiJson<{ consults: MyConsultRow[] }>(getToken, '/api/me/consults')
-        if (!cancelled) setMyConsults(r.consults ?? [])
-      } catch {
-        if (!cancelled) setMyConsults([])
-      } finally {
-        if (!cancelled) setMyConsultsLoading(false)
-      }
-    })()
-    return () => {
-      cancelled = true
+    try {
+      const r = await apiJson<{ consults: MyConsultRow[] }>(getToken, '/api/me/consults')
+      setMyConsults(r.consults ?? [])
+    } catch {
+      setMyConsults([])
+    } finally {
+      setMyConsultsLoading(false)
     }
   }, [isLoaded, user, getToken])
+
+  useEffect(() => {
+    void loadMyConsults()
+  }, [loadMyConsults])
+
+  const handleConsultAction = async (id: string, action: 'cancel' | 'reschedule') => {
+    try {
+      await apiJson(getToken, `/api/me/consults/${id}/action`, {
+        method: 'POST',
+        body: JSON.stringify({ action })
+      })
+      if (action === 'cancel') {
+        alert("Consulto disdetto con successo. I tuoi crediti sono stati rimborsati nel Wallet.")
+      } else {
+        alert("Consulto disdetto. I tuoi crediti ti sono stati rimborsati nel Wallet. Ora seleziona la tua nuova data dal modulo in alto e completa la prenotazione.")
+      }
+      void loadMyConsults()
+    } catch (e: any) {
+      alert("Impossibile modificare il consulto: " + (e.message || "Errore sconosciuto"))
+    }
+  }
 
   // Recupero stato legale e bonus
   useEffect(() => {
@@ -889,9 +905,32 @@ export default function Dashboard() {
                             ) : null}
 
                             {isPast && c.status !== 'cancelled' && (
-                              <a href="#scegli-consulto" className="text-gold-500/70 hover:text-gold-400 text-xs hover:underline transition-colors">
+                              <a href="#scegli-consulto" className="text-gold-500/70 hover:text-gold-400 text-xs hover:underline transition-colors ml-auto">
                                 Prenota di nuovo →
                               </a>
+                            )}
+
+                            {!isPast && c.status === 'scheduled' && (
+                               <div className="flex gap-2 ml-auto">
+                                 {c.reschedule_count === 0 && (
+                                   <button 
+                                     onClick={() => {
+                                       if(window.confirm("Vuoi annullare questo consulto e riprogrammarlo in un'altra data? I tuoi crediti ti verranno istantaneamente resi e potrai usarli per sceglierne una nuova.")) handleConsultAction(c.id, 'reschedule')
+                                     }}
+                                     className="px-3 py-1.5 rounded-full border border-gold-500/30 text-gold-400 text-xs hover:bg-gold-500/10 transition-colors"
+                                   >
+                                     Sposta Data
+                                   </button>
+                                 )}
+                                 <button 
+                                   onClick={() => {
+                                     if(window.confirm("Sei sicuro di voler disdire? I tuoi crediti verranno rimborsati nel Wallet.")) handleConsultAction(c.id, 'cancel')
+                                   }}
+                                   className="px-3 py-1.5 rounded-full border border-red-500/30 text-red-400 text-xs hover:bg-red-500/10 transition-colors"
+                                 >
+                                   Disdici
+                                 </button>
+                               </div>
                             )}
                           </div>
                         </div>

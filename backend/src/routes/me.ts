@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { clerkClient, requireClerkAuth } from '../middleware/clerkAuth.js'
 import { registerMeBlogCommentRoutes } from './meBlogComments.js'
 import { registerMeReviewRoutes } from './meReviews.js'
+import { calendlyPost } from '../lib/calendlyClient.js'
 
 const taxCodeBody = z.object({
   firstName: z.string().min(1).max(200),
@@ -40,7 +41,8 @@ export function createMeRouter(pool: Pool): Router {
 
       const { rows } = await pool.query(
         `SELECT id, status, is_free_consult, meeting_join_url, meeting_provider,
-                invitee_email, invitee_name, start_at, end_at, created_at, updated_at
+                invitee_email, invitee_name, start_at, end_at, created_at, updated_at,
+                cost_credits, reschedule_count
          FROM consults
          WHERE clerk_user_id = $1
             OR ($2::text IS NOT NULL AND invitee_email IS NOT NULL
@@ -274,6 +276,92 @@ export function createMeRouter(pool: Pool): Router {
 
   registerMeBlogCommentRoutes(r, pool)
   registerMeReviewRoutes(r, pool)
+
+  r.post('/consults/:id/action', async (req, res) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+
+    const { action } = req.body as { action?: string }
+    if (action !== 'cancel' && action !== 'reschedule') {
+      res.status(400).json({ error: 'Azione non valida' })
+      return
+    }
+
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
+      
+      const { rows } = await client.query(
+        `SELECT clerk_user_id, status, calendly_invitee_uri, start_at, cost_credits, reschedule_count
+         FROM consults WHERE id = $1 FOR UPDATE`,
+        [req.params.id]
+      )
+
+      if (rows.length === 0) throw new Error('Consulto non trovato')
+      const c = rows[0]
+      if (c.clerk_user_id !== userId) throw new Error('Non autorizzato a modificare questo consulto')
+      if (c.status === 'cancelled' || c.status === 'done') throw new Error('Consulto già chiuso o cancellato')
+      if (!c.start_at) throw new Error('Appuntamento non ancora fissato sul calendario. Se vuoi disdirlo, basta chiudere e aspettare che il blocco da 60 minuti scada.')
+
+      const startDates = new Date(c.start_at)
+      const now = new Date()
+      const diffMs = startDates.getTime() - now.getTime()
+      if (diffMs < 24 * 60 * 60 * 1000) {
+         throw new Error(`Mancano meno di 24 ore all'appuntamento: non è possibile modificarlo.`)
+      }
+
+      if (action === 'reschedule' && c.reschedule_count >= 1) {
+         throw new Error('Hai già usufruito di uno spostamento per questo consulto in precedenza.')
+      }
+
+      // 1. Diciamo a Calendly di liberare lo slot di Valeria
+      if (c.calendly_invitee_uri) {
+         const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN
+         if (token) {
+           await calendlyPost(c.calendly_invitee_uri + '/cancellation', token, {
+             reason: action === 'cancel' ? "Cancellato dal cliente via sito web." : "Il cliente ha disdetto per riprogrammare con i fondi restituiti."
+           }).catch(err => console.error('[calendly cancel fail]', err))
+         }
+      }
+
+      // 2. Restituiamo i crediti locked rendendoli available, pronti per un nuovo repick
+      if (c.cost_credits > 0) {
+        await client.query(
+          `UPDATE wallets SET balance_locked = balance_locked - $1, balance_available = balance_available + $1, updated_at = now() WHERE clerk_user_id = $2`,
+          [c.cost_credits, userId]
+        )
+        await client.query(
+          `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'unlock_refund', $3)`,
+          [userId, c.cost_credits, req.params.id]
+        )
+      }
+
+      // 3. Modifichiamo consults
+      if (action === 'reschedule') {
+         await client.query(
+           `UPDATE consults SET status = 'cancelled', reschedule_count = reschedule_count + 1, updated_at = now() WHERE id = $1`,
+           [req.params.id]
+         )
+      } else {
+         await client.query(
+           `UPDATE consults SET status = 'cancelled', updated_at = now() WHERE id = $1`,
+           [req.params.id]
+         )
+      }
+
+      await client.query('COMMIT')
+      res.json({ ok: true })
+    } catch (e: any) {
+      await client.query('ROLLBACK')
+      console.error('[me action consult]', e)
+      res.status(400).json({ error: e.message || 'Errore database' })
+    } finally {
+      client.release()
+    }
+  })
 
   return r
 }

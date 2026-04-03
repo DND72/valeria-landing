@@ -235,7 +235,8 @@ export function createStaffRouter(pool: Pool): Router {
       await pool.query(`UPDATE consults SET ${sets.join(', ')} WHERE id = $${i}`, vals)
       const row = await pool.query(
         `SELECT id, clerk_user_id, calendly_event_uri, status, is_free_consult,
-                meeting_join_url, invitee_email, start_at, end_at, calendly_event_name, updated_at
+                meeting_join_url, invitee_email, start_at, end_at, calendly_event_name, updated_at,
+                cost_credits, status_billing
          FROM consults WHERE id = $1`,
         [id]
       )
@@ -260,7 +261,8 @@ export function createStaffRouter(pool: Pool): Router {
       const c = await pool.query(
         `SELECT id, clerk_user_id, calendly_event_uri, calendly_invitee_uri, status, is_free_consult,
                 meeting_join_url, meeting_provider, invitee_email, invitee_name,
-                start_at, end_at, paypal_order_id, calendly_event_name, raw_payload, created_at, updated_at
+                start_at, end_at, paypal_order_id, calendly_event_name, raw_payload, created_at, updated_at,
+                cost_credits, status_billing
          FROM consults WHERE id = $1`,
         [id]
       )
@@ -322,6 +324,130 @@ export function createStaffRouter(pool: Pool): Router {
     } catch (e) {
       console.error('[staff note]', e)
       res.status(500).json({ error: 'Errore database' })
+    }
+  })
+
+  r.post('/consults/:id/claim', async (req, res) => {
+    const id = req.params.id
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
+      
+      const { rows } = await client.query(
+         `SELECT clerk_user_id, cost_credits, status, status_billing 
+          FROM consults WHERE id = $1 FOR UPDATE`, 
+         [id]
+      )
+      
+      if (rows.length === 0) {
+        await client.query('ROLLBACK')
+        res.status(404).json({ error: 'Consulto non trovato' })
+        return
+      }
+      const consult = rows[0]
+      if (consult.status_billing === 'billed') {
+        await client.query('ROLLBACK')
+        res.status(400).json({ error: 'Fondi già incassati per questo consulto' })
+        return
+      }
+
+      if (consult.cost_credits > 0 && consult.clerk_user_id) {
+        // Scala definitivamente dai blocchi
+        await client.query(
+          `UPDATE wallets SET balance_locked = balance_locked - $1, updated_at = now() WHERE clerk_user_id = $2`,
+          [consult.cost_credits, consult.clerk_user_id]
+        )
+        // Ledger entry (costo effettivo consulto)
+        await client.query(
+          `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'staff_claim', $3)`,
+          [consult.clerk_user_id, consult.cost_credits, id]
+        )
+      }
+
+      // Evidenzia operazione terminata
+      await client.query(
+        `UPDATE consults SET status = 'done', status_billing = 'billed', updated_at = now() WHERE id = $1`,
+        [id]
+      )
+
+      await client.query('COMMIT')
+      res.json({ ok: true })
+    } catch (e) {
+      await client.query('ROLLBACK')
+      console.error('[staff claim]', e)
+      res.status(500).json({ error: 'Errore database' })
+    } finally {
+      client.release()
+    }
+  })
+
+  r.post('/consults/:id/no-show', async (req, res) => {
+    const id = req.params.id
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
+      
+      const { rows } = await client.query(
+         `SELECT clerk_user_id, cost_credits, status, status_billing 
+          FROM consults WHERE id = $1 FOR UPDATE`, 
+         [id]
+      )
+      
+      if (rows.length === 0) {
+        await client.query('ROLLBACK')
+        res.status(404).json({ error: 'Consulto non trovato' })
+        return
+      }
+      const consult = rows[0]
+      if (consult.status_billing === 'billed') {
+        await client.query('ROLLBACK')
+        res.status(400).json({ error: 'Fondi già processati per questo consulto' })
+        return
+      }
+
+      if (consult.cost_credits > 0 && consult.clerk_user_id) {
+        // Penale 5 crediti per il tempo perso di Valeria
+        const penale = 5
+        const toRefund = consult.cost_credits - penale > 0 ? consult.cost_credits - penale : 0
+        const effectivePenale = consult.cost_credits - toRefund
+        
+        await client.query(
+          `UPDATE wallets SET 
+             balance_locked = balance_locked - $1, 
+             balance_available = balance_available + $2,
+             updated_at = now() 
+           WHERE clerk_user_id = $3`,
+          [consult.cost_credits, toRefund, consult.clerk_user_id]
+        )
+        // Ledger entry 1: refund remainder
+        if (toRefund > 0) {
+          await client.query(
+            `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'unlock_refund', $3)`,
+            [consult.clerk_user_id, toRefund, id]
+          )
+        }
+        // Ledger entry 2: penalty
+        if (effectivePenale > 0) {
+           await client.query(
+            `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'no_show_penalty', $3)`,
+            [consult.clerk_user_id, effectivePenale, id]
+          )
+        }
+      }
+
+      await client.query(
+        `UPDATE consults SET status = 'cancelled', status_billing = 'billed', updated_at = now() WHERE id = $1`,
+        [id]
+      )
+
+      await client.query('COMMIT')
+      res.json({ ok: true })
+    } catch (e) {
+      await client.query('ROLLBACK')
+      console.error('[staff no-show]', e)
+      res.status(500).json({ error: 'Errore database' })
+    } finally {
+      client.release()
     }
   })
 

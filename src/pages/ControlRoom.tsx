@@ -68,6 +68,8 @@ type ConsultRow = {
   created_at: string
   updated_at: string
   service_kind?: ServiceKind
+  cost_credits?: number
+  status_billing?: string
 }
 
 function badgeClassService(kind: ServiceKind): string {
@@ -603,6 +605,11 @@ export default function ControlRoom() {
                         {labelService(c.service_kind ?? 'unknown')}
                       </span>
                       <span className="text-[10px] text-white/35">{formatWhen(c.start_at)}</span>
+                      {c.status_billing === 'billed' && (
+                        <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/30">
+                          Incassato
+                        </span>
+                      )}
                     </div>
                     {c.invitee_email && clientMixByEmail.get(c.invitee_email.toLowerCase().trim()) === 'entrambi' && (
                       <p className="text-[10px] text-gold-500/85 mt-1.5">Percorso misto (tarocchi + coaching)</p>
@@ -720,6 +727,43 @@ export default function ControlRoom() {
                   >
                     Salva stato
                   </button>
+
+                  {(detailConsult.status_billing !== 'billed' && detailConsult.cost_credits && detailConsult.cost_credits > 0) ? (
+                    <>
+                       <button
+                         type="button"
+                         className="btn-gold text-sm px-4 py-2 ml-auto"
+                         onClick={async () => {
+                           if (!window.confirm(`Vuoi incassare i ${detailConsult.cost_credits} crediti finali di questo consulto chiudendolo con successo?`)) return
+                           try {
+                             await apiJson(getToken, `/api/staff/consults/${selectedId}/claim`, { method: 'POST' })
+                             await loadDetail(selectedId!)
+                             await loadList()
+                           } catch (e: any) {
+                             setDetailError("Impossibile Terminare: " + e.message)
+                           }
+                         }}
+                       >
+                         Termina (Incassa)
+                       </button>
+                       <button
+                         type="button"
+                         className="btn-outline border-red-500/50 text-red-300 hover:bg-red-500/10 text-sm px-4 py-2"
+                         onClick={async () => {
+                           if (!window.confirm("Il cliente non si è presentato? Tratterrai una penale di 5 CR e rimborserai il resto. L'azione è irreversibile.")) return
+                           try {
+                             await apiJson(getToken, `/api/staff/consults/${selectedId}/no-show`, { method: 'POST' })
+                             await loadDetail(selectedId!)
+                             await loadList()
+                           } catch (e: any) {
+                             setDetailError("Impossibile processare No Show: " + e.message)
+                           }
+                         }}
+                       >
+                         No-Show (Penale)
+                       </button>
+                    </>
+                  ) : null}
                 </div>
 
                 <div>
