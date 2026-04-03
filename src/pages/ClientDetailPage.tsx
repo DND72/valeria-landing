@@ -43,6 +43,10 @@ type DetailPayload = {
     updatedAt: string | null
   } | null
   consults: ConsultDetail[]
+  wallet: {
+    balance: number
+    lockedBalance: number
+  } | null
 }
 
 function formatWhen(iso: string | null): string {
@@ -184,6 +188,28 @@ export default function ClientDetailPage() {
     }
   }
 
+  const grantBonus = async () => {
+    if (!apiConfigured || !email) return
+    const amountStr = window.prompt("Quanti crediti vuoi regalare a questo cliente senza farli pagare? (Esibizione promozionale)")
+    if (!amountStr) return
+    const amount = parseInt(amountStr, 10)
+    if (isNaN(amount) || amount <= 0) {
+      alert("Importo non valido. Inserire un numero intero maggiore di zero.")
+      return
+    }
+    if (!window.confirm(`Stai per regalare ${amount} CR a ${data?.displayName || email}. Confermi?`)) return
+    try {
+      await apiJson(getToken, '/api/staff/clients/bonus', {
+        method: 'POST',
+        body: JSON.stringify({ email, amount }),
+      })
+      alert(`Bonus di ${amount} CR erogato con successo nel portafoglio di ${data?.displayName || email}!`)
+      await load()
+    } catch (e: any) {
+      alert("Errore nell'erogazione del bonus: " + (e.message || "Riprovare."))
+    }
+  }
+
   if (!isLoaded || !user) return null
   if (!isPrivilegedClerkUser(user)) return null
 
@@ -303,6 +329,35 @@ export default function ClientDetailPage() {
               >
                 {savingAnagrafica ? 'Salvataggio…' : 'Aggiorna Anagrafica'}
               </button>
+            </section>
+
+            <section className="mystical-card bg-gold-600/5 border-gold-600/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <h2 className="font-serif text-lg text-gold-400 flex items-center gap-2">
+                  <span className="text-xl">💳</span> Portafoglio Virtuale (Wallet)
+                </h2>
+                {data.wallet ? (
+                  <button onClick={grantBonus} className="btn-gold text-xs px-3 py-1.5 whitespace-nowrap">
+                    🎁 Regala Bonus
+                  </button>
+                ) : null}
+              </div>
+
+              {data.wallet ? (
+                <div className="flex items-center gap-6">
+                  <div>
+                    <p className="text-white/45 text-xs uppercase tracking-wider mb-1">Crediti Disponibili</p>
+                    <p className="text-2xl font-bold text-gold-400">{data.wallet.balance} <span className="text-sm font-normal text-gold-500/70">CR</span></p>
+                  </div>
+                  <div className="w-px h-10 bg-white/10" />
+                  <div>
+                    <p className="text-white/45 text-xs uppercase tracking-wider mb-1">Crediti Impegnati</p>
+                    <p className="text-xl font-medium text-amber-500/80">{data.wallet.lockedBalance} <span className="text-sm font-normal text-amber-600/50">CR</span></p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-white/40 text-sm">Questo cliente non ha ancora attivato un Wallet o non è registrato sulla piattaforma.</p>
+              )}
             </section>
 
             <section className="mystical-card">

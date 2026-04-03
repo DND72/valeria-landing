@@ -19,6 +19,8 @@ type ClientRow = {
   isRegistered: boolean
   isVerified: boolean
   lastSignInAt: string | null
+  balance: number | null
+  lockedBalance: number | null
 }
 
 function formatWhen(iso: string | null): string {
@@ -152,6 +154,8 @@ export default function ClientManagementPage() {
                   <th className="py-3 px-3 font-medium text-center">Consulti</th>
                   <th className="py-3 px-3 font-medium">Acquisti</th>
                   <th className="py-3 px-3 font-medium whitespace-nowrap">Ultimo in calendario</th>
+                  <th className="py-3 px-3 font-medium text-right whitespace-nowrap">Crediti Disp.</th>
+                  <th className="py-3 px-3 font-medium text-right whitespace-nowrap">Crediti Imp.</th>
                   <th className="py-3 px-3 font-medium whitespace-nowrap">Ultimo Accesso</th>
                   <th className="py-3 px-3 font-medium">Fatt. mese</th>
                   <th className="py-3 px-3 font-medium" />
@@ -160,14 +164,14 @@ export default function ClientManagementPage() {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={9} className="py-10 text-center text-white/40">
+                    <td colSpan={11} className="py-10 text-center text-white/40">
                       Caricamento…
                     </td>
                   </tr>
                 )}
                 {!loading && clients.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="py-10 text-center text-white/40">
+                    <td colSpan={11} className="py-10 text-center text-white/40">
                       Nessun cliente con email nei consulti o registrato.
                     </td>
                   </tr>
@@ -207,6 +211,18 @@ export default function ClientManagementPage() {
                       </td>
                       <td className="py-2.5 px-3 text-white/60 whitespace-nowrap text-xs">
                         {formatWhen(c.lastScheduledAt)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        {c.balance !== null ? <span className="text-gold-400 font-medium">{c.balance} CR</span> : <span className="text-white/20">—</span>}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        {c.lockedBalance !== null ? (
+                          c.lockedBalance > 0 ? (
+                            <span className="text-amber-400 font-medium">{c.lockedBalance} CR</span>
+                          ) : (
+                            <span className="text-white/50">0 CR</span>
+                          )
+                        ) : <span className="text-white/20">—</span>}
                       </td>
                       <td className="py-2.5 px-3 text-white/60 whitespace-nowrap text-xs">
                         {formatWhen(c.lastSignInAt)}

@@ -34,7 +34,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
     const sort = req.query.sort === 'recent' ? 'recent' : 'alpha'
     try {
       // --- 1. RECUPERO UTENTI DA CLERK ---
-      let clerkDict = new Map<string, { firstName: string | null; lastName: string | null; lastSignInAt: number | null }>()
+      let clerkDict = new Map<string, { firstName: string | null; lastName: string | null; lastSignInAt: number | null; clerkId: string }>()
       if (clerkClient) {
         try {
           const clerkBatch = await clerkClient.users.getUserList({ limit: 499 })
@@ -48,6 +48,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
                 firstName: u.firstName,
                 lastName: u.lastName,
                 lastSignInAt: u.lastSignInAt,
+                clerkId: u.id
               })
             }
           }
@@ -89,6 +90,14 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         invMap.set(p.email_normalized, p.last_invoiced_at)
       }
 
+      const walletsRows = await pool.query<{ clerk_user_id: string; balance: number; locked_balance: number }>(
+        `SELECT clerk_user_id, balance, locked_balance FROM wallets`
+      )
+      const walletsMap = new Map<string, { balance: number; lockedBalance: number }>()
+      for (const w of walletsRows.rows) {
+        walletsMap.set(w.clerk_user_id, { balance: Number(w.balance), lockedBalance: Number(w.locked_balance) })
+      }
+
       type Row = {
         email: string
         name: string | null
@@ -101,6 +110,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         isRegistered: boolean
         isVerified: boolean
         lastSignInAt: string | null
+        balance: number | null
+        lockedBalance: number | null
       }
 
       // --- 3. MERGE DATI ---
@@ -125,6 +136,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           isRegistered: !!clerkInfo,
           isVerified: row.is_verified || false,
           lastSignInAt: clerkInfo?.lastSignInAt ? new Date(clerkInfo.lastSignInAt).toISOString() : null,
+          balance: clerkInfo?.clerkId ? (walletsMap.get(clerkInfo.clerkId)?.balance ?? null) : null,
+          lockedBalance: clerkInfo?.clerkId ? (walletsMap.get(clerkInfo.clerkId)?.lockedBalance ?? null) : null,
         }
       })
 
@@ -143,6 +156,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             isRegistered: true,
             isVerified: false,
             lastSignInAt: info.lastSignInAt ? new Date(info.lastSignInAt).toISOString() : null,
+            balance: walletsMap.get(info.clerkId)?.balance ?? null,
+            lockedBalance: walletsMap.get(info.clerkId)?.lockedBalance ?? null,
           })
         }
       }
@@ -235,7 +250,24 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             .filter((id): id is string => typeof id === 'string' && id.length > 0)
         )]
         if (clerkUserIds.length > 0) {
-          // ... (logica esistente di fallback se serve, ma il match email è primario ora)
+          // fallback placeholder
+        }
+      }
+
+      let clrkIdToUse: string | null = bp?.clerk_user_id ?? null
+      if (!clrkIdToUse) {
+        const consultClerkIds = consultRows.map((c: { clerk_user_id?: string }) => c.clerk_user_id).filter(Boolean) as string[]
+        if (consultClerkIds.length > 0) clrkIdToUse = consultClerkIds[0]
+      }
+      
+      let walletInfo: { balance: number; lockedBalance: number } | null = null
+      if (clrkIdToUse && !clrkIdToUse.startsWith('staff-manual-')) {
+        const wRes = await pool.query(`SELECT balance, locked_balance FROM wallets WHERE clerk_user_id = $1`, [clrkIdToUse])
+        if (wRes.rows.length > 0) {
+          walletInfo = {
+            balance: Number(wRes.rows[0].balance),
+            lockedBalance: Number(wRes.rows[0].locked_balance)
+          }
         }
       }
 
@@ -268,6 +300,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           updated_at: new Date(c.updated_at as string).toISOString(),
           notes: notesByConsult.get(c.id as string) ?? [],
         })),
+        wallet: walletInfo
       })
     } catch (e) {
       console.error('[staff clients detail]', e)
@@ -388,6 +421,63 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
     } catch (e) {
       console.error('[staff clients profile patch]', e)
       res.status(500).json({ error: 'Errore database' })
+    }
+  })
+
+  r.post('/clients/bonus', async (req, res) => {
+    const parsed = z.object({ email: z.string(), amount: z.number().int().min(1) }).safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Payload non valido' })
+      return
+    }
+    const { email, amount } = parsed.data
+    const norm = normalizeEmail(email)
+
+    try {
+      const bpLookup = await pool.query(`SELECT clerk_user_id FROM client_billing_profiles WHERE email_normalized = $1 LIMIT 1`, [norm])
+      let cid = bpLookup.rows[0]?.clerk_user_id
+      
+      if (!cid || cid.startsWith('staff-manual-')) {
+          const consultLookup = await pool.query(`SELECT clerk_user_id FROM consults WHERE LOWER(TRIM(invitee_email)) = $1 AND clerk_user_id IS NOT NULL LIMIT 1`, [norm])
+          cid = consultLookup.rows[0]?.clerk_user_id
+      }
+
+      if (!cid || cid.startsWith('staff-manual-')) {
+          res.status(404).json({ error: 'Utente non registrato, impossibile accreditare un bonus su un conto inesistente.' })
+          return
+      }
+
+      const client = await pool.connect()
+      try {
+        await client.query('BEGIN')
+        
+        const walletQuery = await client.query(`
+          INSERT INTO wallets (clerk_user_id, balance, locked_balance, created_at, updated_at)
+          VALUES ($1, $2, 0, now(), now())
+          ON CONFLICT (clerk_user_id) DO UPDATE SET 
+            balance = wallets.balance + $2,
+            updated_at = now()
+          RETURNING id, balance
+        `, [cid, amount])
+
+        const walletId = walletQuery.rows[0].id
+
+        await client.query(`
+          INSERT INTO wallet_transactions (wallet_id, sum_amount, tx_type, description, created_at)
+          VALUES ($1, $2, 'bonus', 'Bonus erogato dallo Staff', now())
+        `, [walletId, amount])
+
+        await client.query('COMMIT')
+        res.json({ success: true, newBalance: walletQuery.rows[0].balance })
+      } catch (err) {
+        await client.query('ROLLBACK')
+        throw err
+      } finally {
+        client.release()
+      }
+    } catch (e) {
+      console.error('[staff bonus]', e)
+      res.status(500).json({ error: 'Errore database transazione' })
     }
   })
 }
