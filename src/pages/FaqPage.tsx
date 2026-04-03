@@ -46,11 +46,11 @@ const FAQ_SECTIONS: FaqSection[] = [
     items: [
       {
         q: 'Come prenoto una sessione?',
-        a: "Nel tuo Diario (dopo il login) scegli il settore (Tarocchi, Coaching o Combo), poi il tipo di consulto preferito. Clicca Continua e si apre il widget Calendly dove selezioni giorno e fascia oraria disponibile. Per i consulti a pagamento, completi il pagamento sicuro tramite Stripe. Prenotando un consulto dichiari di avere almeno 18 anni.",
+        a: "Nel tuo Diario (dopo il login) scegli il settore (Tarocchi, Coaching o Combo), poi il tipo di consulto preferito. Cliccando per prenotare accederai al tuo Wallet a Crediti (CR). Se sei sprovvisto di saldo, potrai ricaricarlo tramite Stripe. L'importo in crediti verrà quindi impegnato e potrai selezionare orario e giorno liberi dal calendario.",
       },
       {
         q: 'Posso cambiare o cancellare un appuntamento?',
-        a: "Si. Riceverai un'email di conferma da Calendly con il link per riprogrammare o cancellare. In alternativa, accedi al portale Calendly con la stessa email. Per le politiche di rimborso vedi la sezione Pagamenti e rimborsi qui sotto.",
+        a: "Si. Direttamente dal tuo Diario potrai cliccare 'Sposta Data' (te ne è concesso spontaneamente solo uno) o 'Disdici' finchè mancano più di 24 ore al tuo consulto: l'appuntamento salterà e i tuoi crediti verranno istantaneamente ri-versati nel tuo Wallet disponibili per una nuova data. Sotto la rigidità delle 24 ore il consulto non è sbloccabile e dunque non è rimborsabile.",
       },
       {
         q: 'In che modalita si svolge la sessione?',
@@ -68,15 +68,15 @@ const FAQ_SECTIONS: FaqSection[] = [
     items: [
       {
         q: 'Come funziona il pagamento?',
-        a: "Il pagamento avviene tramite Stripe al momento della prenotazione su Calendly. Non e necessario avere un conto Stripe: puoi pagare anche con carta di credito/debito tramite il modulo sicuro di Stripe.",
+        a: "Il sito utilizza un sistema interno a Crediti virtuali (CR). Al momento della prenotazione, se il tuo conto è vuoto, ti verrà chiesto di ricaricarlo pagando con la moneta reale tramite un circuito sicuro (Stripe). Non è necessario possedere un conto Stripe, ma bastano le carte di debito e credito in comune. A quel punto i tuoi Crediti pagheranno i consulti.",
       },
       {
         q: 'I miei dati di pagamento sono al sicuro?',
-        a: "Si. Il pagamento e gestito interamente da Stripe, che non condivide i dati della carta con il sito. Valeria Di Pace non archivia alcun dato di pagamento.",
+        a: "Si. I portafogli di ricarica sono interamente elaborati da Stripe che decritta le tue carte. Valeria non archivia sul database né vede null'altro che il tuo saldo crediti.",
       },
       {
         q: 'Posso chiedere un rimborso?',
-        a: "Se cancelli con almeno 24 ore di anticipo tramite il link in email, il rimborso viene elaborato tramite Stripe secondo le tempistiche standard (3-5 giorni lavorativi). Cancellazioni sotto le 24 ore non sono rimborsabili. Per situazioni straordinarie, puoi scrivere direttamente a Valeria tramite i contatti in fondo alla pagina.",
+        a: "A meno di 24 ore non è ammessa alcuna disdetta. Cancellando e disdicendo autonomamente dal tuo Diario entro e scostandoti oltre le 24 ore dall'evento prenotato, verrai liquidato integralmente (ti torneranno i Crediti completi da ri-spendere). In caso tu non ti presenti al minuto fissato della chiamata, scatta legalmente la clausola No-Show: 5 dei tuoi Crediti per il consulto verranno annullati e rubati da Valeria per il danno d'agenda provocato, mentre il resto dei crediti ti tornerà disponibile in tasca.",
       },
       {
         q: "Ricevero una fattura o ricevuta?",

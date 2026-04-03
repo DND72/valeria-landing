@@ -73,12 +73,12 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="Art. 5 — Pagamenti, Recesso e Fatturazione">
-            <p>Il pagamento avviene tramite circuito sicuro <strong>Stripe (PCI-DSS)</strong>.</p>
+          <Section title="Art. 5 — Sistema Wallet a Crediti (CR), Modifiche e No-Show">
+            <p>La fornitura del servizio utilizza un portafoglio di <strong>Crediti (CR)</strong> nominali interni che si ricaricano via <strong>Stripe (PCI-DSS)</strong>.</p>
             <ul>
-              <li><strong>Diritto di Recesso:</strong> Ai sensi dell'Art. 59 lett. o) del Codice del Consumo, trattandosi di servizio digitale fornito immediatamente su richiesta, l'Utente rinuncia espressamente al diritto di recesso una volta che l'esecuzione del servizio è iniziata.</li>
-              <li><strong>Fatturazione:</strong> L'Utente è obbligato a fornire dati fiscali esatti. Il Gestore non risponde di errori derivanti da dati errati o incompleti.</li>
-              <li><strong>Cancellazioni:</strong> Rimborso integrale solo per cancellazioni &gt;24h. Sotto le 24h o in caso di No-show, la sessione è considerata erogata.</li>
+              <li><strong>Gestione Prenotazione:</strong> L'appuntamento impegnerà istantaneamente i crediti per proteggere il Calendario. Ai sensi dell'Art. 59 lett. o) del Codice del Consumo, l'utente rinuncia al diritto di recesso sul pagamento qualora esso corrisponda alla consumazione del consulto entro strettissime 24 ore.</li>
+              <li><strong>Riprogrammazione e Cancellazione:</strong> È consentito uno spostamento di data oppure una disdetta se lo si opera attraverso l'apposita schermata a più ed estraneamente dal periodo di tolleranza di <strong>24 ore (ventiquattro ore)</strong> dall'inizio stabilito. Al di fuori del suddetto lasso, i fondi si tramutano interamente disponibili sul conto.</li>
+              <li><strong>Penale di No-Show:</strong> Laddove l'utente risultasse assente, irreperibile o mancasse all'esatto orario della seduta, il Gestore ha totale licenza tecnica d'ufficio per segnare l'inottemperanza trattendo una <strong>penale o tariffa di mora di € 5,00 pari a 5 Crediti CR</strong> e stornando a libero bilancio solo i soli crediti decurtati dalla penalità.</li>
             </ul>
           </Section>
 
