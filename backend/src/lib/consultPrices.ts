@@ -3,6 +3,7 @@
  * Aggiorna i valori se i prezzi cambiano.
  */
 export type ConsultKind =
+  | 'rapido'
   | 'breve'
   | 'online'
   | 'completo'
@@ -27,10 +28,17 @@ export type ConsultMeta = {
 }
 
 export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
+  rapido: {
+    amountCents: 1500,
+    costCredits: 15,
+    name: 'Consulto rapido con Valeria',
+    description: '10 min · Sessione telefonica flash di Tarocchi',
+    isFree: false,
+  },
   breve: {
-    amountCents: 3000,
-    costCredits: 30,
-    name: 'Consulto breve con Valeria',
+    amountCents: 4000,
+    costCredits: 40,
+    name: 'Consulto approfondito con Valeria',
     description: '30 min · Sessione telefonica di lettura dei Tarocchi',
     isFree: false,
   },
@@ -42,8 +50,8 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     isFree: false,
   },
   completo: {
-    amountCents: 5000,
-    costCredits: 50,
+    amountCents: 8000,
+    costCredits: 80,
     name: 'Consulto completo con Valeria',
     description: '60 min · Sessione telefonica approfondita di Tarocchi',
     isFree: false,

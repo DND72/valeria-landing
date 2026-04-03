@@ -51,6 +51,7 @@ export async function getSingleUseCalendlyLink(token: string, kind: ConsultKind)
 function mapKindToCalendlySlug(kind: ConsultKind): string {
   // Valeria dovrà assicurarsi che i permalinks su Calendly abbiano esattamente queste estensioni
   const map: Record<ConsultKind, string> = {
+    rapido: 'rapido',
     breve: 'breve',
     online: 'online',
     completo: 'completo',

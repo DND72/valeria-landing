@@ -1,5 +1,6 @@
 /** Tipi di consulto mostrati nelle card (stessa grafica “dorata” di prima). */
 export type ConsultKind =
+  | 'rapido'
   | 'breve'
   | 'online'
   | 'completo'
@@ -20,9 +21,10 @@ export type ConsultChoice = {
 }
 
 export const CONSULT_CHOICES: ConsultChoice[] = [
-  { kind: 'breve', name: 'Consulto breve', duration: '30 min · Telefonico', priceLabel: '30 CR', icon: '🌙', costCredits: 30 },
+  { kind: 'rapido', name: 'Consulto rapido', duration: '10 min · Telefonico', priceLabel: '15 CR', icon: '🚀', costCredits: 15 },
+  { kind: 'breve', name: 'Consulto approfondito', duration: '30 min · Telefonico', priceLabel: '40 CR', icon: '🌙', costCredits: 40 },
   { kind: 'online', name: 'Consulto online', duration: '30 min · Videochiamata', priceLabel: '40 CR', icon: '🌐', costCredits: 40 },
-  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Telefonico', priceLabel: '50 CR', icon: '✨', costCredits: 50 },
+  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Telefonico', priceLabel: '80 CR', icon: '✨', costCredits: 80 },
   {
     kind: 'coaching_intro',
     name: 'Coaching · Conoscenza',
