@@ -29,6 +29,7 @@ import TermsOfService from './pages/legal/TermsOfService'
 import PrivacyPolicy from './pages/legal/PrivacyPolicy'
 import CookiePolicy from './pages/legal/CookiePolicy'
 import ProfilePage from './pages/ProfilePage'
+import WalletPage from './pages/WalletPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import StaffGuard from './components/StaffGuard'
 
@@ -87,6 +88,7 @@ function AppRoutes() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/cookie" element={<CookiePolicy />} />
             <Route path="/profilo" element={<ProfilePage />} />
+            <Route path="/wallet" element={<WalletPage />} />
       </Routes>
     </RouteErrorBoundary>
   )

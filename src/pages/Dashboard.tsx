@@ -363,6 +363,14 @@ export default function Dashboard() {
           <div className="grid md:grid-cols-3 gap-4 mb-8">
             {[
               {
+                icon: '👛',
+                title: 'Il mio Wallet',
+                desc: 'Visualizza e ricarica i tuoi crediti',
+                href: '/wallet',
+                cta: 'Vai al Wallet',
+                isRouterLink: true, // we will conditionally render a <Link> instead of <a> if this is true
+              },
+              {
                 icon: '🔮',
                 title: 'Scegli il consulto',
                 desc: 'Settore (Tarocchi o Crescita), poi tipo e data',
@@ -376,15 +384,23 @@ export default function Dashboard() {
                 href: '#recensioni',
                 cta: 'Scrivi la recensione',
               },
-            ].map((action, i) => (
-              <motion.a
+            ].map((action, i) => {
+              const ActionWrapper = action.isRouterLink ? Link : motion.a
+              const props = action.isRouterLink ? {
+                to: action.href,
+                className: "mystical-card group block"
+              } : {
+                href: action.href,
+                target: "_self",
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 },
+                transition: { duration: 0.5, delay: 0.2 + i * 0.1 },
+                className: "mystical-card group block"
+              }
+              return (
+              <ActionWrapper
                 key={action.title}
-                href={action.href}
-                target="_self"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
-                className="mystical-card group block"
+                {...(props as any)}
               >
                 <div className="text-2xl mb-3">{action.icon}</div>
                 <h3 className="font-semibold text-white text-sm mb-1 group-hover:text-gold-400 transition-colors">
@@ -397,8 +413,9 @@ export default function Dashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </span>
-              </motion.a>
-            ))}
+              </ActionWrapper>
+              )
+            })}
           </div>
         )}
 
