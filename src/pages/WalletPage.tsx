@@ -142,8 +142,8 @@ export default function WalletPage() {
                 }`}
               >
                 {p.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold-500 text-dark-500 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full whitespace-nowrap shadow-lg">
-                    Più Richiesto
+                  <span className="absolute top-3 right-3 bg-gold-500 text-dark-500 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full shadow-md">
+                    Top
                   </span>
                 )}
                 
