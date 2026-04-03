@@ -5,6 +5,7 @@ export type ConsultKind =
   | 'online'
   | 'completo'
   | 'coaching_intro'
+  | 'coaching_30'
   | 'coaching_60'
   | 'coaching_pack5'
   | 'combo_light'
@@ -34,12 +35,20 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
     costCredits: 0
   },
   {
+    kind: 'coaching_30',
+    name: 'Coaching - Sessione 30',
+    duration: '30 min · Video o telefono',
+    priceLabel: '40 CR',
+    icon: '🍃',
+    costCredits: 40
+  },
+  {
     kind: 'coaching_60',
-    name: 'Coaching · Sessione',
+    name: 'Coaching - Sessione 60',
     duration: '60 min · Video o telefono',
-    priceLabel: '80 CR',
+    priceLabel: '70 CR',
     icon: '🌿',
-    costCredits: 80
+    costCredits: 70
   },
   {
     kind: 'coaching_pack5',

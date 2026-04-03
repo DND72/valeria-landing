@@ -63,7 +63,7 @@ export default function ComboLightBox({ onSelect }: { onSelect: () => void }) {
           </div>
           
           <p className="text-white/40 text-[10px] mt-4 text-center max-w-[200px]">
-            L'acquisto si completa <strong className="text-white/70">su Calendly</strong> dopo aver sceto il giorno e l'orario del tuo primo consulto.
+            L'acquisto impegna i crediti e sblocca <strong className="text-white/70">3 sessioni separate</strong> nella tua Dashboard, che potrai prenotare una ad una.
           </p>
         </div>
       </div>

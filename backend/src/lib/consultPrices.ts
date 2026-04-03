@@ -8,6 +8,7 @@ export type ConsultKind =
   | 'online'
   | 'completo'
   | 'coaching_intro'
+  | 'coaching_30'
   | 'coaching_60'
   | 'coaching_pack5'
   | 'combo_light'
@@ -63,10 +64,17 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     description: '10 min · Videochiamata o telefono – gratuita',
     isFree: true,
   },
+  coaching_30: {
+    amountCents: 4000,
+    costCredits: 40,
+    name: 'Coaching - Sessione 30',
+    description: '30 min · Crescita personale e obiettivi brevi',
+    isFree: false,
+  },
   coaching_60: {
-    amountCents: 8000,
-    costCredits: 80,
-    name: 'Sessione di Coaching con Valeria',
+    amountCents: 7000,
+    costCredits: 70,
+    name: 'Coaching - Sessione 60',
     description: '60 min · Crescita personale, obiettivi e piano d\'azione',
     isFree: false,
   },

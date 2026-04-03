@@ -56,6 +56,7 @@ function mapKindToCalendlySlug(kind: ConsultKind): string {
     online: 'online',
     completo: 'completo',
     coaching_intro: 'coaching-intro',
+    coaching_30: 'coaching-30',
     coaching_60: 'coaching-60',
     coaching_pack5: 'coaching-pack5',
     combo_light: 'combo-light',

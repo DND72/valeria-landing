@@ -2,8 +2,14 @@ import { Router } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
 import { requireClerkAuth } from '../middleware/clerkAuth.js'
-import { CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
+import { type ConsultKind, CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
 import { getSingleUseCalendlyLink } from '../lib/calendlyLinkGen.js'
+
+const MULTIPACK_STEPS: Partial<Record<ConsultKind, ConsultKind[]>> = {
+  coaching_pack5: ['coaching_60', 'coaching_60', 'coaching_60', 'coaching_60', 'coaching_60'],
+  combo_light: ['breve', 'breve', 'coaching_30'],
+  combo_full: ['completo', 'completo', 'coaching_60'],
+}
 
 export function createBookingRouter(pool: Pool): Router {
   const r = Router()
@@ -84,19 +90,36 @@ export function createBookingRouter(pool: Pool): Router {
 
       // Genero record in consults per abbinarci il Webhook Calendly quando l'utente sceglierà giorno/ora.
       // E' impostato a pending_booking_calendly.
-      await client.query(
-        `INSERT INTO consults (
-           stripe_session_id,
-           consult_kind,
-           amount_cents,
-           cost_credits,
-           clerk_user_id,
-           status,
-           is_free_consult,
-           updated_at
-         ) VALUES ($1, $2, $3, $4, $5, 'pending_booking_calendly', $6, now())`,
-        [bookingId, consultKind, meta.amountCents, cost, userId, meta.isFree]
-      )
+      
+      const steps = MULTIPACK_STEPS[consultKind] || [consultKind]
+
+      for (let i = 0; i < steps.length; i++) {
+        const stepKind = steps[i]
+        
+        // Ogni "pezzo" del pacchetto ha un UUID unico per il tracking Calendly
+        const currentBookingId = (i === 0) ? bookingId : 'book_' + crypto.randomUUID()
+        
+        // Ripartiamo il costo totale sulla prima riga per semplicità di logica rimborsi/audit,
+        // oppure dividiamo? L'utente ha confermato che i crediti vengono tolti SUBITO.
+        // Impostiamo il costo della riga singola in modo che la somma sia il totale pagato.
+        const stepCost = Math.floor(cost / steps.length)
+        // Aggiustiamo l'ultimo per eventuali arrotondamenti
+        const finalStepCost = (i === steps.length - 1) ? (cost - (stepCost * (steps.length - 1))) : stepCost
+
+        await client.query(
+          `INSERT INTO consults (
+             stripe_session_id,
+             consult_kind,
+             amount_cents,
+             cost_credits,
+             clerk_user_id,
+             status,
+             is_free_consult,
+             updated_at
+           ) VALUES ($1, $2, $3, $4, $5, 'pending_booking_calendly', $6, now())`,
+          [currentBookingId, stepKind, Math.floor(meta.amountCents / steps.length), finalStepCost, userId, meta.isFree]
+        )
+      }
 
       await client.query('COMMIT')
     } catch (e) {
