@@ -38,25 +38,25 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
     kind: 'coaching_30',
     name: 'Coaching - Sessione 30',
     duration: '30 min · Video o telefono',
-    priceLabel: '40 CR',
+    priceLabel: '1,60 €/min',
     icon: '🍃',
-    costCredits: 40
+    costCredits: 48
   },
   {
     kind: 'coaching_60',
     name: 'Coaching - Sessione 60',
     duration: '60 min · Video o telefono',
-    priceLabel: '70 CR',
+    priceLabel: '1,45 €/min',
     icon: '🌿',
-    costCredits: 70
+    costCredits: 87
   },
   {
     kind: 'coaching_pack5',
     name: 'Coaching · 5 sedute',
     duration: '5 appuntamenti separati · 1 h ciascuno',
-    priceLabel: '300 CR (60/sed)',
+    priceLabel: '1,30 €/min',
     icon: '🌳',
-    costCredits: 300
+    costCredits: 390
   },
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Free', icon: '🎁', costCredits: 0 },
 ]
