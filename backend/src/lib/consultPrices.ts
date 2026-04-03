@@ -37,10 +37,9 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     isFree: false,
   },
   breve: {
-    amountCents: 4000,
-    costCredits: 40,
-    name: 'Consulto approfondito con Valeria',
-    description: '30 min · Sessione telefonica di lettura dei Tarocchi',
+    amountCents: 4200,
+    costCredits: 42,
+    name: 'Consulto approfondito con Valeria',    description: '30 min · Sessione telefonica di lettura dei Tarocchi',
     isFree: false,
   },
   online: {
@@ -51,8 +50,8 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     isFree: false,
   },
   completo: {
-    amountCents: 8000,
-    costCredits: 80,
+    amountCents: 7800,
+    costCredits: 78,
     name: 'Consulto completo con Valeria',
     description: '60 min · Sessione telefonica approfondita di Tarocchi',
     isFree: false,

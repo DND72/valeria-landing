@@ -619,19 +619,26 @@ export default function Dashboard() {
                       <div className="text-3xl mb-2">{c.icon}</div>
                       <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
                       <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
-                      <p
-                        className="font-serif text-2xl font-bold mb-4"
-                        style={{
-                          background:
-                            c.kind === 'free'
-                              ? 'linear-gradient(135deg, #86efac, #22c55e)'
-                              : 'linear-gradient(135deg, #ffe066, #ffd700)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                        }}
-                      >
-                        {c.priceLabel}
-                      </p>
+                      <div className="mb-4">
+                        <p
+                          className="font-serif text-2xl font-bold leading-tight"
+                          style={{
+                            background:
+                              c.kind === 'free'
+                                ? 'linear-gradient(135deg, #86efac, #22c55e)'
+                                : 'linear-gradient(135deg, #ffe066, #ffd700)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                          }}
+                        >
+                          {c.priceLabel}
+                        </p>
+                        {c.costCredits > 0 && (
+                          <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">
+                            {c.costCredits} CR totali
+                          </p>
+                        )}
+                      </div>
                       <button
                         type="button"
                         className="btn-gold text-sm px-4 py-2.5 inline-flex items-center justify-center gap-2 w-full mt-auto"
