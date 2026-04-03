@@ -91,6 +91,7 @@ export default function Dashboard() {
   }
   const [myConsults, setMyConsults] = useState<MyConsultRow[] | null>(null)
   const [myConsultsLoading, setMyConsultsLoading] = useState(false)
+  const [wallet, setWallet] = useState<{ balanceAvailable: number; balanceLocked: number } | null>(null)
 
   const { data: valeriaPresence } = useValeriaPresence(60_000)
   const presenceLabel = labelForPresence(valeriaPresence?.status)
@@ -141,9 +142,20 @@ export default function Dashboard() {
     }
   }, [isLoaded, user, getToken])
 
+  const loadWallet = useCallback(async () => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
+    try {
+      const data = await apiJson<{ balanceAvailable: number; balanceLocked: number }>(getToken, '/api/wallet/me')
+      setWallet(data)
+    } catch {
+      // ignore
+    }
+  }, [isLoaded, user, getToken])
+
   useEffect(() => {
     void loadMyConsults()
-  }, [loadMyConsults])
+    void loadWallet()
+  }, [loadMyConsults, loadWallet])
 
   const handleConsultAction = async (id: string, action: 'cancel' | 'reschedule') => {
     try {
@@ -292,6 +304,20 @@ export default function Dashboard() {
               <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
                 Ciao, <span className="gold-text">{firstName}</span> ✨
               </h1>
+              
+              {!privileged && wallet && (
+                <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                    <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest font-medium mb-0.5">Disponibile</p>
+                    <p className="text-sm font-bold text-emerald-400 leading-none">{wallet.balanceAvailable} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                    <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
+                    <p className="text-sm font-bold text-amber-440 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                  </div>
+                </div>
+              )}
+
               {privileged && (
                 <span
                   className="text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-gold-600/40 text-gold-400/90"
