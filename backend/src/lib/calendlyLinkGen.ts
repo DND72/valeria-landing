@@ -1,5 +1,5 @@
 import { calendlyFetch, calendlyPost } from './calendlyClient.js'
-import { CONSULT_META, type ConsultKind } from './consultPrices.js'
+import { type ConsultKind } from './consultPrices.js'
 
 let myUserUri: string | null = null
 const eventTypeCache: Record<string, string> = {}
