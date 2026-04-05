@@ -1,6 +1,4 @@
-[providers]
-  node = {}
-  python = {}
+providers = ["node", "python"]
 
 [phases.install]
   cmds = ["npm ci", "python3 -m venv /opt/venv", "/opt/venv/bin/pip install -r requirements.txt"]
