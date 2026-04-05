@@ -31,6 +31,7 @@ import CookiePolicy from './pages/legal/CookiePolicy'
 import ProfilePage from './pages/ProfilePage'
 import WalletPage from './pages/WalletPage'
 import NatalChartPage from './pages/NatalChartPage'
+import PaidNatalCharts from './pages/PaidNatalCharts'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import StaffGuard from './components/StaffGuard'
 
@@ -91,6 +92,7 @@ function AppRoutes() {
             <Route path="/profilo" element={<ProfilePage />} />
             <Route path="/wallet" element={<WalletPage />} />
             <Route path="/tema-natale" element={<NatalChartPage />} />
+            <Route path="/i-miei-temi" element={<PaidNatalCharts />} />
       </Routes>
     </RouteErrorBoundary>
   )

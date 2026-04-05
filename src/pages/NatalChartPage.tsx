@@ -84,7 +84,7 @@ function AstrologicalResult({ result }: { result: NatalChartResponse }) {
 }
 
 export default function NatalChartPage() {
-  const { calculateChart } = useAstrologyApi()
+  const { calculateFreeChart } = useAstrologyApi()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<NatalChartResponse | null>(null)
@@ -101,7 +101,7 @@ export default function NatalChartPage() {
     setResult(null)
 
     try {
-      const res = await calculateChart({
+      const res = await calculateFreeChart({
         birthDate: date,
         birthTime: time,
         city: city.trim()
