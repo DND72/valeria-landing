@@ -118,7 +118,7 @@ export default function Hero() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium mb-8"
         >
           <TarotCardIcon />
-          <span>Tarologa · Tarocchi di Marsiglia</span>
+          <span>Tarologa · Naturopata · Tarocchi di Marsiglia</span>
         </motion.div>
 
         {/* Main heading */}

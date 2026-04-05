@@ -31,6 +31,11 @@ const galleryItems: GalleryItem[] = [
     caption: 'Parafarmacia Energia & Benessere',
     category: 'parafarmacia',
   },
+  {
+    src: '',
+    caption: 'Manuale Heel Guna - Eccellenza Olistica',
+    category: 'parafarmacia', // Inserito qui perché legato al benessere
+  },
 ]
 
 const categories = [

@@ -17,9 +17,9 @@ const credentials: { icon: PillarIcon; title: string; desc: string }[] = [
   },
   {
     icon: 'care',
-    title: "Cura e Ascolto dell'Individuo",
+    title: "Naturopatia ed Equilibrio Olistico",
     desc:
-      'Quindici anni di accoglienza e gestione del benessere quotidiano in Liguria. Una solida esperienza nel comprendere le necessità reali delle persone, ponendo al centro l&apos;equilibrio tra mente, corpo e spirito.',
+      'Diplomata in Naturopatia con Master specialistici e formata all\'uso dei Fiori di Bach. Fortemente radicata nello storico studio in Liguria, Valeria accompagna le persone verso un benessere profondo, lavorando sul riequilibrio energetico piuttosto che su facili promesse di "guarigione".',
   },
   {
     icon: 'tradition',
@@ -111,30 +111,32 @@ export default function About() {
             <div className="space-y-4 text-white/60 leading-relaxed">
               <p>
                 Valeria Di Pace non è la solita tarologa. Il suo metodo nasce dall&apos;unione tra tre diversi percorsi
-                accademici e una ricerca interiore profonda durata oltre un ventennio.
+                accademici, tra scoperte in ambito olistico e una ricerca interiore profonda durata oltre un ventennio.
               </p>
               <p>
-                La sua analisi dei Tarocchi di Marsiglia integra la psicologia del profondo con una straordinaria capacità
-                di visione d&apos;insieme. Valeria non legge simboli isolati: individua i fili invisibili che collegano gli
-                eventi, decodificando la realtà con la precisione di chi sa guardare oltre l&apos;apparenza.
+                La sua analisi dei Tarocchi di Marsiglia integra il rigore del pensiero con una straordinaria capacità
+                di visione d&apos;insieme. Diplomata in <strong>Naturopatia</strong>, con vari Master e insignita dell&apos;onorificenza
+                per l&apos;utilizzo del prestigioso <em>Vademecum Heel Guna</em>, Valeria non legge simboli isolati. 
+                Applica le stesse competenze maturate nel suo studio e nella parafarmacia che gestiva in Liguria:
+                individua i fili invisibili che collegano gli eventi, decodificando la realtà con chirurgica precisione.
               </p>
               <p>
                 Mente, corpo, spirito. Valeria conosce l&apos;interazione tra questi livelli e nelle carte li vede agire
-                simultaneamente. Chi si rivolge a lei avverte subito la differenza: non riceve solo una lettura, ma una
-                mappa chiara della propria situazione e una direzione precisa per l&apos;azione.
+                simultaneamente. Non offre scorciatoie magiche o false &quot;guarigioni&quot;. Chi si rivolge a lei avverte subito 
+                la differenza: riceve una mappa chiara del proprio equilibrio energetico e una direzione precisa per l&apos;azione.
               </p>
             </div>
 
             <div className="mt-6 p-4 rounded-lg border border-gold-600/20 bg-gold-600/5">
-              <p className="font-serif text-lg font-bold text-gold-400 mb-1">L&apos;Arte della Visione e del Rigore</p>
+              <p className="font-serif text-lg font-bold text-gold-400 mb-1">Dallo Studio all&apos;Analisi Simbolica</p>
               <p className="text-gold-500/85 text-xs font-medium tracking-wide mb-3">
-                Dalla complessità alla chiarezza: lo stesso metodo
+                Una solida competenza al servizio della persona
               </p>
               <p className="text-white/50 text-sm leading-relaxed italic">
-                &ldquo;Saper guardare l&apos;insieme senza perdere il dettaglio, riconoscere i momenti di svolta e mantenere
-                una lucidità assoluta. Valeria porta nella lettura delle carte lo stesso rigore analitico che applica ad ogni
-                sistema complesso: una capacità rara di vedere dove si incrociano le forze del destino e dove, invece, è
-                possibile agire per cambiare rotta.&rdquo;
+                &ldquo;Che si tratti di consigliare i Fiori di Bach in studio o di decodificare un tiraggio dei Tarocchi, 
+                l&apos;approccio è il medesimo: ascolto strutturato, totale rispetto per l&apos;individuo e rifiuto di ogni
+                semplificazione da \&apos;guru\&apos;. Valeria porta nella lettura delle carte la stessa serietà accademica che 
+                le è valsa alti riconoscimenti in ambito naturopatico.&rdquo;
               </p>
             </div>
 
