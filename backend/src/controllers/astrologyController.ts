@@ -70,7 +70,7 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
 
   try {
     const { birthDate, birthTime, city, type } = paidSchema.parse(req.body)
-    const cost = type === 'basic' ? 5 : 12
+    const cost = type === 'basic' ? 15 : 30
 
     // 1. Transaction to deduct credits
     const { pool } = await import('../db.js')

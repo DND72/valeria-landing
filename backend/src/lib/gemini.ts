@@ -1,6 +1,6 @@
-import { GoogleGenAI } from '@google/genai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-let ai: GoogleGenAI | null = null
+let ai: GoogleGenerativeAI | null = null
 
 function getGeminiClient() {
   if (!ai) {
@@ -8,7 +8,7 @@ function getGeminiClient() {
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY non configurata')
     }
-    ai = new GoogleGenAI({ apiKey })
+    ai = new GoogleGenerativeAI(apiKey)
   }
   return ai
 }
@@ -35,14 +35,12 @@ ${chartData.case.map((c: any) => `- Casa ${c.numero}: ${c.segno} a ${c.gradi}°`
 
 Scrivi ora la tua analisi.`
 
-  const response = await client.models.generateContent({
+  const model = client.getGenerativeModel({ 
     model: 'gemini-2.5-flash',
-    contents: userPrompt,
-    config: {
-      systemInstruction: sysPrompt,
-      temperature: 0.7,
-    }
+    systemInstruction: sysPrompt
   })
 
-  return response.text || 'Nessuna interpretazione generata.'
+  const result = await model.generateContent(userPrompt)
+
+  return result.response.text() || 'Nessuna interpretazione generata.'
 }

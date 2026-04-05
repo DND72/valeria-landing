@@ -238,14 +238,14 @@ export default function PaidNatalCharts() {
                     <input type="radio" value="basic" checked={type === 'basic'} onChange={() => setType('basic')} className="hidden" />
                     <h4 className="font-serif text-lg font-semibold text-white mb-1">Tema Base</h4>
                     <p className="text-xs text-white/50 mb-2">Sole, Luna, Ascendente</p>
-                    <span className="text-gold-400 font-bold">5 CR</span>
+                    <span className="text-gold-400 font-bold">15 CR</span>
                   </label>
                   
                   <label className={`cursor-pointer border rounded-xl p-4 text-center transition-all ${type === 'advanced' ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/10 hover:border-white/20'}`}>
                     <input type="radio" value="advanced" checked={type === 'advanced'} onChange={() => setType('advanced')} className="hidden" />
                     <h4 className="font-serif text-lg font-semibold text-white mb-1">Evolutivo</h4>
                     <p className="text-xs text-white/50 mb-2">Tutti i Pianeti e Case</p>
-                    <span className="text-emerald-400 font-bold">12 CR</span>
+                    <span className="text-emerald-400 font-bold">30 CR</span>
                   </label>
                 </div>
 
@@ -270,7 +270,7 @@ export default function PaidNatalCharts() {
                         Lettura Astrologica in corso... (10s)
                       </>
                     ) : (
-                      `Calcola e Salva (${type === 'basic' ? '5 CR' : '12 CR'})`
+                      `Calcola e Salva (${type === 'basic' ? '15 CR' : '30 CR'})`
                     )}
                   </button>
                 </div>
