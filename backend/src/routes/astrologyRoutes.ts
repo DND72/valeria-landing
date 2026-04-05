@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { calculateNatalChart } from '../controllers/astrologyController'
+import { calculateNatalChart } from '../controllers/astrologyController.js'
 import { requireClerkAuth } from '../middleware/clerkAuth.js'
 
 const router = Router()
