@@ -1,10 +1,7 @@
 providers = ["node", "python"]
 
-[phases.install]
-  cmds = ["npm ci", "python3 -m venv /opt/venv", "/opt/venv/bin/pip install -r requirements.txt"]
-
 [phases.build]
   cmds = ["npm run build"]
 
 [start]
-  cmd = "PATH=/opt/venv/bin:$PATH npm run start"
+  cmd = "npm run start"
