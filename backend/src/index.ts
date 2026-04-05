@@ -9,6 +9,7 @@ import { createMeRouter } from './routes/me.js'
 import { createStaffRouter } from './routes/staff.js'
 import { createWalletRouter } from './routes/wallet.js'
 import { createBookingRouter } from './routes/booking.js'
+import astrologyRouter from './routes/astrologyRoutes.js'
 import { startWalletTimeoutCron } from './cron/walletTimeout.js'
 
 const app = express()
@@ -134,6 +135,7 @@ app.use('/api/staff', createStaffRouter(pool))
 app.use('/api/me', createMeRouter(pool))
 app.use('/api/wallet', createWalletRouter(pool))
 app.use('/api/booking', createBookingRouter(pool))
+app.use('/api/astrology', astrologyRouter)
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Non trovato' })

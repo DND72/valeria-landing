@@ -409,7 +409,7 @@ export default function Dashboard() {
 
         {/* Quick actions — solo clienti (non ha senso per staff) */}
         {!privileged && (
-          <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
               {
                 icon: '👛',
@@ -425,6 +425,14 @@ export default function Dashboard() {
                 desc: 'Settore (Tarocchi o Crescita), poi tipo e data',
                 href: '#scegli-consulto',
                 cta: 'Scorri alle card',
+              },
+              {
+                icon: '✨',
+                title: 'Tema Natale',
+                desc: 'Calcola il tuo Ascendente',
+                href: '/tema-natale',
+                cta: 'Vai al calcolatore',
+                isRouterLink: true,
               },
               {
                 icon: '⭐',
