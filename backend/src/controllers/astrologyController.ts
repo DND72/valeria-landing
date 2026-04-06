@@ -38,16 +38,36 @@ async function runNatalCalculation(birthDate: string, birthTime: string, city: s
 export const calculateNatalChart = async (req: Request, res: Response): Promise<void> => {
   try {
     const { birthDate, birthTime, city } = calcSchema.parse(req.body)
+    const userId = req.auth?.userId
+
+    // Se l'utente è loggato, verifichiamo prima se ha già un tema salvato
+    if (userId) {
+      const { pool } = await import('../db.js')
+      const existing = await pool.query(
+        `SELECT chart_data, interpretation FROM natal_charts 
+         WHERE clerk_user_id = $1 AND chart_type = 'basic' LIMIT 1`,
+        [userId]
+      )
+
+      if (existing.rows.length > 0) {
+        const row = existing.rows[0]
+        res.json({
+          ...row.chart_data,
+          interpretation: row.interpretation,
+          isExisting: true
+        })
+        return
+      }
+    }
+
     const result = await runNatalCalculation(birthDate, birthTime, city)
 
-    // Se l'utente è loggato, generiamo l'interpretazione base (gratuita)
-    const userId = req.auth?.userId
+    // Generiamo l'interpretazione base (gratuita) solo se loggato
     let interpretation = ""
     if (userId) {
       const { generateChartInterpretation } = await import('../lib/gemini.js')
       interpretation = await generateChartInterpretation(result, 'basic')
       
-      // Salvataggio nel DB se loggato (per persistenza immediata)
       const { pool } = await import('../db.js')
       await pool.query(
         `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
@@ -172,15 +192,22 @@ export const syncNatal = async (req: Request, res: Response) => {
     const { pool } = await import('../db.js')
 
     try {
-      // 1. Aggiorna il profilo billing (per dati fiscali futuri)
+      // 0. Verifica se i dati sono già presenti e bloccati
+      const currentProfile = await pool.query(
+        `SELECT declared_birthday FROM client_billing_profiles WHERE clerk_user_id = $1`,
+        [userId]
+      )
+
+      if (currentProfile.rows.length > 0 && currentProfile.rows[0].declared_birthday) {
+        res.status(403).json({ error: 'I dati di nascita sono bloccati. Contatta l\'assistenza per modificarli.' })
+        return
+      }
+
+      // 1. Inserisce (solo se non esiste) il profilo billing
       await pool.query(
         `INSERT INTO client_billing_profiles (clerk_user_id, declared_birthday, birth_time, birth_city, updated_at)
          VALUES ($1, $2::date, $3, $4, now())
-         ON CONFLICT (clerk_user_id) DO UPDATE SET
-           declared_birthday = EXCLUDED.declared_birthday,
-           birth_time = EXCLUDED.birth_time,
-           birth_city = EXCLUDED.birth_city,
-           updated_at = now()`,
+         ON CONFLICT (clerk_user_id) DO NOTHING`,
         [userId, birthDate, birthTime, city]
       )
 

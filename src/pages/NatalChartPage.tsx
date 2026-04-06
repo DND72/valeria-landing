@@ -255,32 +255,50 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
 }
 
 export default function NatalChartPage() {
-  const { calculateFreeChart } = useAstrologyApi()
+  const { calculateFreeChart, syncNatalData, getMyCharts } = useAstrologyApi()
   const { user } = useUser()
   const isLoggedIn = !!user
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<NatalChartResponse | null>(null)
-
-  // Sincronizzazione automatica quando un ospite effettua il login
-  const { syncNatalData } = useAstrologyApi()
-  useEffect(() => {
-    const pendingData = localStorage.getItem('valeria_pending_natal')
-    if (isLoggedIn && pendingData) {
-      const data = JSON.parse(pendingData)
-      syncNatalData(data)
-        .then(() => {
-          localStorage.removeItem('valeria_pending_natal')
-          console.log('[Sync] Dati natali sincronizzati con il profilo utente')
-        })
-        .catch((err: Error) => console.error('[Sync] Errore sincronizzazione automatica:', err))
-    }
-  }, [isLoggedIn, syncNatalData])
-
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [city, setCity] = useState('')
+  const [isFixed, setIsFixed] = useState(false)
+
+  // Sincronizzazione automatica e caricamento Tema Esistente
+  useEffect(() => {
+    if (!isLoggedIn) return
+
+    const initPersona = async () => {
+      try {
+        const charts = await getMyCharts()
+        if (charts && charts.length > 0) {
+          const mainChart = charts[0] // Prendi l'ultimo salvato
+          setResult(mainChart.chartData as any)
+          setDate(mainChart.birthDate)
+          setTime(mainChart.birthTime)
+          setCity(mainChart.city)
+          setIsFixed(true)
+        } else {
+          // Solo se non ha chart, proviamo a sincronizzare dati pendenti dall'ospite
+          const pendingData = localStorage.getItem('valeria_pending_natal')
+          if (pendingData) {
+            const data = JSON.parse(pendingData)
+            await syncNatalData(data)
+            localStorage.removeItem('valeria_pending_natal')
+            // Ricarica dopo sync per avere il chart generato sul server
+            initPersona()
+          }
+        }
+      } catch (err) {
+        console.error('[Init] Errore caricamento profilo:', err)
+      }
+    }
+
+    initPersona()
+  }, [isLoggedIn, getMyCharts, syncNatalData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -358,9 +376,10 @@ export default function NatalChartPage() {
                   <input
                     type="date"
                     required
+                    disabled={isFixed}
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all"
+                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                 </div>
                 <div className="space-y-2">
@@ -368,9 +387,10 @@ export default function NatalChartPage() {
                   <input
                     type="time"
                     required
+                    disabled={isFixed}
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all"
+                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                 </div>
                 <div className="space-y-2">
@@ -378,10 +398,11 @@ export default function NatalChartPage() {
                   <input
                     type="text"
                     required
+                    disabled={isFixed}
                     placeholder="Es. Roma"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all"
+                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                 </div>
               </div>
@@ -401,22 +422,27 @@ export default function NatalChartPage() {
 
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-between">
                 <p className="text-white/30 text-[11px] max-w-xs">
-                  L'orario è fondamentale per il calcolo preciso dell'Ascendente. Usa il certificato di nascita.
+                  {isFixed 
+                    ? "✦ I tuoi dati di nascita sono stati registrati e bloccati. Contatta l'assistenza per eventuali correzioni."
+                    : "L'orario è fondamentale per il calcolo preciso dell'Ascendente. Usa il certificato di nascita."
+                  }
                 </p>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-3.5 rounded-xl bg-gradient-to-r from-gold-700 via-gold-500 to-gold-400 text-dark-900 font-bold uppercase tracking-wider text-sm transition-all hover:shadow-[0_0_30px_rgba(212,160,23,0.5)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
-                >
-                  {loading ? (
-                    <>
-                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-dark-900" />
-                      Calcolo Effemeridi...
-                    </>
-                  ) : (
-                    <> Genera la Ruota Zodiacale </>
-                  )}
-                </button>
+                {!isFixed && (
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-3.5 rounded-xl bg-gradient-to-r from-gold-700 via-gold-500 to-gold-400 text-dark-900 font-bold uppercase tracking-wider text-sm transition-all hover:shadow-[0_0_30px_rgba(212,160,23,0.5)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                  >
+                    {loading ? (
+                      <>
+                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-dark-900" />
+                        Calcolo Effemeridi...
+                      </>
+                    ) : (
+                      <> Genera la Ruota Zodiacale </>
+                    )}
+                  </button>
+                )}
               </div>
             </form>
           </motion.div>
