@@ -184,7 +184,7 @@ export default function ZodiacWheel({
             <g key={sign.name} className="cursor-help group">
               <title>{`${sign.name} (${sign.el})`}</title>
               <path 
-                d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1, rotationOffset)}
+                d={arcPath(R.SIGN_OUT, R.INNER, lon0, lon1, rotationOffset)}
                 fill={ELEMENT_BG[sign.el]} 
                 stroke="rgba(255,255,255,0.05)" 
                 strokeWidth="1" 
@@ -238,6 +238,66 @@ export default function ZodiacWheel({
             </g>
           )
         })()}
+
+        {/* ── 360° PRECISION GRADUATION (ON BORDER INTERNAL FACING OUT) ── */}
+        {useMemo(() => {
+          const elements = []
+          for (let i = 0; i < 360; i++) {
+            const isSign = i % 30 === 0
+            const isDecan = i % 10 === 0
+            const isFive = i % 5 === 0
+            
+            let tickLen = 15; let strokeW = 1.0; let opacity = 0.3; let strokeColor = "rgba(255,255,255,0.4)"
+            let p1R = R.SIGN_IN
+            
+            if (isSign) { 
+              // Linee dei 12 spicchi: partono dall'anello interno e arrivano al bordo esterno
+              p1R = R.INNER
+              tickLen = R.SIGN_OUT - R.INNER
+              strokeW = 3.0
+              opacity = 0.4
+              strokeColor = "rgba(212,160,23,0.3)" // Oro semitrasparente per delimitare gli spicchi
+            } else if (isDecan) { 
+              tickLen = 40; strokeW = 3.5; opacity = 1.0; strokeColor = "#FFF" 
+            } else if (isFive) { 
+              tickLen = 25; strokeW = 3.0; opacity = 0.9; strokeColor = "rgba(255,255,255,0.8)" 
+            }
+            
+            const p1 = toXY(p1R, i, rotationOffset)
+            const p2 = toXY(p1R + tickLen, i, rotationOffset)
+            
+            elements.push(
+              <line 
+                key={`tick-${i}`} 
+                x1={p1.x} y1={p1.y} 
+                x2={p2.x} y2={p2.y} 
+                stroke={strokeColor} 
+                strokeWidth={strokeW} 
+                opacity={opacity} 
+                filter={isSign ? 'url(#glow-p)' : 'none'}
+              />
+            )
+
+            if (isDecan && !isSign) {
+              const labelPos = toXY(R.SIGN_IN + 60, i, rotationOffset)
+              elements.push(
+                <text 
+                  key={`deg-${i}`} 
+                  x={labelPos.x} y={labelPos.y} 
+                  fontSize="32" 
+                  fill="#FFF" 
+                  textAnchor="middle" 
+                  dominantBaseline="middle" 
+                  className="font-mono font-bold"
+                  style={{ textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(255,255,255,0.4)' }}
+                >
+                  {i % 30}
+                </text>
+              )
+            }
+          }
+          return elements
+        }, [rotationOffset])}
 
         {/* ── Pianeti ── */}
         {planets.map((p: PlanetData) => {
@@ -305,60 +365,6 @@ export default function ZodiacWheel({
             </g>
           )
         })}
-
-        {/* ── 360° PRECISION GRADUATION (ON BORDER INTERNAL FACING OUT) ── */}
-        {useMemo(() => {
-          const elements = []
-          for (let i = 0; i < 360; i++) {
-            const isSign = i % 30 === 0
-            const isDecan = i % 10 === 0
-            const isFive = i % 5 === 0
-            
-            let tickLen = 15; let strokeW = 1.0; let opacity = 0.3; let strokeColor = "rgba(255,255,255,0.4)"
-            
-            if (isSign) { 
-              tickLen = 65; strokeW = 5.0; opacity = 1.0; strokeColor = "#FFD700" // ORO SOLIDO
-            } else if (isDecan) { 
-              tickLen = 40; strokeW = 3.5; opacity = 1.0; strokeColor = "#FFF" // BIANCO PURO PER 10°
-            } else if (isFive) { 
-              tickLen = 25; strokeW = 3.0; opacity = 0.9; strokeColor = "rgba(255,255,255,0.8)" // 5° BEN VISIBILI
-            }
-            
-            const p1 = toXY(R.SIGN_IN, i, rotationOffset)
-            const p2 = toXY(R.SIGN_IN + tickLen, i, rotationOffset)
-            
-            elements.push(
-              <line 
-                key={`tick-${i}`} 
-                x1={p1.x} y1={p1.y} 
-                x2={p2.x} y2={p2.y} 
-                stroke={strokeColor} 
-                strokeWidth={strokeW} 
-                opacity={opacity} 
-                filter={isSign ? 'url(#glow-p)' : 'none'}
-              />
-            )
-
-            if (isDecan && !isSign) {
-              const labelPos = toXY(R.SIGN_IN + 60, i, rotationOffset)
-              elements.push(
-                <text 
-                  key={`deg-${i}`} 
-                  x={labelPos.x} y={labelPos.y} 
-                  fontSize="32" 
-                  fill="#FFF" 
-                  textAnchor="middle" 
-                  dominantBaseline="middle" 
-                  className="font-mono font-bold"
-                  style={{ textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(255,255,255,0.4)' }}
-                >
-                  {i % 30}
-                </text>
-              )
-            }
-          }
-          return elements
-        }, [rotationOffset])}
 
         {/* ── MOON DAY PATH (ARC) ── */}
         {moonStartLon !== undefined && moonEndLon !== undefined && (
