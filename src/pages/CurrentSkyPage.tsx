@@ -83,6 +83,8 @@ interface SkyData {
   eclissi?: Eclipse[]
   luna?: MoonData
   fasi_mensili?: MonthlyPhase[]
+  ascendente_totale?: number
+  mc_totale?: number
 }
 
 // ── Circadian Indicator Badge ────────────────────────────────────────────────
@@ -332,6 +334,8 @@ export default function CurrentSkyPage() {
                 <ZodiacWheel 
                   planets={sky.pianeti} 
                   theme={theme}
+                  ascLon={sky.ascendente_totale}
+                  mcLon={sky.mc_totale}
                 />
               </motion.div>
 

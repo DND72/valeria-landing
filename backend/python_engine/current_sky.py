@@ -176,10 +176,20 @@ def get_current_sky():
         eclipses.sort(key=lambda x: x["jd"])
         for ex in eclipses: del ex["jd"]
 
+        # ─────────────────────────────────────────
+        # ASCENDENTE E MEDIO CIELO (Default Roma per il Cielo Attuale)
+        # ─────────────────────────────────────────
+        lat_roma, lon_roma = 41.9028, 12.4964
+        cusps, ascmc = swe.houses(jd, lat_roma, lon_roma, b'P')
+        asc_tot = ascmc[0]
+        mc_tot = ascmc[1]
+
         return {
             "timestamp": now.strftime("%Y-%m-%dT%H:%M:00Z"),
             "pianeti": pianeti,
             "eclissi": eclipses,
+            "ascendente_totale": round(asc_tot, 2),
+            "mc_totale": round(mc_tot, 2),
             "luna": { "fase": phase_name, "icona": moon_icon, "illuminazione": round(illumination, 1), "angolo": round(phase_angle, 2), "segno": moon_entry["segno"] if moon_entry else "N/A", "elemento": moon_entry["elemento"] if moon_entry else "N/A" },
             "fasi_mensili": monthly_phases
         }

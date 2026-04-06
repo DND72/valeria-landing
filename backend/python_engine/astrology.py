@@ -159,6 +159,7 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
             "fuso_orario": tz_name,
             "ora_utc": utc_dt.strftime("%Y-%m-%d %H:%M UTC"),
             "ascendente_totale": round(asc_deg, 2),
+            "mc_totale": round(ascmc[1], 2),
             "segno": sign_name,
             "grado_nel_segno": round(deg_in_sign, 2),
             "pianeti": pianeti_calcolati,
