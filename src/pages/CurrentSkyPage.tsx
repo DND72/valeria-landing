@@ -50,6 +50,7 @@ interface Eclipse {
   sottotipo: string
   emoji: string
   data: string
+  visibilità: string
 }
 
 interface SkyData {
@@ -151,6 +152,40 @@ export default function CurrentSkyPage() {
                   ))}
                 </div>
               </motion.div>
+
+              {/* Pannello Eclissi (Spostato al centro sotto la Legenda) */}
+              {sky.eclissi && sky.eclissi.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  transition={{ delay: 0.6 }}
+                  className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md w-full max-w-[800px]"
+                >
+                  <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+                    <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium text-center">
+                      🌒 Prossimi Eventi Celestiali
+                    </h4>
+                  </div>
+                  <div className="divide-y divide-white/5 max-h-[350px] overflow-y-auto custom-scrollbar">
+                    {sky.eclissi.map((e, i) => (
+                      <div key={i} className="flex items-center gap-6 px-8 py-5 hover:bg-white/[0.04] transition-colors group">
+                        <span className="text-3xl flex-shrink-0 transition-transform group-hover:scale-110">{e.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white/90 text-base font-semibold flex items-center gap-3">
+                             {e.tipo} {e.sottotipo}
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-normal ${e.tipo === 'Solare' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'}`}>
+                              {e.data}
+                            </span>
+                          </p>
+                          <p className="text-white/40 text-xs mt-1.5 italic group-hover:text-white/60 transition-colors">
+                            📍 {e.visibilità}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* ── Analisi Laterale ── */}
@@ -193,43 +228,13 @@ export default function CurrentSkyPage() {
                 <AspectGrid planets={sky.pianeti} />
               </div>
 
+
               {/* Extra Info */}
-              <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-white/5 rounded-3xl p-6 leading-relaxed">
+              <div className="bg-gradient-to-br from-indigo-500/10 to-transparent border border-white/5 rounded-3xl p-6 leading-relaxed">
                 <p className="text-white/30 text-xs italic">
                   "Le posizioni planetarie riflettono le energie cosmiche collettive in questo istante. Ogni aspetto nella griglia e nella ruota indica una tensione o un'armonia speciale tra due archetipi."
                 </p>
               </div>
-
-              {/* Pannello Eclissi */}
-              {sky.eclissi && sky.eclissi.length > 0 && (
-                <div className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md">
-                  <div className="px-6 py-4 border-b border-white/5">
-                    <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium">
-                      🌑 Eclissi · Prossimi 24 Mesi
-                    </h4>
-                  </div>
-                  <div className="divide-y divide-white/5 max-h-[280px] overflow-y-auto custom-scrollbar">
-                    {sky.eclissi.map((e, i) => (
-                      <div key={i} className="flex items-center gap-4 px-6 py-3 hover:bg-white/[0.02] transition-colors">
-                        <span className="text-2xl flex-shrink-0">{e.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white/80 text-sm font-semibold">
-                            Eclisse {e.tipo}
-                            <span className={`ml-2 text-[10px] uppercase px-2 py-0.5 rounded-full font-normal ${
-                              e.tipo === 'Solare' 
-                                ? 'bg-amber-500/15 text-amber-400/80' 
-                                : 'bg-blue-500/15 text-blue-300/80'
-                            }`}>
-                              {e.sottotipo}
-                            </span>
-                          </p>
-                        </div>
-                        <span className="font-mono text-white/40 text-xs flex-shrink-0">{e.data}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Bottoni CTA */}
               <div className="flex flex-col gap-3">
