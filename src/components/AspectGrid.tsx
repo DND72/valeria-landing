@@ -35,8 +35,12 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
             <tr>
               <th className="w-8 h-8"></th>
               {gridPlanets.map(p => (
-                <th key={p.nome} className="w-8 h-8 text-center text-white/30 font-serif text-sm p-1">
-                  {BODY_GLYPHS[p.nome] || p.nome[0]}
+                <th 
+                  key={p.nome} 
+                  className="w-8 h-8 text-center text-white/30 font-serif text-sm p-1 cursor-help group relative"
+                  title={p.nome}
+                >
+                  <span className="group-hover:text-gold-400 transition-colors">{BODY_GLYPHS[p.nome] || p.nome[0]}</span>
                 </th>
               ))}
             </tr>
@@ -45,8 +49,11 @@ export default function AspectGrid({ planets, className = '' }: AspectGridProps)
             {gridPlanets.map((pRow, rowIndex) => (
               <tr key={pRow.nome}>
                 {/* Header riga */}
-                <td className="w-8 h-8 text-center text-white/30 font-serif text-sm border-r border-white/10 p-1">
-                  {BODY_GLYPHS[pRow.nome] || pRow.nome[0]}
+                <td 
+                  className="w-8 h-8 text-center text-white/30 font-serif text-sm border-r border-white/10 p-1 cursor-help group"
+                  title={pRow.nome}
+                >
+                  <span className="group-hover:text-gold-400 transition-colors">{BODY_GLYPHS[pRow.nome] || pRow.nome[0]}</span>
                 </td>
                 
                 {gridPlanets.map((pCol, colIndex) => {

@@ -160,11 +160,22 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
           const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, mid)
           return (
-            <g key={sign.name}>
-              <path d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1)}
-                fill={ELEMENT_BG[sign.el]} stroke="rgba(212,160,23,0.25)" strokeWidth="2" />
-              <text x={symPos.x} y={symPos.y + 5} textAnchor="middle" dominantBaseline="central"
-                fontSize="72" fill={sign.color} fillOpacity="0.85" className="select-none font-serif">
+            <g key={sign.name} className="cursor-help group">
+              <title>{`${sign.name} (${sign.el})`}</title>
+              <path 
+                d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1)}
+                fill={ELEMENT_BG[sign.el]} 
+                stroke="rgba(212,160,23,0.25)" 
+                strokeWidth="2" 
+                className="transition-opacity group-hover:fill-opacity-20"
+              />
+              <text 
+                x={symPos.x} y={symPos.y + 5} 
+                textAnchor="middle" dominantBaseline="central"
+                fontSize="72" fill={sign.color} fillOpacity="0.85" 
+                className="select-none font-serif transition-transform group-hover:scale-110 origin-center"
+                style={{ transformOrigin: `${symPos.x}px ${symPos.y}px` }}
+              >
                 {sign.symbol}
               </text>
             </g>

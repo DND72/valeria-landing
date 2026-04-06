@@ -241,14 +241,14 @@ export default function CurrentSkyPage() {
                         {sky.luna.icona}
                       </span>
                       <div className="flex-1">
-                        <p className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-medium mb-1">Fase Lunare Corrente</p>
-                        <h3 className="text-white text-xl font-serif font-bold tracking-wide flex items-center gap-2">
+                        <p className="text-white/40 text-[11px] uppercase tracking-[0.3em] font-medium mb-2">Fase Lunare Corrente</p>
+                        <h3 className="text-white text-2xl font-serif font-bold tracking-wide flex items-center gap-3">
                           {sky.luna.fase}
-                          <span className="text-xs font-normal text-white/30 tracking-normal">in {sky.luna.segno}</span>
+                          <span className="text-sm font-normal text-white/30 tracking-normal">in {sky.luna.segno}</span>
                         </h3>
                         
-                        <div className="flex items-center gap-3 mt-1.5 mb-3">
-                          <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border ${
+                        <div className="flex items-center gap-3 mt-2 mb-4">
+                          <span className={`text-xs uppercase font-bold tracking-widest px-3 py-1 rounded-full border ${
                             sky.luna.elemento === 'Fuoco' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' :
                             sky.luna.elemento === 'Terra' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' :
                             sky.luna.elemento === 'Aria' ? 'bg-cyan-500/10 border-cyan-400/30 text-cyan-400' :
@@ -258,15 +258,15 @@ export default function CurrentSkyPage() {
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${sky.luna.illuminazione}%` }}
                               className="h-full bg-gradient-to-r from-indigo-500 to-white/60"
                             />
                           </div>
-                          <span className="text-white/60 text-[11px] font-mono whitespace-nowrap">{sky.luna.illuminazione}% illum.</span>
+                          <span className="text-white/60 text-xs font-mono whitespace-nowrap">{sky.luna.illuminazione}% illum.</span>
                         </div>
                       </div>
                     </div>
@@ -286,23 +286,23 @@ export default function CurrentSkyPage() {
               {sky.fasi_mensili && sky.fasi_mensili.length > 0 && (
                 <div className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md">
                   <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
-                    <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium text-center">
+                    <h4 className="text-white/50 text-[11px] uppercase tracking-[0.25em] font-medium text-center">
                       📅 Fasi del Mese · {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
                     </h4>
                   </div>
                   <div className="grid grid-cols-2 divide-x divide-white/5 divide-y">
                     {sky.fasi_mensili.map((ph, i) => (
-                      <div key={i} className="p-4 hover:bg-white/[0.03] transition-colors group">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xl group-hover:scale-110 transition-transform inline-block">{ph.icona}</span>
+                      <div key={i} className="p-5 hover:bg-white/[0.03] transition-colors group">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="text-2xl group-hover:scale-110 transition-transform inline-block">{ph.icona}</span>
                           <div>
-                            <p className="text-white/80 text-xs font-semibold leading-tight">{ph.fase}</p>
-                            <p className="font-mono text-white/30 text-[10px]">{ph.giorno} · {ph.ora_gmt} GMT</p>
+                            <p className="text-white/90 text-sm font-semibold leading-tight">{ph.fase}</p>
+                            <p className="font-mono text-white/30 text-xs">{ph.giorno} · {ph.ora_gmt} GMT</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-white/40 text-[10px] italic">{ph.segno}</span>
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold tracking-widest ${
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-white/40 text-xs italic">{ph.segno}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold tracking-widest ${
                             ph.elemento === 'Fuoco' ? 'bg-amber-500/15 text-amber-500' :
                             ph.elemento === 'Terra' ? 'bg-emerald-500/15 text-emerald-500' :
                             ph.elemento === 'Aria'  ? 'bg-cyan-500/15 text-cyan-400' :
@@ -318,7 +318,7 @@ export default function CurrentSkyPage() {
               {/* Tab Category */}
               <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10">
                 {CATEGORIES.map(c => (
-                  <button key={c.key} onClick={() => setActiveTab(c.key)} className={`flex-1 py-2 text-[10px] uppercase tracking-widest rounded-xl transition-all ${activeTab === c.key ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30 shadow-lg' : 'text-white/40 hover:text-white/70'}`}>
+                  <button key={c.key} onClick={() => setActiveTab(c.key)} className={`flex-1 py-2 text-[11px] uppercase tracking-widest rounded-xl transition-all ${activeTab === c.key ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30 shadow-lg' : 'text-white/40 hover:text-white/70'}`}>
                     {c.label}
                   </button>
                 ))}
@@ -334,7 +334,7 @@ export default function CurrentSkyPage() {
                         <span className="text-3xl w-10 text-center" style={{ color: info?.color || '#fff' }}>{info?.glyph || '●'}</span>
                         <div className="flex-1">
                           <p className="text-white/90 text-sm font-semibold">{p.nome}</p>
-                          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-0.5">Eclittica Geocentrica</p>
+                          <p className="text-white/40 text-[11px] uppercase tracking-widest mt-0.5">Eclittica Geocentrica</p>
                         </div>
                         <div className="text-right">
                           <p className="font-serif text-white text-lg leading-none">{p.segno}</p>
