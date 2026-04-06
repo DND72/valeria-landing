@@ -30,6 +30,30 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
         />
       </div>
 
+      {/* Legenda Aspetti */}
+      <div className="mb-10 p-4 border border-white/5 bg-white/[0.02] rounded-2xl">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-4 text-center">Significato degli Aspetti (Linee)</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="flex items-center gap-2">
+            <div className="h-0.5 w-6 bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]" />
+            <span className="text-[10px] text-white/70">Trigono (Armonia)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-0.5 w-6 bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)] border-t border-dashed" />
+            <span className="text-[10px] text-white/70">Sestile (Opportunità)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-0.5 w-6 bg-red-500 shadow-[0_0_5px_rgba(248,113,113,0.5)]" />
+            <span className="text-[10px] text-white/70">Quadrato (Sfida)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-0.5 w-6 bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.5)]" />
+            <span className="text-[10px] text-white/70">Opposizione (Polarità)</span>
+          </div>
+        </div>
+      </div>
+
+
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
         <div>
           <h3 className="font-serif text-2xl text-gold-400 font-semibold">Tema Natale e Ascendente</h3>

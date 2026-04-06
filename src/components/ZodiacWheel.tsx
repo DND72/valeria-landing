@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 // ─────────────────────────────────────────────
 // Dati Zodiacali e Planetari
@@ -19,10 +19,10 @@ const ZODIAC = [
 ]
 
 const ELEMENT_BG: Record<string, string> = {
-  'Fuoco': 'rgba(220,80,60,0.07)',
-  'Terra': 'rgba(80,200,100,0.07)',
-  'Aria':  'rgba(255,220,80,0.07)',
-  'Acqua': 'rgba(80,160,220,0.07)',
+  'Fuoco': 'rgba(220,80,60,0.06)',
+  'Terra': 'rgba(80,200,100,0.06)',
+  'Aria':  'rgba(255,220,80,0.06)',
+  'Acqua': 'rgba(80,160,220,0.06)',
 }
 
 const BODY_INFO: Record<string, { glyph: string; color: string; ring: string }> = {
@@ -49,47 +49,29 @@ const BODY_INFO: Record<string, { glyph: string; color: string; ring: string }> 
 }
 
 // ─────────────────────────────────────────────
-// Dati Costellazioni (posizioni stilizzate)
-// rl = longitudine relativa nel settore (0-30)
-// lat = latitudine eclittica approssimata (-8..+8)
-// sz = dimensione stella (1=piccola, 2=media, 3=grande/brillante)
+// Definizioni Aspetti
 // ─────────────────────────────────────────────
-interface StarDef { rl: number; lat: number; sz?: number }
-interface ConstellationDef { stars: StarDef[]; lines: [number, number][] }
-
-const CONSTELLATION: Record<string, ConstellationDef> = {
-  'Ariete':     { stars: [{rl:4,lat:9,sz:2},{rl:7,lat:8},{rl:10,lat:7},{rl:25,lat:3}], lines:[[0,1],[1,2],[2,3]] },
-  'Toro':       { stars: [{rl:5,lat:-5},{rl:9,lat:0},{rl:12,lat:4,sz:3},{rl:14,lat:-4},{rl:26,lat:4,sz:2}], lines:[[0,1],[1,2],[1,3]] },
-  'Gemelli':    { stars: [{rl:4,lat:8,sz:2},{rl:6,lat:8,sz:2},{rl:5,lat:2},{rl:8,lat:2},{rl:12,lat:0},{rl:20,lat:5}], lines:[[0,1],[0,2],[1,3],[2,4],[3,4],[4,5]] },
-  'Cancro':     { stars: [{rl:6,lat:-5},{rl:10,lat:-2},{rl:15,lat:0},{rl:12,lat:3},{rl:18,lat:-3}], lines:[[0,1],[1,2],[2,3],[2,4]] },
-  'Leone':      { stars: [{rl:3,lat:-1,sz:3},{rl:7,lat:2},{rl:10,lat:5},{rl:12,lat:4},{rl:16,lat:0},{rl:20,lat:12,sz:2}], lines:[[0,1],[1,2],[2,3],[3,4],[0,4],[4,5]] },
-  'Vergine':    { stars: [{rl:3,lat:8},{rl:8,lat:5},{rl:13,lat:2},{rl:17,lat:0},{rl:21,lat:-3,sz:3},{rl:26,lat:-5}], lines:[[0,1],[1,2],[2,3],[3,4],[4,5]] },
-  'Bilancia':   { stars: [{rl:4,lat:5},{rl:10,lat:0},{rl:16,lat:-3},{rl:22,lat:0},{rl:26,lat:4,sz:2}], lines:[[0,1],[1,2],[2,3],[3,4],[0,4]] },
-  'Scorpione':  { stars: [{rl:3,lat:-3,sz:3},{rl:6,lat:-2},{rl:10,lat:-1},{rl:13,lat:-3},{rl:17,lat:-6},{rl:21,lat:-10},{rl:25,lat:-14},{rl:28,lat:-16}], lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]] },
-  'Sagittario': { stars: [{rl:3,lat:-4},{rl:8,lat:0},{rl:12,lat:3},{rl:9,lat:-2},{rl:16,lat:-1,sz:2},{rl:20,lat:2},{rl:23,lat:-3},{rl:27,lat:-5}], lines:[[0,1],[1,2],[3,4],[4,5],[5,6],[6,7],[1,3]] },
-  'Capricorno': { stars: [{rl:2,lat:-2},{rl:7,lat:-5},{rl:13,lat:-6},{rl:18,lat:-4},{rl:23,lat:-2},{rl:27,lat:0}], lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[0,5]] },
-  'Acquario':   { stars: [{rl:4,lat:-8,sz:2},{rl:10,lat:-6},{rl:16,lat:-5},{rl:21,lat:-8},{rl:8,lat:-3},{rl:14,lat:-2},{rl:23,lat:-3}], lines:[[0,1],[1,2],[2,3],[4,5],[5,6]] },
-  'Pesci':      { stars: [{rl:3,lat:6},{rl:8,lat:4},{rl:13,lat:2},{rl:15,lat:5},{rl:19,lat:7},{rl:22,lat:4},{rl:26,lat:2}], lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[2,6]] },
-}
+const ASPECTS = [
+  { deg: 0,   orb: 8, color: '#FFFFFF', label: 'Congiunzione', dash: '0' },
+  { deg: 60,  orb: 5, color: '#4ADE80', label: 'Sestile',      dash: '4 4' },
+  { deg: 90,  orb: 7, color: '#F87171', label: 'Quadrato',     dash: '0' },
+  { deg: 120, orb: 8, color: '#3B82F6', label: 'Trigono',      dash: '0' },
+  { deg: 180, orb: 8, color: '#A855F7', label: 'Opposizione',  dash: '0' },
+]
 
 // ─────────────────────────────────────────────
-// Geometria: longitudine eclittica → coordinate SVG
-// Ariete 0° → sinistra (9 o'clock). Gradi crescono antiorari.
-// ViewBox: 1000×1000, centro = (500,500)
+// Geometria (ViewBox 2000x2000)
 // ─────────────────────────────────────────────
-const CX = 500; const CY = 500
+const CX = 1000; const CY = 1000
 
 function toXY(r: number, lon: number) {
   const rad = ((180 - lon) * Math.PI) / 180
   return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) }
 }
 
-// Arco SVG tra due longitudini per un anello (interno e esterno)
 function arcPath(rOuter: number, rInner: number, lonStart: number, lonEnd: number) {
-  const p1 = toXY(rOuter, lonStart)
-  const p2 = toXY(rOuter, lonEnd)
-  const p3 = toXY(rInner, lonEnd)
-  const p4 = toXY(rInner, lonStart)
+  const p1 = toXY(rOuter, lonStart); const p2 = toXY(rOuter, lonEnd)
+  const p3 = toXY(rInner, lonEnd);   const p4 = toXY(rInner, lonStart)
   return [
     `M ${p1.x} ${p1.y}`,
     `A ${rOuter} ${rOuter} 0 0 0 ${p2.x} ${p2.y}`,
@@ -99,22 +81,19 @@ function arcPath(rOuter: number, rInner: number, lonStart: number, lonEnd: numbe
   ].join(' ')
 }
 
-// ─────────────────────────────────────────────
-// Costanti raggi (in unità ViewBox 1000×1000)
-// ─────────────────────────────────────────────
+// Raggi (Raddoppiati rispetto alla versione 1000x1000)
 const R = {
-  OUTER:       470,   // bordo esterno
-  SIGN_OUT:    465,   // outer anello segni
-  SIGN_IN:     395,   // inner anello segni / outer anello costellazioni
-  CONST_IN:    340,   // inner anello costellazioni
-  FAST:        288,   // Sole Luna Mercurio Venere Marte
-  SLOW:        218,   // Giove … Chirone
-  AST:         155,   // Asteroidi
-  POINT:       100,   // Nodi Lunari, Lilith, etc.
-  INNER:        65,   // hub centrale
+  OUTER:       960,   
+  SIGN_OUT:    950,   
+  SIGN_IN:     820,   
+  CONST_IN:    700,   
+  FAST:        620,   
+  SLOW:        490,   
+  AST:         370,   
+  POINT:       260,   
+  INNER:       160,   
 }
 
-// Mappatura categoria → raggio orbita
 const RING_R: Record<string, number> = {
   veloce:    R.FAST,
   lento:     R.SLOW,
@@ -123,7 +102,7 @@ const RING_R: Record<string, number> = {
 }
 
 // ─────────────────────────────────────────────
-// Interfaccia prop
+// Interfacce
 // ─────────────────────────────────────────────
 export interface PlanetData {
   nome: string
@@ -147,234 +126,131 @@ interface ZodiacWheelProps {
 export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '' }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
 
-  // Latitudine eclittica → raggio nell'anello costellazioni
-  const latToR = (lat: number) => {
-    const mid = (R.SIGN_IN + R.CONST_IN) / 2
-    const hw  = (R.SIGN_IN - R.CONST_IN) / 2 * 0.85
-    return mid + (lat / 8) * hw
-  }
+  // Calcolo Aspetti
+  const aspectLines = useMemo(() => {
+    if (!planets || planets.length < 2) return []
+    const lines: any[] = []
+    
+    for (let i = 0; i < planets.length; i++) {
+      for (let j = i + 1; j < planets.length; j++) {
+        const p1 = planets[i]
+        const p2 = planets[j]
+        
+        let diff = Math.abs(p1.lon_assoluta - p2.lon_assoluta)
+        if (diff > 180) diff = 360 - diff
+        
+        // Trova se c'è un aspetto
+        const asp = ASPECTS.find(a => Math.abs(diff - a.deg) <= a.orb)
+        if (asp && asp.deg !== 0) { // Saltiamo congiunzioni (0°) perché sono icone vicine
+          const precision = 1 - (Math.abs(diff - asp.deg) / asp.orb)
+          const r1 = RING_R[p1.categoria] ?? R.FAST
+          const r2 = RING_R[p2.categoria] ?? R.FAST
+          lines.push({
+            p1Name: p1.nome,
+            p2Name: p2.nome,
+            pos1: toXY(r1 - 15, p1.lon_assoluta),
+            pos2: toXY(r2 - 15, p2.lon_assoluta),
+            color: asp.color,
+            dash: asp.dash,
+            opacity: 0.15 + (precision * 0.45)
+          })
+        }
+      }
+    }
+    return lines
+  }, [planets])
 
   return (
     <div className={`relative flex items-center justify-center ${className}`} style={{ aspectRatio: '1/1' }}>
-      {/* Aura esterna */}
       <div className="absolute inset-0 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(100,60,200,0.18) 0%, rgba(40,20,100,0.08) 55%, transparent 75%)' }} />
+        style={{ background: 'radial-gradient(circle, rgba(120,80,240,0.15) 0%, rgba(40,20,120,0.05) 65%, transparent 85%)' }} />
 
-      <svg viewBox="0 0 1000 1000" className="w-full h-full overflow-visible"
-        style={{ maxWidth: '100%', maxHeight: '100%' }}>
-
+      <svg viewBox="0 0 2000 2000" className="w-full h-full overflow-visible">
         <defs>
-          {/* Sfondo disco */}
-          <radialGradient id="zw-disk" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stopColor="#0e0820" />
-            <stop offset="70%"  stopColor="#080512" />
-            <stop offset="100%" stopColor="#050310" />
+          <radialGradient id="zw-disk-big" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stopColor="#0d091e" />
+            <stop offset="85%"  stopColor="#04030a" />
           </radialGradient>
-          {/* Glow filtro */}
-          <filter id="zw-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-          <filter id="zw-glow-sm" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="blur" />
+          <filter id="glow-big" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="8" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        {/* ── Disco Base Universe ── */}
-        <circle cx={CX} cy={CY} r={R.OUTER} fill="url(#zw-disk)" />
+        <circle cx={CX} cy={CY} r={R.OUTER} fill="url(#zw-disk-big)" />
 
-        {/* Stelle di sfondo (puntini random nell'area della ruota) */}
-        {Array.from({ length: 120 }, (_, i) => {
-          const angle = (i * 137.508) % 360   // filotassi per distribuzione uniforme
-          const dist  = 50 + (i % 4) * 80 + (i % 7) * 20
-          const r_star = Math.min(dist, R.POINT - 15)
-          const { x, y } = toXY(r_star, angle)
-          const sz = [0.8, 1.2, 1.5, 2.0, 0.6, 1.0, 1.8][i % 7]
-          const op = [0.15, 0.25, 0.3, 0.2, 0.4, 0.15, 0.35][i % 7]
-          return <circle key={i} cx={x} cy={y} r={sz} fill="white" fillOpacity={op} />
+        {/* Stelle Background */}
+        {Array.from({ length: 200 }, (_, i) => {
+          const a = (i * 137.5) % 360; const d = 100 + (i % 8) * 110;
+          const { x, y } = toXY(Math.min(d, R.POINT - 20), a)
+          return <circle key={i} cx={x} cy={y} r={1 + (i % 3)} fill="white" fillOpacity={0.1 + (i % 5) * 0.05} />
         })}
 
-        {/* ── 12 Settori Zodiacali ── */}
-        {ZODIAC.map((sign, i) => {
-          const lon0 = i * 30
-          const lon1 = lon0 + 30
-          const midLon = lon0 + 15
-          const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, midLon)
+        {/* ── Linee Aspetti ── */}
+        <g opacity="0.8">
+          {aspectLines.map((line, idx) => (
+            <line
+              key={idx}
+              x1={line.pos1.x} y1={line.pos1.y}
+              x2={line.pos2.x} y2={line.pos2.y}
+              stroke={line.color}
+              strokeWidth="2.5"
+              strokeDasharray={line.dash}
+              strokeOpacity={line.opacity}
+              className="transition-opacity duration-300"
+            />
+          ))}
+        </g>
 
+        {/* ── 12 Settori ── */}
+        {ZODIAC.map((sign, i) => {
+          const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
+          const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, mid)
           return (
             <g key={sign.name}>
-              <path
-                d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1)}
-                fill={ELEMENT_BG[sign.el]}
-                stroke="rgba(212,160,23,0.3)"
-                strokeWidth="1"
-              />
-              {/* Simbolo segno */}
-              <text
-                x={symPos.x} y={symPos.y + 2}
-                textAnchor="middle" dominantBaseline="central"
-                fontSize="38" fill={sign.color} fillOpacity="0.9"
-                style={{ fontFamily: 'serif', pointerEvents: 'none', userSelect: 'none' }}
-              >
+              <path d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1)}
+                fill={ELEMENT_BG[sign.el]} stroke="rgba(212,160,23,0.25)" strokeWidth="2" />
+              <text x={symPos.x} y={symPos.y + 5} textAnchor="middle" dominantBaseline="central"
+                fontSize="72" fill={sign.color} fillOpacity="0.85" className="select-none font-serif">
                 {sign.symbol}
               </text>
-              {/* Gradi 0° a inizio settore */}
-              {(() => {
-                const tp = toXY(R.SIGN_IN - 10, lon0)
-                return <circle cx={tp.x} cy={tp.y} r="1.5" fill="rgba(212,160,23,0.4)" />
-              })()}
             </g>
           )
         })}
 
-        {/* ── Bordo Esterno ── */}
-        <circle cx={CX} cy={CY} r={R.SIGN_OUT} fill="none" stroke="rgba(212,160,23,0.7)" strokeWidth="2" />
-        <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.25)" strokeWidth="1" />
+        {/* Bordi Dorati */}
+        <circle cx={CX} cy={CY} r={R.SIGN_OUT} fill="none" stroke="rgba(212,160,23,0.6)" strokeWidth="4" />
+        <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.2)" strokeWidth="2" />
 
-        {/* ── Anello Costellazioni ── */}
-        {ZODIAC.map((sign, i) => {
-          const sectorStart = i * 30
-          const data = CONSTELLATION[sign.name]
-          if (!data) return null
-
-          const stars = data.stars.map(s => {
-            const absLon = sectorStart + s.rl
-            const r_s   = latToR(s.lat)
-            return { ...toXY(r_s, absLon), sz: s.sz || 1 }
-          })
-
-          return (
-            <g key={`const-${sign.name}`}>
-              {/* Linee costellazione */}
-              {data.lines.map(([a, b], li) => {
-                const sa = stars[a], sb = stars[b]
-                if (!sa || !sb) return null
-                return (
-                  <line key={li}
-                    x1={sa.x} y1={sa.y} x2={sb.x} y2={sb.y}
-                    stroke={sign.color} strokeOpacity="0.35" strokeWidth="0.8" />
-                )
-              })}
-              {/* Stelle */}
-              {stars.map((s, si) => (
-                <circle key={si} cx={s.x} cy={s.y}
-                  r={s.sz * 2.2}
-                  fill={sign.color} fillOpacity={0.5 + s.sz * 0.15}
-                  filter="url(#zw-glow-sm)"
-                />
-              ))}
-            </g>
-          )
-        })}
-
-        {/* Bordo interno anello costellazioni */}
-        <circle cx={CX} cy={CY} r={R.CONST_IN} fill="rgba(0,0,0,0.45)" stroke="rgba(212,160,23,0.15)" strokeWidth="1" />
-
-        {/* ── Orbite (cerchi tratteggiati per ogni anello) ── */}
-        {[R.FAST, R.SLOW, R.AST, R.POINT].map((r_orb, i) => (
-          <circle key={i} cx={CX} cy={CY} r={r_orb} fill="none"
-            stroke="rgba(255,255,255,0.05)" strokeWidth="1"
-            strokeDasharray={i === 0 ? '3 6' : i === 1 ? '2 8' : '1 10'}
-          />
+        {/* Orbite tratteggiate */}
+        {[R.FAST, R.SLOW, R.AST, R.POINT].map((r, i) => (
+          <circle key={i} cx={CX} cy={CY} r={r} fill="none" stroke="white" strokeOpacity="0.04" strokeWidth="2" strokeDasharray="10 20" />
         ))}
 
-        {/* Label anelli orbita */}
-        {[
-          { r: R.FAST,  label: 'Pianeti Veloci' },
-          { r: R.SLOW,  label: 'Pianeti Lenti'  },
-          { r: R.AST,   label: 'Asteroidi'       },
-          { r: R.POINT, label: 'Punti Speciali'  },
-        ].map(({ r: r_l, label }) => {
-          const pos = toXY(r_l, 270) // Posiziona label in cima (270° = top)
-          return (
-            <text key={label} x={pos.x} y={pos.y - 6}
-              textAnchor="middle" fontSize="9"
-              fill="rgba(255,255,255,0.2)"
-              style={{ fontFamily: 'sans-serif', pointerEvents: 'none', userSelect: 'none' }}
-            >
-              {label}
-            </text>
-          )
-        })}
-
-        {/* ── Separatori dei 12 segni (linee dal CONST_IN al FAST) ── */}
-        {Array.from({ length: 12 }, (_, i) => {
-          const lon = i * 30
-          const p1  = toXY(R.CONST_IN, lon)
-          const p2  = toXY(R.INNER, lon)
-          return (
-            <line key={i} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
-              stroke="rgba(212,160,23,0.12)" strokeWidth="1" />
-          )
-        })}
-
-        {/* ── Pianeti & Corpi Celesti ── */}
-        {planets.map(planet => {
-          const info     = BODY_INFO[planet.nome]
-          if (!info) return null
-          const r_orb    = RING_R[planet.categoria] ?? R.FAST
-          const pos      = toXY(r_orb, planet.lon_assoluta)
-          const isHov    = hovered === planet.nome
-          const dotR     = planet.categoria === 'veloce' ? 9 : planet.categoria === 'lento' ? 7 : 5
-          const labelFSz = planet.categoria === 'veloce' ? 24 : planet.categoria === 'lento' ? 20 : 16
+        {/* ── Pianeti ── */}
+        {planets.map(p => {
+          const info = BODY_INFO[p.nome]; if (!info) return null
+          const r_orb = RING_R[p.categoria] ?? R.FAST
+          const pos = toXY(r_orb, p.lon_assoluta); const isHov = hovered === p.nome
+          const dotR = p.categoria === 'veloce' ? 18 : p.categoria === 'lento' ? 14 : 10
 
           return (
-            <g key={planet.nome}
-              onMouseEnter={() => setHovered(planet.nome)}
-              onMouseLeave={() => setHovered(null)}
-              style={{ cursor: 'pointer' }}
-            >
-              {/* Raggio verso il centro al hover */}
-              {isHov && (
-                <line x1={CX} y1={CY} x2={pos.x} y2={pos.y}
-                  stroke={info.color} strokeOpacity="0.2" strokeWidth="1" />
-              )}
-
-              {/* Cerchio alone al hover */}
-              {isHov && (
-                <circle cx={pos.x} cy={pos.y} r={dotR * 2.5}
-                  fill={info.color} fillOpacity="0.15"
-                  filter="url(#zw-glow)" />
-              )}
-
-              {/* Punto base */}
-              <circle cx={pos.x} cy={pos.y} r={dotR}
-                fill={isHov ? info.color : info.color}
-                fillOpacity={isHov ? 1 : 0.75}
-                filter="url(#zw-glow-sm)"
-              />
-
-              {/* Glifo */}
-              <text
-                x={pos.x + dotR + 3} y={pos.y - dotR - 1}
-                fontSize={labelFSz}
-                fill={info.color}
-                fillOpacity={isHov ? 1 : 0.8}
-                style={{ fontFamily: 'serif', pointerEvents: 'none', userSelect: 'none' }}
-                filter={isHov ? 'url(#zw-glow)' : undefined}
-              >
+            <g key={p.nome} onMouseEnter={() => setHovered(p.nome)} onMouseLeave={() => setHovered(null)} className="cursor-pointer">
+              {isHov && <line x1={CX} y1={CY} x2={pos.x} y2={pos.y} stroke={info.color} strokeOpacity="0.25" strokeWidth="2" />}
+              {isHov && <circle cx={pos.x} cy={pos.y} r={dotR * 2.5} fill={info.color} fillOpacity="0.12" filter="url(#glow-big)" />}
+              <circle cx={pos.x} cy={pos.y} r={dotR} fill={info.color} fillOpacity={isHov ? 1 : 0.85} filter="url(#glow-big)" />
+              <text x={pos.x + dotR + 8} y={pos.y - 4} fontSize={p.categoria === 'veloce' ? 44 : 36} fill={info.color} fillOpacity={isHov ? 1 : 0.8} className="select-none font-serif">
                 {info.glyph}
               </text>
 
-              {/* Tooltip al hover */}
               {isHov && (() => {
-                const label   = `${planet.nome}  •  ${planet.segno} ${planet.gradi.toFixed(1)}°`
-                const lw      = label.length * 6.8
-                const tx      = Math.max(lw / 2 + 10, Math.min(990 - lw / 2, pos.x))
-                const ty      = pos.y < CY ? pos.y - 28 : pos.y + 28
+                const label = `${p.nome} • ${p.segno} ${p.gradi.toFixed(1)}°`
+                const tx = Math.max(200, Math.min(1800, pos.x))
+                const ty = pos.y < CY ? pos.y - 60 : pos.y + 60
                 return (
-                  <g>
-                    <rect x={tx - lw / 2 - 8} y={ty - 11} width={lw + 16} height={22}
-                      rx="6" fill="rgba(8,4,20,0.92)"
-                      stroke={info.color} strokeOpacity="0.6" strokeWidth="1" />
-                    <text x={tx} y={ty + 1}
-                      textAnchor="middle" dominantBaseline="central"
-                      fontSize="13" fill="white"
-                      style={{ fontFamily: 'sans-serif', pointerEvents: 'none', userSelect: 'none', fontWeight: 500 }}
-                    >
-                      {label}
-                    </text>
+                  <g transform={`translate(${tx}, ${ty})`}>
+                    <rect x="-140" y="-20" width="280" height="40" rx="10" fill="rgba(6,4,14,0.95)" stroke={info.color} strokeWidth="1.5" />
+                    <text textAnchor="middle" dominantBaseline="central" fontSize="24" fill="white" className="font-sans font-medium">{label}</text>
                   </g>
                 )
               })()}
@@ -382,54 +258,27 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           )
         })}
 
-        {/* ── Asse Ascendente / Discendente ── */}
+        {/* ── ASC ── */}
         {ascLon !== undefined && (() => {
-          const pAsc = toXY(R.SIGN_OUT + 12, ascLon)
-          const pDsc = toXY(R.SIGN_OUT + 12, (ascLon + 180) % 360)
-          const pAscI = toXY(R.INNER, ascLon)
-          const pDscI = toXY(R.INNER, (ascLon + 180) % 360)
+          const p1 = toXY(R.SIGN_OUT + 24, ascLon); const pI = toXY(R.INNER, ascLon)
           return (
             <g>
-              <line x1={pAscI.x} y1={pAscI.y} x2={pAsc.x} y2={pAsc.y}
-                stroke="#D4A017" strokeWidth="2.5" strokeLinecap="round"
-                filter="url(#zw-glow-sm)" />
-              <line x1={pDscI.x} y1={pDscI.y} x2={pDsc.x} y2={pDsc.y}
-                stroke="#D4A017" strokeOpacity="0.5" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx={pAsc.x} cy={pAsc.y} r="6" fill="#D4A017" filter="url(#zw-glow)" />
-              <text x={pAsc.x} y={pAsc.y - 14}
-                textAnchor="middle" fontSize="14" fill="#D4A017" fontWeight="bold"
-                style={{ fontFamily: 'serif', pointerEvents: 'none', userSelect: 'none' }}
-              >ASC</text>
+              <line x1={pI.x} y1={pI.y} x2={p1.x} y2={p1.y} stroke="#D4A017" strokeWidth="5" strokeLinecap="round" opacity="0.8" />
+              <circle cx={p1.x} cy={p1.y} r="10" fill="#D4A017" filter="url(#glow-big)" />
+              <text x={p1.x} y={p1.y - 25} textAnchor="middle" fontSize="32" fill="#D4A017" fontWeight="bold" className="font-serif">ASC</text>
             </g>
           )
         })()}
 
-        {/* ── Hub Centrale ── */}
-        <circle cx={CX} cy={CY} r={R.INNER} fill="rgba(5,3,15,0.95)"
-          stroke="rgba(212,160,23,0.5)" strokeWidth="1.5" />
-        {/* Croce centrale sottile */}
-        <line x1={CX - R.INNER * 0.6} y1={CY} x2={CX + R.INNER * 0.6} y2={CY}
-          stroke="rgba(212,160,23,0.2)" strokeWidth="0.8" />
-        <line x1={CX} y1={CY - R.INNER * 0.6} x2={CX} y2={CY + R.INNER * 0.6}
-          stroke="rgba(212,160,23,0.2)" strokeWidth="0.8" />
+        {/* Hub Centrale */}
+        <circle cx={CX} cy={CY} r={R.INNER} fill="rgba(8,5,18,0.98)" stroke="rgba(212,160,23,0.4)" strokeWidth="3" />
       </svg>
 
-      {/* ── Centro HTML (non distorto dalla SVG) ── */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-center px-2">
-          {ascSign ? (
-            <>
-              <p className="text-[8px] uppercase tracking-[0.2em] text-gold-500/60 mb-0.5">Ascendente</p>
-              <p className="font-serif text-white leading-none font-bold" style={{ fontSize: 'clamp(14px, 3vw, 22px)' }}>
-                {ascSign}
-              </p>
-              {ascDeg !== undefined && (
-                <p className="text-white/40 text-[9px] mt-0.5">{ascDeg.toFixed(1)}°</p>
-              )}
-            </>
-          ) : (
-            <p className="text-gold-500/50 text-[9px] uppercase tracking-widest">Cielo<br/>Attuale</p>
-          )}
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-1">{ascSign ? 'Ascendente' : 'Cielo'}</p>
+          <p className="text-white font-serif font-bold text-2xl md:text-3xl">{ascSign || 'Attuale'}</p>
+          {ascDeg !== undefined && <p className="text-gold-500/50 text-xs mt-1 font-mono">{ascDeg.toFixed(1)}°</p>}
         </div>
       </div>
     </div>

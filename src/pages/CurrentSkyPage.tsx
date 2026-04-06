@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import ZodiacWheel, { PlanetData } from '../components/ZodiacWheel'
 
@@ -35,6 +35,14 @@ const CATEGORIES = [
   { key: 'punto',     label: 'Punti Speciali'  },
 ]
 
+const ASPECT_LEGEND = [
+  { label: 'Trigono (120°)', color: '#3B82F6', desc: 'Armonia Suprema', dash: false },
+  { label: 'Sestile (60°)',  color: '#4ADE80', desc: 'Opportunità', dash: true },
+  { label: 'Quadrato (90°)', color: '#F87171', desc: 'Tensione Evolutiva', dash: false },
+  { label: 'Opposizione (180°)', color: '#A855F7', desc: 'Polarità/Confronto', dash: false },
+  { label: 'Congiunzione (0°)', color: '#FFFFFF', desc: 'Unione di Forze', dash: false },
+]
+
 interface SkyData {
   timestamp: string
   pianeti: PlanetData[]
@@ -47,19 +55,17 @@ export default function CurrentSkyPage() {
   const [now, setNow]       = useState(new Date())
   const [activeTab, setActiveTab] = useState('veloce')
 
-  // Orologio live al secondo
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
 
-  // Fetch effemeridi ogni 5 minuti
   useEffect(() => {
     const fetch_ = async () => {
       try {
         setLoading(true)
         const res = await fetch(`${API_URL}/api/astrology/current-sky`)
-        if (!res.ok) throw new Error('Errore nel recupero dei dati astrologici')
+        if (!res.ok) throw new Error('Errore di connessione al motore astronomico')
         setSky(await res.json())
       } catch (e: any) {
         setError(e.message)
@@ -74,171 +80,118 @@ export default function CurrentSkyPage() {
 
   const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   const dateStr = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-
-  const filteredPlanets = sky?.pianeti.filter(p => p.categoria === activeTab) ?? []
+  const filteredPlanets = sky?.pianeti.filter((p: PlanetData) => p.categoria === activeTab) ?? []
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* ── Sfondo Galattico ── */}
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 90% 80% at 50% 5%, rgba(22,8,55,0.98) 0%, rgba(6,3,16,1) 60%)' }} />
-        {/* Stelle CSS puntiformi */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.4), transparent), radial-gradient(1px 1px at 80px 10px, rgba(255,255,255,0.3), transparent), radial-gradient(1px 1px at 140px 70px, rgba(255,255,255,0.5), transparent), radial-gradient(1px 1px at 200px 40px, rgba(255,255,255,0.2), transparent)',
-          backgroundSize: '250px 120px',
-        }} />
-        {/* Nebule */}
-        <div className="absolute -top-20 left-1/4 w-[600px] h-[600px] bg-purple-900/12 blur-[180px] rounded-full" />
-        <div className="absolute top-40 right-1/5  w-[500px] h-[500px] bg-indigo-950/15 blur-[150px] rounded-full" />
-        <div className="absolute bottom-10 left-1/3 w-[500px] h-[500px] bg-blue-950/12  blur-[160px] rounded-full" />
-      </div>
+      {/* ── Background Galattico ── */}
+      <div className="fixed inset-0 -z-10 bg-[#060410]" />
+      <div className="fixed inset-0 -z-10 opacity-40 pointer-events-none"
+        style={{ background: 'radial-gradient(circle at 50% -10%, rgba(120,80,240,0.1) 0%, transparent 60%)' }} />
 
-      <div className="max-w-[1600px] mx-auto px-4 lg:px-8 py-20">
-
-        {/* ── Header compatto ── */}
-        <motion.div
-          initial={{ opacity: 0, y: -14 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 mb-10"
-        >
-          <div>
-            <p className="text-gold-500 text-[10px] font-semibold tracking-[0.28em] uppercase mb-1">
-              Swiss Ephemeris Engine · Planetario in Tempo Reale
-            </p>
-            <h1 className="font-serif text-3xl md:text-5xl font-bold text-white">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16">
+        
+        {/* Header Header */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
+          <div className="text-center md:text-left">
+            <p className="text-gold-500 text-[10px] sm:text-xs font-semibold tracking-[0.35em] uppercase mb-2">Planetarium Real-Time</p>
+            <h1 className="font-serif text-4xl md:text-6xl font-bold text-white tracking-tight">
               Il Cielo di <span className="gold-text italic">Adesso</span>
             </h1>
           </div>
-
-          {/* Orologio */}
-          <div className="text-right">
-            <div className="font-mono text-3xl md:text-4xl text-white tracking-widest">{timeStr}</div>
-            <div className="text-white/35 text-xs capitalize mt-0.5">{dateStr}</div>
+          <div className="bg-black/50 border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-md text-center">
+            <div className="font-mono text-4xl text-white tracking-[0.2em]">{timeStr}</div>
+            <div className="text-white/40 text-xs sm:text-sm capitalize mt-1 tracking-widest">{dateStr}</div>
           </div>
         </motion.div>
 
-        {/* ── Loading ── */}
         {loading && (
-          <div className="flex flex-col items-center gap-4 py-40">
-            <div className="w-16 h-16 rounded-full border-2 border-gold-500/30 border-t-gold-400 animate-spin" />
-            <p className="text-white/30 text-sm tracking-widest">Calcolo effemeridi in corso...</p>
+          <div className="flex flex-col items-center py-40 gap-4">
+            <div className="w-16 h-16 border-2 border-gold-500/20 border-t-gold-500 rounded-full animate-spin" />
+            <p className="text-white/30 text-sm tracking-widest font-light">Sintonizzazione corpi celesti...</p>
           </div>
         )}
 
-        {/* ── Error ── */}
         {error && !loading && (
-          <div className="text-center py-40">
-            <p className="text-red-400 mb-4">{error}</p>
-            <button onClick={() => window.location.reload()} className="btn-gold px-6 py-2 text-sm">Riprova</button>
+          <div className="flex flex-col items-center py-40 gap-4">
+            <p className="text-red-400 text-sm tracking-widest">{error}</p>
+            <button onClick={() => window.location.reload()} className="btn-gold px-6 py-2 text-xs">Riprova</button>
           </div>
         )}
 
-        {/* ── Layout Planetario ── */}
         {sky && !loading && (
-          <div className="grid xl:grid-cols-[1fr_340px] gap-8 items-start">
+          <div className="grid xl:grid-cols-[1fr_400px] gap-12 items-start">
+            
+            {/* ── Colonna Ruota & Legenda ── */}
+            <div className="flex flex-col items-center space-y-12">
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="w-full max-w-[860px]">
+                <ZodiacWheel planets={sky.pianeti} />
+              </motion.div>
 
-            {/* ── RUOTA GRANDE ── */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.88 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
-              className="flex flex-col items-center"
-            >
-              <ZodiacWheel
-                planets={sky.pianeti}
-                className="w-full max-w-[760px]"
-              />
-              <p className="mt-4 text-white/20 text-[10px] tracking-[0.25em] uppercase text-center">
-                Posizioni aggiornate ogni 5 min · {sky.timestamp.replace('T', ' ').replace(':00Z', ' UTC')}
-              </p>
-            </motion.div>
+              {/* Legenda Aspetti */}
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-sm w-full max-w-[800px]">
+                <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] mb-6 text-center">Legenda Aspetti Planetari</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  {ASPECT_LEGEND.map(asp => (
+                    <div key={asp.label} className="flex flex-col items-center text-center">
+                      <div className="h-0.5 w-12 mb-3 shadow-[0_0_8px_rgba(255,255,255,0.2)]" style={{ background: asp.color, borderStyle: asp.dash ? 'dashed' : 'solid', borderTopWidth: asp.dash ? '2px' : '0' }} />
+                      <span className="text-white/80 text-[11px] font-medium mb-1">{asp.label}</span>
+                      <span className="text-white/30 text-[9px] font-light leading-none">{asp.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
 
-            {/* ── PANNELLO DATI ── */}
-            <motion.div
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.35 }}
-              className="space-y-4 xl:sticky xl:top-24"
-            >
-              {/* Tab categories */}
-              <div className="flex gap-1 bg-black/40 rounded-xl p-1 border border-white/8">
-                {CATEGORIES.map(cat => (
-                  <button
-                    key={cat.key}
-                    onClick={() => setActiveTab(cat.key)}
-                    className={`flex-1 text-[10px] uppercase tracking-wider py-1.5 rounded-lg transition-all ${
-                      activeTab === cat.key
-                        ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
-                        : 'text-white/40 hover:text-white/70'
-                    }`}
-                  >
-                    {cat.label}
+            {/* ── Analisi Laterale ── */}
+            <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="space-y-6">
+              
+              {/* Tab Category */}
+              <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10">
+                {CATEGORIES.map(c => (
+                  <button key={c.key} onClick={() => setActiveTab(c.key)} className={`flex-1 py-2 text-[10px] uppercase tracking-widest rounded-xl transition-all ${activeTab === c.key ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30 shadow-lg' : 'text-white/40 hover:text-white/70'}`}>
+                    {c.label}
                   </button>
                 ))}
               </div>
 
-              {/* Lista pianeti filtrata */}
-              <div className="bg-black/50 border border-white/8 rounded-2xl overflow-hidden backdrop-blur-sm">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    {filteredPlanets.length === 0 ? (
-                      <p className="text-white/30 text-sm text-center py-8">Nessun dato disponibile</p>
-                    ) : (
-                      <div className="divide-y divide-white/5">
-                        {filteredPlanets.map(p => {
-                          const info = BODY_INFO[p.nome]
-                          return (
-                            <div key={p.nome} className="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.025] transition-colors">
-                              <span className="text-2xl w-8 text-center flex-shrink-0"
-                                style={{ color: info?.color || '#fff' }}>
-                                {info?.glyph || '●'}
-                              </span>
-                              <span className="flex-1 text-white/80 text-sm font-medium">{p.nome}</span>
-                              <div className="text-right flex-shrink-0">
-                                <span className="font-serif text-white text-sm">{p.segno}</span>
-                                <span className="text-white/40 text-xs ml-2">{p.gradi.toFixed(1)}°</span>
-                              </div>
-                            </div>
-                          )
-                        })}
+              {/* Lista Dati */}
+              <div className="bg-black/60 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl">
+                <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
+                  {filteredPlanets.map((p: PlanetData) => {
+                    const info = BODY_INFO[p.nome]
+                    return (
+                      <div key={p.nome} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
+                        <span className="text-3xl w-10 text-center" style={{ color: info?.color || '#fff' }}>{info?.glyph || '●'}</span>
+                        <div className="flex-1">
+                          <p className="text-white/90 text-sm font-semibold">{p.nome}</p>
+                          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-0.5">Eclittica Geocentrica</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-serif text-white text-lg leading-none">{p.segno}</p>
+                          <p className="text-gold-500/50 text-[11px] font-mono mt-1">{p.gradi.toFixed(2)}°</p>
+                        </div>
                       </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Glossario */}
-              <div className="bg-black/25 border border-white/5 rounded-2xl p-5 text-sm text-white/40 leading-relaxed">
-                <p className="text-gold-400/70 text-[10px] uppercase tracking-widest mb-2">✦ Nota</p>
-                {activeTab === 'veloce' && "I pianeti veloci cambiano segno frequentemente: la Luna ogni 2-3 giorni, il Sole ogni 30 giorni."}
-                {activeTab === 'lento'  && "Giove impiega 12 anni, Saturno 29, Urano 84, Nettuno 165 e Plutone fino a 248 anni per completare lo Zodiaco."}
-                {activeTab === 'asteroide' && "I quattro asteroidi principali (Cerere, Pallade, Giunone, Vesta) e Chirone portano energie più sottili e specifiche nella carta natale."}
-                {activeTab === 'punto' && "I Nodi Lunari, Lilith, il Vertex e la Parte della Fortuna sono punti matematici simbolici fondamentali nell'astrologia evolutiva e karmica."}
-              </div>
-
-              {/* CTA */}
-              <div className="bg-gradient-to-br from-gold-500/10 to-transparent border border-gold-500/20 rounded-2xl p-6 text-center">
-                <p className="font-serif text-lg text-white mb-2">
-                  Il Cielo al momento della <em>tua</em> nascita
-                </p>
-                <p className="text-white/40 text-xs mb-5 leading-relaxed">
-                  Scopri dove erano tutti questi corpi celesti nel tuo cielo natale e cosa significano per te.
-                </p>
-                <div className="flex flex-col gap-2">
-                  <Link to="/tema-natale" className="btn-gold text-sm py-2.5 text-center uppercase tracking-wider">
-                    Calcola l'Ascendente (Gratis) →
-                  </Link>
-                  <Link to="/i-miei-temi" className="border border-white/15 text-white/60 hover:text-white transition-colors text-sm py-2.5 rounded-lg text-center">
-                    Tema Natale Completo
-                  </Link>
+                    )
+                  })}
                 </div>
+              </div>
+
+              {/* Extra Info */}
+              <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-white/5 rounded-3xl p-6">
+                <p className="text-white/30 text-xs leading-relaxed italic">
+                  "Le posizioni planetarie riflettono le energie cosmiche collettive in questo istante. Ogni aspetto colorato nella ruota indica una tensione o un'armonia speciale tra due corpi celesti."
+                </p>
+              </div>
+
+              {/* Bottoni CTA */}
+              <div className="flex flex-col gap-3">
+                <Link to="/tema-natale" className="btn-gold py-4 text-center uppercase tracking-[0.2em] text-xs font-bold rounded-2xl shadow-xl hover:shadow-gold-500/20">
+                  Scopri il Tuo Cielo Natale →
+                </Link>
+                <Link to="/i-miei-temi" className="border border-white/10 text-white/50 hover:text-white transition-colors py-4 text-center text-xs uppercase tracking-[0.2em] rounded-2xl backdrop-blur-md">
+                   Tema Natale Avanzato
+                </Link>
               </div>
             </motion.div>
           </div>
