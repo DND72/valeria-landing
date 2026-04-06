@@ -23,13 +23,48 @@ def get_current_sky():
             "Cancro": "Acqua", "Scorpione": "Acqua", "Pesci": "Acqua"
         }
 
+        def moon_sun_angle(jd_t):
+            """Calcola la differenza d'elongazione Luna-Sole (0-360)."""
+            sun,  _ = swe.calc_ut(jd_t, swe.SUN)
+            moon, _ = swe.calc_ut(jd_t, swe.MOON)
+            return (moon[0] - sun[0]) % 360.0
+
+        def find_phase_crossing(target_angle, jd_start, jd_end):
+            """
+            Trova con bisection il momento in cui l'elongazione Luna-Sole ≡ target_angle.
+            Restituisce il JD o None se l'angolo non attraversa il target nell'intervallo.
+            """
+            SYNODIC = 29.530588  # giorni
+            step    = 0.5        # passo iniziale di campionamento (ore×2)
+
+            # Campiona l'intervallo cercando un cambio di segno rispetto al target
+            results = []
+            t = jd_start
+            while t < jd_end:
+                a0 = moon_sun_angle(t)
+                a1 = moon_sun_angle(t + step)
+                # Normalizza la differenza rispetto al target
+                d0 = (a0 - target_angle) % 360.0
+                d1 = (a1 - target_angle) % 360.0
+                # Attraversamento rilevato quando uno è < 1° e l'altro > 358°
+                if d0 > 350.0 and d1 < 10.0:
+                    # Bisection tra t e t+step
+                    lo, hi = t, t + step
+                    for _ in range(40):
+                        mid = (lo + hi) / 2
+                        dm  = (moon_sun_angle(mid) - target_angle) % 360.0
+                        if dm > 180.0:
+                            hi = mid
+                        else:
+                            lo = mid
+                    results.append((lo + hi) / 2)
+                t += step
+            return results
+
         def jd_to_gmt(jd_val):
-            if not jd_val or jd_val <= 0:
-                return "--:--"
-            y, m, d, h = swe.revjul(jd_val)
-            hour = int(h)
-            minute = int((h - hour) * 60)
-            return f"{hour:02d}:{minute:02d}"
+            if not jd_val or jd_val <= 0: return "--:--"
+            _, _, _, h = swe.revjul(jd_val)
+            return f"{int(h):02d}:{int((h - int(h)) * 60):02d}"
 
         def calc_body(name, code, cat, flags=swe.FLG_SWIEPH):
             pos, _ = swe.calc_ut(jd, code, flags)
@@ -51,10 +86,8 @@ def get_current_sky():
             ("Nettuno",  swe.NEPTUNE, "lento"),  ("Plutone", swe.PLUTO,   "lento"),
             ("Chirone",  swe.CHIRON,  "lento"),
         ]:
-            try:
-                pianeti.append(calc_body(name, code, cat))
-            except Exception:
-                pass
+            try: pianeti.append(calc_body(name, code, cat))
+            except: pass
 
         # Asteroidi
         SE_AST_OFFSET = 10000
@@ -68,38 +101,34 @@ def get_current_sky():
                 try:
                     pianeti.append(calc_body(name, code, "asteroide"))
                     break
-                except Exception:
-                    continue
+                except: continue
 
         for name, code, cat in [("Lilith", swe.MEAN_APOG, "punto"), ("Nodo Nord", swe.MEAN_NODE, "punto")]:
-            try:
-                pianeti.append(calc_body(name, code, cat))
-            except Exception:
-                pass
+            try: pianeti.append(calc_body(name, code, cat))
+            except: pass
 
         nn = next((p for p in pianeti if p["nome"] == "Nodo Nord"), None)
         if nn:
             sl = (nn["lon_assoluta"] + 180) % 360
             sn = zodiac_signs[int(sl // 30)]
-            pianeti.append({"nome": "Nodo Sud", "segno": sn, "gradi": round(sl % 30, 2), "lon_assoluta": round(sl, 2), "categoria": "punto", "elemento": elements_map.get(sn, "")})
+            pianeti.append({"nome": "Nodo Sud", "segno": sn, "gradi": round(sl%30,2),
+                            "lon_assoluta": round(sl,2), "categoria": "punto",
+                            "elemento": elements_map.get(sn, "")})
 
         # ── Fase Lunare Corrente ──────────────────────────
-        moon_entry = next((p for p in pianeti if p["nome"] == "Luna"), None)
-        sun_pos,  _ = swe.calc_ut(jd, swe.SUN)
-        moon_pos, _ = swe.calc_ut(jd, swe.MOON)
-        phase_angle  = (moon_pos[0] - sun_pos[0]) % 360
+        moon_entry  = next((p for p in pianeti if p["nome"] == "Luna"), None)
+        phase_angle = moon_sun_angle(jd)
         illumination = (1 - math.cos(math.radians(phase_angle))) / 2 * 100
 
         phase_table = [
-            (11.25,  "Luna Nuova",         "🌑"),
-            (78.75,  "Luna Crescente",     "🌒"),
-            (101.25, "Primo Quarto",       "🌓"),
-            (168.75, "Gibbosa Crescente",  "🌔"),
-            (191.25, "Luna Piena",         "🌕"),
-            (258.75, "Gibbosa Calante",    "🌖"),
-            (281.25, "Ultimo Quarto",      "🌗"),
-            (348.75, "Luna Calante",       "🌘"),
-            (360.0,  "Luna Nuova",         "🌑"),
+            (11.25,  "Luna Nuova",        "🌑"),
+            (78.75,  "Luna Crescente",    "🌒"),
+            (101.25, "Primo Quarto",      "🌓"),
+            (168.75, "Gibbosa Crescente", "🌔"),
+            (191.25, "Luna Piena",        "🌕"),
+            (258.75, "Gibbosa Calante",   "🌖"),
+            (281.25, "Ultimo Quarto",     "🌗"),
+            (360.0,  "Luna Calante",      "🌘"),
         ]
         phase_name, moon_icon = "Luna Nuova", "🌑"
         for limit, pname, picon in phase_table:
@@ -107,72 +136,54 @@ def get_current_sky():
                 phase_name, moon_icon = pname, picon
                 break
 
-        # ── Calendario Fasi Lunari del Mese ──────────────
-        # Cerchiamo tutte le 4 fasi principali del mese corrente
-        # usando swe.pheno_ut o semplicemente iterando con moontransit
+        # ── Calendario Fasi Mensili con Bisection ────────
         monthly_phases = []
         try:
-            # Inizio del mese precedente (per catturare anche la Luna Nuova di inizio mese)
-            start_of_month  = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
-            next_month      = now.replace(day=28) + timedelta(days=4)
-            end_of_month    = next_month.replace(day=1) - timedelta(seconds=1)
-            jd_month_start  = swe.julday(start_of_month.year, start_of_month.month, start_of_month.day, 0.0)
-            jd_month_end    = swe.julday(end_of_month.year, end_of_month.month, end_of_month.day, 23.99)
+            # Finestra: da 3 gg prima del mese a 3 gg dopo la fine
+            first_day = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+            if now.month == 12:
+                last_day = datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+            else:
+                last_day = datetime(now.year, now.month + 1, 1, tzinfo=timezone.utc)
 
-            # swe.moontransit / swe.phason: usiamo moon_node_when per le 4 fasi
-            # Fase: 0=LN, 1=Primo Quarto, 2=LP, 3=Ultimo Quarto
-            PHASE_CODES = [
-                (0, "Luna Nuova",       "🌑"),
-                (1, "Primo Quarto",     "🌓"),
-                (2, "Luna Piena",       "🌕"),
-                (3, "Ultimo Quarto",    "🌗"),
+            jd_start = swe.julday(first_day.year, first_day.month, first_day.day, 0) - 3
+            jd_end   = swe.julday(last_day.year,  last_day.month,  last_day.day,  0) + 3
+
+            phase_targets = [
+                (0.0,   "Luna Nuova",    "🌑"),
+                (90.0,  "Primo Quarto",  "🌓"),
+                (180.0, "Luna Piena",    "🌕"),
+                (270.0, "Ultimo Quarto", "🌗"),
             ]
 
-            # Cerca dalla fine del mese precedente per non perdere eventi
-            jd_search = jd_month_start - 5
-            found_jds = set()
+            jd_month_start = jd_start + 3  # data esatta del 1° del mese
+            jd_month_end   = jd_end   - 3  # data esatta del last_day
 
-            for phase_code, p_name, p_icon in PHASE_CODES:
-                js = jd_search
-                # Cerca 2 occorrenze per coprire il mese
-                for _ in range(2):
-                    try:
-                        r = swe.moontransit(js, swe.MOON, swe.FLG_SWIEPH, phase_code)
-                        jd_phase = r[1]
-                        if jd_phase <= 0:
-                            break
-                        # Solo se è nel mese corrente
-                        if jd_month_start <= jd_phase <= jd_month_end:
-                            if round(jd_phase, 1) not in found_jds:
-                                found_jds.add(round(jd_phase, 1))
-                                dt  = swe.revjul(jd_phase)
-                                day = int(dt[2])
-                                h   = dt[3]
-                                hr  = int(h)
-                                mn  = int((h - hr) * 60)
-                                # Calcola la posizione della Luna in quel momento
-                                mp, _ = swe.calc_ut(jd_phase, swe.MOON)
-                                m_sign  = zodiac_signs[int(mp[0] // 30)]
-                                m_elem  = elements_map.get(m_sign, "")
-                                monthly_phases.append({
-                                    "fase":     p_name,
-                                    "icona":    p_icon,
-                                    "giorno":   day,
-                                    "ora_gmt":  f"{hr:02d}:{mn:02d}",
-                                    "segno":    m_sign,
-                                    "elemento": m_elem,
-                                    "jd":       round(jd_phase, 4)
-                                })
-                        js = jd_phase + 7.4
-                    except Exception:
-                        break
-        except Exception:
-            pass
+            all_found = []
+            for target, p_name, p_icon in phase_targets:
+                crossings = find_phase_crossing(target, jd_start, jd_end)
+                for jd_cross in crossings:
+                    # Solo nel mese corrente
+                    if jd_month_start <= jd_cross <= jd_month_end:
+                        yr, mo, dy, h = swe.revjul(jd_cross)
+                        hr, mn = int(h), int((h - int(h)) * 60)
+                        # Posizione Luna in quel momento
+                        mp, _ = swe.calc_ut(jd_cross, swe.MOON)
+                        m_sign = zodiac_signs[int(mp[0] // 30)]
+                        all_found.append({
+                            "fase": p_name, "icona": p_icon,
+                            "giorno": int(dy), "ora_gmt": f"{hr:02d}:{mn:02d}",
+                            "segno": m_sign, "elemento": elements_map.get(m_sign, ""),
+                            "jd": jd_cross
+                        })
 
-        # Ordina per data e rimuovi chiave jd
-        monthly_phases.sort(key=lambda x: x.get("jd", 0))
-        for ph in monthly_phases:
-            ph.pop("jd", None)
+            all_found.sort(key=lambda x: x["jd"])
+            for pf in all_found:
+                del pf["jd"]
+            monthly_phases = all_found
+
+        except Exception as e:
+            monthly_phases = [{"error": str(e)}]
 
         # ── Eclissi ───────────────────────────────────────
         VISIBILITY_LOOKUP = {
@@ -193,23 +204,21 @@ def get_current_sky():
             for _ in range(5):
                 try:
                     if is_sol:
-                        r   = swe.sol_eclipse_when_glob(js, swe.FLG_SWIEPH, 0, False)
+                        r  = swe.sol_eclipse_when_glob(js, swe.FLG_SWIEPH, 0, False)
                         jm, tr = r[1][0], r[1]
-                        if jm <= 0 or jm > jd + 730:
-                            break
+                        if jm <= 0 or jm > jd + 730: break
                         s, e = jd_to_gmt(tr[1]), jd_to_gmt(tr[4])
                         dur  = f"{int((tr[4]-tr[1])*1440)//60}h {int((tr[4]-tr[1])*1440)%60}m"
-                        t    = ("Totale", "🌑") if r[0] & swe.ECL_TOTAL else (("Anulare", "🔆") if r[0] & swe.ECL_ANNULAR else ("Parziale", "🌒"))
+                        t    = ("Totale","🌑") if r[0] & swe.ECL_TOTAL else (("Anulare","🔆") if r[0] & swe.ECL_ANNULAR else ("Parziale","🌒"))
                         cat  = "Solare"
                     else:
-                        r   = swe.lun_eclipse_when(js, swe.FLG_SWIEPH, 0, False)
+                        r  = swe.lun_eclipse_when(js, swe.FLG_SWIEPH, 0, False)
                         jm, tr = r[1][0], r[1]
-                        if jm <= 0 or jm > jd + 730:
-                            break
-                        ts, te = (tr[5] if tr[5] > 0 else tr[1]), (tr[6] if tr[6] > 0 else tr[2])
+                        if jm <= 0 or jm > jd + 730: break
+                        ts, te = (tr[5] if tr[5]>0 else tr[1]), (tr[6] if tr[6]>0 else tr[2])
                         s, e = jd_to_gmt(ts), jd_to_gmt(te)
                         dur  = f"{int((te-ts)*1440)//60}h {int((te-ts)*1440)%60}m"
-                        t    = ("Totale", "🌕") if r[0] & swe.ECL_TOTAL else (("Penombrale", "🌔") if r[0] & swe.ECL_PENUMBRAL else ("Parziale", "🌓"))
+                        t    = ("Totale","🌕") if r[0] & swe.ECL_TOTAL else (("Penombrale","🌔") if r[0] & swe.ECL_PENUMBRAL else ("Parziale","🌓"))
                         cat  = "Lunare"
 
                     dt  = swe.revjul(jm)
@@ -222,23 +231,21 @@ def get_current_sky():
                         "jd": round(jm, 2)
                     })
                     js = jm + 30
-                except Exception:
-                    break
+                except: break
 
         eclipses.sort(key=lambda x: x["jd"])
-        for ex in eclipses:
-            del ex["jd"]
+        for ex in eclipses: del ex["jd"]
 
         return {
-            "timestamp": now.strftime("%Y-%m-%dT%H:%M:00Z"),
-            "pianeti":   pianeti,
-            "eclissi":   eclipses,
+            "timestamp":     now.strftime("%Y-%m-%dT%H:%M:00Z"),
+            "pianeti":       pianeti,
+            "eclissi":       eclipses,
             "luna": {
                 "fase":          phase_name,
                 "icona":         moon_icon,
                 "illuminazione": round(illumination, 1),
                 "angolo":        round(phase_angle, 2),
-                "segno":         moon_entry["segno"]   if moon_entry else "N/A",
+                "segno":         moon_entry["segno"]    if moon_entry else "N/A",
                 "elemento":      moon_entry["elemento"] if moon_entry else "N/A",
             },
             "fasi_mensili": monthly_phases
