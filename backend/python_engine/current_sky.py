@@ -133,12 +133,13 @@ def get_current_sky():
                         "data_full": f"{wd_name} {int(d)} {mo_name}",
                         "ora_gmt": f"{int(h):02d}:{int((h-int(h))*60):02d}",
                         "segno": msign, "elemento": elements_map.get(msign, ""),
+                        "is_passata": jd_cross < jd,
                         "jd": jd_cross
                     })
 
             all_found.sort(key=lambda x: x["jd"])
             for pf in all_found: del pf["jd"]
-            monthly_phases = all_found[:5] # Le prime 5 in ordine cronologico
+            monthly_phases = all_found[:6] # Mostriamo un po' più di range
 
         except Exception as e:
             monthly_phases = [{"error": str(e)}]

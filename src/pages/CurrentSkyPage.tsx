@@ -72,6 +72,7 @@ interface MonthlyPhase {
   ora_gmt: string
   segno: string
   elemento: string
+  is_passata?: boolean
 }
 
 interface SkyData {
@@ -244,7 +245,7 @@ export default function CurrentSkyPage() {
                         <p className="text-white/40 text-[11px] uppercase tracking-[0.3em] font-medium mb-2">Fase Lunare Corrente</p>
                         <h3 className="text-white text-2xl font-serif font-bold tracking-wide flex items-center gap-3">
                           {sky.luna.fase}
-                          <span className="text-sm font-normal text-white/30 tracking-normal">in {sky.luna.segno}</span>
+                          <span className="text-sm font-normal text-white/30 tracking-normal">in {sky.luna.segno} • {Math.floor(sky.luna.angolo / 30 * 30 % 30)}°</span>
                         </h3>
                         
                         <div className="flex items-center gap-3 mt-2 mb-4">
@@ -292,11 +293,19 @@ export default function CurrentSkyPage() {
                   </div>
                   <div className="divide-y divide-white/5">
                     {sky.fasi_mensili.map((ph, i) => (
-                      <div key={i} className="px-6 py-4 hover:bg-white/[0.03] transition-colors group flex items-center justify-between gap-4">
+                      <div key={i} className={`px-6 py-4 hover:bg-white/[0.03] transition-all group flex items-center justify-between gap-4 ${ph.is_passata ? 'opacity-40 grayscale-[0.5]' : ''}`}>
                         <div className="flex items-center gap-4">
-                          <span className="text-3xl group-hover:scale-110 transition-transform inline-block">{ph.icona}</span>
+                          <span className="text-3xl group-hover:scale-110 transition-transform inline-block relative">
+                            {ph.icona}
+                            {ph.is_passata && (
+                              <span className="absolute -top-1 -right-1 text-[8px] bg-white/20 text-white px-1 rounded uppercase font-bold tracking-tighter">OK</span>
+                            )}
+                          </span>
                           <div>
-                            <p className="text-white/90 text-sm font-semibold leading-tight">{ph.fase}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-white/90 text-sm font-semibold leading-tight">{ph.fase}</p>
+                              {ph.is_passata && <span className="text-[9px] text-white/30 uppercase tracking-widest font-bold">Recente</span>}
+                            </div>
                             <p className="font-mono text-white/30 text-[10px] mt-1 uppercase tracking-wider">{ph.data_full} • {ph.ora_gmt} GMT</p>
                           </div>
                         </div>
