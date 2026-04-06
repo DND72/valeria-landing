@@ -264,9 +264,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
         {/* ── ASC & Orizzonte ── */}
         {ascLon !== undefined && (() => {
-          const pASCOuter = toXY(R.SIGN_OUT + 30, ascLon, rotationOffset)
-          const pDSCOuter = toXY(R.SIGN_OUT + 30, (ascLon + 180) % 360, rotationOffset)
-          
           return (
             <g>
               {/* Linea Orizzonte ASC-DSC */}
