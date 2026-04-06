@@ -206,20 +206,20 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
           <g>
             {/* Orizzonte ASC-DSC */}
             <line 
-               x1={CX - R.SIGN_OUT} y1={CY} x2={CX + R.SIGN_OUT} y2={CY} 
+               x1={CX - R.SIGN_IN} y1={CY} x2={CX + R.SIGN_IN} y2={CY} 
                stroke="#3b82f6" strokeWidth="6" strokeLinecap="round" 
                className="drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"
             />
-            <text x={CX - R.SIGN_OUT - 20} y={CY + 12} textAnchor="end" fontSize="36" fill="#3b82f6" fontWeight="bold" className="font-serif shadow-sm">ASC</text>
-            <text x={CX + R.SIGN_OUT + 20} y={CY + 12} textAnchor="start" fontSize="36" fill="#3b82f6" fontWeight="bold" opacity="0.8" className="font-serif shadow-sm">DSC</text>
+            <text x={CX - R.SIGN_IN - 15} y={CY + 12} textAnchor="end" fontSize="36" fill="#3b82f6" fontWeight="bold" className="font-serif shadow-sm">ASC</text>
+            <text x={CX + R.SIGN_IN + 15} y={CY + 12} textAnchor="start" fontSize="36" fill="#3b82f6" fontWeight="bold" opacity="0.8" className="font-serif shadow-sm">DSC</text>
           </g>
         )}
 
         {mcLon !== undefined && (() => {
-          const pMC = toXY(R.SIGN_OUT, mcLon, rotationOffset)
-          const pIC = toXY(R.SIGN_OUT, (mcLon + 180) % 360, rotationOffset)
-          const pMCLabel = toXY(R.SIGN_OUT + 45, mcLon, rotationOffset)
-          const pICLabel = toXY(R.SIGN_OUT + 55, (mcLon + 180) % 360, rotationOffset)
+          const pMC = toXY(R.SIGN_IN, mcLon, rotationOffset)
+          const pIC = toXY(R.SIGN_IN, (mcLon + 180) % 360, rotationOffset)
+          const pMCLabel = toXY(R.SIGN_IN - 40, mcLon, rotationOffset)
+          const pICLabel = toXY(R.SIGN_IN - 40, (mcLon + 180) % 360, rotationOffset)
           return (
             <g>
               <line 
@@ -258,14 +258,14 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
             const isDecan = i % 10 === 0
             const isFive = i % 5 === 0
             
-            let tickLen = 10; let strokeW = 0.8; let opacity = 0.15; let strokeColor = "rgba(255,255,255,0.4)"
+            let tickLen = 15; let strokeW = 1.0; let opacity = 0.3; let strokeColor = "rgba(255,255,255,0.4)"
             
             if (isSign) { 
-              tickLen = 60; strokeW = 4.5; opacity = 1.0; strokeColor = "rgba(212,160,23,1)" // ORO BRILLANTE
+              tickLen = 65; strokeW = 5.0; opacity = 1.0; strokeColor = "#FFD700" // ORO SOLIDO
             } else if (isDecan) { 
-              tickLen = 35; strokeW = 2.5; opacity = 0.8; strokeColor = "rgba(212,160,23,0.7)" // MARCATORE DECANO
+              tickLen = 40; strokeW = 3.5; opacity = 1.0; strokeColor = "#FFF" // BIANCO PURO PER 10°
             } else if (isFive) { 
-              tickLen = 20; strokeW = 1.5; opacity = 0.5; strokeColor = "rgba(255,255,255,0.6)" // OGNI 5 GRADI
+              tickLen = 25; strokeW = 3.0; opacity = 0.9; strokeColor = "rgba(255,255,255,0.8)" // 5° BEN VISIBILI
             }
             
             const p1 = toXY(R.SIGN_IN, i, rotationOffset)
@@ -284,17 +284,17 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
             )
 
             if (isDecan && !isSign) {
-              const labelPos = toXY(R.SIGN_IN + 55, i, rotationOffset)
+              const labelPos = toXY(R.SIGN_IN + 65, i, rotationOffset)
               elements.push(
                 <text 
                   key={`deg-${i}`} 
                   x={labelPos.x} y={labelPos.y} 
-                  fontSize="44" 
-                  fill="#FFD700" 
+                  fontSize="48" 
+                  fill="#FFF" 
                   textAnchor="middle" 
                   dominantBaseline="middle" 
                   className="font-mono font-bold"
-                  style={{ textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(255,215,0,0.5)' }}
+                  style={{ textShadow: '0 0 15px rgba(0,0,0,1), 0 0 8px rgba(255,255,255,0.6)' }}
                 >
                   {i % 30}
                 </text>
