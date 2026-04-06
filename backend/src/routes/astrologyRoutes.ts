@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal } from '../controllers/astrologyController.js'
+import { calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal, generateSummaryForExistingChart } from '../controllers/astrologyController.js'
 import { requireClerkAuth } from '../middleware/clerkAuth.js'
 
 const router = Router()
@@ -16,5 +16,6 @@ router.post('/sync-natal', requireClerkAuth, syncNatal)
 // Endpoints a pagamento e di log
 router.post('/generate-paid', requireClerkAuth, generatePaidChart)
 router.get('/my-charts', requireClerkAuth, getMyCharts)
+router.post('/generate-summary', requireClerkAuth, generateSummaryForExistingChart)
 
 export default router

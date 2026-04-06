@@ -29,6 +29,23 @@ const PLANET_SYMBOLS: Record<string, string> = {
 
 function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedIn: boolean }) {
   const theme = useCircadianTheme()
+  const { generateSummary } = useAstrologyApi()
+  const [localInterpretation, setLocalInterpretation] = useState(data.interpretation || "")
+  const [genLoading, setGenLoading] = useState(false)
+
+  const handleGenerateSummary = async () => {
+    if (!data.id) return
+    setGenLoading(true)
+    try {
+      const res = await generateSummary(data.id)
+      setLocalInterpretation(res.interpretation)
+    } catch (err) {
+      console.error("Errore generazione sintesi:", err)
+    } finally {
+      setGenLoading(false)
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -38,18 +55,17 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
     >
       {/* Ruota Principale */}
       <div className="flex flex-col items-center mb-12 relative">
-        {/* Aloni Galattici attorno alla ruota */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden rounded-full">
           <div className="w-[340px] h-[340px] rounded-full bg-indigo-950/40 blur-[60px]" />
         </div>
         <ZodiacWheel
-                planets={isLoggedIn ? (data.pianeti || []) : []}
-                houses={isLoggedIn ? (data.case || []) : []}
-                ascLon={data.ascendente_totale}
-                ascSign={data.segno}
-                ascDeg={data.grado_nel_segno}
-                theme={theme}
-              />
+          planets={isLoggedIn ? (data.pianeti || []) : []}
+          houses={isLoggedIn ? (data.case || []) : []}
+          ascLon={data.ascendente_totale}
+          ascSign={data.segno}
+          ascDeg={data.grado_nel_segno}
+          theme={theme}
+        />
         <p className="mt-4 text-white/30 text-[11px] tracking-widest uppercase">
           Swiss Ephemeris Engine · Placidus
         </p>
@@ -79,66 +95,63 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
         </div>
       </div>
 
-      {/* ── SEZIONE PREMIUM: Solo per utenti loggati ── */}
+      {/* ── SEZIONE PREMIUM ── */}
       {isLoggedIn ? (
         <>
-          {/* Analisi Dinamica */}
+          {/* Analisi Dinamica / Sintesi di Valeria */}
           <div className="mb-12 bg-white/5 border border-white/10 rounded-3xl p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
               <span className="text-6xl italic font-serif">Valeria</span>
             </div>
             <h3 className="font-serif text-2xl text-white mb-6 flex items-center gap-3">
-              <span className="text-gold-400">✨</span> {data.interpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
+              <span className="text-gold-400">✨</span> {localInterpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
             </h3>
             
-            {data.interpretation ? (
+            {localInterpretation ? (
               <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm">
-                <ReactMarkdown>{data.interpretation}</ReactMarkdown>
+                <ReactMarkdown>{localInterpretation}</ReactMarkdown>
               </div>
             ) : (
-              <div className="space-y-8 relative z-10">
-                {/* Ascendente */}
-                <div className="flex gap-5">
-                  <div className="w-12 h-12 shrink-0 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-xl">🏹</div>
-                  <div>
-                    <h4 className="text-gold-400 font-bold text-sm uppercase tracking-widest mb-1">Ascendente in {data.segno}</h4>
-                    <p className="text-white/70 text-sm leading-relaxed">
-                      {SIGN_MEANINGS[data.segno]?.description || "L'energia con cui ti presenti al mondo."}
-                    </p>
+              <div className="relative">
+                <div className="space-y-8 relative z-10 opacity-60">
+                  {/* Fallback Statico */}
+                  <div className="flex gap-5">
+                    <div className="w-12 h-12 shrink-0 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-xl">🏹</div>
+                    <div>
+                      <h4 className="text-gold-400 font-bold text-sm uppercase tracking-widest mb-1">Ascendente in {data.segno}</h4>
+                      <p className="text-white/70 text-sm leading-relaxed">
+                        {SIGN_MEANINGS[data.segno]?.description || "L'energia con cui ti presenti al mondo."}
+                      </p>
+                    </div>
                   </div>
+                  {(() => {
+                    const sole = data.pianeti?.find(p => p.nome === 'Sole')
+                    if (!sole) return null
+                    return (
+                      <div className="flex gap-5">
+                        <div className="w-12 h-12 shrink-0 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl">☀️</div>
+                        <div>
+                          <h4 className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-1">Sole in {sole.segno}</h4>
+                          <p className="text-white/70 text-sm leading-relaxed">
+                            {SIGN_MEANINGS[sole.segno]?.description || "Il nucleo della tua identità e volontà."}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
-                {/* Sole */}
-                {(() => {
-                  const sole = data.pianeti?.find(p => p.nome === 'Sole')
-                  if (!sole) return null
-                  return (
-                    <div className="flex gap-5">
-                      <div className="w-12 h-12 shrink-0 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl">☀️</div>
-                      <div>
-                        <h4 className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-1">Sole in {sole.segno}</h4>
-                        <p className="text-white/70 text-sm leading-relaxed">
-                          {SIGN_MEANINGS[sole.segno]?.description || "Il nucleo della tua identità e volontà."}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })()}
-                {/* Luna */}
-                {(() => {
-                  const luna = data.pianeti?.find(p => p.nome === 'Luna')
-                  if (!luna) return null
-                  return (
-                    <div className="flex gap-5">
-                      <div className="w-12 h-12 shrink-0 rounded-full bg-blue-400/10 border border-blue-400/20 flex items-center justify-center text-xl">🌙</div>
-                      <div>
-                        <h4 className="text-blue-400 font-bold text-sm uppercase tracking-widest mb-1">Luna in {luna.segno}</h4>
-                        <p className="text-white/70 text-sm leading-relaxed">
-                          {SIGN_MEANINGS[luna.segno]?.description || "Il tuo mondo emotivo e i tuoi bisogni profondi."}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })()}
+                <div className="mt-8 pt-6 border-t border-white/10 text-center">
+                  <button 
+                    onClick={handleGenerateSummary}
+                    disabled={genLoading}
+                    className="btn-gold px-6 py-2 text-xs uppercase tracking-widest"
+                  >
+                    {genLoading ? "Generazione..." : "✦ Genera la Sintesi di Valeria"}
+                  </button>
+                  <p className="text-[10px] text-white/30 mt-3 font-serif italic">
+                    L'IA di Valeria analizzerà la tua configurazione planetaria completa.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -185,7 +198,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
           )}
         </>
       ) : (
-        /* Visualizzazione per Ospiti: Spoiler oscurato */
+        /* Visualizzazione per Ospiti */
         <div className="mb-12 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark-900/40 to-dark-900 z-10 pointer-events-none" />
           <div className="opacity-20 blur-sm pointer-events-none grayscale">
@@ -267,7 +280,7 @@ export default function NatalChartPage() {
   const [city, setCity] = useState('')
   const [isFixed, setIsFixed] = useState(false)
 
-  // Sincronizzazione automatica e caricamento Tema Esistente
+  // Calcolo / Sync Auto
   useEffect(() => {
     if (!isLoggedIn) return
 
@@ -275,28 +288,25 @@ export default function NatalChartPage() {
       try {
         const charts = await getMyCharts()
         if (charts && charts.length > 0) {
-          const mainChart = charts[0] // Prendi l'ultimo salvato
+          const mainChart = charts[0]
           setResult(mainChart.chartData as any)
           setDate(mainChart.birthDate)
           setTime(mainChart.birthTime)
           setCity(mainChart.city)
           setIsFixed(true)
         } else {
-          // Solo se non ha chart, proviamo a sincronizzare dati pendenti dall'ospite
           const pendingData = localStorage.getItem('valeria_pending_natal')
           if (pendingData) {
             const data = JSON.parse(pendingData)
             await syncNatalData(data)
             localStorage.removeItem('valeria_pending_natal')
-            // Ricarica dopo sync per avere il chart generato sul server
             initPersona()
           }
         }
       } catch (err) {
-        console.error('[Init] Errore caricamento profilo:', err)
+        console.error('[Init] Errore caricamento:', err)
       }
     }
-
     initPersona()
   }, [isLoggedIn, getMyCharts, syncNatalData])
 
@@ -309,17 +319,14 @@ export default function NatalChartPage() {
     try {
       const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim() })
       setResult(res)
-      
-      // Persistenza Dati per ospiti (o per sincronizzare in seguito)
       localStorage.setItem('valeria_pending_natal', JSON.stringify({
         birthDate: date,
         birthTime: time.slice(0, 5),
         city: city.trim()
       }))
-
       setTimeout(() => window.scrollBy({ top: 400, behavior: 'smooth' }), 200)
     } catch (err: any) {
-      setError(err.message || 'Errore di connessione al motore astrologico')
+      setError(err.message || 'Errore di connessione')
     } finally {
       setLoading(false)
     }
@@ -336,122 +343,46 @@ export default function NatalChartPage() {
           backgroundPosition: '0 0, 20px 20px',
           mask: 'radial-gradient(ellipse 100% 100% at 50% 50%, black 30%, transparent 100%)'
         }} />
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-900/20 blur-[120px] rounded-full" />
-        <div className="absolute top-60 right-1/4 w-64 h-64 bg-indigo-900/20 blur-[100px] rounded-full" />
-        <div className="absolute bottom-40 left-1/3 w-80 h-80 bg-blue-950/20 blur-[120px] rounded-full" />
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-24">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-14"
-          >
-            <p className="text-gold-500 text-[10px] sm:text-xs font-semibold tracking-[0.25em] uppercase mb-4">
-              Astrologia di Precisione · Swiss Ephemeris
-            </p>
-            <h1 className="font-serif text-4xl md:text-6xl font-bold mb-5 leading-tight">
-              Calcola il tuo<br />
-              <span className="gold-text italic">Ascendente</span>
-            </h1>
-            <p className="text-white/50 text-base max-w-xl mx-auto leading-relaxed">
-              Inserisci i tuoi dati di nascita. In pochi secondi ottieni la mappa del tuo cielo natale calcolata astronomicamente con precisione sub-arcosecondo.
-            </p>
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-14">
+            <p className="text-gold-500 text-[10px] font-semibold tracking-[0.25em] uppercase mb-4">✦ Astrologia di Precisione</p>
+            <h1 className="font-serif text-4xl md:text-6xl font-bold mb-5 leading-tight">Calcola il tuo <span className="gold-text italic">Ascendente</span></h1>
           </motion.div>
 
-          {/* Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-10 mb-16 shadow-2xl relative overflow-hidden"
-          >
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% -20%, rgba(212,160,23,0.12), transparent 70%)' }} />
-            
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-10 mb-16 shadow-2xl relative overflow-hidden">
             <form onSubmit={handleSubmit} className="relative z-10">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/40 font-medium block">Data di Nascita</label>
-                  <input
-                    type="date"
-                    required
-                    disabled={isFixed}
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
+                  <label className="text-xs uppercase tracking-widest text-white/40">Data di Nascita</label>
+                  <input type="date" required disabled={isFixed} value={date} onChange={(e) => setDate(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/40 font-medium block">Ora Esatta</label>
-                  <input
-                    type="time"
-                    required
-                    disabled={isFixed}
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
+                  <label className="text-xs uppercase tracking-widest text-white/40">Ora Esatta</label>
+                  <input type="time" required disabled={isFixed} value={time} onChange={(e) => setTime(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/40 font-medium block">Città di Nascita</label>
-                  <input
-                    type="text"
-                    required
-                    disabled={isFixed}
-                    placeholder="Es. Roma"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-gold-500/60 focus:bg-gold-500/5 transition-all ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
+                  <label className="text-xs uppercase tracking-widest text-white/40">Città di Nascita</label>
+                  <input type="text" required disabled={isFixed} placeholder="Es. Roma" value={city} onChange={(e) => setCity(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
               </div>
 
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mb-4 p-4 bg-red-900/20 border border-red-500/30 rounded-lg text-red-300 text-sm"
-                  >
-                    {error}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-between">
                 <p className="text-white/30 text-[11px] max-w-xs">
-                  {isFixed 
-                    ? "✦ I tuoi dati di nascita sono stati registrati e bloccati. Contatta l'assistenza per eventuali correzioni."
-                    : "L'orario è fondamentale per il calcolo preciso dell'Ascendente. Usa il certificato di nascita."
-                  }
+                  {isFixed ? "✦ Dati bloccati. Contatta l'assistenza per correzioni." : "L'orario è fondamentale per il calcolo preciso."}
                 </p>
                 {!isFixed && (
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-3.5 rounded-xl bg-gradient-to-r from-gold-700 via-gold-500 to-gold-400 text-dark-900 font-bold uppercase tracking-wider text-sm transition-all hover:shadow-[0_0_30px_rgba(212,160,23,0.5)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
-                  >
-                    {loading ? (
-                      <>
-                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-dark-900" />
-                        Calcolo Effemeridi...
-                      </>
-                    ) : (
-                      <> Genera la Ruota Zodiacale </>
-                    )}
+                  <button type="submit" disabled={loading} className="btn-gold px-10 py-3.5 text-sm uppercase tracking-wider font-bold">
+                    {loading ? "Generazione..." : "Genera Ruota Zodiacale"}
                   </button>
                 )}
               </div>
             </form>
           </motion.div>
 
-          {/* Risultato con Ruota */}
-          <AnimatePresence>
-            {result && <ResultPanel data={result} isLoggedIn={isLoggedIn} />}
-          </AnimatePresence>
-        </div>
+          {result && <ResultPanel data={result} isLoggedIn={isLoggedIn} />}
+      </div>
     </div>
   )
 }

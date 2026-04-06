@@ -296,4 +296,57 @@ export const getCurrentSky = async (_req: Request, res: Response): Promise<void>
   })
 }
 
+export const generateSummaryForExistingChart = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.auth?.userId
+  if (!userId) {
+    res.status(401).json({ error: "Non autorizzato" })
+    return
+  }
+
+  const { chartId } = req.body
+  if (!chartId) {
+    res.status(400).json({ error: "ID Tema Natale mancante" })
+    return
+  }
+
+  try {
+    const { pool } = await import('../db.js')
+    
+    // 1. Verifica proprietà
+    const { rows } = await pool.query(
+      `SELECT chart_data, interpretation FROM natal_charts 
+       WHERE id = $1 AND clerk_user_id = $2`,
+      [chartId, userId]
+    )
+
+    if (rows.length === 0) {
+      res.status(404).json({ error: "Tema Natale non trovato" })
+      return
+    }
+
+    const chart = rows[0]
+    // Se ha già un'interpretazione valida, non la rigeneriamo
+    if (chart.interpretation && chart.interpretation.trim().length > 50) {
+      res.json({ interpretation: chart.interpretation })
+      return
+    }
+
+    // 2. Genera Interpretazione tramite Gemini
+    const { generateChartInterpretation } = await import('../lib/gemini.js')
+    const interpretation = await generateChartInterpretation(chart.chart_data, 'basic')
+
+    // 3. Salva nel DB
+    await pool.query(
+      `UPDATE natal_charts SET interpretation = $1 WHERE id = $2`,
+      [interpretation, chartId]
+    )
+
+    res.json({ interpretation })
+
+  } catch (error: any) {
+    console.error("Generate Summary API Error:", error)
+    res.status(500).json({ error: 'Errore durante la generazione della sintesi' })
+  }
+}
+
 

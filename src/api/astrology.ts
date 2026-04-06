@@ -111,5 +111,12 @@ export function useAstrologyApi() {
     })
   }
 
-  return { calculateFreeChart, generatePaidChart, getMyCharts, syncNatalData }
+  const generateSummary = async (chartId: string): Promise<{ interpretation: string }> => {
+    return authFetch('/api/astrology/generate-summary', {
+      method: 'POST',
+      body: JSON.stringify({ chartId }),
+    })
+  }
+
+  return { calculateFreeChart, generatePaidChart, getMyCharts, syncNatalData, generateSummary }
 }
