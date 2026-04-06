@@ -267,7 +267,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           )
         })()}
 
-        {/* ── 360° Graduazioni (Ticks) - OVERLAY FINALE ── */}
+        {/* ── 360° Graduazioni (Ticks) - OVERLAY ── */}
         {useMemo(() => {
           const ticks = []
           for (let i = 0; i < 360; i++) {
@@ -299,7 +299,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           return ticks
         }, [])}
 
-        {/* ── Puntatore Luna ( Overlay Finale ) ── */}
+        {/* ── Puntatore Luna ( Overlay ) ── */}
         {(() => {
           const luna = planets.find(p => p.nome === 'Luna')
           if (!luna) return null
@@ -346,7 +346,9 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
               )
             })()}
           <p className="text-white font-serif font-bold text-2xl md:text-3xl mt-1">{ascSign || 'Attuale'}</p>
-          {ascDeg !== undefined && !planets.find(p => p.nome === 'Luna') && <p className="text-gold-500/50 text-xs mt-1 font-mono">{ascDeg.toFixed(1)}°</p>}
+          {ascDeg !== undefined && !planets.find(p => p.nome === 'Luna') && (
+            <p className="text-gold-500/50 text-xs mt-1 font-mono">{ascDeg.toFixed(1)}°</p>
+          )}
         </div>
       </div>
     </div>
