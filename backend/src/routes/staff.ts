@@ -12,6 +12,7 @@ import { serviceKindFromEventName } from '../lib/consultServiceLabel.js'
 import { registerStaffBlogCommentRoutes } from './staffBlogCommentsRoutes.js'
 import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
+import { askLenormandMentor } from '../lib/lenormandRAG.js'
 
 const noteBody = z.object({
   body: z.string().min(1).max(20000),
@@ -448,6 +449,21 @@ export function createStaffRouter(pool: Pool): Router {
       res.status(500).json({ error: 'Errore database' })
     } finally {
       client.release()
+    }
+  })
+
+  r.post('/lenormand-mentor', async (req, res) => {
+    const { query } = req.body
+    if (!query || typeof query !== 'string') {
+      res.status(400).json({ error: 'Query mancante' })
+      return
+    }
+    try {
+      const response = await askLenormandMentor(query)
+      res.json({ response })
+    } catch (e: any) {
+      console.error('[staff lenormand-mentor]', e)
+      res.status(500).json({ error: 'Errore durante la consultazione del Mentore' })
     }
   })
 

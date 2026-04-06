@@ -166,6 +166,38 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           ))}
         </g>
 
+        {/* ── 360° Graduazioni (Ticks) ── */}
+        {useMemo(() => {
+          const ticks = []
+          for (let i = 0; i < 360; i++) {
+            const isSign = i % 30 === 0
+            const isDecan = i % 10 === 0
+            const isFive = i % 5 === 0
+            
+            let tickLen = 12
+            let strokeW = 1
+            let opacity = 0.15
+            
+            if (isSign) { tickLen = 40; strokeW = 2; opacity = 0.5 }
+            else if (isDecan) { tickLen = 25; strokeW = 1.5; opacity = 0.3 }
+            else if (isFive) { tickLen = 18; strokeW = 1.2; opacity = 0.2 }
+            
+            const p1 = toXY(R.INNER, i)
+            const p2 = toXY(R.INNER + tickLen, i)
+            
+            ticks.push(
+              <line 
+                key={`tick-${i}`} 
+                x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} 
+                stroke="rgba(212,160,23,0.8)" 
+                strokeWidth={strokeW} 
+                opacity={opacity} 
+              />
+            )
+          }
+          return ticks
+        }, [])}
+
         {/* ── 12 Settori ── */}
         {ZODIAC.map((sign, i) => {
           const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
@@ -196,6 +228,25 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         {/* Bordi Dorati */}
         <circle cx={CX} cy={CY} r={R.SIGN_OUT} fill="none" stroke="rgba(212,160,23,0.6)" strokeWidth="4" />
         <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.2)" strokeWidth="2" />
+
+        {/* ── Puntatore Luna (Precisione Millimetrica) ── */}
+        {(() => {
+          const luna = planets.find(p => p.nome === 'Luna')
+          if (!luna) return null
+          const r_orb = RING_R[luna.categoria] ?? R.FAST
+          const pMoon = toXY(r_orb, luna.lon_assoluta)
+          const pScale = toXY(R.INNER, luna.lon_assoluta)
+          return (
+            <g>
+              <line 
+                x1={pScale.x} y1={pScale.y} x2={pMoon.x} y2={pMoon.y} 
+                stroke="#C8E0FF" strokeWidth="1.5" strokeDasharray="10 10" 
+                opacity="0.6" 
+              />
+              <circle cx={pScale.x} cy={pScale.y} r="6" fill="#C8E0FF" filter="url(#glow-big)" />
+            </g>
+          )
+        })()}
 
         {/* ── Pianeti ── */}
         {planets.map((p: PlanetData) => {
@@ -272,11 +323,32 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
-          <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-1">{ascSign ? 'Ascendente' : 'Cielo'}</p>
-          <p className="text-white font-serif font-bold text-2xl md:text-3xl">{ascSign || 'Attuale'}</p>
-          {ascDeg !== undefined && <p className="text-gold-500/50 text-xs mt-1 font-mono">{ascDeg.toFixed(1)}°</p>}
+            {(() => {
+              const luna = planets.find(p => p.nome === 'Luna')
+              if (luna) {
+                return (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mb-1"
+                  >
+                    <p className="text-[9px] uppercase tracking-[0.2em] text-[#C8E0FF] opacity-80 mb-0.5">Luna a</p>
+                    <p className="text-[#C8E0FF] font-mono text-xl font-bold leading-none">{luna.gradi.toFixed(2)}°</p>
+                    <p className="text-[10px] text-[#C8E0FF]/60 font-serif">{luna.segno}</p>
+                  </motion.div>
+                )
+              }
+              return (
+                <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-1">{ascSign ? 'Ascendente' : 'Cielo'}</p>
+              )
+            })()}
+          <p className="text-white font-serif font-bold text-2xl md:text-3xl mt-1">{ascSign || 'Attuale'}</p>
+          {ascDeg !== undefined && !planets.find(p => p.nome === 'Luna') && <p className="text-gold-500/50 text-xs mt-1 font-mono">{ascDeg.toFixed(1)}°</p>}
         </div>
       </div>
+    </div>
+  )
+}
     </div>
   )
 }
