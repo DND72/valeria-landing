@@ -22,10 +22,10 @@ const ZODIAC = [
 ]
 
 const ELEMENT_BG: Record<string, string> = {
-  'Fuoco': 'rgba(220,80,60,0.06)',
-  'Terra': 'rgba(80,200,100,0.06)',
-  'Aria':  'rgba(255,220,80,0.06)',
-  'Acqua': 'rgba(80,160,220,0.06)',
+  'Fuoco': 'url(#grad-fuoco)',
+  'Terra': 'url(#grad-terra)',
+  'Aria':  'url(#grad-aria)',
+  'Acqua': 'url(#grad-acqua)',
 }
 
 const BODY_INFO_STATIC: Record<string, { color: string; ring: string }> = {
@@ -147,6 +147,28 @@ export default function ZodiacWheel({
             <feGaussianBlur stdDeviation="12" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
+
+          {/* Gradianti Elementi per Spicchi */}
+          <radialGradient id="grad-fuoco" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" stopColor="rgba(220,80,60,0)" />
+            <stop offset="85%" stopColor="rgba(220,80,60,0.08)" />
+            <stop offset="100%" stopColor="rgba(220,80,60,0.18)" />
+          </radialGradient>
+          <radialGradient id="grad-terra" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" stopColor="rgba(80,200,100,0)" />
+            <stop offset="85%" stopColor="rgba(80,200,100,0.08)" />
+            <stop offset="100%" stopColor="rgba(80,200,100,0.18)" />
+          </radialGradient>
+          <radialGradient id="grad-aria" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" stopColor="rgba(255,220,80,0)" />
+            <stop offset="85%" stopColor="rgba(255,220,80,0.08)" />
+            <stop offset="100%" stopColor="rgba(255,220,80,0.18)" />
+          </radialGradient>
+          <radialGradient id="grad-acqua" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" stopColor="rgba(80,160,220,0)" />
+            <stop offset="85%" stopColor="rgba(80,160,220,0.08)" />
+            <stop offset="100%" stopColor="rgba(80,160,220,0.18)" />
+          </radialGradient>
         </defs>
 
         <circle 
@@ -178,25 +200,29 @@ export default function ZodiacWheel({
           ))}
         </g>
 
-        {/* ── 12 Settori ── */}
+        {/* ── 12 Settori (Segni Zodiacali) ── */}
         {ZODIAC.map((sign, i) => {
           const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
           const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, mid, rotationOffset)
           return (
             <g key={sign.name} className="cursor-help group">
               <title>{`${sign.name} (${sign.el})`}</title>
+              {/* Sfondo dello spicchio con gradiente elementale */}
               <path 
                 d={arcPath(R.SIGN_OUT, R.INNER, lon0, lon1, rotationOffset)}
                 fill={ELEMENT_BG[sign.el]} 
-                stroke="rgba(255,255,255,0.05)" 
-                strokeWidth="1" 
-                className="transition-opacity group-hover:fill-opacity-20"
+                stroke="rgba(255,255,255,0.12)" 
+                strokeWidth="1.5" 
+                className="transition-all duration-500 group-hover:fill-opacity-40"
               />
+              {/* Simbolo Zodiacale */}
               <text 
                 x={symPos.x} y={symPos.y + 5} 
                 textAnchor="middle" dominantBaseline="central"
-                fontSize="72" fill={sign.color} fillOpacity="0.6" 
-                className="select-none font-serif transition-transform group-hover:scale-110 origin-center"
+                fontSize="76" 
+                fill={sign.color} 
+                fillOpacity="0.85" 
+                className="select-none font-serif transition-all duration-300 group-hover:scale-110 origin-center drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                 style={{ transformOrigin: `${symPos.x}px ${symPos.y}px` }}
               >
                 {sign.symbol}
