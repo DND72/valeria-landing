@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import ZodiacWheel, { PlanetData } from '../components/ZodiacWheel'
+import ZodiacWheel from '../components/ZodiacWheel'
 import AspectGrid from '../components/AspectGrid'
+import { type PlanetData } from '../utils/astrologyUtils'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
@@ -44,9 +45,17 @@ const ASPECT_LEGEND = [
   { label: 'Congiunzione (0°)', color: '#FFFFFF', desc: 'Unione di Forze', dash: false },
 ]
 
+interface Eclipse {
+  tipo: 'Solare' | 'Lunare'
+  sottotipo: string
+  emoji: string
+  data: string
+}
+
 interface SkyData {
   timestamp: string
   pianeti: PlanetData[]
+  eclissi?: Eclipse[]
 }
 
 export default function CurrentSkyPage() {
@@ -190,6 +199,37 @@ export default function CurrentSkyPage() {
                   "Le posizioni planetarie riflettono le energie cosmiche collettive in questo istante. Ogni aspetto nella griglia e nella ruota indica una tensione o un'armonia speciale tra due archetipi."
                 </p>
               </div>
+
+              {/* Pannello Eclissi */}
+              {sky.eclissi && sky.eclissi.length > 0 && (
+                <div className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md">
+                  <div className="px-6 py-4 border-b border-white/5">
+                    <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium">
+                      🌑 Eclissi · Prossimi 24 Mesi
+                    </h4>
+                  </div>
+                  <div className="divide-y divide-white/5 max-h-[280px] overflow-y-auto custom-scrollbar">
+                    {sky.eclissi.map((e, i) => (
+                      <div key={i} className="flex items-center gap-4 px-6 py-3 hover:bg-white/[0.02] transition-colors">
+                        <span className="text-2xl flex-shrink-0">{e.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white/80 text-sm font-semibold">
+                            Eclisse {e.tipo}
+                            <span className={`ml-2 text-[10px] uppercase px-2 py-0.5 rounded-full font-normal ${
+                              e.tipo === 'Solare' 
+                                ? 'bg-amber-500/15 text-amber-400/80' 
+                                : 'bg-blue-500/15 text-blue-300/80'
+                            }`}>
+                              {e.sottotipo}
+                            </span>
+                          </p>
+                        </div>
+                        <span className="font-mono text-white/40 text-xs flex-shrink-0">{e.data}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Bottoni CTA */}
               <div className="flex flex-col gap-3">

@@ -10,6 +10,7 @@ import Gallery from './components/Gallery'
 import HowItWorks from './components/HowItWorks'
 import Reviews from './components/Reviews'
 import TarotAppPromo from './components/TarotAppPromo'
+import AstrologyPromo from './components/AstrologyPromo'
 import BookingSection from './components/BookingSection'
 import Footer from './components/Footer'
 import SignInPage from './pages/SignInPage'
@@ -46,6 +47,7 @@ function HomePage() {
       <HowItWorks />
       <Reviews />
       <TarotAppPromo />
+      <AstrologyPromo />
       <BookingSection />
     </>
   )

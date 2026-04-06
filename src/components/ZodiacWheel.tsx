@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { calculateAspects, BODY_GLYPHS, type PlanetData, type AspectResult } from '../utils/astrologyUtils'
+import { calculateAspects, BODY_GLYPHS, type PlanetData } from '../utils/astrologyUtils'
 
 // ─────────────────────────────────────────────
 // Dati Zodiacali

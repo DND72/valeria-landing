@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
 import { useAstrologyApi, type NatalChartResponse } from '../api/astrology'
 import ZodiacWheel from '../components/ZodiacWheel'
@@ -97,21 +96,30 @@ function ResultPanel({ data }: { data: NatalChartResponse }) {
         </div>
       )}
 
-      {/* CTA Upgrade */}
+      {/* CTA Upgrade: invita all'iscrizione */}
       <div className="rounded-2xl border border-gold-500/20 bg-gradient-to-br from-gold-500/[0.07] to-transparent p-8 text-center">
         <span className="text-2xl mb-4 block">✦</span>
         <h3 className="font-serif text-2xl text-white mb-3">
-          Vuoi l'Interpretazione Olistica di <span className="gold-text">Valeria</span>?
+          Vai ancora più in profondità con il <span className="gold-text">Tema Natale</span>
         </h3>
         <p className="text-white/50 text-sm mb-6 max-w-md mx-auto leading-relaxed">
-          Nel tuo Diario Personale puoi generare il <strong className="text-white">Tema Natale Evolutivo</strong> completo — con tutte le Case Astrologiche, i transiti dei pianeti lenti, e un'analisi IA approfondita nel ruolo di Naturopata e Tarologa.
+          Iscriviti gratuitamente e accedi al <strong className="text-white">Tema Natale Base</strong> — con i principali pianeti e le Case Astrologiche a soli 15 crediti.
+          Per un'analisi evolutiva completa con interpretazione di Valeria, scegli il piano <strong className="text-white">Evolutivo</strong> (30 crediti).
         </p>
-        <Link
-          to="/i-miei-temi"
-          className="inline-block btn-gold px-8 py-3 text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(212,160,23,0.25)] hover:shadow-[0_0_40px_rgba(212,160,23,0.4)] transition-shadow"
-        >
-          Scopri il Tuo Profilo Astrale Completo →
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            to="/sign-up"
+            className="inline-block btn-gold px-8 py-3 text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(212,160,23,0.25)] hover:shadow-[0_0_40px_rgba(212,160,23,0.4)] transition-shadow"
+          >
+            Crea Account Gratis →
+          </Link>
+          <Link
+            to="/dashboard"
+            className="inline-block border border-white/15 text-white/60 hover:text-white px-8 py-3 rounded-xl text-sm transition-colors"
+          >
+            Hai già un account?
+          </Link>
+        </div>
       </div>
     </motion.div>
   )
@@ -149,25 +157,18 @@ export default function NatalChartPage() {
       {/* Sfondo Galattico */}
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(30,14,60,0.9) 0%, rgba(8,8,16,1) 70%)' }} />
-        {/* Stelle (dots) generate con box-shadows via background-image trick */}
         <div className="absolute inset-0 opacity-60" style={{
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
           backgroundSize: '40px 40px',
           backgroundPosition: '0 0, 20px 20px',
           mask: 'radial-gradient(ellipse 100% 100% at 50% 50%, black 30%, transparent 100%)'
         }} />
-        {/* Nebule */}
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-900/20 blur-[120px] rounded-full" />
         <div className="absolute top-60 right-1/4 w-64 h-64 bg-indigo-900/20 blur-[100px] rounded-full" />
         <div className="absolute bottom-40 left-1/3 w-80 h-80 bg-blue-950/20 blur-[120px] rounded-full" />
       </div>
 
-      <SignedOut>
-        <RedirectToSignIn afterSignInUrl="/tema-natale" />
-      </SignedOut>
-
-      <SignedIn>
-        <div className="max-w-4xl mx-auto px-6 py-24">
+      <div className="max-w-4xl mx-auto px-6 py-24">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -270,7 +271,6 @@ export default function NatalChartPage() {
             {result && <ResultPanel data={result} />}
           </AnimatePresence>
         </div>
-      </SignedIn>
     </div>
   )
 }
