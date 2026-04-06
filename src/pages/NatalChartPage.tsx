@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useAstrologyApi, type NatalChartResponse } from '../api/astrology'
 import ZodiacWheel from '../components/ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
+import { SIGN_MEANINGS, HOUSE_MEANINGS } from '../constants/astrologyMeanings'
 
 const PLANET_COLOR: Record<string, string> = {
   'Sole': 'text-amber-400',
@@ -41,6 +42,7 @@ function ResultPanel({ data }: { data: NatalChartResponse }) {
         </div>
         <ZodiacWheel
                 planets={data.pianeti || []}
+                houses={data.case || []}
                 ascLon={data.ascendente_totale}
                 ascSign={data.segno}
                 ascDeg={data.grado_nel_segno}
@@ -75,24 +77,104 @@ function ResultPanel({ data }: { data: NatalChartResponse }) {
         </div>
       </div>
 
+      {/* ── NUOVA SEZIONE: Analisi Dinamica (Gratuita) ── */}
+      <div className="mb-12 bg-white/5 border border-white/10 rounded-3xl p-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+          <span className="text-6xl italic font-serif">Valeria</span>
+        </div>
+        
+        <h3 className="font-serif text-2xl text-white mb-6 flex items-center gap-3">
+          <span className="text-gold-400">✨</span> Analisi Dinamica
+        </h3>
+
+        <div className="space-y-8 relative z-10">
+          {/* Ascendente */}
+          <div className="flex gap-5">
+            <div className="w-12 h-12 shrink-0 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-xl">🏹</div>
+            <div>
+              <h4 className="text-gold-400 font-bold text-sm uppercase tracking-widest mb-1">Ascendente in {data.segno}</h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                {SIGN_MEANINGS[data.segno]?.description || "L'energia con cui ti presenti al mondo."}
+              </p>
+            </div>
+          </div>
+
+          {/* Sole */}
+          {(() => {
+            const sole = data.pianeti?.find(p => p.nome === 'Sole')
+            if (!sole) return null
+            return (
+              <div className="flex gap-5">
+                <div className="w-12 h-12 shrink-0 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl">☀️</div>
+                <div>
+                  <h4 className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-1">Sole in {sole.segno}</h4>
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    {SIGN_MEANINGS[sole.segno]?.description || "Il nucleo della tua identità e volontà."}
+                  </p>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Luna */}
+          {(() => {
+            const luna = data.pianeti?.find(p => p.nome === 'Luna')
+            if (!luna) return null
+            return (
+              <div className="flex gap-5">
+                <div className="w-12 h-12 shrink-0 rounded-full bg-blue-400/10 border border-blue-400/20 flex items-center justify-center text-xl">🌙</div>
+                <div>
+                  <h4 className="text-blue-400 font-bold text-sm uppercase tracking-widest mb-1">Luna in {luna.segno}</h4>
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    {SIGN_MEANINGS[luna.segno]?.description || "Il tuo mondo emotivo e i tuoi bisogni profondi."}
+                  </p>
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      </div>
+
       {/* Griglia Pianeti */}
       {data.pianeti && data.pianeti.length > 0 && (
-        <div className="mb-10">
-          <h3 className="font-serif text-xl text-white mb-4 flex items-center gap-3">
-            <span className="text-gold-400">☉</span> Le Posizioni Planetarie
+        <div className="mb-14">
+          <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
+            <span className="text-gold-400">☉</span> Posizioni Planetarie
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {data.pianeti.map(p => (
               <div
                 key={p.nome}
-                className="group bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-xl p-3 text-center cursor-default"
+                className="group bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-2xl p-4 text-center cursor-default shadow-lg"
               >
-                <p className={`text-2xl mb-1 ${PLANET_COLOR[p.nome] || 'text-white'}`}>
+                <p className={`text-3xl mb-2 ${PLANET_COLOR[p.nome] || 'text-white'}`}>
                   {PLANET_SYMBOLS[p.nome] || '✦'}
                 </p>
-                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">{p.nome}</p>
-                <p className="font-serif text-base text-white leading-tight">{p.segno}</p>
-                <p className="text-[10px] text-white/30 mt-1">{p.gradi.toFixed(1)}°</p>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 font-bold">{p.nome}</p>
+                <p className="font-serif text-lg text-white leading-tight mb-1">{p.segno}</p>
+                <p className="text-[10px] text-white/30 font-mono">{p.gradi.toFixed(1)}°</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── NUOVA SEZIONE: Cuspidi delle Case (Gratuita) ── */}
+      {data.case && data.case.length > 0 && (
+        <div className="mb-14">
+          <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
+            <span className="text-indigo-400">🏠</span> Cuspidi delle Case
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {data.case.map(c => (
+              <div key={c.numero} className="bg-white/[0.03] border border-white/10 rounded-xl p-3 text-center group hover:bg-white/[0.05] transition-colors">
+                <p className="text-[10px] text-white/30 uppercase tracking-tighter mb-1">Casa {c.numero}</p>
+                <p className="text-white font-serif text-sm font-bold">{c.segno}</p>
+                <p className="text-[9px] text-indigo-400/60 font-mono mt-1">{c.gradi.toFixed(1)}°</p>
+                <div className="hidden group-hover:block absolute z-50 bg-black/90 border border-indigo-500/30 p-3 rounded-lg text-[10px] text-white/80 w-48 mt-2 -translate-x-1/4 backdrop-blur-md">
+                   <p className="font-bold text-indigo-400 mb-1">{HOUSE_MEANINGS[c.numero]?.keyword}</p>
+                   {HOUSE_MEANINGS[c.numero]?.description}
+                </div>
               </div>
             ))}
           </div>

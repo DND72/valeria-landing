@@ -98,6 +98,7 @@ interface ZodiacWheelProps {
   mcLon?: number
   moonStartLon?: number
   moonEndLon?: number
+  houses?: { numero: number; lon_assoluta: number }[]
   className?: string
   theme: CircadianTheme
 }
@@ -111,6 +112,7 @@ interface TypedAspectLine extends AspectResult {
 export default function ZodiacWheel({ 
   planets, ascLon, ascSign, mcLon, 
   moonStartLon, moonEndLon, 
+  houses = [],
   className = '', theme 
 }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
@@ -362,6 +364,35 @@ export default function ZodiacWheel({
                   </text>
                 </g>
               )}
+            </g>
+          )
+        })}
+
+        {/* ── Case Astrologiche (Cuspidi) ── */}
+        {houses.length > 0 && houses.map((h) => {
+          const p1 = toXY(R.INNER - 60, h.lon_assoluta, rotationOffset)
+          const p2 = toXY(R.SIGN_IN, h.lon_assoluta, rotationOffset)
+          const midH = toXY(R.INNER - 30, h.lon_assoluta, rotationOffset)
+          const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][h.numero - 1]
+          
+          return (
+            <g key={`house-${h.numero}`}>
+              <line 
+                x1={p1.x} y1={p1.y} 
+                x2={p2.x} y2={p2.y} 
+                stroke="rgba(255,255,255,0.15)" 
+                strokeWidth="1.5" 
+                strokeDasharray="4 4"
+              />
+              {/* Numero Casa in numeri romani */}
+              <text 
+                x={midH.x} y={midH.y} 
+                fontSize="24" fill="rgba(255,255,255,0.4)" 
+                textAnchor="middle" dominantBaseline="middle"
+                className="font-serif italic pointer-events-none"
+              >
+                {roman}
+              </text>
             </g>
           )
         })}
