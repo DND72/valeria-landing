@@ -96,6 +96,8 @@ interface ZodiacWheelProps {
   ascSign?: string
   ascDeg?: number
   mcLon?: number
+  moonStartLon?: number
+  moonEndLon?: number
   className?: string
   theme: CircadianTheme
 }
@@ -106,7 +108,11 @@ interface TypedAspectLine extends AspectResult {
   dash: string
 }
 
-export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className = '', theme }: ZodiacWheelProps) {
+export default function ZodiacWheel({ 
+  planets, ascLon, ascSign, mcLon, 
+  moonStartLon, moonEndLon, 
+  className = '', theme 
+}: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
   const rotationOffset = ascLon ?? 0
 
@@ -284,17 +290,17 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
             )
 
             if (isDecan && !isSign) {
-              const labelPos = toXY(R.SIGN_IN + 65, i, rotationOffset)
+              const labelPos = toXY(R.SIGN_IN + 60, i, rotationOffset)
               elements.push(
                 <text 
                   key={`deg-${i}`} 
                   x={labelPos.x} y={labelPos.y} 
-                  fontSize="48" 
+                  fontSize="32" 
                   fill="#FFF" 
                   textAnchor="middle" 
                   dominantBaseline="middle" 
                   className="font-mono font-bold"
-                  style={{ textShadow: '0 0 15px rgba(0,0,0,1), 0 0 8px rgba(255,255,255,0.6)' }}
+                  style={{ textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(255,255,255,0.4)' }}
                 >
                   {i % 30}
                 </text>
@@ -303,6 +309,17 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
           }
           return elements
         }, [rotationOffset])}
+
+        {/* ── MOON DAY PATH (ARC) ── */}
+        {moonStartLon !== undefined && moonEndLon !== undefined && (
+          <path 
+            d={arcPath(R.SIGN_IN + 30, R.SIGN_IN, moonStartLon, moonEndLon, rotationOffset)}
+            fill="rgba(255,255,255,0.25)"
+            stroke="rgba(255,255,255,0.4)"
+            strokeWidth="2"
+            filter="url(#glow-p)"
+          />
+        )}
 
         {/* ── MOON LASER POINTER ── */}
         {(() => {

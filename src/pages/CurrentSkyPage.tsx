@@ -65,6 +65,14 @@ interface MoonData {
   angolo: number
   segno: string
   elemento: string
+  day_start_lon: number
+  day_end_lon: number
+}
+
+interface Transition {
+  evento: string
+  timestamp: string
+  segno: string
 }
 
 interface MonthlyPhase {
@@ -83,6 +91,7 @@ interface SkyData {
   eclissi?: Eclipse[]
   luna?: MoonData
   fasi_mensili?: MonthlyPhase[]
+  transizioni?: Transition[]
   ascendente_totale?: number
   mc_totale?: number
 }
@@ -336,6 +345,8 @@ export default function CurrentSkyPage() {
                   theme={theme}
                   ascLon={sky.ascendente_totale}
                   mcLon={sky.mc_totale}
+                  moonStartLon={sky.luna?.day_start_lon}
+                  moonEndLon={sky.luna?.day_end_lon}
                 />
               </motion.div>
 
@@ -426,6 +437,47 @@ export default function CurrentSkyPage() {
               transition={{ delay: 0.3 }}
               className="space-y-6"
             >
+
+              {/* 🗓️ Transizioni del Giorno */}
+              {sky.transizioni && sky.transizioni.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden shadow-xl border mb-6"
+                  style={{
+                    background: theme.cardGradient,
+                    borderColor: theme.cardBorder,
+                    transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
+                  }}
+                >
+                  <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                    <span className="text-4xl">⏳</span>
+                  </div>
+                  <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40 mb-4 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                    Transizioni del Giorno
+                  </h3>
+                  <div className="space-y-4">
+                    {sky.transizioni.map((tr, idx) => (
+                      <div key={idx} className="flex items-center justify-between group border-b border-white/5 pb-3 last:border-0 last:pb-0">
+                        <div className="flex flex-col">
+                          <span className="text-white/90 text-sm font-medium group-hover:text-blue-400 transition-colors">
+                            {tr.evento}
+                          </span>
+                          <span className="text-[9px] text-white/20 uppercase tracking-tighter">
+                             Evento Astrale
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-blue-400 font-mono font-bold text-sm bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                            {new Date(tr.timestamp).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
 
               {/* Moon Widget */}
               <div

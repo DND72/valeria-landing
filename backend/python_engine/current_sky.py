@@ -184,13 +184,52 @@ def get_current_sky():
         asc_tot = ascmc[0]
         mc_tot = ascmc[1]
 
+        # ─────────────────────────────────────────
+        # TRAIETTORIA LUNARE E TRANSIZIONI (Oggi/Domani)
+        # ─────────────────────────────────────────
+        # Inizio giornata odierna (00:00 UTC) e fine (24:00 UTC)
+        start_of_day_jd = swe.julday(now.year, now.month, now.day, 0)
+        end_of_day_jd = start_of_day_jd + 1.0
+        
+        pos_start, _ = swe.calc_ut(start_of_day_jd, swe.MOON)
+        pos_end, _ = swe.calc_ut(end_of_day_jd, swe.MOON)
+        
+        # Cerca ingressi nei prossimi 2 giorni
+        ingresses = []
+        t_search = jd
+        for _ in range(48): # Step di un'ora per 48 ore
+            p1, _ = swe.calc_ut(t_search, swe.MOON)
+            p2, _ = swe.calc_ut(t_search + 1/24.0, swe.MOON)
+            s1, s2 = int(p1[0]//30), int(p2[0]//30)
+            if s1 != s2:
+                y, m, d, h = swe.revjul(t_search + 1/24.0)
+                # Ora locale approssimata per Roma (UTC+1 o UTC+2)
+                # Per semplicità restituiamo ISO string
+                dt_ing = datetime(int(y), int(m), int(d), int(h), int((h-int(h))*60), tzinfo=timezone.utc)
+                ingresses.append({
+                    "evento": f"Luna entra in {zodiac_signs[s2]}",
+                    "timestamp": dt_ing.isoformat(),
+                    "segno": zodiac_signs[s2]
+                })
+            t_search += 1/24.0
+
         return {
             "timestamp": now.strftime("%Y-%m-%dT%H:%M:00Z"),
             "pianeti": pianeti,
             "eclissi": eclipses,
             "ascendente_totale": round(asc_tot, 2),
             "mc_totale": round(mc_tot, 2),
-            "luna": { "fase": phase_name, "icona": moon_icon, "illuminazione": round(illumination, 1), "angolo": round(phase_angle, 2), "segno": moon_entry["segno"] if moon_entry else "N/A", "elemento": moon_entry["elemento"] if moon_entry else "N/A" },
+            "luna": { 
+                "fase": phase_name, 
+                "icona": moon_icon, 
+                "illuminazione": round(illumination, 1), 
+                "angolo": round(phase_angle, 2), 
+                "segno": moon_entry["segno"] if moon_entry else "N/A", 
+                "elemento": moon_entry["elemento"] if moon_entry else "N/A",
+                "day_start_lon": round(pos_start[0], 2),
+                "day_end_lon": round(pos_end[0], 2)
+            },
+            "transizioni": ingresses[:5],
             "fasi_mensili": monthly_phases
         }
     except Exception as e: return {"error": str(e), "traceback": __import__('traceback').format_exc()}
