@@ -270,13 +270,13 @@ export default function ZodiacWheel({
                 filter={isHov ? 'url(#glow-p)' : 'none'} 
               />
               
-              {/* Glifo */}
+              {/* Simbolo (Glifo) Accanto al Pianeta */}
               <text 
-                x={pos.x} y={pos.y} 
-                dy="0.35em" textAnchor="middle" 
-                fontSize={p.categoria === 'veloce' ? 48 : 38} 
+                x={pos.x + dotR + 10} y={pos.y - 4} 
+                fontSize={p.categoria === 'veloce' ? 44 : 36} 
                 fill={info.color} 
-                className="select-none pointer-events-none drop-shadow-md"
+                fillOpacity={isHov ? 1 : 0.8}
+                className="select-none pointer-events-none font-serif drop-shadow-md"
               >
                 {glyph}
               </text>
