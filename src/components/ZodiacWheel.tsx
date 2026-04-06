@@ -255,23 +255,48 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
             const isSign = i % 30 === 0
             const isDecan = i % 10 === 0
             const isFive = i % 5 === 0
-            let tickLen = 12; let strokeW = 1.2; let opacity = 0.35
             
-            if (isSign) { tickLen = 50; strokeW = 3.5; opacity = 0.8 }
-            else if (isDecan) { tickLen = 30; strokeW = 2.2; opacity = 0.6 }
-            else if (isFive) { tickLen = 20; strokeW = 1.8; opacity = 0.45 }
+            let tickLen = 10; let strokeW = 0.8; let opacity = 0.15; let strokeColor = "rgba(255,255,255,0.4)"
             
-            // Ticks at SIGN_IN facing OUTWARD to fill the gap to SIGN_OUT
+            if (isSign) { 
+              tickLen = 60; strokeW = 4.5; opacity = 1.0; strokeColor = "rgba(212,160,23,1)" // ORO BRILLANTE
+            } else if (isDecan) { 
+              tickLen = 35; strokeW = 2.5; opacity = 0.8; strokeColor = "rgba(212,160,23,0.7)" // MARCATORE DECANO
+            } else if (isFive) { 
+              tickLen = 20; strokeW = 1.5; opacity = 0.5; strokeColor = "rgba(255,255,255,0.6)" // OGNI 5 GRADI
+            }
+            
             const p1 = toXY(R.SIGN_IN, i, rotationOffset)
             const p2 = toXY(R.SIGN_IN + tickLen, i, rotationOffset)
             
             elements.push(
-              <line key={`tick-${i}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="rgba(212,160,23,1)" strokeWidth={strokeW} opacity={opacity} />
+              <line 
+                key={`tick-${i}`} 
+                x1={p1.x} y1={p1.y} 
+                x2={p2.x} y2={p2.y} 
+                stroke={strokeColor} 
+                strokeWidth={strokeW} 
+                opacity={opacity} 
+                filter={isSign ? 'url(#glow-p)' : 'none'}
+              />
             )
 
             if (isDecan && !isSign) {
-              const labelPos = toXY(R.SIGN_IN + 55, i, rotationOffset)
-              elements.push(<text key={`deg-${i}`} x={labelPos.x} y={labelPos.y} fontSize="20" fill="rgba(212,160,23,0.7)" textAnchor="middle" dominantBaseline="middle" className="font-mono font-bold">{i % 30}</text>)
+              const labelPos = toXY(R.SIGN_IN + 45, i, rotationOffset)
+              elements.push(
+                <text 
+                  key={`deg-${i}`} 
+                  x={labelPos.x} y={labelPos.y} 
+                  fontSize="22" 
+                  fill="rgba(212,160,23,1)" 
+                  textAnchor="middle" 
+                  dominantBaseline="middle" 
+                  className="font-mono font-bold"
+                  style={{ textShadow: '0 0 5px rgba(212,160,23,0.5)' }}
+                >
+                  {i % 30}
+                </text>
+              )
             }
           }
           return elements
