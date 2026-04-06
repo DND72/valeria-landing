@@ -56,14 +56,17 @@ const BODY_INFO_STATIC: Record<string, { color: string; ring: string }> = {
 // ─────────────────────────────────────────────
 const CX = 1000; const CY = 1000
 
-function toXY(r: number, lon: number) {
-  const rad = ((180 - lon) * Math.PI) / 180
+// Funzione di proiezione con offset per orientamento Ascendente
+function toXY(r: number, lon: number, rotationOffset: number = 0) {
+  // Poniamo l'Ascendente (o Ariete 0 se non c'è offset) a 180° (ore 9)
+  const angleDeg = 180 - (lon - rotationOffset)
+  const rad = (angleDeg * Math.PI) / 180
   return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) }
 }
 
-function arcPath(rOuter: number, rInner: number, lonStart: number, lonEnd: number) {
-  const p1 = toXY(rOuter, lonStart); const p2 = toXY(rOuter, lonEnd)
-  const p3 = toXY(rInner, lonEnd);   const p4 = toXY(rInner, lonStart)
+function arcPath(rOuter: number, rInner: number, lonStart: number, lonEnd: number, offset: number) {
+  const p1 = toXY(rOuter, lonStart, offset); const p2 = toXY(rOuter, lonEnd, offset)
+  const p3 = toXY(rInner, lonEnd, offset);   const p4 = toXY(rInner, lonStart, offset)
   return [
     `M ${p1.x} ${p1.y}`,
     `A ${rOuter} ${rOuter} 0 0 0 ${p2.x} ${p2.y}`,
@@ -110,6 +113,9 @@ interface TypedAspectLine extends AspectResult {
 
 export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '', theme }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
+  
+  // L'offset di rotazione è la lon_assoluta dell'Ascendente (o 0 se assente)
+  const rotationOffset = ascLon ?? 0
 
   // Calcolo Aspetti
   const aspectLines = useMemo(() => {
@@ -123,12 +129,12 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         const r2 = RING_R[p2.categoria] ?? R.FAST
         return {
           ...asp,
-          pos1: toXY(r1 - 15, p1.lon_assoluta),
-          pos2: toXY(r2 - 15, p2.lon_assoluta),
+          pos1: toXY(r1 - 15, p1.lon_assoluta, rotationOffset),
+          pos2: toXY(r2 - 15, p2.lon_assoluta, rotationOffset),
           dash: asp.type === 'Sestile' ? '10 20' : '0'
         } as TypedAspectLine
       })
-  }, [planets])
+  }, [planets, rotationOffset])
 
   return (
     <div className={`relative flex items-center justify-center ${className}`} style={{ aspectRatio: '1/1' }}>
@@ -170,12 +176,12 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         {/* ── 12 Settori ── */}
         {ZODIAC.map((sign, i) => {
           const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
-          const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, mid)
+          const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, mid, rotationOffset)
           return (
             <g key={sign.name} className="cursor-help group">
               <title>{`${sign.name} (${sign.el})`}</title>
               <path 
-                d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1)}
+                d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1, rotationOffset)}
                 fill={ELEMENT_BG[sign.el]} 
                 stroke="rgba(212,160,23,0.15)" 
                 strokeWidth="1" 
@@ -202,7 +208,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         {planets.map((p: PlanetData) => {
           const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
           const r_orb = RING_R[p.categoria] ?? R.FAST
-          const pos = toXY(r_orb, p.lon_assoluta); const isHov = hovered === p.nome
+          const pos = toXY(r_orb, p.lon_assoluta, rotationOffset); const isHov = hovered === p.nome
           const dotR = p.categoria === 'veloce' ? 18 : p.categoria === 'lento' ? 14 : 10
           const glyph = BODY_GLYPHS[p.nome] || '●'
 
@@ -257,7 +263,8 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
         {/* ── ASC ── */}
         {ascLon !== undefined && (() => {
-          const p1 = toXY(R.SIGN_OUT + 24, ascLon); const pI = toXY(R.SIGN_IN, ascLon)
+          const p1 = toXY(R.SIGN_OUT + 24, ascLon, rotationOffset); 
+          const pI = toXY(R.SIGN_IN, ascLon, rotationOffset)
           return (
             <g>
               <line x1={pI.x} y1={pI.y} x2={p1.x} y2={p1.y} stroke="#D4A017" strokeWidth="6" strokeLinecap="round" />
@@ -281,9 +288,8 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
             else if (isDecan) { tickLen = 40; strokeW = 2.5; opacity = 0.6 }
             else if (isFive) { tickLen = 25; strokeW = 2; opacity = 0.5 }
             
-            // Tacche orientate verso l'interno dal bordo SIGN_OUT (il più esterno)
-            const p1 = toXY(R.SIGN_OUT, i)
-            const p2 = toXY(R.SIGN_OUT - tickLen, i)
+            const p1 = toXY(R.SIGN_OUT, i, rotationOffset)
+            const p2 = toXY(R.SIGN_OUT - tickLen, i, rotationOffset)
             
             elements.push(
               <line 
@@ -295,10 +301,9 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
               />
             )
 
-            // Aggiunta numeri 10, 20
             if (isDecan && !isSign) {
               const degInSign = i % 30
-              const labelPos = toXY(R.SIGN_OUT - 65, i)
+              const labelPos = toXY(R.SIGN_OUT - 65, i, rotationOffset)
               elements.push(
                 <text 
                   key={`deg-${i}`} 
@@ -313,16 +318,16 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
             }
           }
           return elements
-        }, [])}
+        }, [rotationOffset])}
 
         {/* ── MOON LASER POINTER (EXTREME EXTERNAL OVERLAY) ── */}
         {(() => {
           const luna = planets.find(p => p.nome === 'Luna')
           if (!luna) return null
           const r_orb = RING_R[luna.categoria] ?? R.FAST
-          const pMoon = toXY(r_orb, luna.lon_assoluta)
-          const pScale = toXY(R.SIGN_OUT, luna.lon_assoluta)
-          const pText = toXY(R.SIGN_OUT - 120, luna.lon_assoluta)
+          const pMoon = toXY(r_orb, luna.lon_assoluta, rotationOffset)
+          const pScale = toXY(R.SIGN_OUT, luna.lon_assoluta, rotationOffset)
+          const pText = toXY(R.SIGN_OUT - 120, luna.lon_assoluta, rotationOffset)
           
           return (
             <g>
@@ -342,7 +347,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
               <circle cx={pScale.x} cy={pScale.y} r="12" fill="white" filter="url(#glow-p)" />
               <circle cx={pScale.x} cy={pScale.y} r="6" fill="#06040E" />
               
-              {/* Valore numerico sul punto di contatto esterno */}
+              {/* Valore numerico */}
               <g transform={`translate(${pText.x}, ${pText.y})`}>
                 <rect x="-45" y="-20" width="90" height="40" rx="8" fill="white" />
                 <text 
@@ -354,8 +359,8 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
                 </text>
               </g>
               
-              {/* Cerchio di focus sul pianeta */}
-              <circle cx={pMoon.x} cy={pMoon.y} r="35" fill="none" stroke="white" strokeWidth="2" strokeDasharray="5 5">
+              {/* Cerchio di focus */}
+              <circle cx={pMoon.x} cy={pMoon.y} r={35} fill="none" stroke="white" strokeWidth="2" strokeDasharray="5 5">
                 <animate attributeName="stroke-opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="r" values="35;45;35" dur="2s" repeatCount="indefinite" />
               </circle>
