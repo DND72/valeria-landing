@@ -105,6 +105,18 @@ function CircadianBadge({ label, emoji, color }: { label: string; emoji: string;
   )
 }
 
+// ── Helper: Calcola l'ora locale da una stringa GMT (HH:MM) ───────────────────
+function formatToLocal(gmtStr: string): string {
+  try {
+    const [h, m] = gmtStr.split(':').map(Number)
+    const d = new Date()
+    d.setUTCHours(h, m, 0, 0)
+    return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+  } catch (e) {
+    return gmtStr
+  }
+}
+
 export default function CurrentSkyPage() {
   const [sky, setSky]         = useState<SkyData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -500,7 +512,15 @@ export default function CurrentSkyPage() {
                               <p className="text-white/90 text-sm font-semibold leading-tight">{ph.fase}</p>
                               {ph.is_passata && <span className="text-[9px] text-white/30 uppercase tracking-widest font-bold">Recente</span>}
                             </div>
-                            <p className="font-mono text-white/30 text-[10px] mt-1 uppercase tracking-wider">{ph.data_full} • {ph.ora_gmt} GMT</p>
+                            <p className="font-mono text-white/50 text-xs mt-1.5 uppercase tracking-wider">
+                              {ph.data_full} • {ph.ora_gmt} GMT
+                              {sunTimes?.usingGeolocation && (
+                                <span className="text-gold-500/80 ml-1.5">
+                                  ({formatToLocal(ph.ora_gmt)} Loc)
+                                </span>
+                              )}
+                            </p>
+
                           </div>
                         </div>
                         <div className="text-right">
