@@ -282,17 +282,17 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
             )
 
             if (isDecan && !isSign) {
-              const labelPos = toXY(R.SIGN_IN + 45, i, rotationOffset)
+              const labelPos = toXY(R.SIGN_IN + 55, i, rotationOffset)
               elements.push(
                 <text 
                   key={`deg-${i}`} 
                   x={labelPos.x} y={labelPos.y} 
-                  fontSize="22" 
-                  fill="rgba(212,160,23,1)" 
+                  fontSize="44" 
+                  fill="#FFD700" 
                   textAnchor="middle" 
                   dominantBaseline="middle" 
                   className="font-mono font-bold"
-                  style={{ textShadow: '0 0 5px rgba(212,160,23,0.5)' }}
+                  style={{ textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(255,215,0,0.5)' }}
                 >
                   {i % 30}
                 </text>
@@ -307,15 +307,15 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
           const luna = planets.find(p => p.nome === 'Luna')
           if (!luna) return null
           const pScale = toXY(R.SIGN_IN, luna.lon_assoluta, rotationOffset)
-          const pText = toXY(R.SIGN_IN + 80, luna.lon_assoluta, rotationOffset)
+          const pText = toXY(R.SIGN_IN + 100, luna.lon_assoluta, rotationOffset)
           
           return (
             <g>
-              <line x1={CX} y1={CY} x2={pScale.x} y2={pScale.y} stroke="#fff" strokeWidth="2" strokeOpacity="1" filter="url(#glow-p)" />
-              <circle cx={pScale.x} cy={pScale.y} r="10" fill="#fff" filter="url(#glow-p)" />
+              <line x1={CX} y1={CY} x2={pScale.x} y2={pScale.y} stroke="#fff" strokeWidth="2.5" strokeOpacity="1" filter="url(#glow-p)" />
+              <circle cx={pScale.x} cy={pScale.y} r="12" fill="#fff" filter="url(#glow-p)" />
               <g transform={`translate(${pText.x}, ${pText.y})`}>
-                <rect x="-45" y="-20" width="90" height="40" rx="8" fill="#fff" />
-                <text textAnchor="middle" dominantBaseline="middle" fontSize="24" fill="#000" fontWeight="bold" className="font-mono">{luna.gradi.toFixed(1)}°</text>
+                <rect x="-60" y="-25" width="120" height="50" rx="10" fill="#fff" />
+                <text textAnchor="middle" dominantBaseline="middle" fontSize="32" fill="#000" fontWeight="bold" className="font-mono">{luna.gradi.toFixed(1)}°</text>
               </g>
             </g>
           )
