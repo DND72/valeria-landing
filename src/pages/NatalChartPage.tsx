@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useAstrologyApi, type NatalChartResponse } from '../api/astrology'
@@ -87,52 +88,59 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
               <span className="text-6xl italic font-serif">Valeria</span>
             </div>
             <h3 className="font-serif text-2xl text-white mb-6 flex items-center gap-3">
-              <span className="text-gold-400">✨</span> Analisi Dinamica
+              <span className="text-gold-400">✨</span> {data.interpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
             </h3>
-            <div className="space-y-8 relative z-10">
-              {/* Ascendente */}
-              <div className="flex gap-5">
-                <div className="w-12 h-12 shrink-0 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-xl">🏹</div>
-                <div>
-                  <h4 className="text-gold-400 font-bold text-sm uppercase tracking-widest mb-1">Ascendente in {data.segno}</h4>
-                  <p className="text-white/70 text-sm leading-relaxed">
-                    {SIGN_MEANINGS[data.segno]?.description || "L'energia con cui ti presenti al mondo."}
-                  </p>
-                </div>
+            
+            {data.interpretation ? (
+              <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm">
+                <ReactMarkdown>{data.interpretation}</ReactMarkdown>
               </div>
-              {/* Sole */}
-              {(() => {
-                const sole = data.pianeti?.find(p => p.nome === 'Sole')
-                if (!sole) return null
-                return (
-                  <div className="flex gap-5">
-                    <div className="w-12 h-12 shrink-0 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl">☀️</div>
-                    <div>
-                      <h4 className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-1">Sole in {sole.segno}</h4>
-                      <p className="text-white/70 text-sm leading-relaxed">
-                        {SIGN_MEANINGS[sole.segno]?.description || "Il nucleo della tua identità e volontà."}
-                      </p>
-                    </div>
+            ) : (
+              <div className="space-y-8 relative z-10">
+                {/* Ascendente */}
+                <div className="flex gap-5">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-xl">🏹</div>
+                  <div>
+                    <h4 className="text-gold-400 font-bold text-sm uppercase tracking-widest mb-1">Ascendente in {data.segno}</h4>
+                    <p className="text-white/70 text-sm leading-relaxed">
+                      {SIGN_MEANINGS[data.segno]?.description || "L'energia con cui ti presenti al mondo."}
+                    </p>
                   </div>
-                )
-              })()}
-              {/* Luna */}
-              {(() => {
-                const luna = data.pianeti?.find(p => p.nome === 'Luna')
-                if (!luna) return null
-                return (
-                  <div className="flex gap-5">
-                    <div className="w-12 h-12 shrink-0 rounded-full bg-blue-400/10 border border-blue-400/20 flex items-center justify-center text-xl">🌙</div>
-                    <div>
-                      <h4 className="text-blue-400 font-bold text-sm uppercase tracking-widest mb-1">Luna in {luna.segno}</h4>
-                      <p className="text-white/70 text-sm leading-relaxed">
-                        {SIGN_MEANINGS[luna.segno]?.description || "Il tuo mondo emotivo e i tuoi bisogni profondi."}
-                      </p>
+                </div>
+                {/* Sole */}
+                {(() => {
+                  const sole = data.pianeti?.find(p => p.nome === 'Sole')
+                  if (!sole) return null
+                  return (
+                    <div className="flex gap-5">
+                      <div className="w-12 h-12 shrink-0 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl">☀️</div>
+                      <div>
+                        <h4 className="text-amber-400 font-bold text-sm uppercase tracking-widest mb-1">Sole in {sole.segno}</h4>
+                        <p className="text-white/70 text-sm leading-relaxed">
+                          {SIGN_MEANINGS[sole.segno]?.description || "Il nucleo della tua identità e volontà."}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )
-              })()}
-            </div>
+                  )
+                })()}
+                {/* Luna */}
+                {(() => {
+                  const luna = data.pianeti?.find(p => p.nome === 'Luna')
+                  if (!luna) return null
+                  return (
+                    <div className="flex gap-5">
+                      <div className="w-12 h-12 shrink-0 rounded-full bg-blue-400/10 border border-blue-400/20 flex items-center justify-center text-xl">🌙</div>
+                      <div>
+                        <h4 className="text-blue-400 font-bold text-sm uppercase tracking-widest mb-1">Luna in {luna.segno}</h4>
+                        <p className="text-white/70 text-sm leading-relaxed">
+                          {SIGN_MEANINGS[luna.segno]?.description || "Il tuo mondo emotivo e i tuoi bisogni profondi."}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Griglia Pianeti */}
@@ -268,6 +276,14 @@ export default function NatalChartPage() {
     try {
       const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim() })
       setResult(res)
+      
+      // Persistenza Dati per ospiti (o per sincronizzare in seguito)
+      localStorage.setItem('valeria_pending_natal', JSON.stringify({
+        birthDate: date,
+        birthTime: time.slice(0, 5),
+        city: city.trim()
+      }))
+
       setTimeout(() => window.scrollBy({ top: 400, behavior: 'smooth' }), 200)
     } catch (err: any) {
       setError(err.message || 'Errore di connessione al motore astrologico')

@@ -31,6 +31,7 @@ export interface NatalChartResponse {
   grado_nel_segno: number
   pianeti?: Planet[]
   case?: House[]
+  interpretation?: string
   error?: string
 }
 
@@ -103,5 +104,12 @@ export function useAstrologyApi() {
     return res.charts || []
   }
 
-  return { calculateFreeChart, generatePaidChart, getMyCharts }
+  const syncNatalData = async (data: NatalChartRequest) => {
+    return authFetch('/api/astrology/sync-natal', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  return { calculateFreeChart, generatePaidChart, getMyCharts, syncNatalData }
 }

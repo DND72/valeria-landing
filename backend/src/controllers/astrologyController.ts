@@ -23,7 +23,7 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
     // Use python3 if available, otherwise python
     const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
 
-    execFile(pythonExecutable, [pythonScriptPath, birthDate, birthTime, city], (error, stdout, stderr) => {
+    execFile(pythonExecutable, [pythonScriptPath, birthDate, birthTime, city], async (error, stdout, stderr) => {
       if (error) {
         console.error("Python Execution Error:", error)
         console.error("Stderr:", stderr)
@@ -36,7 +36,18 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
           return res.status(400).json({ error: result.error })
         }
 
-        return res.json(result)
+        // Se l'utente è loggato, generiamo l'interpretazione base (gratuita)
+        const userId = req.auth?.userId
+        let interpretation = ""
+        if (userId) {
+          const { generateChartInterpretation } = await import('../lib/gemini.js')
+          interpretation = await generateChartInterpretation(result, 'basic')
+        }
+
+        return res.json({
+          ...result,
+          interpretation
+        })
       } catch (e) {
         console.error("Failed to parse python output:", stdout)
         return res.status(500).json({ error: "Invalid data received from calculation engine" })
@@ -145,6 +156,51 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
     res.status(500).json({ error: error.message || 'Internal server error' })
   }
 }
+
+export const syncNatal = async (req: Request, res: Response) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+
+    const syncSchema = z.object({
+      birthDate: z.string(),
+      birthTime: z.string(),
+      city: z.string()
+    })
+
+    const parsed = syncSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Dati non validi' })
+      return
+    }
+
+    const { birthDate, birthTime, city } = parsed.data
+    const { pool } = await import('../db.js')
+
+    try {
+      // 1. Aggiorna il profilo billing (per dati fiscali futuri)
+      await pool.query(
+        `INSERT INTO client_billing_profiles (clerk_user_id, declared_birthday, birth_time, birth_city, updated_at)
+         VALUES ($1, $2::date, $3, $4, now())
+         ON CONFLICT (clerk_user_id) DO UPDATE SET
+           declared_birthday = EXCLUDED.declared_birthday,
+           birth_time = EXCLUDED.birth_time,
+           birth_city = EXCLUDED.birth_city,
+           updated_at = now()`,
+        [userId, birthDate, birthTime, city]
+      )
+
+      // 2. Verifica se ha già un tema natale. Se no, lo creiamo (opzionale)
+      const existing = await pool.query(`SELECT id FROM natal_charts WHERE clerk_user_id = $1 LIMIT 1`, [userId])
+      
+      res.json({ ok: true, alreadyHasChart: existing.rows.length > 0 })
+    } catch (e) {
+      console.error('[me sync-natal]', e)
+      res.status(500).json({ error: 'Errore sincronizzazione' })
+    }
+  }
 
 export const getMyCharts = async (req: Request, res: Response): Promise<void> => {
   const userId = req.auth?.userId

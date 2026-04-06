@@ -20,6 +20,7 @@ import { labelForPresence } from '../lib/valeriaPresence'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import { apiJson, ApiError } from '../lib/api'
+import { useAstrologyApi } from '../api/astrology'
 
 /** Evita .split su null / tipi non stringa (Clerk a volte restituisce valori limite). */
 function displayFirstName(user: {
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
   const { signOut } = useClerk()
+  const { syncNatalData } = useAstrologyApi()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const calendarSectionRef = useRef<HTMLElement | null>(null)
@@ -156,6 +158,28 @@ export default function Dashboard() {
     void loadMyConsults()
     void loadWallet()
   }, [loadMyConsults, loadWallet])
+
+  // Sync del calcolo Tema Natale pendente (specchietto per le allodole/sync dati fiscali)
+  useEffect(() => {
+    if (!isLoaded || !user) return
+    
+    const pendingData = localStorage.getItem('valeria_pending_natal')
+    if (pendingData) {
+      try {
+        const data = JSON.parse(pendingData)
+        // Se l'utente non ha ancora i dati completi (o forziamo lo schema)
+        syncNatalData(data)
+          .then(() => {
+            console.log("Dati di nascita sincronizzati dal localStorage.")
+            localStorage.removeItem('valeria_pending_natal')
+            // Ricarichiamo consulti/wallet se utile
+          })
+          .catch(err => console.error("Errore sync natal pendente:", err))
+      } catch (e) {
+        localStorage.removeItem('valeria_pending_natal')
+      }
+    }
+  }, [isLoaded, user, syncNatalData])
 
   const handleConsultAction = async (id: string, action: 'cancel' | 'reschedule') => {
     try {
