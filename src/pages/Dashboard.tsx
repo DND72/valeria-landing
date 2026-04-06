@@ -445,9 +445,9 @@ export default function Dashboard() {
               {
                 icon: '⭐',
                 title: 'I Miei Temi Astrali',
-                desc: 'Tema Natale con interpretazione di Valeria',
+                desc: 'Analisi evolutiva profonda del tuo Tema Natale',
                 href: '/i-miei-temi',
-                cta: 'I Miei Temi',
+                cta: 'Le Mie Analisi',
                 isRouterLink: true,
               },
             ].map((action, i) => {

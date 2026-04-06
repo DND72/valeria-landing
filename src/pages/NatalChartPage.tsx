@@ -106,8 +106,8 @@ function ResultPanel({ data }: { data: NatalChartResponse }) {
           Vai ancora più in profondità con il <span className="gold-text">Tema Natale</span>
         </h3>
         <p className="text-white/50 text-sm mb-6 max-w-md mx-auto leading-relaxed">
-          Iscriviti gratuitamente e accedi al <strong className="text-white">Tema Natale Base</strong> — con i principali pianeti e le Case Astrologiche a soli 15 crediti.
-          Per un'analisi evolutiva completa con interpretazione di Valeria, scegli il piano <strong className="text-white">Evolutivo</strong> (30 crediti).
+          Iscriviti gratuitamente per salvare i tuoi calcoli e richiedere l'**Analisi Evolutiva Completa** (30 crediti). 
+          Riceverai un'interpretazione profonda di tutti i pianeti, case e aspetti, curata dalla visione olistica di Valeria.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link

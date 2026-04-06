@@ -65,8 +65,8 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
   }
 
   try {
-    const { birthDate, birthTime, city, type } = paidSchema.parse(req.body)
-    const cost = type === 'basic' ? 15 : 30
+    const { birthDate, birthTime, city } = paidSchema.parse(req.body)
+    const cost = 30 // Unified price for Evolutionary Analysis
 
     // 1. Transaction to deduct credits
     const { pool } = await import('../db.js')
@@ -121,15 +121,14 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
       return
     }
 
-    // 3. LLM Interpretation
+    // 3. LLM Interpretation (Always advanced for paid charts)
     const { generateChartInterpretation } = await import('../lib/gemini.js')
-    const interpretation = await generateChartInterpretation(chartData, type)
+    const interpretation = await generateChartInterpretation(chartData, 'advanced')
 
-    // 4. Save to DB
     await pool.query(
       `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [userId, type, birthDate, birthTime, city, chartData, interpretation]
+      [userId, 'advanced', birthDate, birthTime, city, chartData, interpretation]
     )
 
     res.json({

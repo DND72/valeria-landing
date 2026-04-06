@@ -133,12 +133,12 @@ export default function PaidNatalCharts() {
         birthDate: date,
         birthTime: time,
         city: city.trim(),
-        type
+        type: 'advanced'
       })
       await fetchCharts()
       setViewingChart({
         id: 'new',
-        type,
+        type: 'advanced',
         birthDate: date,
         birthTime: time,
         city,
@@ -176,10 +176,10 @@ export default function PaidNatalCharts() {
             Analisi Evolutiva
           </p>
           <h1 className="font-serif text-3xl md:text-5xl font-bold mb-4">
-            Genera un <span className="gold-text italic">Tema Natale</span>
+            Interpretazione <span className="gold-text italic">Evolutiva</span>
           </h1>
           <p className="text-white/50 text-base max-w-2xl mx-auto mb-4">
-            Inserisci i tuoi dati di nascita esatti per ricevere un'analisi astrologica completa salvata qui nel tuo Diario.
+            Mentre il calcolo della mappa è gratuito, qui puoi richiedere l'analisi profonda di Valeria: un viaggio spirituale tra i tuoi pianeti e le tue sfide d'anima.
           </p>
           <div className="flex items-center justify-center gap-6">
              <Link to="/tema-natale" className="text-sm underline text-emerald-400/80 hover:text-emerald-400">
@@ -229,19 +229,16 @@ export default function PaidNatalCharts() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <label className={`cursor-pointer border rounded-xl p-4 text-center transition-all ${type === 'basic' ? 'border-gold-500/50 bg-gold-500/10' : 'border-white/10 hover:border-white/20'}`}>
-                    <input type="radio" value="basic" checked={type === 'basic'} onChange={() => setType('basic')} className="hidden" />
-                    <h4 className="font-serif text-lg font-semibold text-white mb-1">Tema Base</h4>
-                    <p className="text-xs text-white/50 mb-2">Sole, Luna, Ascendente</p>
-                    <span className="text-gold-400 font-bold">15 CR</span>
-                  </label>
-                  <label className={`cursor-pointer border rounded-xl p-4 text-center transition-all ${type === 'advanced' ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/10 hover:border-white/20'}`}>
-                    <input type="radio" value="advanced" checked={type === 'advanced'} onChange={() => setType('advanced')} className="hidden" />
-                    <h4 className="font-serif text-lg font-semibold text-white mb-1">Evolutivo</h4>
-                    <p className="text-xs text-white/50 mb-2">Tutti i Pianeti e Case</p>
-                    <span className="text-emerald-400 font-bold">30 CR</span>
-                  </label>
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center mb-6">
+                  <h4 className="font-serif text-xl font-bold text-white mb-2">Analisi Evolutiva Completa</h4>
+                  <p className="text-white/60 text-sm mb-4 leading-relaxed">
+                    Interpretazione di tutti i Pianeti, Case Astrologiche e principali Aspetti nel tuo Tema Natale. 
+                    Un'analisi olistica focalizzata sul tuo potenziale e sulle sfide evolutive.
+                  </p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-emerald-400 font-bold text-2xl">30 CR</span>
+                    <span className="text-white/20 text-xs uppercase tracking-widest">(Crediti)</span>
+                  </div>
                 </div>
 
                 <div className="pt-2">
@@ -250,7 +247,7 @@ export default function PaidNatalCharts() {
                     disabled={loading}
                     className="w-full sm:w-auto px-8 py-3 rounded-lg bg-gradient-to-r from-gold-600 to-gold-400 text-dark-500 font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
                   >
-                    {loading ? 'Lettura in corso...' : `Calcola e Salva (${type === 'basic' ? '15 CR' : '30 CR'})`}
+                    {loading ? 'Lettura in corso...' : `Richiedi Analisi Evolutiva (30 CR)`}
                   </button>
                 </div>
               </form>
