@@ -112,7 +112,7 @@ function formatToLocal(gmtStr: string): string {
     const d = new Date()
     d.setUTCHours(h, m, 0, 0)
     return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
-  } catch (e) {
+  } catch {
     return gmtStr
   }
 }

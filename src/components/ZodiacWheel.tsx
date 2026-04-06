@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { calculateAspects, BODY_GLYPHS, type PlanetData } from '../utils/astrologyUtils'
+import { calculateAspects, BODY_GLYPHS, type PlanetData, type AspectResult } from '../utils/astrologyUtils'
 import { type CircadianTheme } from '../hooks/useCircadianTheme'
 
 // ─────────────────────────────────────────────
@@ -101,6 +101,12 @@ interface ZodiacWheelProps {
   theme: CircadianTheme
 }
 
+interface TypedAspectLine extends AspectResult {
+  pos1: { x: number; y: number }
+  pos2: { x: number; y: number }
+  dash: string
+}
+
 export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '', theme }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
 
@@ -108,10 +114,10 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
   const aspectLines = useMemo(() => {
     const rawAspects = calculateAspects(planets)
     return rawAspects
-      .filter(a => a.type !== 'Congiunzione') // Saltiamo congiunzioni grafiche
+      .filter(a => a.type !== 'Congiunzione')
       .map(asp => {
-        const p1 = planets.find(p => p.nome === asp.p1)!
-        const p2 = planets.find(p => p.nome === asp.p2)!
+        const p1 = planets.find((p: PlanetData) => p.nome === asp.p1)!
+        const p2 = planets.find((p: PlanetData) => p.nome === asp.p2)!
         const r1 = RING_R[p1.categoria] ?? R.FAST
         const r2 = RING_R[p2.categoria] ?? R.FAST
         return {
@@ -119,7 +125,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           pos1: toXY(r1 - 15, p1.lon_assoluta),
           pos2: toXY(r2 - 15, p2.lon_assoluta),
           dash: asp.type === 'Sestile' ? '10 20' : '0'
-        }
+        } as TypedAspectLine
       })
   }, [planets])
 
@@ -130,10 +136,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
       <svg viewBox="0 0 2000 2000" className="w-full h-full overflow-visible">
         <defs>
-          <radialGradient id="zw-disk-big" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stopColor="#0d091e" />
-            <stop offset="85%"  stopColor="#04030a" />
-          </radialGradient>
           <filter id="glow-big" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="8" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -150,7 +152,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
         {/* ── Linee Aspetti ── */}
         <g style={{ transition: 'opacity 4s ease-in-out' }} opacity={theme.aspectLineOpacity}>
-          {aspectLines.map((line, idx) => (
+          {aspectLines.map((line: TypedAspectLine, idx: number) => (
             <line
               key={idx}
               x1={line.pos1.x} y1={line.pos1.y}
@@ -196,7 +198,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.2)" strokeWidth="2" />
 
         {/* ── Pianeti ── */}
-        {planets.map(p => {
+        {planets.map((p: PlanetData) => {
           const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
           const r_orb = RING_R[p.categoria] ?? R.FAST
           const pos = toXY(r_orb, p.lon_assoluta); const isHov = hovered === p.nome
