@@ -4,7 +4,6 @@ import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { useAstrologyApi, type SavedNatalChart, type NatalChartResponse } from '../api/astrology'
 import { Link } from 'react-router-dom'
 import ZodiacWheel from '../components/ZodiacWheel'
-import AspectGrid from '../components/AspectGrid'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
 
 function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, interpretation: string }) {
@@ -98,7 +97,7 @@ export default function PaidNatalCharts() {
   const { generatePaidChart, getMyCharts } = useAstrologyApi()
   const [loading, setLoading] = useState(false)
   const [fetchLoading, setFetchLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
   
   const [myCharts, setMyCharts] = useState<SavedNatalChart[]>([])
   const [viewingChart, setViewingChart] = useState<SavedNatalChart | null>(null)
