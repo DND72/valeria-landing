@@ -5,6 +5,7 @@ import ZodiacWheel from '../components/ZodiacWheel'
 import AspectGrid from '../components/AspectGrid'
 import { type PlanetData } from '../utils/astrologyUtils'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
+import { useSunTimes } from '../hooks/useSunTimes'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
@@ -112,7 +113,8 @@ export default function CurrentSkyPage() {
   const [activeTab, setActiveTab] = useState('veloce')
 
   // ── Circadian Theme ────────────────────────────────────────────────────────
-  const theme = useCircadianTheme()
+  const theme    = useCircadianTheme()
+  const sunTimes = useSunTimes()
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -228,14 +230,38 @@ export default function CurrentSkyPage() {
 
           {/* Clock Widget */}
           <div
-            className="border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-md text-center"
+            className="border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-md text-center min-w-[240px]"
             style={{
               background: theme.clockBg,
               transition: 'background 4s ease-in-out',
             }}
           >
-            <div className="font-mono text-4xl text-white tracking-[0.2em]">{timeStr}</div>
-            <div className="text-white/40 text-xs sm:text-sm capitalize mt-1 tracking-widest">{dateStr}</div>
+            <div className="font-mono text-4xl text-white tracking-[0.2em]" style={{ textShadow: 'none' }}>{timeStr}</div>
+            <div className="text-white/40 text-xs sm:text-sm capitalize mt-1 tracking-widest" style={{ textShadow: 'none' }}>{dateStr}</div>
+
+            {/* Sunrise / Sunset */}
+            {sunTimes && (
+              <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base leading-none">🌅</span>
+                  <span className="font-mono text-sm text-white/80" style={{ textShadow: 'none' }}>{sunTimes.sunrise}</span>
+                </div>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base leading-none">🌇</span>
+                  <span className="font-mono text-sm text-white/80" style={{ textShadow: 'none' }}>{sunTimes.sunset}</span>
+                </div>
+                {/* Indicatore sorgente posizione */}
+                <div
+                  className="ml-1 w-1.5 h-1.5 rounded-full"
+                  title={sunTimes.usingGeolocation ? 'Posizione rilevata automaticamente' : 'Posizione di default: Roma'}
+                  style={{
+                    background: sunTimes.usingGeolocation ? '#4ade80' : 'rgba(255,255,255,0.25)',
+                    boxShadow: sunTimes.usingGeolocation ? '0 0 6px #4ade80' : 'none',
+                  }}
+                />
+              </div>
+            )}
           </div>
         </motion.div>
 
