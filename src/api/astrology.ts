@@ -6,6 +6,20 @@ export interface NatalChartRequest {
   city: string
 }
 
+export interface Planet {
+  nome: string
+  segno: string
+  gradi: number
+  lon_assoluta: number
+}
+
+export interface House {
+  numero: number
+  segno: string
+  gradi: number
+  lon_assoluta: number
+}
+
 export interface NatalChartResponse {
   citta: string
   coordinate: [number, number]
@@ -14,16 +28,8 @@ export interface NatalChartResponse {
   ascendente_totale: number
   segno: string
   grado_nel_segno: number
-  pianeti?: {
-    nome: string
-    segno: string
-    gradi: number
-  }[]
-  case?: {
-    numero: number
-    segno: string
-    gradi: number
-  }[]
+  pianeti?: Planet[]
+  case?: House[]
   error?: string
 }
 

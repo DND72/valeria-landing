@@ -35,11 +35,7 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
         if (result.error) {
           return res.status(400).json({ error: result.error })
         }
-        
-        // Rimuoviamo i dati premium (effemeridi e case) dall'endpoint gratuito
-        delete result.pianeti
-        delete result.case
-        
+
         return res.json(result)
       } catch (e) {
         console.error("Failed to parse python output:", stdout)

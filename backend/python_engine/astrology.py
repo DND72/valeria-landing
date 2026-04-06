@@ -93,7 +93,8 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
             pianeti_calcolati.append({
                 "nome": p_name,
                 "segno": zodiac_signs[p_sign_index],
-                "gradi": round(p_deg_in_sign, 2)
+                "gradi": round(p_deg_in_sign, 2),
+                "lon_assoluta": round(p_lon, 2)
             })
             
         # 7. CALCOLO CASE ASTROLOGICHE (Sistema Placidus)
@@ -109,7 +110,8 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
             case_calcolate.append({
                 "numero": i,
                 "segno": zodiac_signs[h_sign_idx],
-                "gradi": round(h_deg_in_sign, 2)
+                "gradi": round(h_deg_in_sign, 2),
+                "lon_assoluta": round(h_lon, 2)
             })
         
         return {

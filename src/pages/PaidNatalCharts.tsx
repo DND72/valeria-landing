@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { useAstrologyApi, type SavedNatalChart, type NatalChartResponse } from '../api/astrology'
 import { Link } from 'react-router-dom'
+import ZodiacWheel from '../components/ZodiacWheel'
 
 function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, interpretation: string }) {
   return (
@@ -18,6 +19,10 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
           <path d="M4.9 4.9l14.2 14.2M4.9 19.1L19.1 4.9" strokeWidth="0.5" />
           <circle cx="12" cy="12" r="4" strokeWidth="1" />
         </svg>
+      </div>
+
+      <div className="mb-10 w-full flex justify-center">
+        <ZodiacWheel chart={chart} />
       </div>
 
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
