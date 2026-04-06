@@ -404,8 +404,8 @@ export default function CurrentSkyPage() {
                               <p className="text-xs font-mono text-white/70">{e.gmt_fine || '--:--'}</p>
                             </div>
                           </div>
-                          <div className="bg-white/5 px-2 py-0.5 rounded text-[10px] font-mono text-gold-500/60 flex items-center gap-1.5">
-                            <span className="text-[8px] opacity-50">⏱</span> {e.durata || '--'}
+                          <div className="bg-white/10 px-2 py-0.5 rounded text-[10px] font-mono text-amber-400 font-bold flex items-center gap-1.5 border border-amber-400/20">
+                            <span className="text-[8px] opacity-80">⏱</span> {e.durata || '--'}
                           </div>
                         </div>
                       </div>
