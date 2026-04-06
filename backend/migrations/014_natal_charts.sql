@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS natal_charts (
   city TEXT NOT NULL,
   chart_data JSONB NOT NULL,
   interpretation TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (clerk_user_id, birth_date, birth_time, city)
 );
 
 CREATE INDEX IF NOT EXISTS idx_natal_charts_user ON natal_charts(clerk_user_id);

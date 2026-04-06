@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router-dom'
@@ -262,6 +262,21 @@ export default function NatalChartPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<NatalChartResponse | null>(null)
+
+  // Sincronizzazione automatica quando un ospite effettua il login
+  const { syncNatalData } = useAstrologyApi()
+  useEffect(() => {
+    const pendingData = localStorage.getItem('valeria_pending_natal')
+    if (isLoggedIn && pendingData) {
+      const data = JSON.parse(pendingData)
+      syncNatalData(data)
+        .then(() => {
+          localStorage.removeItem('valeria_pending_natal')
+          console.log('[Sync] Dati natali sincronizzati con il profilo utente')
+        })
+        .catch((err: Error) => console.error('[Sync] Errore sincronizzazione automatica:', err))
+    }
+  }, [isLoggedIn, syncNatalData])
 
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')

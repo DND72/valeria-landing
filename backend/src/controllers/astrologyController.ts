@@ -52,7 +52,8 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
       await pool.query(
         `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT DO NOTHING`,
+         ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
+         DO UPDATE SET created_at = now()`,
         [userId, 'basic', birthDate, birthTime, city, result, interpretation]
       )
     }
@@ -127,7 +128,9 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
 
     await pool.query(
       `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
+       DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, created_at = now()`,
       [userId, 'advanced', birthDate, birthTime, city, chartData, interpretation]
     )
 
