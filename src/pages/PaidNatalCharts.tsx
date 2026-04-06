@@ -4,6 +4,7 @@ import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { useAstrologyApi, type SavedNatalChart, type NatalChartResponse } from '../api/astrology'
 import { Link } from 'react-router-dom'
 import ZodiacWheel from '../components/ZodiacWheel'
+import AspectGrid from '../components/AspectGrid'
 
 function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, interpretation: string }) {
   return (
@@ -111,6 +112,12 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
           </div>
         </div>
       )}
+
+      {/* Griglia Aspetti */}
+      <div className="mb-10 pt-6 border-t border-white/10">
+        <h4 className="font-serif text-lg text-gold-400 mb-4">Analisi degli Aspetti (Geometria Sacra)</h4>
+        <AspectGrid planets={chart.pianeti || []} />
+      </div>
 
       <div className="pt-6 border-t border-white/10">
         <h4 className="font-serif text-xl text-gold-500 mb-4">L'Interpretazione di Valeria</h4>

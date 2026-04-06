@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import ZodiacWheel, { PlanetData } from '../components/ZodiacWheel'
+import AspectGrid from '../components/AspectGrid'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
@@ -177,10 +178,16 @@ export default function CurrentSkyPage() {
                 </div>
               </div>
 
+              {/* Griglia Aspetti */}
+              <div className="bg-black/40 border border-white/5 rounded-3xl p-6 backdrop-blur-md">
+                <h4 className="text-white/40 text-[10px] uppercase tracking-[0.25em] mb-6 font-medium">Relazioni Planetarie (Griglia)</h4>
+                <AspectGrid planets={sky.pianeti} />
+              </div>
+
               {/* Extra Info */}
-              <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-white/5 rounded-3xl p-6">
-                <p className="text-white/30 text-xs leading-relaxed italic">
-                  "Le posizioni planetarie riflettono le energie cosmiche collettive in questo istante. Ogni aspetto colorato nella ruota indica una tensione o un'armonia speciale tra due corpi celesti."
+              <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-white/5 rounded-3xl p-6 leading-relaxed">
+                <p className="text-white/30 text-xs italic">
+                  "Le posizioni planetarie riflettono le energie cosmiche collettive in questo istante. Ogni aspetto nella griglia e nella ruota indica una tensione o un'armonia speciale tra due archetipi."
                 </p>
               </div>
 

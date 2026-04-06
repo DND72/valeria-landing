@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
+import { calculateAspects, BODY_GLYPHS, type PlanetData, type AspectResult } from '../utils/astrologyUtils'
 
 // ─────────────────────────────────────────────
-// Dati Zodiacali e Planetari
+// Dati Zodiacali
 // ─────────────────────────────────────────────
 const ZODIAC = [
   { name: 'Ariete',      symbol: '♈', color: '#e05c5c', el: 'Fuoco' },
@@ -25,39 +26,28 @@ const ELEMENT_BG: Record<string, string> = {
   'Acqua': 'rgba(80,160,220,0.06)',
 }
 
-const BODY_INFO: Record<string, { glyph: string; color: string; ring: string }> = {
-  'Sole':                { glyph: '☉', color: '#FFD700', ring: 'veloce' },
-  'Luna':                { glyph: '☽', color: '#C8E0FF', ring: 'veloce' },
-  'Mercurio':            { glyph: '☿', color: '#CCCCCC', ring: 'veloce' },
-  'Venere':              { glyph: '♀', color: '#FFB3C6', ring: 'veloce' },
-  'Marte':               { glyph: '♂', color: '#FF6060', ring: 'veloce' },
-  'Giove':               { glyph: '♃', color: '#FFA050', ring: 'lento'  },
-  'Saturno':             { glyph: '♄', color: '#C8B89A', ring: 'lento'  },
-  'Urano':               { glyph: '♅', color: '#70D0D0', ring: 'lento'  },
-  'Nettuno':             { glyph: '♆', color: '#8080F0', ring: 'lento'  },
-  'Plutone':             { glyph: '♇', color: '#B090C0', ring: 'lento'  },
-  'Chirone':             { glyph: '⚷', color: '#D08060', ring: 'lento'  },
-  'Cerere':              { glyph: '⚳', color: '#80C080', ring: 'asteroide' },
-  'Pallade':             { glyph: '⚴', color: '#A090D0', ring: 'asteroide' },
-  'Giunone':             { glyph: '⚵', color: '#E0A080', ring: 'asteroide' },
-  'Vesta':               { glyph: '⚶', color: '#D0C060', ring: 'asteroide' },
-  'Nodo Nord':           { glyph: '☊', color: '#FFD700', ring: 'punto'  },
-  'Nodo Sud':            { glyph: '☋', color: '#C0A030', ring: 'punto'  },
-  'Lilith':              { glyph: '⚸', color: '#C060A0', ring: 'punto'  },
-  'Vertex':              { glyph: 'Vx', color: '#70D0C0', ring: 'punto' },
-  'Parte della Fortuna': { glyph: '⊗', color: '#FFE080', ring: 'punto' },
+const BODY_INFO_STATIC: Record<string, { color: string; ring: string }> = {
+  'Sole':                { color: '#FFD700', ring: 'veloce' },
+  'Luna':                { color: '#C8E0FF', ring: 'veloce' },
+  'Mercurio':            { color: '#CCCCCC', ring: 'veloce' },
+  'Venere':              { color: '#FFB3C6', ring: 'veloce' },
+  'Marte':               { color: '#FF6060', ring: 'veloce' },
+  'Giove':               { color: '#FFA050', ring: 'lento'  },
+  'Saturno':             { color: '#C8B89A', ring: 'lento'  },
+  'Urano':               { color: '#70D0D0', ring: 'lento'  },
+  'Nettuno':             { color: '#8080F0', ring: 'lento'  },
+  'Plutone':             { color: '#B090C0', ring: 'lento'  },
+  'Chirone':             { color: '#D08060', ring: 'lento'  },
+  'Cerere':              { color: '#80C080', ring: 'asteroide' },
+  'Pallade':             { color: '#A090D0', ring: 'asteroide' },
+  'Giunone':             { color: '#E0A080', ring: 'asteroide' },
+  'Vesta':               { color: '#D0C060', ring: 'asteroide' },
+  'Nodo Nord':           { color: '#FFD700', ring: 'punto'  },
+  'Nodo Sud':            { color: '#C0A030', ring: 'punto'  },
+  'Lilith':              { color: '#C060A0', ring: 'punto'  },
+  'Vertex':              { color: '#70D0C0', ring: 'punto' },
+  'Parte della Fortuna': { color: '#FFE080', ring: 'punto' },
 }
-
-// ─────────────────────────────────────────────
-// Definizioni Aspetti
-// ─────────────────────────────────────────────
-const ASPECTS = [
-  { deg: 0,   orb: 8, color: '#FFFFFF', label: 'Congiunzione', dash: '0' },
-  { deg: 60,  orb: 5, color: '#4ADE80', label: 'Sestile',      dash: '4 4' },
-  { deg: 90,  orb: 7, color: '#F87171', label: 'Quadrato',     dash: '0' },
-  { deg: 120, orb: 8, color: '#3B82F6', label: 'Trigono',      dash: '0' },
-  { deg: 180, orb: 8, color: '#A855F7', label: 'Opposizione',  dash: '0' },
-]
 
 // ─────────────────────────────────────────────
 // Geometria (ViewBox 2000x2000)
@@ -81,7 +71,7 @@ function arcPath(rOuter: number, rInner: number, lonStart: number, lonEnd: numbe
   ].join(' ')
 }
 
-// Raggi (Raddoppiati rispetto alla versione 1000x1000)
+// Raggi
 const R = {
   OUTER:       960,   
   SIGN_OUT:    950,   
@@ -101,17 +91,6 @@ const RING_R: Record<string, number> = {
   punto:     R.POINT,
 }
 
-// ─────────────────────────────────────────────
-// Interfacce
-// ─────────────────────────────────────────────
-export interface PlanetData {
-  nome: string
-  segno: string
-  gradi: number
-  lon_assoluta: number
-  categoria: string
-}
-
 interface ZodiacWheelProps {
   planets: PlanetData[]
   ascLon?: number
@@ -120,44 +99,26 @@ interface ZodiacWheelProps {
   className?: string
 }
 
-// ─────────────────────────────────────────────
-// Componente
-// ─────────────────────────────────────────────
 export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '' }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
 
-  // Calcolo Aspetti
+  // Calcolo Aspetti usando l'utility condivisa
   const aspectLines = useMemo(() => {
-    if (!planets || planets.length < 2) return []
-    const lines: any[] = []
-    
-    for (let i = 0; i < planets.length; i++) {
-      for (let j = i + 1; j < planets.length; j++) {
-        const p1 = planets[i]
-        const p2 = planets[j]
-        
-        let diff = Math.abs(p1.lon_assoluta - p2.lon_assoluta)
-        if (diff > 180) diff = 360 - diff
-        
-        // Trova se c'è un aspetto
-        const asp = ASPECTS.find(a => Math.abs(diff - a.deg) <= a.orb)
-        if (asp && asp.deg !== 0) { // Saltiamo congiunzioni (0°) perché sono icone vicine
-          const precision = 1 - (Math.abs(diff - asp.deg) / asp.orb)
-          const r1 = RING_R[p1.categoria] ?? R.FAST
-          const r2 = RING_R[p2.categoria] ?? R.FAST
-          lines.push({
-            p1Name: p1.nome,
-            p2Name: p2.nome,
-            pos1: toXY(r1 - 15, p1.lon_assoluta),
-            pos2: toXY(r2 - 15, p2.lon_assoluta),
-            color: asp.color,
-            dash: asp.dash,
-            opacity: 0.15 + (precision * 0.45)
-          })
+    const rawAspects = calculateAspects(planets)
+    return rawAspects
+      .filter(a => a.type !== 'Congiunzione') // Saltiamo congiunzioni grafiche
+      .map(asp => {
+        const p1 = planets.find(p => p.nome === asp.p1)!
+        const p2 = planets.find(p => p.nome === asp.p2)!
+        const r1 = RING_R[p1.categoria] ?? R.FAST
+        const r2 = RING_R[p2.categoria] ?? R.FAST
+        return {
+          ...asp,
+          pos1: toXY(r1 - 15, p1.lon_assoluta),
+          pos2: toXY(r2 - 15, p2.lon_assoluta),
+          dash: asp.type === 'Sestile' ? '10 20' : '0'
         }
-      }
-    }
-    return lines
+      })
   }, [planets])
 
   return (
@@ -179,13 +140,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
         <circle cx={CX} cy={CY} r={R.OUTER} fill="url(#zw-disk-big)" />
 
-        {/* Stelle Background */}
-        {Array.from({ length: 200 }, (_, i) => {
-          const a = (i * 137.5) % 360; const d = 100 + (i % 8) * 110;
-          const { x, y } = toXY(Math.min(d, R.POINT - 20), a)
-          return <circle key={i} cx={x} cy={y} r={1 + (i % 3)} fill="white" fillOpacity={0.1 + (i % 5) * 0.05} />
-        })}
-
         {/* ── Linee Aspetti ── */}
         <g opacity="0.8">
           {aspectLines.map((line, idx) => (
@@ -196,8 +150,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
               stroke={line.color}
               strokeWidth="2.5"
               strokeDasharray={line.dash}
-              strokeOpacity={line.opacity}
-              className="transition-opacity duration-300"
+              strokeOpacity={0.15 + (line.precision * 0.45)}
             />
           ))}
         </g>
@@ -222,25 +175,21 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         <circle cx={CX} cy={CY} r={R.SIGN_OUT} fill="none" stroke="rgba(212,160,23,0.6)" strokeWidth="4" />
         <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.2)" strokeWidth="2" />
 
-        {/* Orbite tratteggiate */}
-        {[R.FAST, R.SLOW, R.AST, R.POINT].map((r, i) => (
-          <circle key={i} cx={CX} cy={CY} r={r} fill="none" stroke="white" strokeOpacity="0.04" strokeWidth="2" strokeDasharray="10 20" />
-        ))}
-
         {/* ── Pianeti ── */}
         {planets.map(p => {
-          const info = BODY_INFO[p.nome]; if (!info) return null
+          const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
           const r_orb = RING_R[p.categoria] ?? R.FAST
           const pos = toXY(r_orb, p.lon_assoluta); const isHov = hovered === p.nome
           const dotR = p.categoria === 'veloce' ? 18 : p.categoria === 'lento' ? 14 : 10
+          const glyph = BODY_GLYPHS[p.nome] || '●'
 
           return (
             <g key={p.nome} onMouseEnter={() => setHovered(p.nome)} onMouseLeave={() => setHovered(null)} className="cursor-pointer">
               {isHov && <line x1={CX} y1={CY} x2={pos.x} y2={pos.y} stroke={info.color} strokeOpacity="0.25" strokeWidth="2" />}
-              {isHov && <circle cx={pos.x} cy={pos.y} r={dotR * 2.5} fill={info.color} fillOpacity="0.12" filter="url(#glow-big)" />}
+              {isHov && <circle cx={pos.x} cy={pos.y} r={dotR * 2.5} fill={info.color} fillOpacity={0.12} filter="url(#glow-big)" />}
               <circle cx={pos.x} cy={pos.y} r={dotR} fill={info.color} fillOpacity={isHov ? 1 : 0.85} filter="url(#glow-big)" />
               <text x={pos.x + dotR + 8} y={pos.y - 4} fontSize={p.categoria === 'veloce' ? 44 : 36} fill={info.color} fillOpacity={isHov ? 1 : 0.8} className="select-none font-serif">
-                {info.glyph}
+                {glyph}
               </text>
 
               {isHov && (() => {
