@@ -248,10 +248,60 @@ export default function ZodiacWheel({
           const glyph = BODY_GLYPHS[p.nome] || '●'
 
           return (
-            <g key={p.nome} onMouseEnter={() => setHovered(p.nome)} onMouseLeave={() => setHovered(null)} className="cursor-pointer">
-              {isHov && <line x1={CX} y1={CY} x2={pos.x} y2={pos.y} stroke={info.color} strokeOpacity="0.25" strokeWidth="2" />}
-              <circle cx={pos.x} cy={pos.y} r={dotR} fill={info.color} fillOpacity={isHov ? 1 : 0.85} filter={isHov ? 'url(#glow-p)' : 'none'} />
-              <text x={pos.x + dotR + 8} y={pos.y - 4} fontSize={p.categoria === 'veloce' ? 44 : 36} fill={info.color} fillOpacity={isHov ? 1 : 0.8} className="select-none font-serif">{glyph}</text>
+            <g 
+              key={p.nome} 
+              onMouseEnter={() => setHovered(p.nome)} 
+              onMouseLeave={() => setHovered(null)} 
+              className="cursor-help"
+            >
+              {/* Linea di connessione su hover */}
+              {isHov && (
+                <line 
+                  x1={CX} y1={CY} x2={pos.x} y2={pos.y} 
+                  stroke={info.color} strokeOpacity="0.3" strokeWidth="2" 
+                  strokeDasharray="10 10"
+                />
+              )}
+              
+              {/* Dot & Glow */}
+              <circle 
+                cx={pos.x} cy={pos.y} r={dotR} 
+                fill={info.color} fillOpacity={isHov ? 1 : 0.85} 
+                filter={isHov ? 'url(#glow-p)' : 'none'} 
+              />
+              
+              {/* Glifo */}
+              <text 
+                x={pos.x} y={pos.y} 
+                dy="0.35em" textAnchor="middle" 
+                fontSize={p.categoria === 'veloce' ? 48 : 38} 
+                fill={info.color} 
+                className="select-none pointer-events-none drop-shadow-md"
+              >
+                {glyph}
+              </text>
+
+              {/* Label Nome e Gradi su Hover */}
+              {isHov && (
+                <g transform={`translate(${pos.x}, ${pos.y - dotR - 25})`}>
+                  <rect 
+                    x="-80" y="-45" width="160" height="40" rx="8" 
+                    fill="rgba(0,0,0,0.85)" stroke={info.color} strokeWidth="1" 
+                  />
+                  <text 
+                    textAnchor="middle" fontSize="24" fontWeight="bold" 
+                    fill="#fff" dy="-18"
+                  >
+                    {p.nome}
+                  </text>
+                  <text 
+                    textAnchor="middle" fontSize="16" 
+                    fill={info.color} dy="8"
+                  >
+                    {Math.floor(p.gradi)}° {p.segno}
+                  </text>
+                </g>
+              )}
             </g>
           )
         })}
@@ -312,13 +362,32 @@ export default function ZodiacWheel({
 
         {/* ── MOON DAY PATH (ARC) ── */}
         {moonStartLon !== undefined && moonEndLon !== undefined && (
-          <path 
-            d={arcPath(R.SIGN_IN + 30, R.SIGN_IN, moonStartLon, moonEndLon, rotationOffset)}
-            fill="rgba(255,255,255,0.25)"
-            stroke="rgba(255,255,255,0.4)"
-            strokeWidth="2"
-            filter="url(#glow-p)"
-          />
+          <g>
+            <defs>
+              <linearGradient id="moonPathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(255,255,255,0.05)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0.5)" />
+              </linearGradient>
+            </defs>
+            <path 
+              d={arcPath(R.SIGN_IN + 30, R.SIGN_IN, moonStartLon, moonEndLon, rotationOffset)}
+              fill="url(#moonPathGradient)"
+              stroke="rgba(255,255,255,0.4)"
+              strokeWidth="1.5"
+              filter="url(#glow-p)"
+              opacity="0.8"
+            />
+            {/* Freccia Direzionale alla fine del percorso */}
+            {(() => {
+              const pEnd = toXY(R.SIGN_IN + 15, moonEndLon, rotationOffset)
+              const angle = 180 - (moonEndLon - rotationOffset) + 90 // Tangente
+              return (
+                <g transform={`translate(${pEnd.x}, ${pEnd.y}) rotate(${angle})`}>
+                  <path d="M -15 -15 L 0 5 L 15 -15" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" filter="url(#glow-p)" />
+                </g>
+              )
+            })()}
+          </g>
         )}
 
         {/* ── MOON LASER POINTER ── */}
