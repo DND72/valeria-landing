@@ -61,6 +61,8 @@ interface MoonData {
   icona: string
   illuminazione: number
   angolo: number
+  segno: string
+  elemento: string
 }
 
 interface SkyData {
@@ -230,8 +232,23 @@ export default function CurrentSkyPage() {
                       </span>
                       <div className="flex-1">
                         <p className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-medium mb-1">Fase Lunare Corrente</p>
-                        <h3 className="text-white text-xl font-serif font-bold tracking-wide">{sky.luna.fase}</h3>
-                        <div className="flex items-center gap-3 mt-2">
+                        <h3 className="text-white text-xl font-serif font-bold tracking-wide flex items-center gap-2">
+                          {sky.luna.fase}
+                          <span className="text-xs font-normal text-white/30 tracking-normal">in {sky.luna.segno}</span>
+                        </h3>
+                        
+                        <div className="flex items-center gap-3 mt-1.5 mb-3">
+                          <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border ${
+                            sky.luna.elemento === 'Fuoco' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' :
+                            sky.luna.elemento === 'Terra' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' :
+                            sky.luna.elemento === 'Aria' ? 'bg-cyan-500/10 border-cyan-400/30 text-cyan-400' :
+                            sky.luna.elemento === 'Acqua' ? 'bg-blue-500/10 border-blue-500/30 text-blue-500' : ''
+                          }`}>
+                            {sky.luna.elemento}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
                           <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                             <motion.div 
                               initial={{ width: 0 }}

@@ -16,6 +16,14 @@ def get_current_sky():
             "Ariete", "Toro", "Gemelli", "Cancro", "Leone", "Vergine",
             "Bilancia", "Scorpione", "Sagittario", "Capricorno", "Acquario", "Pesci"
         ]
+        
+        # Mappatura Segni -> Elementi
+        elements_map = {
+            "Ariete": "Fuoco", "Leone": "Fuoco", "Sagittario": "Fuoco",
+            "Toro": "Terra", "Vergine": "Terra", "Capricorno": "Terra",
+            "Gemelli": "Aria", "Bilancia": "Aria", "Acquario": "Aria",
+            "Cancro": "Acqua", "Scorpione": "Acqua", "Pesci": "Acqua"
+        }
 
         def jd_to_gmt(jd_val):
             if not jd_val or jd_val <= 0: return "--:--"
@@ -26,15 +34,14 @@ def get_current_sky():
         def calc_body(name, code, cat, flags=swe.FLG_SWIEPH):
             pos, _ = swe.calc_ut(jd, code, flags)
             lon = pos[0]
-            sign_idx = int(lon // 30)
-            deg_in_sign = lon % 30
+            sign_name = zodiac_signs[int(lon // 30)]
             return {
-                "nome": name, "segno": zodiac_signs[sign_idx], "gradi": round(deg_in_sign, 2),
-                "lon_assoluta": round(lon, 2), "categoria": cat
+                "nome": name, "segno": sign_name, "gradi": round(lon % 30, 2),
+                "lon_assoluta": round(lon, 2), "categoria": cat,
+                "elemento": elements_map.get(sign_name, "")
             }
 
         pianeti = []
-        # Corpi Celesti
         for name, code, cat in [
             ("Sole", swe.SUN, "veloce"), ("Luna", swe.MOON, "veloce"), 
             ("Mercurio", swe.MERCURY, "veloce"), ("Venere", swe.VENUS, "veloce"), ("Marte", swe.MARS, "veloce"),
@@ -64,9 +71,11 @@ def get_current_sky():
         nn = next((p for p in pianeti if p["nome"] == "Nodo Nord"), None)
         if nn:
             sl = (nn["lon_assoluta"] + 180) % 360
-            pianeti.append({"nome": "Nodo Sud", "segno": zodiac_signs[int(sl//30)], "gradi": round(sl%30, 2), "lon_assoluta": round(sl, 2), "categoria": "punto"})
+            sign_n = zodiac_signs[int(sl // 30)]
+            pianeti.append({"nome": "Nodo Sud", "segno": sign_n, "gradi": round(sl%30, 2), "lon_assoluta": round(sl, 2), "categoria": "punto", "elemento": elements_map.get(sign_n, "")})
 
-        # FASE LUNARE
+        # FASE LUNARE + SEGNO/ELEMENTO LUNA
+        moon_data_main = next((p for p in pianeti if p["nome"] == "Luna"), None)
         sun_pos, _ = swe.calc_ut(jd, swe.SUN)
         moon_pos, _ = swe.calc_ut(jd, swe.MOON)
         phase_angle = (moon_pos[0] - sun_pos[0]) % 360
@@ -81,7 +90,7 @@ def get_current_sky():
         elif phase_angle < 281.25: phase_name, moon_icon = "Ultimo Quarto", "🌗"
         else: phase_name, moon_icon = "Luna Calante", "🌘"
 
-        # ECLISSI
+        # ECLISSI (Lookup + Calcolo stabile)
         VISIBILITY_LOOKUP = {
             "2026-02-17": "Antartide, Sud Oceano Indiano", "2026-08-12": "Groenlandia, Islanda, Spagna, Nord America",
             "2027-02-06": "Sud America, Africa", "2027-08-02": "Gibilterra, Nord Africa, Arabia Saudita",
@@ -125,9 +134,13 @@ def get_current_sky():
             "timestamp": now.strftime("%Y-%m-%dT%H:%M:00Z"),
             "pianeti": pianeti,
             "eclissi": eclipses,
-            "luna": { "fase": phase_name, "icona": moon_icon, "illuminazione": round(illumination, 1), "angolo": round(phase_angle, 2) }
+            "luna": { 
+                "fase": phase_name, "icona": moon_icon, "illuminazione": round(illumination, 1), 
+                "angolo": round(phase_angle, 2), "segno": moon_data_main["segno"] if moon_data_main else "N/A",
+                "elemento": moon_data_main["elemento"] if moon_data_main else "N/A"
+            }
         }
-    except Exception as e: return {"error": str(e), "traceback": __import__('traceback').format_exc()}
+    except Exception as e: return {"error": str(e)}
 
 if __name__ == "__main__":
     print(json.dumps(get_current_sky(), ensure_ascii=False))
