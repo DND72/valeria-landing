@@ -68,7 +68,7 @@ interface MoonData {
 interface MonthlyPhase {
   fase: string
   icona: string
-  giorno: number
+  data_full: string
   ora_gmt: string
   segno: string
   elemento: string
@@ -176,7 +176,7 @@ export default function CurrentSkyPage() {
                 </div>
               </motion.div>
 
-              {/* Pannello Eclissi (Spostato al centro sotto la Legenda) */}
+              {/* Pannello Eclissi */}
               {sky.eclissi && sky.eclissi.length > 0 && (
                 <motion.div 
                   initial={{ opacity: 0, y: 30 }} 
@@ -282,31 +282,31 @@ export default function CurrentSkyPage() {
                 )}
               </div>
 
-              {/* Calendario Fasi Lunari del Mese */}
+              {/* Calendario Prossime Fasi Lunari */}
               {sky.fasi_mensili && sky.fasi_mensili.length > 0 && (
-                <div className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md">
-                  <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
+                <div className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md shadow-2xl">
+                  <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
                     <h4 className="text-white/50 text-[11px] uppercase tracking-[0.25em] font-medium text-center">
-                      📅 Fasi del Mese · {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
+                      📅 Prossime Fasi Lunari
                     </h4>
                   </div>
-                  <div className="grid grid-cols-2 divide-x divide-white/5 divide-y">
+                  <div className="divide-y divide-white/5">
                     {sky.fasi_mensili.map((ph, i) => (
-                      <div key={i} className="p-5 hover:bg-white/[0.03] transition-colors group">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="text-2xl group-hover:scale-110 transition-transform inline-block">{ph.icona}</span>
+                      <div key={i} className="px-6 py-4 hover:bg-white/[0.03] transition-colors group flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <span className="text-3xl group-hover:scale-110 transition-transform inline-block">{ph.icona}</span>
                           <div>
                             <p className="text-white/90 text-sm font-semibold leading-tight">{ph.fase}</p>
-                            <p className="font-mono text-white/30 text-xs">{ph.giorno} · {ph.ora_gmt} GMT</p>
+                            <p className="font-mono text-white/30 text-[10px] mt-1 uppercase tracking-wider">{ph.data_full} • {ph.ora_gmt} GMT</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-white/40 text-xs italic">{ph.segno}</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold tracking-widest ${
-                            ph.elemento === 'Fuoco' ? 'bg-amber-500/15 text-amber-500' :
-                            ph.elemento === 'Terra' ? 'bg-emerald-500/15 text-emerald-500' :
-                            ph.elemento === 'Aria'  ? 'bg-cyan-500/15 text-cyan-400' :
-                            'bg-blue-500/15 text-blue-400'
+                        <div className="text-right">
+                          <p className="text-white/40 text-[10px] italic mb-1">{ph.segno}</p>
+                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold tracking-widest border ${
+                            ph.elemento === 'Fuoco' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' :
+                            ph.elemento === 'Terra' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' :
+                            ph.elemento === 'Aria'  ? 'bg-cyan-500/10 border-cyan-400/30 text-cyan-400' :
+                            'bg-blue-500/10 border-blue-500/30 text-blue-400'
                           }`}>{ph.elemento}</span>
                         </div>
                       </div>
@@ -351,7 +351,6 @@ export default function CurrentSkyPage() {
                 <h4 className="text-white/40 text-[10px] uppercase tracking-[0.25em] mb-6 font-medium">Relazioni Planetarie (Griglia)</h4>
                 <AspectGrid planets={sky.pianeti} />
               </div>
-
 
               {/* Extra Info */}
               <div className="bg-gradient-to-br from-indigo-500/10 to-transparent border border-white/5 rounded-3xl p-6 leading-relaxed">
