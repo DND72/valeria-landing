@@ -178,3 +178,29 @@ export const getMyCharts = async (req: Request, res: Response): Promise<void> =>
   }
 }
 
+export const getCurrentSky = async (_req: Request, res: Response): Promise<void> => {
+  const pythonScriptPath = path.join(__dirname, '../../python_engine/current_sky.py')
+  const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
+
+  execFile(pythonExecutable, [pythonScriptPath], (error, stdout, stderr) => {
+    if (error) {
+      console.error('[current-sky] Python error:', stderr)
+      res.status(500).json({ error: 'Errore nel calcolo del cielo attuale' })
+      return
+    }
+    try {
+      const result = JSON.parse(stdout)
+      if (result.error) {
+        res.status(500).json({ error: result.error })
+        return
+      }
+      // Cache 5 minuti lato client
+      res.setHeader('Cache-Control', 'public, max-age=300')
+      res.json(result)
+    } catch {
+      res.status(500).json({ error: 'Risposta non valida dal motore astronomico' })
+    }
+  })
+}
+
+

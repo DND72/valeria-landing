@@ -38,7 +38,12 @@ function ResultPanel({ data }: { data: NatalChartResponse }) {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden rounded-full">
           <div className="w-[340px] h-[340px] rounded-full bg-indigo-950/40 blur-[60px]" />
         </div>
-        <ZodiacWheel chart={data} />
+        <ZodiacWheel
+                planets={data.pianeti || []}
+                ascLon={data.ascendente_totale}
+                ascSign={data.segno}
+                ascDeg={data.grado_nel_segno}
+              />
         <p className="mt-4 text-white/30 text-[11px] tracking-widest uppercase">
           Swiss Ephemeris Engine · Placidus
         </p>
@@ -129,7 +134,7 @@ export default function NatalChartPage() {
     setResult(null)
 
     try {
-      const res = await calculateFreeChart({ birthDate: date, birthTime: time, city: city.trim() })
+      const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim() })
       setResult(res)
       setTimeout(() => window.scrollBy({ top: 400, behavior: 'smooth' }), 200)
     } catch (err: any) {

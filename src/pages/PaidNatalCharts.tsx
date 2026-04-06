@@ -22,7 +22,12 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
       </div>
 
       <div className="mb-10 w-full flex justify-center">
-        <ZodiacWheel chart={chart} />
+        <ZodiacWheel
+          planets={chart.pianeti || []}
+          ascLon={chart.ascendente_totale}
+          ascSign={chart.segno}
+          ascDeg={chart.grado_nel_segno}
+        />
       </div>
 
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">

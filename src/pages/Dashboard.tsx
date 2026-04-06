@@ -435,11 +435,20 @@ export default function Dashboard() {
                 isRouterLink: true,
               },
               {
+                icon: '🌌',
+                title: 'Cielo di Adesso',
+                desc: 'Vedi le posizioni planetarie in tempo reale',
+                href: '/cielo',
+                cta: 'Apri la Mappa',
+                isRouterLink: true,
+              },
+              {
                 icon: '⭐',
-                title: 'Lascia una recensione',
-                desc: 'Racconta come ti sei trovata',
-                href: '#recensioni',
-                cta: 'Scrivi la recensione',
+                title: 'I Miei Temi Astrali',
+                desc: 'Tema Natale con interpretazione di Valeria',
+                href: '/i-miei-temi',
+                cta: 'I Miei Temi',
+                isRouterLink: true,
               },
             ].map((action, i) => {
               const ActionWrapper = action.isRouterLink ? Link : motion.a
