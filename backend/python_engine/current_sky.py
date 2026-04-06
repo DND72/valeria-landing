@@ -194,24 +194,66 @@ def get_current_sky():
         pos_start, _ = swe.calc_ut(start_of_day_jd, swe.MOON)
         pos_end, _ = swe.calc_ut(end_of_day_jd, swe.MOON)
         
-        # Cerca ingressi nei prossimi 2 giorni
+        # Cerca ingressi e ASPETTI nei prossimi 3 GIORNI (72h)
         ingresses = []
-        t_search = jd
-        for _ in range(48): # Step di un'ora per 48 ore
+        moon_events = []
+        t_search = start_of_day_jd
+        
+        major_aspects = {0: "Congiunzione", 60: "Sestile", 90: "Quadratura", 120: "Trigono", 180: "Opposizione"}
+        
+        for _ in range(72): # Step di un'ora per 72 ore
+            # Ingressi di segno
             p1, _ = swe.calc_ut(t_search, swe.MOON)
             p2, _ = swe.calc_ut(t_search + 1/24.0, swe.MOON)
             s1, s2 = int(p1[0]//30), int(p2[0]//30)
             if s1 != s2:
                 y, m, d, h = swe.revjul(t_search + 1/24.0)
-                # Ora locale approssimata per Roma (UTC+1 o UTC+2)
-                # Per semplicità restituiamo ISO string
                 dt_ing = datetime(int(y), int(m), int(d), int(h), int((h-int(h))*60), tzinfo=timezone.utc)
                 ingresses.append({
                     "evento": f"Luna entra in {zodiac_signs[s2]}",
                     "timestamp": dt_ing.isoformat(),
-                    "segno": zodiac_signs[s2]
+                    "segno": zodiac_signs[s2],
+                    "tipo": "ingresso"
                 })
+            
+            # Aspetti con altri pianeti
+            for p_other in [p for p in pianeti if p["nome"] != "Luna" and p["categoria"] != "punto"]:
+                # Calcola distanza angolare all'inizio e fine dell'ora
+                def get_dist(jd_t):
+                    m_pos, _ = swe.calc_ut(jd_t, swe.MOON)
+                    o_code = next(c for n,c,cat in [("Sole", swe.SUN, ""), ("Mercurio", swe.MERCURY, ""), ("Venere", swe.VENUS, ""), ("Marte", swe.MARS, ""), ("Giove", swe.JUPITER, ""), ("Saturno", swe.SATURN, ""), ("Urano", swe.URANUS, ""), ("Nettuno", swe.NEPTUNE, ""), ("Plutone", swe.PLUTO, "")] if n == p_other["nome"])
+                    o_pos, _ = swe.calc_ut(jd_t, o_code)
+                    return (m_pos[0] - o_pos[0]) % 360.0
+
+                d1 = get_dist(t_search)
+                d2 = get_dist(t_search + 1/24.0)
+
+                for angle, name in major_aspects.items():
+                    # Check crossing of target angle
+                    diff1 = (d1 - angle + 180) % 360 - 180
+                    diff2 = (d2 - angle + 180) % 360 - 180
+                    if (diff1 < 0 and diff2 > 0) or (diff1 > 0 and diff2 < 0):
+                        # Trovato attraversamento, raffina con binary search
+                        lo, hi = t_search, t_search + 1/24.0
+                        for _ in range(10):
+                            mid = (lo + hi)/2
+                            if ((get_dist(mid) - angle + 180) % 360 - 180) * diff1 > 0: lo = mid
+                            else: hi = mid
+                        
+                        y, m, d, h = swe.revjul((lo+hi)/2)
+                        dt_asp = datetime(int(y), int(m), int(d), int(h), int((h-int(h))*60), tzinfo=timezone.utc)
+                        moon_events.append({
+                            "evento": f"Luna {name} {p_other['nome']}",
+                            "timestamp": dt_asp.isoformat(),
+                            "tipo": "aspetto",
+                            "aspetto": name,
+                            "pianeta": p_other['nome']
+                        })
+
             t_search += 1/24.0
+
+        # Unisci e ordina
+        all_events = sorted(ingresses + moon_events, key=lambda x: x["timestamp"])
 
         return {
             "timestamp": now.strftime("%Y-%m-%dT%H:%M:00Z"),
@@ -230,6 +272,7 @@ def get_current_sky():
                 "day_end_lon": round(pos_end[0], 2)
             },
             "transizioni": ingresses[:5],
+            "timeline_lunare": all_events,
             "fasi_mensili": monthly_phases
         }
     except Exception as e: return {"error": str(e), "traceback": __import__('traceback').format_exc()}

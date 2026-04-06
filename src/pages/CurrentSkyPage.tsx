@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import ZodiacWheel from '../components/ZodiacWheel'
 import AspectGrid from '../components/AspectGrid'
+import MoonTransitTimeline from '../components/MoonTransitTimeline'
 import { type PlanetData } from '../utils/astrologyUtils'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
 import { useSunTimes } from '../hooks/useSunTimes'
@@ -92,6 +93,7 @@ interface SkyData {
   luna?: MoonData
   fasi_mensili?: MonthlyPhase[]
   transizioni?: Transition[]
+  timeline_lunare?: any[]
   ascendente_totale?: number
   mc_totale?: number
 }
@@ -427,6 +429,19 @@ export default function CurrentSkyPage() {
                     ))}
                   </div>
                 </motion.div>
+              )}
+
+              {/* 🌕 Timeline Transiti Lunari (3 Giorni) */}
+              {sky.timeline_lunare && sky.timeline_lunare.length > 0 && (
+                <div className="w-full max-w-[800px] mt-12">
+                   <div className="flex flex-col items-center mb-8">
+                     <p className="text-[#C8E0FF] text-[10px] uppercase tracking-[0.4em] font-bold opacity-40 mb-2">Specchio del Cielo</p>
+                     <h3 className="text-white text-3xl font-serif italic flex items-center gap-3">
+                       Timeline Luna <span className="text-sm font-sans not-italic font-normal opacity-30 tracking-widest">(3 Giorni)</span>
+                     </h3>
+                   </div>
+                   <MoonTransitTimeline events={sky.timeline_lunare} />
+                </div>
               )}
             </div>
 
