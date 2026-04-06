@@ -206,18 +206,20 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
           <g>
             {/* Orizzonte ASC-DSC */}
             <line 
-               x1={CX - R.SIGN_OUT - 60} y1={CY} x2={CX + R.SIGN_OUT + 60} y2={CY} 
+               x1={CX - R.SIGN_OUT} y1={CY} x2={CX + R.SIGN_OUT} y2={CY} 
                stroke="#3b82f6" strokeWidth="6" strokeLinecap="round" 
                className="drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"
             />
-            <text x={CX - R.SIGN_OUT - 80} y={CY + 10} textAnchor="end" fontSize="36" fill="#3b82f6" fontWeight="bold" className="font-serif">ASC</text>
-            <text x={CX + R.SIGN_OUT + 80} y={CY + 10} textAnchor="start" fontSize="36" fill="#3b82f6" fontWeight="bold" opacity="0.8" className="font-serif">DSC</text>
+            <text x={CX - R.SIGN_OUT - 20} y={CY + 12} textAnchor="end" fontSize="36" fill="#3b82f6" fontWeight="bold" className="font-serif shadow-sm">ASC</text>
+            <text x={CX + R.SIGN_OUT + 20} y={CY + 12} textAnchor="start" fontSize="36" fill="#3b82f6" fontWeight="bold" opacity="0.8" className="font-serif shadow-sm">DSC</text>
           </g>
         )}
 
         {mcLon !== undefined && (() => {
-          const pMC = toXY(R.SIGN_OUT + 60, mcLon, rotationOffset)
-          const pIC = toXY(R.SIGN_OUT + 60, (mcLon + 180) % 360, rotationOffset)
+          const pMC = toXY(R.SIGN_OUT, mcLon, rotationOffset)
+          const pIC = toXY(R.SIGN_OUT, (mcLon + 180) % 360, rotationOffset)
+          const pMCLabel = toXY(R.SIGN_OUT + 45, mcLon, rotationOffset)
+          const pICLabel = toXY(R.SIGN_OUT + 55, (mcLon + 180) % 360, rotationOffset)
           return (
             <g>
               <line 
@@ -225,8 +227,8 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className
                  stroke="#3b82f6" strokeWidth="6" strokeLinecap="round" 
                  className="drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"
               />
-              <text x={pMC.x} y={pMC.y - 30} textAnchor="middle" fontSize="36" fill="#3b82f6" fontWeight="bold" className="font-serif">MC</text>
-              <text x={pIC.x} y={pIC.y + 50} textAnchor="middle" fontSize="36" fill="#3b82f6" fontWeight="bold" opacity="0.8" className="font-serif">IC</text>
+              <text x={pMCLabel.x} y={pMCLabel.y} textAnchor="middle" dominantBaseline="middle" fontSize="38" fill="#3b82f6" fontWeight="bold" className="font-serif">MC</text>
+              <text x={pICLabel.x} y={pICLabel.y} textAnchor="middle" dominantBaseline="middle" fontSize="38" fill="#3b82f6" fontWeight="bold" opacity="0.8" className="font-serif">IC</text>
             </g>
           )
         })()}
