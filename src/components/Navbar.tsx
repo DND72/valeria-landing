@@ -8,6 +8,7 @@ const links = [
   { label: 'Chi sono', href: '#chi-sono' },
   { label: 'Galleria', href: '#galleria' },
   { label: 'Crescita personale', href: '/crescita-personale' },
+  { label: '🌌 Cielo Zodiacale', href: '/cielo' },
   { label: 'Blog', href: '/blog' },
   { label: 'Recensioni', href: '#recensioni' },
   { label: 'FAQ', href: '/faq' },
