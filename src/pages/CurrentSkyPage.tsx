@@ -217,10 +217,10 @@ export default function CurrentSkyPage() {
               {/* Glossario */}
               <div className="bg-black/25 border border-white/5 rounded-2xl p-5 text-sm text-white/40 leading-relaxed">
                 <p className="text-gold-400/70 text-[10px] uppercase tracking-widest mb-2">✦ Nota</p>
-                {activeTab === 'veloce' && 'I pianeti veloci cambiano segno frequentemente: la Luna ogni 2-3 giorni, il Sole ogni 30 giorni.'}
-                {activeTab === 'lento'  && 'Giove impiega 12 anni, Saturno 29, Urano 84, Nettuno 165 e Plutone fino a 248 anni per completare lo Zodiaco.'}
-                {activeTab === 'asteroide' && 'I quattro asteroidi principali (Cerere, Pallade, Giunone, Vesta) e Chirone portano energie più sottili e specifiche nella carta natale.'}
-                {activeTab === 'punto' && 'I Nodi Lunari, Lilith, il Vertex e la Parte della Fortuna sono punti matematici simbolici fondamentali nell'astrologia evolutiva e karmica.'}
+                {activeTab === 'veloce' && "I pianeti veloci cambiano segno frequentemente: la Luna ogni 2-3 giorni, il Sole ogni 30 giorni."}
+                {activeTab === 'lento'  && "Giove impiega 12 anni, Saturno 29, Urano 84, Nettuno 165 e Plutone fino a 248 anni per completare lo Zodiaco."}
+                {activeTab === 'asteroide' && "I quattro asteroidi principali (Cerere, Pallade, Giunone, Vesta) e Chirone portano energie più sottili e specifiche nella carta natale."}
+                {activeTab === 'punto' && "I Nodi Lunari, Lilith, il Vertex e la Parte della Fortuna sono punti matematici simbolici fondamentali nell'astrologia evolutiva e karmica."}
               </div>
 
               {/* CTA */}
