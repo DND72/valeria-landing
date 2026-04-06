@@ -71,10 +71,24 @@ export function useAstrologyApi() {
   }
 
   const calculateFreeChart = async (data: NatalChartRequest): Promise<NatalChartResponse> => {
-    return authFetch('/api/astrology/calculate-free', {
+    // Chiamata pubblica: usiamo fetch normale se non siamo loggati
+    const token = await getToken().catch(() => null)
+    
+    const res = await fetch(`${API_URL}/api/astrology/calculate-free`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify(data),
     })
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.error || 'Errore col server')
+    }
+
+    return res.json()
   }
 
   const generatePaidChart = async (data: NatalChartRequest & { type: 'basic' | 'advanced' }): Promise<NatalChartResponse & { interpretation: string }> => {

@@ -7,8 +7,8 @@ const router = Router()
 // Endpoint pubblico (nessuna auth) - Cielo attuale per la landing
 router.get('/current-sky', getCurrentSky)
 
-// Endpoint gratuito per iscritti
-router.post('/calculate-free', requireClerkAuth, calculateNatalChart)
+// Endpoint gratuito (ora pubblico per calcolo Ascendente ospiti)
+router.post('/calculate-free', calculateNatalChart)
 
 // Endpoints a pagamento e di log
 router.post('/generate-paid', requireClerkAuth, generatePaidChart)

@@ -191,7 +191,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
                 <p className="text-gold-400 text-sm font-bold uppercase tracking-widest mb-2">✦ Contenuto Riservato</p>
                 <h4 className="text-white font-serif text-xl mb-3">Sblocca il tuo Cielo Natale</h4>
                 <p className="text-white/50 text-xs mb-4">Iscriviti per vedere la posizione di tutti i pianeti, le case e l'analisi dinamica gratuita del tuo oroscopo.</p>
-                <Link to="/registrati" className="inline-block btn-gold px-6 py-2 text-xs uppercase tracking-tighter">Registrati Ora →</Link>
+                <Link to="/registrati" className="inline-block btn-gold px-6 py-2 text-xs uppercase tracking-tighter">Iscriviti e genera la tua ruota zodiacale →</Link>
              </div>
           </div>
         </div>
