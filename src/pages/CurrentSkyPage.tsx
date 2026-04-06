@@ -56,10 +56,18 @@ interface Eclipse {
   durata: string
 }
 
+interface MoonData {
+  fase: string
+  icona: string
+  illuminazione: number
+  angolo: number
+}
+
 interface SkyData {
   timestamp: string
   pianeti: PlanetData[]
   eclissi?: Eclipse[]
+  luna?: MoonData
 }
 
 export default function CurrentSkyPage() {
@@ -186,19 +194,19 @@ export default function CurrentSkyPage() {
                         </div>
 
                         {/* Dettagli Tecnici (GMT) */}
-                        <div className="hidden md:flex flex-col items-end gap-1.5 border-l border-white/5 pl-6">
+                        <div className="flex flex-col items-end gap-1.5 border-l border-white/5 pl-6 min-w-[100px]">
                           <div className="flex items-center gap-3">
                             <div className="text-right">
                               <p className="text-[9px] uppercase tracking-tighter text-white/20">GMT Start</p>
-                              <p className="text-xs font-mono text-white/70">{e.gmt_inizio}</p>
+                              <p className="text-xs font-mono text-white/70">{e.gmt_inizio || '--:--'}</p>
                             </div>
                             <div className="text-right">
                               <p className="text-[9px] uppercase tracking-tighter text-white/20">GMT End</p>
-                              <p className="text-xs font-mono text-white/70">{e.gmt_fine}</p>
+                              <p className="text-xs font-mono text-white/70">{e.gmt_fine || '--:--'}</p>
                             </div>
                           </div>
                           <div className="bg-white/5 px-2 py-0.5 rounded text-[10px] font-mono text-gold-500/60 flex items-center gap-1.5">
-                            <span className="text-[8px] opacity-50">⏱</span> {e.durata}
+                            <span className="text-[8px] opacity-50">⏱</span> {e.durata || '--'}
                           </div>
                         </div>
                       </div>
@@ -211,6 +219,34 @@ export default function CurrentSkyPage() {
             {/* ── Analisi Laterale ── */}
             <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="space-y-6">
               
+              {/* Stato della Luna */}
+              {sky.luna && (
+                <div className="bg-gradient-to-br from-white/10 to-transparent border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden group shadow-2xl">
+                  {/* Effetto glow dietro la luna */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 blur-3xl rounded-full group-hover:bg-white/10 transition-colors" />
+                  
+                  <div className="flex items-center gap-6 relative z-10">
+                    <span className="text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] select-none">
+                      {sky.luna.icona}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-medium mb-1">Fase Lunare Corrente</p>
+                      <h3 className="text-white text-xl font-serif font-bold tracking-wide">{sky.luna.fase}</h3>
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${sky.luna.illuminazione}%` }}
+                            className="h-full bg-gradient-to-r from-indigo-500 to-white/60"
+                          />
+                        </div>
+                        <span className="text-white/60 text-[11px] font-mono whitespace-nowrap">{sky.luna.illuminazione}% illum.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Tab Category */}
               <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10">
                 {CATEGORIES.map(c => (
