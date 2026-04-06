@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAstrologyApi, type NatalChartResponse } from '../api/astrology'
 import ZodiacWheel from '../components/ZodiacWheel'
+import { useCircadianTheme } from '../hooks/useCircadianTheme'
 
 const PLANET_COLOR: Record<string, string> = {
   'Sole': 'text-amber-400',
@@ -24,6 +25,7 @@ const PLANET_SYMBOLS: Record<string, string> = {
 }
 
 function ResultPanel({ data }: { data: NatalChartResponse }) {
+  const theme = useCircadianTheme()
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -42,6 +44,7 @@ function ResultPanel({ data }: { data: NatalChartResponse }) {
                 ascLon={data.ascendente_totale}
                 ascSign={data.segno}
                 ascDeg={data.grado_nel_segno}
+                theme={theme}
               />
         <p className="mt-4 text-white/30 text-[11px] tracking-widest uppercase">
           Swiss Ephemeris Engine · Placidus

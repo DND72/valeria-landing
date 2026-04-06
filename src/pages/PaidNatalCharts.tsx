@@ -5,8 +5,10 @@ import { useAstrologyApi, type SavedNatalChart, type NatalChartResponse } from '
 import { Link } from 'react-router-dom'
 import ZodiacWheel from '../components/ZodiacWheel'
 import AspectGrid from '../components/AspectGrid'
+import { useCircadianTheme } from '../hooks/useCircadianTheme'
 
 function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, interpretation: string }) {
+  const theme = useCircadianTheme()
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -28,6 +30,7 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
           ascLon={chart.ascendente_totale}
           ascSign={chart.segno}
           ascDeg={chart.grado_nel_segno}
+          theme={theme}
         />
       </div>
 
