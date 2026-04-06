@@ -56,9 +56,7 @@ const BODY_INFO_STATIC: Record<string, { color: string; ring: string }> = {
 // ─────────────────────────────────────────────
 const CX = 1000; const CY = 1000
 
-// Funzione di proiezione con offset per orientamento Ascendente
 function toXY(r: number, lon: number, rotationOffset: number = 0) {
-  // Poniamo l'Ascendente (o Ariete 0 se non c'è offset) a 180° (ore 9)
   const angleDeg = 180 - (lon - rotationOffset)
   const rad = (angleDeg * Math.PI) / 180
   return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) }
@@ -76,7 +74,6 @@ function arcPath(rOuter: number, rInner: number, lonStart: number, lonEnd: numbe
   ].join(' ')
 }
 
-// Raggi
 const R = {
   OUTER:       960,   
   SIGN_OUT:    950,   
@@ -113,8 +110,6 @@ interface TypedAspectLine extends AspectResult {
 
 export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '', theme }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
-  
-  // L'offset di rotazione è la lon_assoluta dell'Ascendente (o 0 se assente)
   const rotationOffset = ascLon ?? 0
 
   // Calcolo Aspetti
@@ -155,6 +150,12 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           r={R.OUTER} 
           fill={theme.zodiacDiskColor} 
           style={{ transition: 'fill 4s ease-in-out' }}
+        />
+
+        {/* ── Ombreggiatura Emisfero Inferiore (Sotto Orizzonte) ── */}
+        <path 
+           d={`M ${CX - R.OUTER} ${CY} A ${R.OUTER} ${R.OUTER} 0 0 0 ${CX + R.OUTER} ${CY} L ${CX} ${CY} Z`}
+           fill="black" fillOpacity="0.15"
         />
 
         {/* ── Linee Aspetti ── */}
@@ -261,27 +262,49 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           )
         })}
 
-        {/* ── ASC ── */}
+        {/* ── ASC & Orizzonte ── */}
         {ascLon !== undefined && (() => {
-          const p1 = toXY(R.SIGN_OUT + 24, ascLon, rotationOffset); 
-          const pI = toXY(R.SIGN_IN, ascLon, rotationOffset)
+          const pASCOuter = toXY(R.SIGN_OUT + 30, ascLon, rotationOffset)
+          const pDSCOuter = toXY(R.SIGN_OUT + 30, (ascLon + 180) % 360, rotationOffset)
+          
           return (
             <g>
-              <line x1={pI.x} y1={pI.y} x2={p1.x} y2={p1.y} stroke="#D4A017" strokeWidth="6" strokeLinecap="round" />
-              <circle cx={p1.x} cy={p1.y} r="10" fill="#D4A017" filter="url(#glow-p)" />
-              <text x={p1.x} y={p1.y - 25} textAnchor="middle" fontSize="32" fill="#D4A017" fontWeight="bold" className="font-serif">ASC</text>
+              {/* Linea Orizzonte ASC-DSC */}
+              <line 
+                 x1={CX - R.SIGN_OUT - 40} y1={CY} x2={CX + R.SIGN_OUT + 40} y2={CY} 
+                 stroke="#D4A017" strokeWidth="2.5" strokeOpacity="0.8" 
+                 strokeDasharray="10 5" 
+              />
+              
+              {/* ASC Pointer */}
+              <g>
+                <line 
+                   x1={CX - R.SIGN_IN} y1={CY} x2={CX - R.SIGN_OUT - 40} y2={CY} 
+                   stroke="#D4A017" strokeWidth="6" strokeLinecap="round" 
+                />
+                <circle cx={CX - R.SIGN_OUT - 40} cy={CY} r="12" fill="#D4A017" filter="url(#glow-p)" />
+                <text x={CX - R.SIGN_OUT - 40} y={CY - 25} textAnchor="middle" fontSize="32" fill="#D4A017" fontWeight="bold" className="font-serif">ASC</text>
+              </g>
+
+              {/* DSC Pointer */}
+              <g>
+                <line 
+                   x1={CX + R.SIGN_IN} y1={CY} x2={CX + R.SIGN_OUT + 40} y2={CY} 
+                   stroke="#D4A017" strokeWidth="3" strokeLinecap="round" opacity="0.6"
+                />
+                <text x={CX + R.SIGN_OUT + 40} y={CY - 25} textAnchor="middle" fontSize="32" fill="#D4A017" fontWeight="bold" opacity="0.6" className="font-serif">DSC</text>
+              </g>
             </g>
           )
         })()}
 
-        {/* ── 360° PRECISION GRADUATION (ON SIGN_OUT - EXTREME EXTERNAL) ── */}
+        {/* ── 360° PRECISION GRADUATION ── */}
         {useMemo(() => {
           const elements = []
           for (let i = 0; i < 360; i++) {
             const isSign = i % 30 === 0
             const isDecan = i % 10 === 0
             const isFive = i % 5 === 0
-            
             let tickLen = 15; let strokeW = 1.5; let opacity = 0.4
             
             if (isSign) { tickLen = 60; strokeW = 4; opacity = 0.8 }
@@ -320,7 +343,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           return elements
         }, [rotationOffset])}
 
-        {/* ── MOON LASER POINTER (EXTREME EXTERNAL OVERLAY) ── */}
+        {/* ── MOON LASER POINTER ── */}
         {(() => {
           const luna = planets.find(p => p.nome === 'Luna')
           if (!luna) return null
@@ -331,7 +354,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           
           return (
             <g>
-              {/* Linea Laser Integrale */}
               <line 
                 x1={CX} y1={CY} x2={pScale.x} y2={pScale.y} 
                 stroke="white" strokeWidth="2" strokeOpacity="0.8"
@@ -342,12 +364,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
                 stroke="white" strokeWidth="4" strokeOpacity="0.4"
                 strokeDasharray="10 10"
               />
-              
-              {/* Cursore sulla scala esterna */}
               <circle cx={pScale.x} cy={pScale.y} r="12" fill="white" filter="url(#glow-p)" />
-              <circle cx={pScale.x} cy={pScale.y} r="6" fill="#06040E" />
-              
-              {/* Valore numerico */}
               <g transform={`translate(${pText.x}, ${pText.y})`}>
                 <rect x="-45" y="-20" width="90" height="40" rx="8" fill="white" />
                 <text 
@@ -358,8 +375,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
                   {luna.gradi.toFixed(1)}°
                 </text>
               </g>
-              
-              {/* Cerchio di focus */}
               <circle cx={pMoon.x} cy={pMoon.y} r={35} fill="none" stroke="white" strokeWidth="2" strokeDasharray="5 5">
                 <animate attributeName="stroke-opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="r" values="35;45;35" dur="2s" repeatCount="indefinite" />
