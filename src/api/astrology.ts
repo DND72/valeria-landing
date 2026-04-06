@@ -11,6 +11,7 @@ export interface Planet {
   segno: string
   gradi: number
   lon_assoluta: number
+  categoria: 'veloce' | 'lento' | 'asteroide' | 'punto'
 }
 
 export interface House {

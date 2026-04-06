@@ -68,52 +68,91 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
         # 6. CALCOLO EFFEMERIDI CON SWISSEPH
         import swisseph as swe
         
-        # Swisseph lavora perfettamente in UTC
-        swe_jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute/60.0 + utc_dt.second/3600.0)
-        
-        planets_map = {
-            "Sole": swe.SUN,
-            "Luna": swe.MOON,
-            "Mercurio": swe.MERCURY,
-            "Venere": swe.VENUS,
-            "Marte": swe.MARS,
-            "Giove": swe.JUPITER,
-            "Saturno": swe.SATURN,
-            "Urano": swe.URANUS,
-            "Nettuno": swe.NEPTUNE,
-            "Plutone": swe.PLUTO
-        }
-        
+        swe_jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day,
+                            utc_dt.hour + utc_dt.minute/60.0 + utc_dt.second/3600.0)
+
+        def calc_body(code, name, cat):
+            pos, _ = swe.calc_ut(swe_jd, code)
+            lon = pos[0]
+            return {
+                "nome": name,
+                "segno": zodiac_signs[int(lon // 30)],
+                "gradi": round(lon % 30, 2),
+                "lon_assoluta": round(lon, 2),
+                "categoria": cat
+            }
+
+        all_bodies = [
+            # Veloci
+            (swe.SUN,     "Sole",      "veloce"),
+            (swe.MOON,    "Luna",      "veloce"),
+            (swe.MERCURY, "Mercurio",  "veloce"),
+            (swe.VENUS,   "Venere",    "veloce"),
+            (swe.MARS,    "Marte",     "veloce"),
+            # Lenti + Chirone
+            (swe.JUPITER, "Giove",     "lento"),
+            (swe.SATURN,  "Saturno",   "lento"),
+            (swe.URANUS,  "Urano",     "lento"),
+            (swe.NEPTUNE, "Nettuno",   "lento"),
+            (swe.PLUTO,   "Plutone",   "lento"),
+            (swe.CHIRON,  "Chirone",   "lento"),
+            # Asteroidi
+            (swe.CERES,   "Cerere",    "asteroide"),
+            (swe.PALLAS,  "Pallade",   "asteroide"),
+            (swe.JUNO,    "Giunone",   "asteroide"),
+            (swe.VESTA,   "Vesta",     "asteroide"),
+            # Punti speciali
+            (swe.MEAN_APOG, "Lilith",  "punto"),
+            (swe.MEAN_NODE, "Nodo Nord", "punto"),
+        ]
+
         pianeti_calcolati = []
-        for p_name, p_code in planets_map.items():
-            pos, ret_flag = swe.calc_ut(swe_jd, p_code)
-            p_lon = pos[0]
-            p_sign_index = int(p_lon // 30)
-            p_deg_in_sign = p_lon % 30
+        for code, name, cat in all_bodies:
+            try:
+                pianeti_calcolati.append(calc_body(code, name, cat))
+            except Exception:
+                pass
+
+        # Nodo Sud = Nodo Nord + 180°
+        nodo_nord = next((p for p in pianeti_calcolati if p["nome"] == "Nodo Nord"), None)
+        if nodo_nord:
+            sud_lon = (nodo_nord["lon_assoluta"] + 180) % 360
             pianeti_calcolati.append({
-                "nome": p_name,
-                "segno": zodiac_signs[p_sign_index],
-                "gradi": round(p_deg_in_sign, 2),
-                "lon_assoluta": round(p_lon, 2)
+                "nome": "Nodo Sud", "segno": zodiac_signs[int(sud_lon // 30)],
+                "gradi": round(sud_lon % 30, 2), "lon_assoluta": round(sud_lon, 2),
+                "categoria": "punto"
             })
-            
-        # 7. CALCOLO CASE ASTROLOGICHE (Sistema Placidus)
-        # houses_ex restituisce (cusps, ascmc)
+
+        # 7. CASE ASTROLOGICHE (Placidus)
         cusps, ascmc = swe.houses(swe_jd, lat, lon, b'P')
         
         case_calcolate = []
-        # Le cuspidi sono nell'array `cusps`. L'indice va in genere da 1 a 12 (0 è vuoto/non usato o usato per offset).
         for i in range(1, 13):
             h_lon = cusps[i]
-            h_sign_idx = int(h_lon // 30)
-            h_deg_in_sign = h_lon % 30
             case_calcolate.append({
                 "numero": i,
-                "segno": zodiac_signs[h_sign_idx],
-                "gradi": round(h_deg_in_sign, 2),
+                "segno": zodiac_signs[int(h_lon // 30)],
+                "gradi": round(h_lon % 30, 2),
                 "lon_assoluta": round(h_lon, 2)
             })
-        
+
+        # Vertex (ascmc[3])
+        vertex_lon = ascmc[3]
+        vertex_sign = zodiac_signs[int(vertex_lon // 30)]
+
+        # Parte della Fortuna = (Asc + Luna - Sole) mod 360
+        sole_lon   = next((p["lon_assoluta"] for p in pianeti_calcolati if p["nome"] == "Sole"), 0)
+        luna_lon   = next((p["lon_assoluta"] for p in pianeti_calcolati if p["nome"] == "Luna"), 0)
+        pof_lon    = (asc_deg + luna_lon - sole_lon) % 360
+        pof_sign   = zodiac_signs[int(pof_lon // 30)]
+
+        pianeti_calcolati += [
+            {"nome": "Vertex", "segno": vertex_sign, "gradi": round(vertex_lon % 30, 2),
+             "lon_assoluta": round(vertex_lon, 2), "categoria": "punto"},
+            {"nome": "Parte della Fortuna", "segno": pof_sign, "gradi": round(pof_lon % 30, 2),
+             "lon_assoluta": round(pof_lon, 2), "categoria": "punto"},
+        ]
+
         return {
             "citta": city_name,
             "coordinate": (lat, lon),
