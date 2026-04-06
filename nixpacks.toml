@@ -1,0 +1,2 @@
+[install]
+cmds = ["npm install"]
