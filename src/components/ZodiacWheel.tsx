@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { calculateAspects, BODY_GLYPHS, type PlanetData, type AspectResult } from '../utils/astrologyUtils'
 import { type CircadianTheme } from '../hooks/useCircadianTheme'
 
@@ -346,9 +347,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           {ascDeg !== undefined && !planets.find(p => p.nome === 'Luna') && <p className="text-gold-500/50 text-xs mt-1 font-mono">{ascDeg.toFixed(1)}°</p>}
         </div>
       </div>
-    </div>
-  )
-}
     </div>
   )
 }
