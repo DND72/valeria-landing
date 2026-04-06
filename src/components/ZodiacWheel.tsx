@@ -106,7 +106,7 @@ interface TypedAspectLine extends AspectResult {
   dash: string
 }
 
-export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, mcLon, className = '', theme }: ZodiacWheelProps) {
+export default function ZodiacWheel({ planets, ascLon, ascSign, mcLon, className = '', theme }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
   const rotationOffset = ascLon ?? 0
 
@@ -281,8 +281,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, mcLon, c
         {(() => {
           const luna = planets.find(p => p.nome === 'Luna')
           if (!luna) return null
-          const r_orb = RING_R[luna.categoria] ?? R.FAST
-          const pMoon = toXY(r_orb, luna.lon_assoluta, rotationOffset)
           const pScale = toXY(R.SIGN_IN, luna.lon_assoluta, rotationOffset)
           const pText = toXY(R.SIGN_IN + 80, luna.lon_assoluta, rotationOffset)
           
