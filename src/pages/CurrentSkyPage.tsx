@@ -65,11 +65,21 @@ interface MoonData {
   elemento: string
 }
 
+interface MonthlyPhase {
+  fase: string
+  icona: string
+  giorno: number
+  ora_gmt: string
+  segno: string
+  elemento: string
+}
+
 interface SkyData {
   timestamp: string
   pianeti: PlanetData[]
   eclissi?: Eclipse[]
   luna?: MoonData
+  fasi_mensili?: MonthlyPhase[]
 }
 
 export default function CurrentSkyPage() {
@@ -271,6 +281,39 @@ export default function CurrentSkyPage() {
                   </div>
                 )}
               </div>
+
+              {/* Calendario Fasi Lunari del Mese */}
+              {sky.fasi_mensili && sky.fasi_mensili.length > 0 && (
+                <div className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md">
+                  <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
+                    <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium text-center">
+                      📅 Fasi del Mese · {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-2 divide-x divide-white/5 divide-y">
+                    {sky.fasi_mensili.map((ph, i) => (
+                      <div key={i} className="p-4 hover:bg-white/[0.03] transition-colors group">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xl group-hover:scale-110 transition-transform inline-block">{ph.icona}</span>
+                          <div>
+                            <p className="text-white/80 text-xs font-semibold leading-tight">{ph.fase}</p>
+                            <p className="font-mono text-white/30 text-[10px]">{ph.giorno} · {ph.ora_gmt} GMT</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-white/40 text-[10px] italic">{ph.segno}</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold tracking-widest ${
+                            ph.elemento === 'Fuoco' ? 'bg-amber-500/15 text-amber-500' :
+                            ph.elemento === 'Terra' ? 'bg-emerald-500/15 text-emerald-500' :
+                            ph.elemento === 'Aria'  ? 'bg-cyan-500/15 text-cyan-400' :
+                            'bg-blue-500/15 text-blue-400'
+                          }`}>{ph.elemento}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Tab Category */}
               <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10">
