@@ -13,54 +13,62 @@ const calcSchema = z.object({
   city: z.string().min(2, "City name must be at least 2 characters")
 })
 
+/** Helper per lanciare lo script python in modo asincrono */
+async function runNatalCalculation(birthDate: string, birthTime: string, city: string): Promise<any> {
+  const pythonScriptPath = path.join(__dirname, '../../python_engine/astrology.py')
+  const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
+
+  return new Promise((resolve, reject) => {
+    execFile(pythonExecutable, [pythonScriptPath, birthDate, birthTime, city], (error, stdout, stderr) => {
+      if (error) {
+        console.error("Python Error (stderr):", stderr)
+        return reject(new Error("Failed to calculate astrological chart"))
+      }
+      try {
+        const result = JSON.parse(stdout)
+        if (result.error) return reject(new Error(result.error))
+        resolve(result)
+      } catch (e) {
+        reject(new Error("Invalid data received from calculation engine"))
+      }
+    })
+  })
+}
+
 export const calculateNatalChart = async (req: Request, res: Response): Promise<void> => {
   try {
     const { birthDate, birthTime, city } = calcSchema.parse(req.body)
+    const result = await runNatalCalculation(birthDate, birthTime, city)
 
-    // Path to the python engine
-    const pythonScriptPath = path.join(__dirname, '../../python_engine/astrology.py')
-    
-    // Use python3 if available, otherwise python
-    const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
-
-    execFile(pythonExecutable, [pythonScriptPath, birthDate, birthTime, city], async (error, stdout, stderr) => {
-      if (error) {
-        console.error("Python Execution Error:", error)
-        console.error("Stderr:", stderr)
-        return res.status(500).json({ error: "Failed to calculate astrological chart" })
-      }
+    // Se l'utente è loggato, generiamo l'interpretazione base (gratuita)
+    const userId = req.auth?.userId
+    let interpretation = ""
+    if (userId) {
+      const { generateChartInterpretation } = await import('../lib/gemini.js')
+      interpretation = await generateChartInterpretation(result, 'basic')
       
-      try {
-        const result = JSON.parse(stdout)
-        if (result.error) {
-          return res.status(400).json({ error: result.error })
-        }
+      // Salvataggio nel DB se loggato (per persistenza immediata)
+      const { pool } = await import('../db.js')
+      await pool.query(
+        `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT DO NOTHING`,
+        [userId, 'basic', birthDate, birthTime, city, result, interpretation]
+      )
+    }
 
-        // Se l'utente è loggato, generiamo l'interpretazione base (gratuita)
-        const userId = req.auth?.userId
-        let interpretation = ""
-        if (userId) {
-          const { generateChartInterpretation } = await import('../lib/gemini.js')
-          interpretation = await generateChartInterpretation(result, 'basic')
-        }
-
-        return res.json({
-          ...result,
-          interpretation
-        })
-      } catch (e) {
-        console.error("Failed to parse python output:", stdout)
-        return res.status(500).json({ error: "Invalid data received from calculation engine" })
-      }
+    res.json({
+      ...result,
+      interpretation
     })
 
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.errors[0].message })
       return
     }
     console.error("Calculate API Error:", error)
-    res.status(500).json({ error: 'Internal server error' })
+    res.status(500).json({ error: error.message || 'Internal server error' })
   }
 }
 
@@ -111,26 +119,7 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
       dbClient.release()
     }
 
-    // 2. Execute Python
-    const pythonScriptPath = path.join(__dirname, '../../python_engine/astrology.py')
-    const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
-
-    const pythonOutput = await new Promise<string>((resolve, reject) => {
-      execFile(pythonExecutable, [pythonScriptPath, birthDate, birthTime, city], (error, stdout, stderr) => {
-        if (error) {
-          console.error("Python Execution Error:", stderr)
-          reject(new Error("Failed to calculate astrological chart"))
-        } else {
-          resolve(stdout)
-        }
-      })
-    })
-
-    const chartData = JSON.parse(pythonOutput)
-    if (chartData.error) {
-      res.status(400).json({ error: chartData.error })
-      return
-    }
+    const chartData = await runNatalCalculation(birthDate, birthTime, city)
 
     // 3. LLM Interpretation (Always advanced for paid charts)
     const { generateChartInterpretation } = await import('../lib/gemini.js')
@@ -192,10 +181,29 @@ export const syncNatal = async (req: Request, res: Response) => {
         [userId, birthDate, birthTime, city]
       )
 
-      // 2. Verifica se ha già un tema natale. Se no, lo creiamo (opzionale)
+      // 2. Verifica se ha già un tema natale. Se no, lo creiamo in automatico (Funnel conversion)
       const existing = await pool.query(`SELECT id FROM natal_charts WHERE clerk_user_id = $1 LIMIT 1`, [userId])
       
-      res.json({ ok: true, alreadyHasChart: existing.rows.length > 0 })
+      let created = false
+      if (existing.rows.length === 0) {
+        try {
+          const result = await runNatalCalculation(birthDate, birthTime, city)
+          const { generateChartInterpretation } = await import('../lib/gemini.js')
+          const interpretation = await generateChartInterpretation(result, 'basic')
+          
+          await pool.query(
+            `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [userId, 'basic', birthDate, birthTime, city, result, interpretation]
+          )
+          created = true
+        } catch (calcErr) {
+          console.error('[sync-natal] Auto-generation failed:', calcErr)
+          // Non blocchiamo il sync se il calcolo fallisce
+        }
+      }
+      
+      res.json({ ok: true, alreadyHasChart: existing.rows.length > 0, autoCreated: created })
     } catch (e) {
       console.error('[me sync-natal]', e)
       res.status(500).json({ error: 'Errore sincronizzazione' })

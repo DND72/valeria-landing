@@ -9,6 +9,8 @@ import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
 import ComboLightBox from '../components/ComboLightBox'
 import ComboFullBox from '../components/ComboFullBox'
+import BigFiveWidget from '../components/BigFiveWidget'
+import { type SavedNatalChart } from '../api/astrology'
 import {
   CONSULT_CHOICES,
   consultOfferCategory,
@@ -41,7 +43,7 @@ export default function Dashboard() {
   const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
   const { signOut } = useClerk()
-  const { syncNatalData } = useAstrologyApi()
+  const { syncNatalData, getMyCharts } = useAstrologyApi()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const calendarSectionRef = useRef<HTMLElement | null>(null)
@@ -93,6 +95,8 @@ export default function Dashboard() {
   }
   const [myConsults, setMyConsults] = useState<MyConsultRow[] | null>(null)
   const [myConsultsLoading, setMyConsultsLoading] = useState(false)
+  const [myCharts, setMyCharts] = useState<SavedNatalChart[] | null>(null)
+  const [myChartsLoading, setMyChartsLoading] = useState(false)
   const [wallet, setWallet] = useState<{ balanceAvailable: number; balanceLocked: number } | null>(null)
 
   const { data: valeriaPresence } = useValeriaPresence(60_000)
@@ -154,10 +158,25 @@ export default function Dashboard() {
     }
   }, [isLoaded, user, getToken])
 
+  const loadMyCharts = useCallback(async () => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
+    setMyChartsLoading(true)
+    try {
+      const charts = await getMyCharts()
+      setMyCharts(charts)
+    } catch (err) {
+      console.error('Error loading charts:', err)
+      setMyCharts([])
+    } finally {
+      setMyChartsLoading(false)
+    }
+  }, [isLoaded, user, getMyCharts])
+
   useEffect(() => {
     void loadMyConsults()
     void loadWallet()
-  }, [loadMyConsults, loadWallet])
+    void loadMyCharts()
+  }, [loadMyConsults, loadWallet, loadMyCharts])
 
   // Sync del calcolo Tema Natale pendente (specchietto per le allodole/sync dati fiscali)
   useEffect(() => {
@@ -169,10 +188,12 @@ export default function Dashboard() {
         const data = JSON.parse(pendingData)
         // Se l'utente non ha ancora i dati completi (o forziamo lo schema)
         syncNatalData(data)
-          .then(() => {
+          .then((res: any) => {
             console.log("Dati di nascita sincronizzati dal localStorage.")
             localStorage.removeItem('valeria_pending_natal')
-            // Ricarichiamo consulti/wallet se utile
+            if (res.autoCreated) {
+              void loadMyCharts()
+            }
           })
           .catch(err => console.error("Errore sync natal pendente:", err))
       } catch (e) {
@@ -513,6 +534,20 @@ export default function Dashboard() {
           <StaffPersonalSpace />
         ) : (
           <>
+            {/* Widget Astrale "Big Five" per chi ha già un tema */}
+            {!myChartsLoading && myCharts && myCharts.length > 0 && (
+              <div className="mb-12">
+                <BigFiveWidget 
+                  planets={myCharts[0].chartData.pianeti || []}
+                  interpretation={myCharts[0].interpretation}
+                  ascendant={{ 
+                    segno: myCharts[0].chartData.segno, 
+                    gradi: myCharts[0].chartData.grado_nel_segno 
+                  }}
+                />
+              </div>
+            )}
+
             <motion.section
               id="scegli-consulto"
               initial={{ opacity: 0, y: 20 }}
