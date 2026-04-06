@@ -148,26 +148,26 @@ export default function ZodiacWheel({
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
 
-          {/* Gradianti Elementi per Spicchi */}
+          {/* Gradianti Elementi per Spicchi (Più carichi al centro, sfumati ai bordi) */}
           <radialGradient id="grad-fuoco" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-            <stop offset="0%" stopColor="rgba(255,140,0,0)" />
-            <stop offset="85%" stopColor="rgba(255,140,0,0.08)" />
-            <stop offset="100%" stopColor="rgba(255,140,0,0.22)" />
+            <stop offset="0%" stopColor="rgba(239, 68, 68, 0.28)" />
+            <stop offset="70%" stopColor="rgba(239, 68, 68, 0.12)" />
+            <stop offset="100%" stopColor="rgba(239, 68, 68, 0)" />
           </radialGradient>
           <radialGradient id="grad-terra" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-            <stop offset="0%" stopColor="rgba(160,120,80,0)" />
-            <stop offset="85%" stopColor="rgba(160,120,80,0.08)" />
-            <stop offset="100%" stopColor="rgba(160,120,80,0.20)" />
+            <stop offset="0%" stopColor="rgba(124, 45, 18, 0.28)" />
+            <stop offset="70%" stopColor="rgba(124, 45, 18, 0.12)" />
+            <stop offset="100%" stopColor="rgba(124, 45, 18, 0)" />
           </radialGradient>
           <radialGradient id="grad-aria" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-            <stop offset="0%" stopColor="rgba(135,206,250,0)" />
-            <stop offset="85%" stopColor="rgba(135,206,250,0.08)" />
-            <stop offset="100%" stopColor="rgba(135,206,250,0.20)" />
+            <stop offset="0%" stopColor="rgba(125, 211, 252, 0.28)" />
+            <stop offset="70%" stopColor="rgba(125, 211, 252, 0.12)" />
+            <stop offset="100%" stopColor="rgba(125, 211, 252, 0)" />
           </radialGradient>
           <radialGradient id="grad-acqua" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-            <stop offset="0%" stopColor="rgba(30,144,255,0)" />
-            <stop offset="85%" stopColor="rgba(30,144,255,0.08)" />
-            <stop offset="100%" stopColor="rgba(30,144,255,0.20)" />
+            <stop offset="0%" stopColor="rgba(30, 64, 175, 0.28)" />
+            <stop offset="70%" stopColor="rgba(30, 64, 175, 0.12)" />
+            <stop offset="100%" stopColor="rgba(30, 64, 175, 0)" />
           </radialGradient>
         </defs>
 
