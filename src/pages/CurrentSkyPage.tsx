@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import ZodiacWheel from '../components/ZodiacWheel'
 import AspectGrid from '../components/AspectGrid'
 import { type PlanetData } from '../utils/astrologyUtils'
+import { useCircadianTheme } from '../hooks/useCircadianTheme'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
@@ -38,11 +39,11 @@ const CATEGORIES = [
 ]
 
 const ASPECT_LEGEND = [
-  { label: 'Trigono (120°)', color: '#3B82F6', desc: 'Armonia Suprema', dash: false },
-  { label: 'Sestile (60°)',  color: '#4ADE80', desc: 'Opportunità', dash: true },
-  { label: 'Quadrato (90°)', color: '#F87171', desc: 'Tensione Evolutiva', dash: false },
-  { label: 'Opposizione (180°)', color: '#A855F7', desc: 'Polarità/Confronto', dash: false },
-  { label: 'Congiunzione (0°)', color: '#FFFFFF', desc: 'Unione di Forze', dash: false },
+  { label: 'Trigono (120°)',    color: '#3B82F6', desc: 'Armonia Suprema',    dash: false },
+  { label: 'Sestile (60°)',     color: '#4ADE80', desc: 'Opportunità',         dash: true  },
+  { label: 'Quadrato (90°)',    color: '#F87171', desc: 'Tensione Evolutiva',  dash: false },
+  { label: 'Opposizione (180°)',color: '#A855F7', desc: 'Polarità/Confronto', dash: false },
+  { label: 'Congiunzione (0°)', color: '#FFFFFF', desc: 'Unione di Forze',    dash: false },
 ]
 
 interface Eclipse {
@@ -83,12 +84,35 @@ interface SkyData {
   fasi_mensili?: MonthlyPhase[]
 }
 
+// ── Circadian Indicator Badge ────────────────────────────────────────────────
+function CircadianBadge({ label, emoji, color }: { label: string; emoji: string; color: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.2em] font-semibold border"
+      style={{
+        background: `${color}18`,
+        borderColor: `${color}40`,
+        color,
+      }}
+    >
+      <span className="text-base leading-none">{emoji}</span>
+      {label}
+    </motion.div>
+  )
+}
+
 export default function CurrentSkyPage() {
-  const [sky, setSky] = useState<SkyData | null>(null)
+  const [sky, setSky]         = useState<SkyData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError]   = useState<string | null>(null)
-  const [now, setNow]       = useState(new Date())
+  const [error, setError]     = useState<string | null>(null)
+  const [now, setNow]         = useState(new Date())
   const [activeTab, setActiveTab] = useState('veloce')
+
+  // ── Circadian Theme ────────────────────────────────────────────────────────
+  const theme = useCircadianTheme()
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -96,7 +120,7 @@ export default function CurrentSkyPage() {
   }, [])
 
   useEffect(() => {
-    const fetch_ = async () => {
+    const fetchSky = async () => {
       try {
         setLoading(true)
         const res = await fetch(`${API_URL}/api/astrology/current-sky`)
@@ -108,8 +132,8 @@ export default function CurrentSkyPage() {
         setLoading(false)
       }
     }
-    fetch_()
-    const iv = setInterval(fetch_, 5 * 60 * 1000)
+    fetchSky()
+    const iv = setInterval(fetchSky, 5 * 60 * 1000)
     return () => clearInterval(iv)
   }, [])
 
@@ -117,36 +141,97 @@ export default function CurrentSkyPage() {
   const dateStr = now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const filteredPlanets = sky?.pianeti.filter((p: PlanetData) => p.categoria === activeTab) ?? []
 
+  // planet glow shadow intensity tied to circadian period
+  const glowAlpha = theme.glowIntensity
+
   return (
     <div className="min-h-screen relative overflow-x-hidden">
-      {/* ── Background Galattico ── */}
-      <div className="fixed inset-0 -z-10 bg-[#060410]" />
-      <div className="fixed inset-0 -z-10 opacity-40 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% -10%, rgba(120,80,240,0.1) 0%, transparent 60%)' }} />
+
+      {/* ── Circadian Background — smooth transition via CSS ── */}
+      <div
+        className="fixed inset-0 -z-20 transition-colors"
+        style={{
+          backgroundColor: theme.bgBase,
+          transition: 'background-color 4s ease-in-out',
+        }}
+      />
+      {/* Aurora / hemisphere gradient — smooth CSS crossfade */}
+      <div
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{ background: theme.bgGradient, transition: 'background 4s ease-in-out' }}
+      />
+      {/* Top colour wash */}
+      <div
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{ background: theme.topGlow, transition: 'background 4s ease-in-out' }}
+      />
+      {/* Bottom ambient blob */}
+      <div
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] -z-10 pointer-events-none blur-[120px] rounded-full"
+        style={{ background: theme.bottomGlowColor, transition: 'background 4s ease-in-out' }}
+      />
+
+      {/* Star-field dots — always present, slightly dimmer at dawn/noon */}
+      <div
+        className="fixed inset-0 -z-16 pointer-events-none"
+        style={{
+          opacity: 0.3 + glowAlpha * 0.4,
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          backgroundPosition: '0 0, 20px 20px',
+          mask: 'radial-gradient(ellipse 110% 110% at 50% 50%, black 20%, transparent 100%)',
+          transition: 'opacity 4s ease-in-out',
+        }}
+      />
 
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16">
-        
-        {/* Header Header */}
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
-          <div className="text-center md:text-left">
-            <p className="text-gold-500 text-[10px] sm:text-xs font-semibold tracking-[0.35em] uppercase mb-2">Planetarium Real-Time</p>
+
+        {/* ── Header ─────────────────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6"
+        >
+          <div className="text-center md:text-left space-y-3">
+            <div className="flex items-center gap-3 justify-center md:justify-start">
+              <p
+                className="text-[10px] sm:text-xs font-semibold tracking-[0.35em] uppercase"
+                style={{ color: theme.headerAccent, transition: 'color 4s ease-in-out' }}
+              >
+                Planetarium Real-Time
+              </p>
+              <CircadianBadge label={theme.label} emoji={theme.emoji} color={theme.headerAccent} />
+            </div>
             <h1 className="font-serif text-4xl md:text-6xl font-bold text-white tracking-tight">
               Il Cielo di <span className="gold-text italic">Adesso</span>
             </h1>
           </div>
-          <div className="bg-black/50 border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-md text-center">
+
+          {/* Clock Widget */}
+          <div
+            className="border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-md text-center"
+            style={{
+              background: theme.clockBg,
+              transition: 'background 4s ease-in-out',
+            }}
+          >
             <div className="font-mono text-4xl text-white tracking-[0.2em]">{timeStr}</div>
             <div className="text-white/40 text-xs sm:text-sm capitalize mt-1 tracking-widest">{dateStr}</div>
           </div>
         </motion.div>
 
+        {/* ── Loading ─────────────────────────────────────────────────────────── */}
         {loading && (
           <div className="flex flex-col items-center py-40 gap-4">
-            <div className="w-16 h-16 border-2 border-gold-500/20 border-t-gold-500 rounded-full animate-spin" />
+            <div
+              className="w-16 h-16 border-2 border-t-current rounded-full animate-spin"
+              style={{ borderColor: `${theme.headerAccent}33`, borderTopColor: theme.headerAccent }}
+            />
             <p className="text-white/30 text-sm tracking-widest font-light">Sintonizzazione corpi celesti...</p>
           </div>
         )}
 
+        {/* ── Error ─────────────────────────────────────────────────────────── */}
         {error && !loading && (
           <div className="flex flex-col items-center py-40 gap-4">
             <p className="text-red-400 text-sm tracking-widest">{error}</p>
@@ -154,22 +239,49 @@ export default function CurrentSkyPage() {
           </div>
         )}
 
+        {/* ── Main Content ─────────────────────────────────────────────────── */}
         {sky && !loading && (
           <div className="grid xl:grid-cols-[1fr_400px] gap-12 items-start">
-            
+
             {/* ── Colonna Ruota & Legenda ── */}
             <div className="flex flex-col items-center space-y-12">
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="w-full max-w-[860px]">
+
+              {/* Zodiac Wheel — glow wrapper */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1 }}
+                className="w-full max-w-[860px] relative"
+              >
+                {/* Dynamic outer glow ring */}
+                <div
+                  className="absolute inset-0 rounded-full pointer-events-none blur-[60px]"
+                  style={{
+                    background: `radial-gradient(ellipse 60% 60% at 50% 50%, ${theme.headerAccent}${Math.round(glowAlpha * 60).toString(16).padStart(2, '0')} 0%, transparent 70%)`,
+                    transition: 'background 4s ease-in-out',
+                  }}
+                />
                 <ZodiacWheel planets={sky.pianeti} />
               </motion.div>
 
-              {/* Legenda Aspetti */}
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-sm w-full max-w-[800px]">
+              {/* Aspect Legend */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="rounded-3xl p-8 backdrop-blur-sm w-full max-w-[800px] border"
+                style={{
+                  background: theme.cardGradient,
+                  borderColor: theme.cardBorder,
+                  transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
+                }}
+              >
                 <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] mb-6 text-center">Legenda Aspetti Planetari</h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   {ASPECT_LEGEND.map(asp => (
                     <div key={asp.label} className="flex flex-col items-center text-center">
-                      <div className="h-0.5 w-12 mb-3 shadow-[0_0_8px_rgba(255,255,255,0.2)]" style={{ background: asp.color, borderStyle: asp.dash ? 'dashed' : 'solid', borderTopWidth: asp.dash ? '2px' : '0' }} />
+                      <div className="h-0.5 w-12 mb-3 shadow-[0_0_8px_rgba(255,255,255,0.2)]"
+                        style={{ background: asp.color, borderStyle: asp.dash ? 'dashed' : 'solid', borderTopWidth: asp.dash ? '2px' : '0' }} />
                       <span className="text-white/80 text-[11px] font-medium mb-1">{asp.label}</span>
                       <span className="text-white/30 text-[9px] font-light leading-none">{asp.desc}</span>
                     </div>
@@ -177,13 +289,18 @@ export default function CurrentSkyPage() {
                 </div>
               </motion.div>
 
-              {/* Pannello Eclissi */}
+              {/* Eclipses Panel */}
               {sky.eclissi && sky.eclissi.length > 0 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 30 }} 
-                  animate={{ opacity: 1, y: 0 }} 
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md w-full max-w-[800px]"
+                  className="rounded-3xl overflow-hidden backdrop-blur-md w-full max-w-[800px] border"
+                  style={{
+                    background: theme.cardGradient,
+                    borderColor: theme.cardBorder,
+                    transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
+                  }}
                 >
                   <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
                     <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium text-center">
@@ -196,7 +313,7 @@ export default function CurrentSkyPage() {
                         <span className="text-3xl flex-shrink-0 transition-transform group-hover:scale-110">{e.emoji}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-white/90 text-base font-semibold flex items-center gap-3">
-                             {e.tipo} {e.sottotipo}
+                            {e.tipo} {e.sottotipo}
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-normal ${e.tipo === 'Solare' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'}`}>
                               {e.data}
                             </span>
@@ -205,8 +322,6 @@ export default function CurrentSkyPage() {
                             📍 {e.visibilità}
                           </p>
                         </div>
-
-                        {/* Dettagli Tecnici (GMT) */}
                         <div className="flex flex-col items-end gap-1.5 border-l border-white/5 pl-6 min-w-[100px]">
                           <div className="flex items-center gap-3">
                             <div className="text-right">
@@ -229,39 +344,63 @@ export default function CurrentSkyPage() {
               )}
             </div>
 
-            {/* ── Analisi Laterale ── */}
-            <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="space-y-6">
-              
-              {/* Stato della Luna */}
-              <div className="bg-gradient-to-br from-white/10 to-transparent border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden group shadow-2xl">
+            {/* ── Sidebar ── */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-6"
+            >
+
+              {/* Moon Widget */}
+              <div
+                className="rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden group shadow-2xl border"
+                style={{
+                  background: theme.cardGradient,
+                  borderColor: theme.cardBorder,
+                  transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
+                }}
+              >
                 {sky.luna ? (
                   <>
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 blur-3xl rounded-full group-hover:bg-white/10 transition-colors" />
+                    <div
+                      className="absolute -top-10 -right-10 w-32 h-32 blur-3xl rounded-full"
+                      style={{
+                        background: `${theme.headerAccent}${Math.round(glowAlpha * 40).toString(16).padStart(2, '0')}`,
+                        transition: 'background 4s ease-in-out',
+                      }}
+                    />
                     <div className="flex items-center gap-6 relative z-10">
-                      <span className="text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] select-none">
+                      <span
+                        className="text-5xl select-none"
+                        style={{
+                          filter: `drop-shadow(0 0 ${8 + glowAlpha * 14}px rgba(255,255,255,${0.2 + glowAlpha * 0.3}))`,
+                          transition: 'filter 4s ease-in-out',
+                        }}
+                      >
                         {sky.luna.icona}
                       </span>
                       <div className="flex-1">
                         <p className="text-white/40 text-[11px] uppercase tracking-[0.3em] font-medium mb-2">Fase Lunare Corrente</p>
                         <h3 className="text-white text-2xl font-serif font-bold tracking-wide flex items-center gap-3">
                           {sky.luna.fase}
-                          <span className="text-sm font-normal text-white/30 tracking-normal">in {sky.luna.segno} • {Math.floor(sky.luna.angolo / 30 * 30 % 30)}°</span>
+                          <span className="text-sm font-normal text-white/30 tracking-normal">
+                            in {sky.luna.segno} • {Math.floor(sky.luna.angolo / 30 * 30 % 30)}°
+                          </span>
                         </h3>
-                        
                         <div className="flex items-center gap-3 mt-2 mb-4">
                           <span className={`text-xs uppercase font-bold tracking-widest px-3 py-1 rounded-full border ${
                             sky.luna.elemento === 'Fuoco' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' :
                             sky.luna.elemento === 'Terra' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' :
-                            sky.luna.elemento === 'Aria' ? 'bg-cyan-500/10 border-cyan-400/30 text-cyan-400' :
+                            sky.luna.elemento === 'Aria'  ? 'bg-cyan-500/10 border-cyan-400/30 text-cyan-400' :
                             sky.luna.elemento === 'Acqua' ? 'bg-blue-500/10 border-blue-500/30 text-blue-500' : ''
                           }`}>
                             {sky.luna.elemento}
                           </span>
                         </div>
-
                         <div className="flex items-center gap-4">
                           <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <motion.div 
+                            <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${sky.luna.illuminazione}%` }}
                               className="h-full bg-gradient-to-r from-indigo-500 to-white/60"
@@ -283,9 +422,16 @@ export default function CurrentSkyPage() {
                 )}
               </div>
 
-              {/* Calendario Prossime Fasi Lunari */}
+              {/* Lunar Phase Calendar */}
               {sky.fasi_mensili && sky.fasi_mensili.length > 0 && (
-                <div className="bg-black/50 border border-white/8 rounded-3xl overflow-hidden backdrop-blur-md shadow-2xl">
+                <div
+                  className="rounded-3xl overflow-hidden backdrop-blur-md shadow-2xl border"
+                  style={{
+                    background: 'rgba(0,0,0,0.50)',
+                    borderColor: theme.cardBorder,
+                    transition: 'border-color 4s ease-in-out',
+                  }}
+                >
                   <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
                     <h4 className="text-white/50 text-[11px] uppercase tracking-[0.25em] font-medium text-center">
                       📅 Prossime Fasi Lunari
@@ -293,7 +439,10 @@ export default function CurrentSkyPage() {
                   </div>
                   <div className="divide-y divide-white/5">
                     {sky.fasi_mensili.map((ph, i) => (
-                      <div key={i} className={`px-6 py-4 hover:bg-white/[0.03] transition-all group flex items-center justify-between gap-4 ${ph.is_passata ? 'opacity-40 grayscale-[0.5]' : ''}`}>
+                      <div
+                        key={i}
+                        className={`px-6 py-4 hover:bg-white/[0.03] transition-all group flex items-center justify-between gap-4 ${ph.is_passata ? 'opacity-40 grayscale-[0.5]' : ''}`}
+                      >
                         <div className="flex items-center gap-4">
                           <span className="text-3xl group-hover:scale-110 transition-transform inline-block relative">
                             {ph.icona}
@@ -324,23 +473,53 @@ export default function CurrentSkyPage() {
                 </div>
               )}
 
-              {/* Tab Category */}
-              <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10">
+              {/* Category Tabs */}
+              <div
+                className="flex rounded-2xl p-1.5 border border-white/10"
+                style={{ background: 'rgba(255,255,255,0.04)' }}
+              >
                 {CATEGORIES.map(c => (
-                  <button key={c.key} onClick={() => setActiveTab(c.key)} className={`flex-1 py-2 text-[11px] uppercase tracking-widest rounded-xl transition-all ${activeTab === c.key ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30 shadow-lg' : 'text-white/40 hover:text-white/70'}`}>
+                  <button
+                    key={c.key}
+                    onClick={() => setActiveTab(c.key)}
+                    className="flex-1 py-2 text-[11px] uppercase tracking-widest rounded-xl transition-all"
+                    style={activeTab === c.key ? {
+                      background: `${theme.headerAccent}25`,
+                      color: theme.headerAccent,
+                      border: `1px solid ${theme.headerAccent}50`,
+                      boxShadow: `0 0 16px ${theme.headerAccent}20`,
+                      transition: 'all 4s ease-in-out',
+                    } : { color: 'rgba(255,255,255,0.40)' }}
+                  >
                     {c.label}
                   </button>
                 ))}
               </div>
 
-              {/* Lista Dati */}
-              <div className="bg-black/60 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl">
+              {/* Planet List */}
+              <div
+                className="rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl border"
+                style={{
+                  background: 'rgba(0,0,0,0.60)',
+                  borderColor: theme.cardBorder,
+                  transition: 'border-color 4s ease-in-out',
+                }}
+              >
                 <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
                   {filteredPlanets.map((p: PlanetData) => {
                     const info = BODY_INFO[p.nome]
                     return (
                       <div key={p.nome} className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
-                        <span className="text-3xl w-10 text-center" style={{ color: info?.color || '#fff' }}>{info?.glyph || '●'}</span>
+                        <span
+                          className="text-3xl w-10 text-center"
+                          style={{
+                            color: info?.color || '#fff',
+                            filter: `drop-shadow(0 0 ${4 + glowAlpha * 10}px ${info?.color || '#fff'}${Math.round(glowAlpha * 200).toString(16).padStart(2, '0')})`,
+                            transition: 'filter 4s ease-in-out',
+                          }}
+                        >
+                          {info?.glyph || '●'}
+                        </span>
                         <div className="flex-1">
                           <p className="text-white/90 text-sm font-semibold">{p.nome}</p>
                           <p className="text-white/40 text-[11px] uppercase tracking-widest mt-0.5">Eclittica Geocentrica</p>
@@ -355,28 +534,55 @@ export default function CurrentSkyPage() {
                 </div>
               </div>
 
-              {/* Griglia Aspetti */}
-              <div className="bg-black/40 border border-white/5 rounded-3xl p-6 backdrop-blur-md">
+              {/* Aspect Grid */}
+              <div
+                className="rounded-3xl p-6 backdrop-blur-md border"
+                style={{
+                  background: theme.cardGradient,
+                  borderColor: theme.cardBorder,
+                  transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
+                }}
+              >
                 <h4 className="text-white/40 text-[10px] uppercase tracking-[0.25em] mb-6 font-medium">Relazioni Planetarie (Griglia)</h4>
                 <AspectGrid planets={sky.pianeti} />
               </div>
 
-              {/* Extra Info */}
-              <div className="bg-gradient-to-br from-indigo-500/10 to-transparent border border-white/5 rounded-3xl p-6 leading-relaxed">
+              {/* Quote */}
+              <div
+                className="rounded-3xl p-6 leading-relaxed border"
+                style={{
+                  background: theme.cardGradient,
+                  borderColor: theme.cardBorder,
+                  transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
+                }}
+              >
                 <p className="text-white/30 text-xs italic">
                   "Le posizioni planetarie riflettono le energie cosmiche collettive in questo istante. Ogni aspetto nella griglia e nella ruota indica una tensione o un'armonia speciale tra due archetipi."
                 </p>
               </div>
 
-              {/* Bottoni CTA */}
+              {/* CTA Buttons */}
               <div className="flex flex-col gap-3">
-                <Link to="/tema-natale" className="btn-gold py-4 text-center uppercase tracking-[0.2em] text-xs font-bold rounded-2xl shadow-xl hover:shadow-gold-500/20">
+                <Link
+                  to="/tema-natale"
+                  className="py-4 text-center uppercase tracking-[0.2em] text-xs font-bold rounded-2xl shadow-xl transition-all"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.headerAccent}CC, ${theme.headerAccent})`,
+                    color: '#0A0510',
+                    boxShadow: `0 0 30px ${theme.headerAccent}33`,
+                    transition: 'background 4s ease-in-out, box-shadow 4s ease-in-out',
+                  }}
+                >
                   Scopri il Tuo Cielo Natale →
                 </Link>
-                <Link to="/i-miei-temi" className="border border-white/10 text-white/50 hover:text-white transition-colors py-4 text-center text-xs uppercase tracking-[0.2em] rounded-2xl backdrop-blur-md">
-                   Tema Natale Avanzato
+                <Link
+                  to="/i-miei-temi"
+                  className="border border-white/10 text-white/50 hover:text-white transition-colors py-4 text-center text-xs uppercase tracking-[0.2em] rounded-2xl backdrop-blur-md"
+                >
+                  Tema Natale Avanzato
                 </Link>
               </div>
+
             </motion.div>
           </div>
         )}
