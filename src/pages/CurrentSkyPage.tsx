@@ -51,6 +51,9 @@ interface Eclipse {
   emoji: string
   data: string
   visibilità: string
+  gmt_inizio: string
+  gmt_fine: string
+  durata: string
 }
 
 interface SkyData {
@@ -180,6 +183,23 @@ export default function CurrentSkyPage() {
                           <p className="text-white/40 text-xs mt-1.5 italic group-hover:text-white/60 transition-colors">
                             📍 {e.visibilità}
                           </p>
+                        </div>
+
+                        {/* Dettagli Tecnici (GMT) */}
+                        <div className="hidden md:flex flex-col items-end gap-1.5 border-l border-white/5 pl-6">
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="text-[9px] uppercase tracking-tighter text-white/20">GMT Start</p>
+                              <p className="text-xs font-mono text-white/70">{e.gmt_inizio}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[9px] uppercase tracking-tighter text-white/20">GMT End</p>
+                              <p className="text-xs font-mono text-white/70">{e.gmt_fine}</p>
+                            </div>
+                          </div>
+                          <div className="bg-white/5 px-2 py-0.5 rounded text-[10px] font-mono text-gold-500/60 flex items-center gap-1.5">
+                            <span className="text-[8px] opacity-50">⏱</span> {e.durata}
+                          </div>
                         </div>
                       </div>
                     ))}
