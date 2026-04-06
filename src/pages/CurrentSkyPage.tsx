@@ -590,6 +590,7 @@ export default function CurrentSkyPage() {
                     color: '#0A0510',
                     boxShadow: `0 0 30px ${theme.headerAccent}33`,
                     transition: 'background 4s ease-in-out, box-shadow 4s ease-in-out',
+                    textShadow: 'none',
                   }}
                 >
                   Scopri il Tuo Cielo Natale →
@@ -597,6 +598,7 @@ export default function CurrentSkyPage() {
                 <Link
                   to="/i-miei-temi"
                   className="border border-white/10 text-white/50 hover:text-white transition-colors py-4 text-center text-xs uppercase tracking-[0.2em] rounded-2xl backdrop-blur-md"
+                  style={{ textShadow: 'none' }}
                 >
                   Tema Natale Avanzato
                 </Link>
