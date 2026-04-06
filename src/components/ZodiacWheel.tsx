@@ -111,7 +111,7 @@ interface TypedAspectLine extends AspectResult {
 export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '', theme }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
 
-  // Calcolo Aspetti usando l'utility condivisa
+  // Calcolo Aspetti
   const aspectLines = useMemo(() => {
     const rawAspects = calculateAspects(planets)
     return rawAspects
@@ -137,13 +137,13 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
       <svg viewBox="0 0 2000 2000" className="w-full h-full overflow-visible">
         <defs>
-          <filter id="glow-big" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
+          <filter id="glow-p" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="12" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        {/* Disco di sfondo della ruota */}
+        {/* Disco di sfondo */}
         <circle 
           cx={CX} cy={CY} 
           r={R.OUTER} 
@@ -159,7 +159,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
               x1={line.pos1.x} y1={line.pos1.y}
               x2={line.pos2.x} y2={line.pos2.y}
               stroke={theme.aspectLineColor === '#E0E0E0' || theme.aspectLineColor === '#FFFFFF' ? theme.aspectLineColor : line.color}
-              strokeWidth="3"
+              strokeWidth="2.5"
               strokeDasharray={line.dash}
               strokeOpacity={0.25 + (line.precision * 0.55)}
               style={{ transition: 'stroke 4s ease-in-out' }}
@@ -177,14 +177,14 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
               <path 
                 d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1)}
                 fill={ELEMENT_BG[sign.el]} 
-                stroke="rgba(212,160,23,0.25)" 
-                strokeWidth="2" 
+                stroke="rgba(212,160,23,0.15)" 
+                strokeWidth="1" 
                 className="transition-opacity group-hover:fill-opacity-20"
               />
               <text 
                 x={symPos.x} y={symPos.y + 5} 
                 textAnchor="middle" dominantBaseline="central"
-                fontSize="72" fill={sign.color} fillOpacity="0.85" 
+                fontSize="72" fill={sign.color} fillOpacity="0.7" 
                 className="select-none font-serif transition-transform group-hover:scale-110 origin-center"
                 style={{ transformOrigin: `${symPos.x}px ${symPos.y}px` }}
               >
@@ -195,8 +195,8 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         })}
 
         {/* Bordi Dorati */}
-        <circle cx={CX} cy={CY} r={R.SIGN_OUT} fill="none" stroke="rgba(212,160,23,0.6)" strokeWidth="4" />
-        <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.2)" strokeWidth="2" />
+        <circle cx={CX} cy={CY} r={R.SIGN_OUT} fill="none" stroke="rgba(212,160,23,0.4)" strokeWidth="3" />
+        <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.6)" strokeWidth="3" />
 
         {/* ── Pianeti ── */}
         {planets.map((p: PlanetData) => {
@@ -209,13 +209,13 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           return (
             <g key={p.nome} onMouseEnter={() => setHovered(p.nome)} onMouseLeave={() => setHovered(null)} className="cursor-pointer">
               {isHov && <line x1={CX} y1={CY} x2={pos.x} y2={pos.y} stroke={info.color} strokeOpacity="0.25" strokeWidth="2" />}
-              {isHov && <circle cx={pos.x} cy={pos.y} r={dotR * 2.5} fill={info.color} fillOpacity={0.12} filter={theme.planetLighting === 'glow' ? 'url(#glow-big)' : 'none'} />}
+              {isHov && <circle cx={pos.x} cy={pos.y} r={dotR * 2.5} fill={info.color} fillOpacity={0.12} filter={theme.planetLighting === 'glow' ? 'url(#glow-p)' : 'none'} />}
               
               <circle 
                 cx={pos.x} cy={pos.y} r={dotR} 
                 fill={info.color} 
                 fillOpacity={isHov ? 1 : 0.85} 
-                filter={theme.planetLighting === 'glow' ? 'url(#glow-big)' : 'none'}
+                filter={theme.planetLighting === 'glow' ? 'url(#glow-p)' : 'none'}
                 style={{ 
                   filter: theme.planetLighting === 'shadow' 
                     ? `drop-shadow(2px 2px 0px rgba(0,0,0,1))` 
@@ -257,65 +257,108 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
 
         {/* ── ASC ── */}
         {ascLon !== undefined && (() => {
-          const p1 = toXY(R.SIGN_OUT + 24, ascLon); const pI = toXY(R.INNER, ascLon)
+          const p1 = toXY(R.SIGN_OUT + 24, ascLon); const pI = toXY(R.SIGN_IN, ascLon)
           return (
             <g>
-              <line x1={pI.x} y1={pI.y} x2={p1.x} y2={p1.y} stroke="#D4A017" strokeWidth="5" strokeLinecap="round" opacity="0.8" />
-              <circle cx={p1.x} cy={p1.y} r="10" fill="#D4A017" filter="url(#glow-big)" />
+              <line x1={pI.x} y1={pI.y} x2={p1.x} y2={p1.y} stroke="#D4A017" strokeWidth="6" strokeLinecap="round" />
+              <circle cx={p1.x} cy={p1.y} r="10" fill="#D4A017" filter="url(#glow-p)" />
               <text x={p1.x} y={p1.y - 25} textAnchor="middle" fontSize="32" fill="#D4A017" fontWeight="bold" className="font-serif">ASC</text>
             </g>
           )
         })()}
 
-        {/* ── 360° Graduazioni (Ticks) - OVERLAY ── */}
+        {/* ── 360° PRECISION GRADUATION (ON SIGN_OUT - EXTREME EXTERNAL) ── */}
         {useMemo(() => {
-          const ticks = []
+          const elements = []
           for (let i = 0; i < 360; i++) {
             const isSign = i % 30 === 0
             const isDecan = i % 10 === 0
             const isFive = i % 5 === 0
             
-            let tickLen = 15
-            let strokeW = 2
-            let opacity = 0.3
+            let tickLen = 15; let strokeW = 1.5; let opacity = 0.4
             
-            if (isSign) { tickLen = 50; strokeW = 4; opacity = 0.8 }
-            else if (isDecan) { tickLen = 35; strokeW = 3; opacity = 0.6 }
-            else if (isFive) { tickLen = 25; strokeW = 2; opacity = 0.4 }
+            if (isSign) { tickLen = 60; strokeW = 4; opacity = 0.8 }
+            else if (isDecan) { tickLen = 40; strokeW = 2.5; opacity = 0.6 }
+            else if (isFive) { tickLen = 25; strokeW = 2; opacity = 0.5 }
             
-            const p1 = toXY(R.INNER, i)
-            const p2 = toXY(R.INNER + tickLen, i)
+            // Tacche orientate verso l'interno dal bordo SIGN_OUT (il più esterno)
+            const p1 = toXY(R.SIGN_OUT, i)
+            const p2 = toXY(R.SIGN_OUT - tickLen, i)
             
-            ticks.push(
+            elements.push(
               <line 
                 key={`tick-${i}`} 
                 x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} 
-                stroke="rgba(212,160,23,0.9)" 
+                stroke="rgba(212,160,23,1)" 
                 strokeWidth={strokeW} 
                 opacity={opacity} 
               />
             )
+
+            // Aggiunta numeri 10, 20
+            if (isDecan && !isSign) {
+              const degInSign = i % 30
+              const labelPos = toXY(R.SIGN_OUT - 65, i)
+              elements.push(
+                <text 
+                  key={`deg-${i}`} 
+                  x={labelPos.x} y={labelPos.y} 
+                  fontSize="24" fill="rgba(212,160,23,0.8)" 
+                  textAnchor="middle" dominantBaseline="middle"
+                  className="font-mono font-bold"
+                >
+                  {degInSign}
+                </text>
+              )
+            }
           }
-          return ticks
+          return elements
         }, [])}
 
-        {/* ── Puntatore Luna ( Overlay ) ── */}
+        {/* ── MOON LASER POINTER (EXTREME EXTERNAL OVERLAY) ── */}
         {(() => {
           const luna = planets.find(p => p.nome === 'Luna')
           if (!luna) return null
           const r_orb = RING_R[luna.categoria] ?? R.FAST
           const pMoon = toXY(r_orb, luna.lon_assoluta)
-          const pScale = toXY(R.INNER, luna.lon_assoluta)
+          const pScale = toXY(R.SIGN_OUT, luna.lon_assoluta)
+          const pText = toXY(R.SIGN_OUT - 120, luna.lon_assoluta)
+          
           return (
             <g>
+              {/* Linea Laser Integrale */}
               <line 
-                x1={pScale.x} y1={pScale.y} x2={pMoon.x} y2={pMoon.y} 
-                stroke="#C8E0FF" strokeWidth="3" 
-                strokeOpacity="0.8"
-                filter="url(#glow-big)"
+                x1={CX} y1={CY} x2={pScale.x} y2={pScale.y} 
+                stroke="white" strokeWidth="2" strokeOpacity="0.8"
+                filter="url(#glow-p)"
               />
-              <circle cx={pScale.x} cy={pScale.y} r="8" fill="#C8E0FF" filter="url(#glow-big)" />
-              <circle cx={pMoon.x} cy={pMoon.y} r="25" fill="none" stroke="#C8E0FF" strokeWidth="2" strokeDasharray="5 5" opacity="0.5" />
+              <line 
+                x1={CX} y1={CY} x2={pMoon.x} y2={pMoon.y} 
+                stroke="white" strokeWidth="4" strokeOpacity="0.4"
+                strokeDasharray="10 10"
+              />
+              
+              {/* Cursore sulla scala esterna */}
+              <circle cx={pScale.x} cy={pScale.y} r="12" fill="white" filter="url(#glow-p)" />
+              <circle cx={pScale.x} cy={pScale.y} r="6" fill="#06040E" />
+              
+              {/* Valore numerico sul punto di contatto esterno */}
+              <g transform={`translate(${pText.x}, ${pText.y})`}>
+                <rect x="-45" y="-20" width="90" height="40" rx="8" fill="white" />
+                <text 
+                   textAnchor="middle" dominantBaseline="middle" 
+                   fontSize="26" fill="#06040E" fontWeight="bold" 
+                   className="font-mono"
+                >
+                  {luna.gradi.toFixed(1)}°
+                </text>
+              </g>
+              
+              {/* Cerchio di focus sul pianeta */}
+              <circle cx={pMoon.x} cy={pMoon.y} r="35" fill="none" stroke="white" strokeWidth="2" strokeDasharray="5 5">
+                <animate attributeName="stroke-opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
+                <animate attributeName="r" values="35;45;35" dur="2s" repeatCount="indefinite" />
+              </circle>
             </g>
           )
         })()}
@@ -335,9 +378,9 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
                     animate={{ opacity: 1 }}
                     className="mb-1"
                   >
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-[#C8E0FF] opacity-80 mb-0.5">Luna a</p>
+                    <p className="text-[9px] uppercase tracking-[0.2em] text-[#C8E0FF] opacity-80 mb-0.5">Luna</p>
                     <p className="text-[#C8E0FF] font-mono text-xl font-bold leading-none">{luna.gradi.toFixed(2)}°</p>
-                    <p className="text-[10px] text-[#C8E0FF]/60 font-serif">{luna.segno}</p>
+                    <p className="text-[10px] text-[#C8E0FF]/60 font-serif lowercase italic">{luna.segno}</p>
                   </motion.div>
                 )
               }
@@ -345,7 +388,7 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
                 <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-1">{ascSign ? 'Ascendente' : 'Cielo'}</p>
               )
             })()}
-          <p className="text-white font-serif font-bold text-2xl md:text-3xl mt-1">{ascSign || 'Attuale'}</p>
+          <p className="text-white font-serif font-bold text-2xl md:text-3xl mt-1 tracking-tight">{ascSign || 'Attuale'}</p>
           {ascDeg !== undefined && !planets.find(p => p.nome === 'Luna') && (
             <p className="text-gold-500/50 text-xs mt-1 font-mono">{ascDeg.toFixed(1)}°</p>
           )}
