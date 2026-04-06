@@ -32,31 +32,27 @@ def get_current_sky():
         def find_phase_crossing(target_angle, jd_start, jd_end):
             """
             Trova con bisection il momento in cui l'elongazione Luna-Sole ≡ target_angle.
-            Restituisce il JD o None se l'angolo non attraversa il target nell'intervallo.
+            - step 0.5 gg (12h): la Luna avanza ~6° per step, mai più di 90° → nessun crossing mancato
+            - bisection 50 iterazioni → precisione < 1 secondo
             """
-            SYNODIC = 29.530588  # giorni
-            step    = 0.5        # passo iniziale di campionamento (ore×2)
-
-            # Campiona l'intervallo cercando un cambio di segno rispetto al target
+            step    = 0.5   # 12 ore (sicuro: Luna percorre ~6°, molto < 90°)
             results = []
             t = jd_start
             while t < jd_end:
-                a0 = moon_sun_angle(t)
-                a1 = moon_sun_angle(t + step)
-                # Normalizza la differenza rispetto al target
-                d0 = (a0 - target_angle) % 360.0
-                d1 = (a1 - target_angle) % 360.0
-                # Attraversamento rilevato quando uno è < 1° e l'altro > 358°
+                d0 = (moon_sun_angle(t)        - target_angle) % 360.0
+                d1 = (moon_sun_angle(t + step) - target_angle) % 360.0
+                # Crossing rilevato: d0 vicino a 360 (appena prima) e d1 vicino a 0 (appena dopo)
                 if d0 > 350.0 and d1 < 10.0:
-                    # Bisection tra t e t+step
                     lo, hi = t, t + step
-                    for _ in range(40):
+                    for _ in range(50):
                         mid = (lo + hi) / 2
                         dm  = (moon_sun_angle(mid) - target_angle) % 360.0
+                        # dm > 180 → siamo PRIMA del target → avanza (lo = mid)
+                        # dm < 180 → siamo DOPO  il target → torna  (hi = mid)
                         if dm > 180.0:
-                            hi = mid
-                        else:
                             lo = mid
+                        else:
+                            hi = mid
                     results.append((lo + hi) / 2)
                 t += step
             return results
