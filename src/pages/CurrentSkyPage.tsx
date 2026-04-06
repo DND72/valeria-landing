@@ -147,38 +147,57 @@ export default function CurrentSkyPage() {
   return (
     <div className="min-h-screen relative overflow-x-hidden">
 
-      {/* ── Circadian Background — smooth transition via CSS ── */}
+      {/* ── Circadian Background layers (stacking: -30 → -20 → -15 → -10) ── */}
+
+      {/* Layer 1: Base colour */}
       <div
-        className="fixed inset-0 -z-20 transition-colors"
+        className="fixed inset-0 pointer-events-none"
         style={{
+          zIndex: -30,
           backgroundColor: theme.bgBase,
           transition: 'background-color 4s ease-in-out',
         }}
       />
-      {/* Aurora / hemisphere gradient — smooth CSS crossfade */}
+      {/* Layer 2: Main hemisphere aurora */}
       <div
-        className="fixed inset-0 -z-10 pointer-events-none"
-        style={{ background: theme.bgGradient, transition: 'background 4s ease-in-out' }}
-      />
-      {/* Top colour wash */}
-      <div
-        className="fixed inset-0 -z-10 pointer-events-none"
-        style={{ background: theme.topGlow, transition: 'background 4s ease-in-out' }}
-      />
-      {/* Bottom ambient blob */}
-      <div
-        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] -z-10 pointer-events-none blur-[120px] rounded-full"
-        style={{ background: theme.bottomGlowColor, transition: 'background 4s ease-in-out' }}
-      />
-
-      {/* Star-field dots — always present, slightly dimmer at dawn/noon */}
-      <div
-        className="fixed inset-0 -z-16 pointer-events-none"
+        className="fixed inset-0 pointer-events-none"
         style={{
-          opacity: 0.3 + glowAlpha * 0.4,
+          zIndex: -25,
+          background: theme.bgGradient,
+          transition: 'background 4s ease-in-out',
+        }}
+      />
+      {/* Layer 3: Top accent glow */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -20,
+          background: theme.topGlow,
+          transition: 'background 4s ease-in-out',
+        }}
+      />
+      {/* Layer 4: Bottom ambient blob */}
+      <div
+        className="fixed pointer-events-none blur-[120px] rounded-full"
+        style={{
+          zIndex: -20,
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '800px',
+          height: '400px',
+          background: theme.bottomGlowColor,
+          transition: 'background 4s ease-in-out',
+        }}
+      />
+      {/* Layer 5: Star-field — dimmer di giorno, brillante di notte */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -15,
+          opacity: 0.15 + glowAlpha * 0.50,
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
           backgroundSize: '40px 40px',
-          backgroundPosition: '0 0, 20px 20px',
           mask: 'radial-gradient(ellipse 110% 110% at 50% 50%, black 20%, transparent 100%)',
           transition: 'opacity 4s ease-in-out',
         }}
