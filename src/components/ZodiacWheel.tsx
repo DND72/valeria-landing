@@ -167,38 +167,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           ))}
         </g>
 
-        {/* ── 360° Graduazioni (Ticks) ── */}
-        {useMemo(() => {
-          const ticks = []
-          for (let i = 0; i < 360; i++) {
-            const isSign = i % 30 === 0
-            const isDecan = i % 10 === 0
-            const isFive = i % 5 === 0
-            
-            let tickLen = 12
-            let strokeW = 1
-            let opacity = 0.15
-            
-            if (isSign) { tickLen = 40; strokeW = 2; opacity = 0.5 }
-            else if (isDecan) { tickLen = 25; strokeW = 1.5; opacity = 0.3 }
-            else if (isFive) { tickLen = 18; strokeW = 1.2; opacity = 0.2 }
-            
-            const p1 = toXY(R.INNER, i)
-            const p2 = toXY(R.INNER + tickLen, i)
-            
-            ticks.push(
-              <line 
-                key={`tick-${i}`} 
-                x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} 
-                stroke="rgba(212,160,23,0.8)" 
-                strokeWidth={strokeW} 
-                opacity={opacity} 
-              />
-            )
-          }
-          return ticks
-        }, [])}
-
         {/* ── 12 Settori ── */}
         {ZODIAC.map((sign, i) => {
           const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
@@ -229,25 +197,6 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
         {/* Bordi Dorati */}
         <circle cx={CX} cy={CY} r={R.SIGN_OUT} fill="none" stroke="rgba(212,160,23,0.6)" strokeWidth="4" />
         <circle cx={CX} cy={CY} r={R.SIGN_IN}  fill="none" stroke="rgba(212,160,23,0.2)" strokeWidth="2" />
-
-        {/* ── Puntatore Luna (Precisione Millimetrica) ── */}
-        {(() => {
-          const luna = planets.find(p => p.nome === 'Luna')
-          if (!luna) return null
-          const r_orb = RING_R[luna.categoria] ?? R.FAST
-          const pMoon = toXY(r_orb, luna.lon_assoluta)
-          const pScale = toXY(R.INNER, luna.lon_assoluta)
-          return (
-            <g>
-              <line 
-                x1={pScale.x} y1={pScale.y} x2={pMoon.x} y2={pMoon.y} 
-                stroke="#C8E0FF" strokeWidth="1.5" strokeDasharray="10 10" 
-                opacity="0.6" 
-              />
-              <circle cx={pScale.x} cy={pScale.y} r="6" fill="#C8E0FF" filter="url(#glow-big)" />
-            </g>
-          )
-        })()}
 
         {/* ── Pianeti ── */}
         {planets.map((p: PlanetData) => {
@@ -314,6 +263,59 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
               <line x1={pI.x} y1={pI.y} x2={p1.x} y2={p1.y} stroke="#D4A017" strokeWidth="5" strokeLinecap="round" opacity="0.8" />
               <circle cx={p1.x} cy={p1.y} r="10" fill="#D4A017" filter="url(#glow-big)" />
               <text x={p1.x} y={p1.y - 25} textAnchor="middle" fontSize="32" fill="#D4A017" fontWeight="bold" className="font-serif">ASC</text>
+            </g>
+          )
+        })()}
+
+        {/* ── 360° Graduazioni (Ticks) - OVERLAY FINALE ── */}
+        {useMemo(() => {
+          const ticks = []
+          for (let i = 0; i < 360; i++) {
+            const isSign = i % 30 === 0
+            const isDecan = i % 10 === 0
+            const isFive = i % 5 === 0
+            
+            let tickLen = 15
+            let strokeW = 2
+            let opacity = 0.3
+            
+            if (isSign) { tickLen = 50; strokeW = 4; opacity = 0.8 }
+            else if (isDecan) { tickLen = 35; strokeW = 3; opacity = 0.6 }
+            else if (isFive) { tickLen = 25; strokeW = 2; opacity = 0.4 }
+            
+            const p1 = toXY(R.INNER, i)
+            const p2 = toXY(R.INNER + tickLen, i)
+            
+            ticks.push(
+              <line 
+                key={`tick-${i}`} 
+                x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} 
+                stroke="rgba(212,160,23,0.9)" 
+                strokeWidth={strokeW} 
+                opacity={opacity} 
+              />
+            )
+          }
+          return ticks
+        }, [])}
+
+        {/* ── Puntatore Luna ( Overlay Finale ) ── */}
+        {(() => {
+          const luna = planets.find(p => p.nome === 'Luna')
+          if (!luna) return null
+          const r_orb = RING_R[luna.categoria] ?? R.FAST
+          const pMoon = toXY(r_orb, luna.lon_assoluta)
+          const pScale = toXY(R.INNER, luna.lon_assoluta)
+          return (
+            <g>
+              <line 
+                x1={pScale.x} y1={pScale.y} x2={pMoon.x} y2={pMoon.y} 
+                stroke="#C8E0FF" strokeWidth="3" 
+                strokeOpacity="0.8"
+                filter="url(#glow-big)"
+              />
+              <circle cx={pScale.x} cy={pScale.y} r="8" fill="#C8E0FF" filter="url(#glow-big)" />
+              <circle cx={pMoon.x} cy={pMoon.y} r="25" fill="none" stroke="#C8E0FF" strokeWidth="2" strokeDasharray="5 5" opacity="0.5" />
             </g>
           )
         })()}
