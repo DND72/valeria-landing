@@ -105,7 +105,6 @@ export default function PaidNatalCharts() {
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [city, setCity] = useState('')
-  const [type, setType] = useState<'basic' | 'advanced'>('basic')
 
   useEffect(() => {
     fetchCharts()

@@ -61,7 +61,7 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
             "Bilancia", "Scorpione", "Sagittario", "Capricorno", "Acquario", "Pesci"
         ]
         
-        sign_index = int(asc_deg // 30)
+        sign_index = min(11, int((asc_deg % 360) // 30))
         sign_name = zodiac_signs[sign_index]
         deg_in_sign = asc_deg % 30
         
@@ -74,9 +74,10 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
         def calc_body(code, name, cat):
             pos, _ = swe.calc_ut(swe_jd, code)
             lon = pos[0]
+            s_idx = min(11, int((lon % 360) // 30))
             return {
                 "nome": name,
-                "segno": zodiac_signs[int(lon // 30)],
+                "segno": zodiac_signs[s_idx],
                 "gradi": round(lon % 30, 2),
                 "lon_assoluta": round(lon, 2),
                 "categoria": cat
@@ -123,28 +124,32 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
                 "categoria": "punto"
             })
 
-        # 7. CASE ASTROLOGICHE (Placidus)
-        cusps, ascmc = swe.houses(swe_jd, lat, lon, b'P')
-        
         case_calcolate = []
-        for i in range(1, 13):
-            h_lon = cusps[i]
-            case_calcolate.append({
-                "numero": i,
-                "segno": zodiac_signs[int(h_lon // 30)],
-                "gradi": round(h_lon % 30, 2),
-                "lon_assoluta": round(h_lon, 2)
-            })
-
-        # Vertex (ascmc[3])
-        vertex_lon = ascmc[3]
-        vertex_sign = zodiac_signs[int(vertex_lon // 30)]
-
+        try:
+            cusps, ascmc = swe.houses(swe_jd, lat, lon, b'P')
+            for i in range(1, 13):
+                if i < len(cusps):
+                    h_lon = cusps[i]
+                    case_calcolate.append({
+                        "numero": i,
+                        "segno": zodiac_signs[min(11, int((h_lon % 360) // 30))],
+                        "gradi": round(h_lon % 30, 2),
+                        "lon_assoluta": round(h_lon, 2)
+                    })
+            
+            # MC e Vertex (Punti ascmc)
+            mc_totale = round(ascmc[1], 2) if len(ascmc) > 1 else 0
+            vertex_lon = ascmc[3] if len(ascmc) > 3 else 0
+        except Exception:
+            cusps, ascmc = [], []
+            mc_totale, vertex_lon = 0, 0
+        vertex_sign = zodiac_signs[min(11, int((vertex_lon % 360) // 30))]
+        
         # Parte della Fortuna = (Asc + Luna - Sole) mod 360
         sole_lon   = next((p["lon_assoluta"] for p in pianeti_calcolati if p["nome"] == "Sole"), 0)
         luna_lon   = next((p["lon_assoluta"] for p in pianeti_calcolati if p["nome"] == "Luna"), 0)
         pof_lon    = (asc_deg + luna_lon - sole_lon) % 360
-        pof_sign   = zodiac_signs[int(pof_lon // 30)]
+        pof_sign   = zodiac_signs[min(11, int((pof_lon % 360) // 30))]
 
         pianeti_calcolati += [
             {"nome": "Vertex", "segno": vertex_sign, "gradi": round(vertex_lon % 30, 2),
@@ -159,7 +164,7 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
             "fuso_orario": tz_name,
             "ora_utc": utc_dt.strftime("%Y-%m-%d %H:%M UTC"),
             "ascendente_totale": round(asc_deg, 2),
-            "mc_totale": round(ascmc[1], 2),
+            "mc_totale": mc_totale,
             "segno": sign_name,
             "grado_nel_segno": round(deg_in_sign, 2),
             "pianeti": pianeti_calcolati,

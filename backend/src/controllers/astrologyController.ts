@@ -89,7 +89,7 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
       
       await dbClient.query(
         `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, $3)`,
-        [userId, -cost, `natal_chart_${type}`]
+        [userId, -cost, `natal_chart_advanced`]
       )
       
       await dbClient.query('COMMIT')
