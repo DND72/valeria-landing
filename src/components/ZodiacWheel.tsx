@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { calculateAspects, BODY_GLYPHS, type PlanetData } from '../utils/astrologyUtils'
+import { type CircadianTheme } from '../hooks/useCircadianTheme'
 
 // ─────────────────────────────────────────────
 // Dati Zodiacali
@@ -97,9 +98,10 @@ interface ZodiacWheelProps {
   ascSign?: string
   ascDeg?: number
   className?: string
+  theme: CircadianTheme
 }
 
-export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '' }: ZodiacWheelProps) {
+export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, className = '', theme }: ZodiacWheelProps) {
   const [hovered, setHovered] = useState<string | null>(null)
 
   // Calcolo Aspetti usando l'utility condivisa
@@ -138,19 +140,26 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           </filter>
         </defs>
 
-        <circle cx={CX} cy={CY} r={R.OUTER} fill="url(#zw-disk-big)" />
+        {/* Disco di sfondo della ruota */}
+        <circle 
+          cx={CX} cy={CY} 
+          r={R.OUTER} 
+          fill={theme.zodiacDiskColor} 
+          style={{ transition: 'fill 4s ease-in-out' }}
+        />
 
         {/* ── Linee Aspetti ── */}
-        <g opacity="0.8">
+        <g style={{ transition: 'opacity 4s ease-in-out' }} opacity={theme.aspectLineOpacity}>
           {aspectLines.map((line, idx) => (
             <line
               key={idx}
               x1={line.pos1.x} y1={line.pos1.y}
               x2={line.pos2.x} y2={line.pos2.y}
-              stroke={line.color}
-              strokeWidth="2.5"
+              stroke={theme.aspectLineColor === '#E0E0E0' || theme.aspectLineColor === '#FFFFFF' ? theme.aspectLineColor : line.color}
+              strokeWidth="3"
               strokeDasharray={line.dash}
-              strokeOpacity={0.15 + (line.precision * 0.45)}
+              strokeOpacity={0.25 + (line.precision * 0.55)}
+              style={{ transition: 'stroke 4s ease-in-out' }}
             />
           ))}
         </g>
@@ -197,9 +206,34 @@ export default function ZodiacWheel({ planets, ascLon, ascSign, ascDeg, classNam
           return (
             <g key={p.nome} onMouseEnter={() => setHovered(p.nome)} onMouseLeave={() => setHovered(null)} className="cursor-pointer">
               {isHov && <line x1={CX} y1={CY} x2={pos.x} y2={pos.y} stroke={info.color} strokeOpacity="0.25" strokeWidth="2" />}
-              {isHov && <circle cx={pos.x} cy={pos.y} r={dotR * 2.5} fill={info.color} fillOpacity={0.12} filter="url(#glow-big)" />}
-              <circle cx={pos.x} cy={pos.y} r={dotR} fill={info.color} fillOpacity={isHov ? 1 : 0.85} filter="url(#glow-big)" />
-              <text x={pos.x + dotR + 8} y={pos.y - 4} fontSize={p.categoria === 'veloce' ? 44 : 36} fill={info.color} fillOpacity={isHov ? 1 : 0.8} className="select-none font-serif">
+              {isHov && <circle cx={pos.x} cy={pos.y} r={dotR * 2.5} fill={info.color} fillOpacity={0.12} filter={theme.planetLighting === 'glow' ? 'url(#glow-big)' : 'none'} />}
+              
+              <circle 
+                cx={pos.x} cy={pos.y} r={dotR} 
+                fill={info.color} 
+                fillOpacity={isHov ? 1 : 0.85} 
+                filter={theme.planetLighting === 'glow' ? 'url(#glow-big)' : 'none'}
+                style={{ 
+                  filter: theme.planetLighting === 'shadow' 
+                    ? `drop-shadow(2px 2px 0px rgba(0,0,0,1))` 
+                    : undefined,
+                  transition: 'filter 4s ease-in-out'
+                }}
+              />
+              
+              <text 
+                x={pos.x + dotR + 8} y={pos.y - 4} 
+                fontSize={p.categoria === 'veloce' ? 44 : 36} 
+                fill={info.color} 
+                fillOpacity={isHov ? 1 : 0.8} 
+                className="select-none font-serif"
+                style={{ 
+                  filter: theme.planetLighting === 'shadow' 
+                    ? `drop-shadow(2px 2px 0px rgba(0,0,0,1))` 
+                    : undefined,
+                  transition: 'filter 4s ease-in-out'
+                }}
+              >
                 {glyph}
               </text>
 

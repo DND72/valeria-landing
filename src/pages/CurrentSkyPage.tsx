@@ -172,13 +172,24 @@ export default function CurrentSkyPage() {
           transition: 'background-color 4s ease-in-out',
         }}
       />
-      {/* Layer 2: Main hemisphere aurora */}
+      {/* Layer 2: Main hemisphere aurora / Background Scenery */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
           zIndex: -25,
           background: theme.bgGradient,
           transition: 'background 4s ease-in-out',
+        }}
+      />
+      
+      {/* Layer 2b: Linear Gradient for specific atmospheric events (Tramonto) */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -28,
+          background: theme.bgLinear || 'transparent',
+          opacity: theme.bgLinear ? 1 : 0,
+          transition: 'background 4s ease-in-out, opacity 4s ease-in-out',
         }}
       />
       {/* Layer 3: Top accent glow */}
@@ -318,7 +329,10 @@ export default function CurrentSkyPage() {
                     transition: 'background 4s ease-in-out',
                   }}
                 />
-                <ZodiacWheel planets={sky.pianeti} />
+                <ZodiacWheel 
+                  planets={sky.pianeti} 
+                  theme={theme}
+                />
               </motion.div>
 
               {/* Aspect Legend */}
