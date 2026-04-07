@@ -4,7 +4,6 @@ import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useAstrologyApi, type NatalChartResponse } from '../api/astrology'
-import { useMeApi } from '../api/me'
 import ZodiacWheel from '../components/ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
 import { SIGN_MEANINGS, HOUSE_MEANINGS } from '../constants/astrologyMeanings'
@@ -281,7 +280,6 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
 
 export default function NatalChartPage() {
   const { calculateFreeChart, syncNatalData, getMyCharts, getLatestChart } = useAstrologyApi()
-  const { getProfile } = useMeApi()
   const { user } = useUser()
   const isLoggedIn = !!user
   
