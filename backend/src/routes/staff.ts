@@ -28,10 +28,18 @@ const patchConsult = z
     status: z.enum(['scheduled', 'pending_payment', 'done', 'cancelled']).optional(),
     clerk_user_id: z.string().min(1).max(128).nullable().optional(),
     is_free_consult: z.boolean().optional(),
+    meeting_link: z.string().nullable().optional(),
   })
-  .refine((o) => o.status !== undefined || o.clerk_user_id !== undefined || o.is_free_consult !== undefined, {
-    message: 'Almeno un campo',
-  })
+  .refine(
+    (o) =>
+      o.status !== undefined ||
+      o.clerk_user_id !== undefined ||
+      o.is_free_consult !== undefined ||
+      o.meeting_link !== undefined,
+    {
+      message: 'Almeno un campo',
+    }
+  )
 
 export function createStaffRouter(pool: Pool): Router {
   const r = Router()
@@ -61,11 +69,35 @@ export function createStaffRouter(pool: Pool): Router {
 
   r.get('/calendly-today', async (_req, res) => {
     try {
-      const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN
-      const payload = await getStaffTodayMeetingsOrError(token)
-      res.json(payload)
+      const { rows } = await pool.query<{
+        id: string
+        invitee_name: string | null
+        invitee_email: string | null
+        start_at: Date
+        end_at: Date | null
+        consult_kind: string
+        meeting_link: string | null
+      }>(`
+        SELECT id, invitee_name, invitee_email, start_at, end_at, consult_kind, meeting_link
+        FROM consults
+        WHERE start_at >= CURRENT_DATE 
+          AND start_at < CURRENT_DATE + INTERVAL '1 day'
+          AND status = 'scheduled'
+        ORDER BY start_at ASC
+      `)
+
+      const meetings = rows.map(r => ({
+        id: r.id,
+        startAt: new Date(r.start_at).toISOString(),
+        endAt: r.end_at ? new Date(r.end_at).toISOString() : null,
+        eventName: r.consult_kind,
+        inviteeSummary: `${r.invitee_name || 'Senza nome'} (${r.invitee_email || 'No email'})`,
+        joinUrl: r.meeting_link
+      }))
+
+      res.json({ configured: true, meetings })
     } catch (e) {
-      console.error('[staff calendly-today]', e)
+      console.error('[staff today]', e)
       res.status(500).json({ error: 'Errore server' })
     }
   })
@@ -132,8 +164,10 @@ export function createStaffRouter(pool: Pool): Router {
         end_at: Date | null
         status: string
         is_free_consult: boolean
+        consult_kind: string
+        meeting_link: string | null
       }>(
-        `SELECT id, invitee_email, invitee_name, start_at, end_at, status, is_free_consult
+        `SELECT id, invitee_email, invitee_name, start_at, end_at, status, is_free_consult, consult_kind, meeting_link
          FROM consults
          WHERE invitee_email IS NOT NULL AND TRIM(invitee_email) <> ''
            AND start_at IS NOT NULL
@@ -149,6 +183,8 @@ export function createStaffRouter(pool: Pool): Router {
         endAt: string | null
         status: string
         isFreeConsult: boolean
+        eventName: string
+        joinUrl: string | null
       }
       const map = new Map<string, { email: string; name: string | null; slots: Slot[] }>()
       for (const row of rows) {
@@ -166,6 +202,8 @@ export function createStaffRouter(pool: Pool): Router {
           endAt: row.end_at ? new Date(row.end_at).toISOString() : null,
           status: row.status,
           isFreeConsult: row.is_free_consult,
+          eventName: row.consult_kind,
+          joinUrl: row.meeting_link
         })
       }
 
@@ -211,7 +249,7 @@ export function createStaffRouter(pool: Pool): Router {
       res.status(400).json({ error: 'Payload non valido', details: parsed.error.flatten() })
       return
     }
-    const { status, clerk_user_id: clerkUserId, is_free_consult: isFree } = parsed.data
+    const { status, clerk_user_id: clerkUserId, is_free_consult: isFree, meeting_link: meetingLink } = parsed.data
     try {
       const exists = await pool.query(`SELECT id FROM consults WHERE id = $1`, [id])
       if (exists.rows.length === 0) {
@@ -232,6 +270,10 @@ export function createStaffRouter(pool: Pool): Router {
       if (isFree !== undefined) {
         sets.push(`is_free_consult = $${i++}`)
         vals.push(isFree)
+      }
+      if (meetingLink !== undefined) {
+        sets.push(`meeting_link = $${i++}`)
+        vals.push(meetingLink)
       }
       vals.push(id)
       await pool.query(`UPDATE consults SET ${sets.join(', ')} WHERE id = $${i}`, vals)

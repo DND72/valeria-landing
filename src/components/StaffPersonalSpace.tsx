@@ -14,6 +14,7 @@ type MeetingsPayload =
   | {
       configured: true
       meetings: Array<{
+        id: string
         startAt: string
         endAt: string | null
         eventName: string
@@ -35,6 +36,8 @@ type ClientsWeekPayload = {
       endAt: string | null
       status: string
       isFreeConsult: boolean
+      eventName: string
+      joinUrl: string | null
     }>
   }>
 }
@@ -144,6 +147,20 @@ export default function StaffPersonalSpace() {
   useEffect(() => {
     if (tab === 'crm' && allClients === null) void loadAllClients()
   }, [tab, allClients, loadAllClients])
+
+  const handleSaveLink = async (id: string, link: string) => {
+    if (!apiConfigured) return
+    try {
+      await apiJson(getToken, `/api/staff/consults/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ meeting_link: link || null }),
+      })
+      void loadToday()
+      void loadClientsWeek()
+    } catch {
+      alert('Errore nel salvataggio link')
+    }
+  }
 
   const setPresenceStatus = async (status: ValeriaPresenceStatus) => {
     if (!apiConfigured) return
@@ -258,7 +275,7 @@ export default function StaffPersonalSpace() {
                 <div>
                   <h2 className="font-serif text-xl font-bold text-white mb-1">Appuntamenti di oggi</h2>
                   <p className="text-white/40 text-sm">
-                    Solo il giorno corrente (fuso Europe/Rome), da Calendly. Sincronizza se hai appena modificato qualcosa lì.
+                    Solo il giorno corrente (fuso Europe/Rome), dal calendario interno.
                   </p>
                 </div>
                 <button
@@ -297,13 +314,26 @@ export default function StaffPersonalSpace() {
                           <td className="py-2 px-3 text-white/70">{m.inviteeSummary}</td>
                           <td className="py-2 px-3 text-white/55">{m.eventName}</td>
                           <td className="py-2 px-3">
-                            {m.joinUrl ? (
-                              <a href={m.joinUrl} target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:underline text-xs">
-                                Entra
-                              </a>
-                            ) : (
-                              <span className="text-white/25">—</span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {m.joinUrl ? (
+                                <a href={m.joinUrl} target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:underline text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
+                                  {m.joinUrl}
+                                </a>
+                              ) : (
+                                <span className="text-white/25 text-xs italic">Nessun link</span>
+                              )}
+                              <button
+                                onClick={() => {
+                                  const link = window.prompt('Inserisci il link per la riunione (Meet/Zoom):', m.joinUrl || '')
+                                  if (link !== null) {
+                                    void handleSaveLink(m.id, link.trim())
+                                  }
+                                }}
+                                className="text-[10px] uppercase font-bold text-white/50 hover:text-white px-2 py-1 bg-white/5 rounded transition-colors ml-auto shrink-0"
+                              >
+                                {m.joinUrl ? '✎' : '+ Link'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -317,9 +347,9 @@ export default function StaffPersonalSpace() {
             <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mystical-card">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 <div>
-                  <h2 className="font-serif text-xl font-bold text-white mb-1">Clienti e programma (prossimi 7 giorni)</h2>
+                  <h2 className="font-serif text-xl font-bold text-white mb-1">Consulti previsti (prossimi 7 giorni)</h2>
                   <p className="text-white/40 text-sm">
-                    Basato sui consulti registrati nel sito (webhook Calendly). Email distinte in archivio:{' '}
+                    Dal calendario interno. Email distinte in archivio:{' '}
                     <strong className="text-white/55">{clientsWeek?.totalDistinctEmails ?? '—'}</strong>.
                   </p>
                 </div>
@@ -353,12 +383,36 @@ export default function StaffPersonalSpace() {
                           Apri scheda →
                         </button>
                       </div>
-                      <ul className="space-y-1.5 text-sm text-white/55">
+                      <ul className="space-y-1.5 text-sm text-white/55 border-t border-white/5 pt-3">
                         {c.slots.map((s) => (
-                          <li key={s.id} className="flex flex-wrap gap-x-3 gap-y-0.5">
-                            <span>{formatWhen(s.startAt)}</span>
-                            <span className="text-white/35 text-xs uppercase">{s.status}</span>
-                            {s.isFreeConsult && <span className="text-emerald-500/80 text-xs">omaggio</span>}
+                          <li key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-black/20 rounded">
+                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 items-center">
+                              <span className="font-medium text-white/80">{formatWhen(s.startAt)}</span>
+                              <span>·</span>
+                              <span className="text-gold-500/80 capitalize">{s.eventName}</span>
+                              <span className="text-white/35 text-xs uppercase px-1.5">{s.status}</span>
+                              {s.isFreeConsult && <span className="text-emerald-500/80 text-[10px] uppercase tracking-wider font-bold border border-emerald-500/30 rounded px-1">omaggio</span>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {s.joinUrl ? (
+                                <a href={s.joinUrl} target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:underline text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
+                                  {s.joinUrl}
+                                </a>
+                              ) : (
+                                <span className="text-white/25 text-xs italic">NNessun link meeting</span>
+                              )}
+                              <button
+                                onClick={() => {
+                                  const link = window.prompt('Inserisci il link per la riunione (Meet/Zoom):', s.joinUrl || '')
+                                  if (link !== null) {
+                                    void handleSaveLink(s.id, link.trim())
+                                  }
+                                }}
+                                className="text-[10px] uppercase font-bold text-white/50 hover:text-white px-2 py-1 bg-white/5 rounded transition-colors shrink-0"
+                              >
+                                {s.joinUrl ? '✎' : '+ Link'}
+                              </button>
+                            </div>
                           </li>
                         ))}
                       </ul>

@@ -1053,20 +1053,20 @@ export default function Dashboard() {
                     let callDetail = ''
                     let callActionLabel = 'Partecipa'
                     
-                    if (c.meeting_provider === 'phone' || (!c.meeting_join_url && c.status === 'scheduled')) {
-                      callIcon = '📞'
-                      callDetail = 'Valeria ti chiamerà al numero fornito durante la prenotazione.'
-                    } else if (c.meeting_provider === 'google_conference' || c.meeting_join_url?.includes('meet.google.com')) {
+                    if (c.meeting_join_url?.includes('meet.google.com') || c.meeting_provider === 'google_conference') {
                       callIcon = '📽️'
                       callDetail = 'Si svolge su Google Meet (anche da browser senza app).'
                       callActionLabel = isSoon ? 'Entra ora' : 'Vai alla stanza'
-                    } else if (c.meeting_provider === 'zoom_conference' || c.meeting_join_url?.includes('zoom.us')) {
-                      callIcon = '📱'
+                    } else if (c.meeting_join_url?.includes('zoom.us') || c.meeting_provider === 'zoom_conference') {
+                      callIcon = '📹'
                       callDetail = 'Si svolge su Zoom. Si consiglia di avere l\'app installata.'
                       callActionLabel = isSoon ? 'Entra ora' : 'Apri Zoom'
                     } else if (c.meeting_join_url) {
                       callIcon = '🌐'
-                      callDetail = 'Sessione online tramite link fornito.'
+                      callDetail = 'Sessione Digitale tramite link (Audio/Video).'
+                    } else {
+                      callIcon = '⏳'
+                      callDetail = 'Valeria aggiungerà a breve qui il link per la sessione (Meet o Zoom).'
                     }
 
                     return (
@@ -1111,7 +1111,7 @@ export default function Dashboard() {
                                 <span aria-hidden>→</span>
                               </a>
                             ) : c.status === 'scheduled' && !isPast ? (
-                              <span className="text-white/30 text-xs">In attesa della chiamata</span>
+                              <span className="text-white/30 text-xs italic">Nessun link aggiunto al momento. Apparirà qui prima dell'appuntamento.</span>
                             ) : null}
 
                             {isPast && c.status !== 'cancelled' && (
