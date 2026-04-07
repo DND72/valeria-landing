@@ -376,7 +376,7 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
                     <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
-                    <p className="text-sm font-bold text-amber-440 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                    <p className="text-sm font-bold text-amber-400 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
                   </div>
                 </div>
               )}
@@ -429,6 +429,78 @@ export default function Dashboard() {
           </button>
           </div>
         </motion.div>
+
+        {/* Diario degli Acquisti & Crediti (Spostato in alto per visibilità) */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="mb-12"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="font-serif text-xl font-bold text-white">Diario degli acquisti & Crediti</h2>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          {transactionsLoading ? (
+            <div className="py-8 flex flex-col items-center gap-3">
+              <div className="h-5 w-5 rounded-full border-2 border-gold-500/20 border-t-gold-500 animate-spin" />
+              <p className="text-white/40 text-xs tracking-widest uppercase">Recupero movimenti...</p>
+            </div>
+          ) : transactions && transactions.length > 0 ? (
+            <div className="mystical-card p-0 overflow-hidden border border-white/10 shadow-2xl shadow-black/40">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/5 bg-white/[0.02]">
+                      <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold">Evento</th>
+                      <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold">Data/Ora</th>
+                      <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold text-right">Importo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((tx) => {
+                      const date = new Date(tx.created_at)
+                      const isPositive = ['top_up', 'unlock_refund', 'bonus'].includes(tx.tx_type)
+                      const txLabels: Record<string, string> = {
+                        top_up: 'Ricarica Crediti',
+                        consult_lock: 'Prenotazione Consulto',
+                        consult_settle: 'Consulto Terminato',
+                        natal_advanced: 'Analisi Evolutiva',
+                        unlock_refund: 'Rimborso Crediti',
+                        bonus: 'Bonus Omaggio'
+                      }
+                      return (
+                        <tr key={tx.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors group">
+                          <td className="px-4 py-4">
+                            <p className="text-xs font-semibold text-white/90">{txLabels[tx.tx_type] || tx.tx_type}</p>
+                            {tx.reference_id && tx.reference_id.startsWith('cs_') && (
+                              <p className="text-[9px] text-white/20 font-mono mt-1 group-hover:text-white/40 transition-colors">Ref: {tx.reference_id.slice(0, 14)}...</p>
+                            )}
+                          </td>
+                          <td className="px-4 py-4">
+                            <p className="text-xs text-white/50">
+                              {date.toLocaleDateString('it-IT')} 
+                              <span className="text-[10px] ml-1.5 opacity-40 font-mono italic">{date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </p>
+                          </td>
+                          <td className={`px-4 py-4 text-right text-sm font-bold ${isPositive ? 'text-emerald-400' : 'text-amber-400'}`}>
+                            {isPositive ? '+' : ''}{tx.amount} <span className="text-[10px] font-normal opacity-50 ml-0.5">CR</span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="mystical-card p-8 border border-white/5 bg-white/[0.01] text-center">
+              <p className="text-white/30 text-sm italic">Nessun movimento registrato nel tuo diario astrale.</p>
+            </div>
+          )}
+        </motion.section>
+
 
         {!privileged && getApiBaseUrl() && (
           <p className="text-sm text-white/55 mb-6 flex flex-wrap items-center gap-2">
@@ -1203,72 +1275,7 @@ export default function Dashboard() {
               <SiteReviewComposer />
             </motion.section>
 
-            {/* Storico Transazioni (Diario degli Acquisti) */}
-            {!privileged && (
-              <motion.section
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.45 }}
-                className="mb-10"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <h2 className="font-serif text-xl font-bold text-white">Diario degli acquisti</h2>
-                  <div className="h-px flex-1 bg-white/10" />
-                </div>
-                
-                {transactionsLoading ? (
-                  <p className="text-white/40 text-sm">Recupero storico pagamenti...</p>
-                ) : transactions && transactions.length > 0 ? (
-                  <div className="mystical-card p-0 overflow-hidden border border-white/10">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-white/5 bg-white/[0.02]">
-                            <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold">Tipo</th>
-                            <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold">Data/Ora</th>
-                            <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold text-right">Importo</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {transactions.map((tx) => {
-                            const date = new Date(tx.created_at)
-                            const isPositive = ['top_up', 'unlock_refund'].includes(tx.tx_type)
-                            const txLabels: Record<string, string> = {
-                              top_up: 'Ricarica Crediti',
-                              consult_lock: 'Prenotazione Consulto',
-                              consult_settle: 'Consulto Terminato',
-                              natal_advanced: 'Analisi Evolutiva',
-                              unlock_refund: 'Rimborso Crediti'
-                            }
-                            return (
-                              <tr key={tx.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors">
-                                <td className="px-4 py-3">
-                                  <p className="text-xs font-medium text-white">{txLabels[tx.tx_type] || tx.tx_type}</p>
-                                  {tx.reference_id && tx.reference_id.startsWith('cs_') && (
-                                    <p className="text-[9px] text-white/20 font-mono mt-0.5">Stripe ref: {tx.reference_id.slice(0, 12)}...</p>
-                                  )}
-                                </td>
-                                <td className="px-4 py-3">
-                                  <p className="text-xs text-white/50">
-                                    {date.toLocaleDateString('it-IT')} 
-                                    <span className="text-[10px] ml-1.5 opacity-60 font-mono">{date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
-                                  </p>
-                                </td>
-                                <td className={`px-4 py-3 text-right text-xs font-bold ${isPositive ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                  {isPositive ? '+' : ''}{tx.amount} <span className="text-[10px] font-normal opacity-70">CR</span>
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-white/30 text-sm italic">Nessuna transazione registrata nel tuo diario.</p>
-                )}
-              </motion.section>
-            )}
+
           </>
         )}
 
