@@ -279,58 +279,58 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
 }
 
 export default function NatalChartPage() {
-  const { calculateFreeChart, syncNatalData, getMyCharts } = useAstrologyApi()
+  const { calculateFreeChart, syncNatalData, getMyCharts, getLatestChart } = useAstrologyApi()
   const { user } = useUser()
   const isLoggedIn = !!user
   
   const [loading, setLoading] = useState(false)
-  const [_error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<NatalChartResponse | null>(null)
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [city, setCity] = useState('')
   const [isFixed, setIsFixed] = useState(false)
 
-  // Calcolo / Sync Auto
+  // Calcolo / Recupero persistente all'avvio
   useEffect(() => {
     if (!isLoggedIn) return
 
     const initPersona = async () => {
       try {
+        // 1. Tentativo prioritario: recupero ultimo tema cristallizzato (ID Bridge)
+        const latest = await getLatestChart()
+        if (latest.chart) {
+           const c = latest.chart
+           setResult(c)
+           setDate(c.birthDate || '')
+           setTime(c.birthTime || '')
+           setCity(c.city || '')
+           // Cristallizzazione: se ha una data nel profilo, è immutabile
+           if (c.birthDate) setIsFixed(true)
+           return
+        }
+
+        // 2. Fallback: vecchi temi se getLatestChart è vuoto
         const charts = await getMyCharts()
         if (charts && charts.length > 0) {
-          const mainChart = charts[0]
-          setResult({
-            ...mainChart.chartData as any,
-            id: mainChart.id,
-            interpretation: mainChart.interpretation
-          })
-          setDate(mainChart.birthDate)
-          setTime(mainChart.birthTime)
-          setCity(mainChart.city)
+          const last = charts[0]
+          setResult({ ...last.chartData, id: last.id })
+          setDate(last.birthDate)
+          setTime(last.birthTime)
+          setCity(last.city)
           setIsFixed(true)
-        } else {
-          const pendingData = localStorage.getItem('valeria_pending_natal')
-          if (pendingData) {
-            const data = JSON.parse(pendingData)
-            const syncRes = await syncNatalData({ ...data, email: user?.primaryEmailAddress?.emailAddress })
-            console.log("[VALERIA] Sync successful:", syncRes)
-            if (syncRes?.id) {
-              setResult((prev: any) => ({ ...prev, id: syncRes.id }))
-            }
-            localStorage.removeItem('valeria_pending_natal')
-            initPersona()
-          }
         }
       } catch (err) {
-        console.error('[Init] Errore caricamento:', err)
+        console.error("[VALERIA] Errore init:", err)
       }
     }
     initPersona()
-  }, [isLoggedIn, getMyCharts, syncNatalData])
+  }, [isLoggedIn])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isFixed) return
+
     setLoading(true)
     setError(null)
     setResult(null)
@@ -340,11 +340,16 @@ export default function NatalChartPage() {
       const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim(), email } as any)
       console.log("[VALERIA] Chart calculated:", res)
       setResult(res)
-      localStorage.setItem('valeria_pending_natal', JSON.stringify({
-        birthDate: date,
-        birthTime: time.slice(0, 5),
-        city: city.trim()
-      }))
+      
+      if (isLoggedIn) {
+        // ID Bridge: Syncing data and getting the permanent chartId
+        const syncRes = await syncNatalData({ birthDate: date, birthTime: time, city: city.trim() })
+        if (syncRes.chartId) {
+          setResult({ ...res, id: syncRes.chartId })
+          setIsFixed(true) // Crystallize permanently
+        }
+      }
+      
       setTimeout(() => window.scrollBy({ top: 400, behavior: 'smooth' }), 200)
     } catch (err: any) {
       console.error("[VALERIA] Error:", err)
@@ -414,6 +419,11 @@ export default function NatalChartPage() {
                   </button>
                 )}
               </div>
+              {error && (
+                <p className="text-red-400 text-[10px] mt-4 font-bold uppercase tracking-widest text-center animate-pulse">
+                  ⚠️ {error}
+                </p>
+              )}
             </form>
           </motion.div>
 

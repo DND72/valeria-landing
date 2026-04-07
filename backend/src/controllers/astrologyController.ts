@@ -36,6 +36,49 @@ async function runNatalCalculation(birthDate: string, birthTime: string, city: s
   })
 }
 
+export const getLatestChart = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.auth?.userId
+  if (!userId) {
+    res.status(401).json({ error: 'Non autenticato' })
+    return
+  }
+
+  try {
+    const { pool } = await import('../db.js')
+    const result = await pool.query(
+      `SELECT 
+         nc.id, nc.chart_data, nc.interpretation,
+         bp.declared_birthday, bp.birth_time, bp.birth_city
+       FROM natal_charts nc
+       LEFT JOIN client_billing_profiles bp ON bp.clerk_user_id = nc.clerk_user_id
+       WHERE nc.clerk_user_id = $1 
+       ORDER BY nc.created_at DESC LIMIT 1`,
+      [userId]
+    )
+
+    if (result.rows.length === 0) {
+      res.json({ chart: null })
+      return
+    }
+
+    const row = result.rows[0]
+    res.json({
+      chart: {
+        ...row.chart_data,
+        chartId: row.id,
+        id: row.id,
+        interpretation: row.interpretation,
+        birthDate: row.declared_birthday ? new Date(row.declared_birthday).toISOString().split('T')[0] : null,
+        birthTime: row.birth_time,
+        city: row.birth_city
+      }
+    })
+  } catch (e) {
+    console.error('[astrology latest]', e)
+    res.status(500).json({ error: 'Errore durante il recupero dell\'ultimo tema' })
+  }
+}
+
 export const calculateNatalChart = async (req: Request, res: Response): Promise<void> => {
   try {
     const { birthDate, birthTime, city, email } = calcSchema.parse(req.body)

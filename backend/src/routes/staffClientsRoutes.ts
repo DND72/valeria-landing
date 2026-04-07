@@ -70,7 +70,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         is_verified: boolean
       }>(
         `SELECT
-            bp.clerk_user_id,
+          SELECT
+            COALESCE(bp.clerk_user_id, c.clerk_user_id) as clerk_user_id,
             COALESCE(bp.email_normalized, LOWER(TRIM(c.invitee_email))) AS email_norm,
             COALESCE(MAX(bp.first_name || ' ' || bp.last_name), MAX(c.invitee_name)) AS name_any,
             COUNT(c.id)::text AS total_consults,
@@ -78,9 +79,9 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             SUM(CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS free_consults,
             MAX(c.start_at) AS last_scheduled,
             COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified
-          FROM client_billing_profiles bp
-          FULL OUTER JOIN consults c ON LOWER(TRIM(c.invitee_email)) = bp.email_normalized OR c.clerk_user_id = bp.clerk_user_id
-          GROUP BY bp.clerk_user_id, email_norm`
+          FROM consults c
+          FULL OUTER JOIN client_billing_profiles bp ON bp.clerk_user_id = c.clerk_user_id OR bp.email_normalized = LOWER(TRIM(c.invitee_email))
+          GROUP BY 1, 2`
       )
 
       const profiles = await pool.query<{

@@ -34,6 +34,9 @@ export interface NatalChartResponse {
   interpretation?: string
   error?: string
   id?: string | number
+  birthDate?: string
+  birthTime?: string
+  city?: string
 }
 
 export interface SavedNatalChart {
@@ -119,5 +122,9 @@ export function useAstrologyApi() {
     })
   }
 
-  return { calculateFreeChart, generatePaidChart, getMyCharts, syncNatalData, generateSummary }
+  const getLatestChart = async (): Promise<{ chart: (NatalChartResponse & { chartId: string }) | null }> => {
+    return authFetch('/api/astrology/latest')
+  }
+
+  return { calculateFreeChart, generatePaidChart, getMyCharts, syncNatalData, generateSummary, getLatestChart }
 }
