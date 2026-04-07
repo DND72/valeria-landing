@@ -105,9 +105,13 @@ export default function PaidNatalCharts() {
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [city, setCity] = useState('')
+  const [gender, setGender] = useState<'M'|'F'|''>('')
 
   useEffect(() => {
     fetchCharts()
+    import('../api/me').then(m => m.useMeApi().getProfile().then(p => {
+      if (p?.gender) setGender(p.gender)
+    }))
   }, [])
 
   const fetchCharts = async () => {
@@ -127,11 +131,18 @@ export default function PaidNatalCharts() {
     setError(null)
     setViewingChart(null)
 
+    if (!gender) {
+      setError("Seleziona il genere per continuare.")
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await generatePaidChart({
         birthDate: date,
         birthTime: time,
         city: city.trim(),
+        gender: gender as 'M'|'F',
         type: 'advanced'
       })
       await fetchCharts()
@@ -194,37 +205,50 @@ export default function PaidNatalCharts() {
           <div className="space-y-8">
             <div className="bg-[#141418] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
               <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-white/50 font-medium ml-1">Data</label>
+                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Data</label>
                     <input
                       type="date"
                       required
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500/50 transition-colors"
+                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-white/50 font-medium ml-1">Ora Esatta</label>
+                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Ora Esatta</label>
                     <input
                       type="time"
                       required
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500/50 transition-colors"
+                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
                     />
                   </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs uppercase tracking-widest text-white/50 font-medium ml-1">Città</label>
+                  <div className="space-y-2">
+                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Città</label>
                     <input
                       type="text"
                       required
                       placeholder="Es. Roma"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500/50 transition-colors"
+                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Sesso</label>
+                    <select
+                      required
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as 'M'|'F')}
+                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
+                    >
+                      <option value="" disabled className="text-white/30">Select</option>
+                      <option value="M">Maschile (M)</option>
+                      <option value="F">Femminile (F)</option>
+                    </select>
                   </div>
                 </div>
 

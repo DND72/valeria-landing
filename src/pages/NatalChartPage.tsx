@@ -222,27 +222,36 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
           </div>
 
           {/* Griglia Pianeti */}
-          {data.pianeti && data.pianeti.length > 0 && (
-            <div className="mb-14">
-              <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
-                <span className="text-gold-400">☉</span> Posizioni Planetarie
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                {data.pianeti.map(p => (
-                  <div key={p.nome} className="group bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-2xl p-4 text-center cursor-default shadow-lg">
-                    <p className={`text-3xl mb-2 ${PLANET_COLOR[p.nome] || 'text-white'}`}>{PLANET_SYMBOLS[p.nome] || '✦'}</p>
-                    <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 font-bold">{p.nome}</p>
-                    <p className="font-serif text-lg text-white leading-tight mb-0.5">{p.segno}</p>
-                    <p className="text-[10px] text-gold-400/90 font-bold uppercase tracking-tighter">Casa {p.casa}</p>
-                    <p className="text-[10px] text-white/30 font-mono mt-1">{p.gradi.toFixed(1)}°</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {(() => {
+             const isBasic = localType === 'basic' || !localType
+             const displayPlanets = isBasic 
+               ? data.pianeti?.filter(p => ['Sole', 'Luna', 'Venere', 'Marte'].includes(p.nome)) 
+               : data.pianeti;
+
+             if (!displayPlanets || displayPlanets.length === 0) return null
+
+             return (
+               <div className="mb-14">
+                 <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
+                   <span className="text-gold-400">☉</span> Posizioni Planetarie {isBasic && <span className="text-xs text-white/50 tracking-widest uppercase font-sans font-normal">(Essenziali)</span>}
+                 </h3>
+                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                   {displayPlanets.map(p => (
+                     <div key={p.nome} className="group bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-2xl p-4 text-center cursor-default shadow-lg">
+                       <p className={`text-3xl mb-2 ${PLANET_COLOR[p.nome] || 'text-white'}`}>{PLANET_SYMBOLS[p.nome] || '✦'}</p>
+                       <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 font-bold">{p.nome}</p>
+                       <p className="font-serif text-lg text-white leading-tight mb-0.5">{p.segno}</p>
+                       <p className="text-[10px] text-gold-400/90 font-bold uppercase tracking-tighter">Casa {p.casa}</p>
+                       <p className="text-[10px] text-white/30 font-mono mt-1">{p.gradi.toFixed(1)}°</p>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             )
+          })()}
 
           {/* Cuspidi delle Case */}
-          {data.case && data.case.length > 0 && (
+          {localType === 'advanced' && data.case && data.case.length > 0 && (
             <div className="mb-14">
               <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
                 <span className="text-indigo-400">🏠</span> Cuspidi delle Case
@@ -345,6 +354,7 @@ export default function NatalChartPage() {
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [city, setCity] = useState('')
+  const [gender, setGender] = useState<'M' | 'F' | ''>('')
   const [isFixed, setIsFixed] = useState(false)
 
   // Calcolo / Recupero persistente all'avvio
@@ -383,15 +393,18 @@ export default function NatalChartPage() {
 
         // 3. Fallback Finale: Profilo Utente (Crystallization Fix)
         const profile = await getProfile()
-        if (profile && profile.birthDate) {
-           const d = profile.birthDate
-           const t = profile.birthTime || ''
-           const ct = profile.birthCity || ''
-           setDate(d)
-           setTime(t)
-           setCity(ct)
-           // Se mancano ora o città, non consideriamo ancora il profilo "cristallizzato" per l'UI
-           if (d && t && ct) setIsFixed(true)
+        if (profile) {
+           if (profile.gender) setGender(profile.gender)
+           if (profile.birthDate) {
+             const d = profile.birthDate
+             const t = profile.birthTime || ''
+             const ct = profile.birthCity || ''
+             setDate(d)
+             setTime(t)
+             setCity(ct)
+             // Se mancano ora o città, non consideriamo ancora il profilo "cristallizzato" per l'UI
+             if (d && t && ct) setIsFixed(true)
+           }
         }
       } catch (err) {
         console.error("[VALERIA] Errore init:", err)
@@ -404,19 +417,24 @@ export default function NatalChartPage() {
     e.preventDefault()
     if (isFixed && result) return
 
+    if (!gender) {
+      setError("Seleziona il tuo sesso di nascita per completare il calcolo.")
+      return
+    }
+
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
       const email = user?.primaryEmailAddress?.emailAddress
-      const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim(), email } as any)
+      const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim(), gender: gender as 'M'|'F', email } as any)
       console.log("[VALERIA] Chart calculated:", res)
       setResult(res)
       
       if (isLoggedIn) {
         // ID Bridge: Syncing data and getting the permanent chartId
-        const syncRes = await syncNatalData({ birthDate: date, birthTime: time, city: city.trim() })
+        const syncRes = await syncNatalData({ birthDate: date, birthTime: time, city: city.trim(), gender: gender as 'M'|'F' })
         if (syncRes.id) {
           setResult({ ...res, id: syncRes.id })
           setIsFixed(true) // Crystallize permanently
@@ -453,24 +471,40 @@ export default function NatalChartPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-10 mb-16 shadow-2xl relative overflow-hidden">
             <form onSubmit={handleSubmit} className="relative z-10">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
-                    Data di Nascita {(isFixed || date) && <span className="text-[10px] text-gold-500/60">✦</span>}
+                    Data {(isFixed || date) && <span className="text-[10px] text-gold-500/60">✦</span>}
                   </label>
-                  <input type="date" required disabled={!!date && isFixed} value={date} onChange={(e) => setDate(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${(!!date && isFixed) ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                  <input type="date" required disabled={!!date && isFixed} value={date} onChange={(e) => setDate(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white ${(!!date && isFixed) ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
                     Ora Esatta {(isFixed || (isLoggedIn && time)) && <span className="text-[10px] text-gold-500/60">✦</span>}
                   </label>
-                  <input type="time" required disabled={isFixed && !!time} value={time} onChange={(e) => setTime(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${(isFixed && !!time) ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                  <input type="time" required disabled={isFixed && !!time} value={time} onChange={(e) => setTime(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white ${(isFixed && !!time) ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
-                    Città di Nascita {(isFixed || (isLoggedIn && city)) && <span className="text-[10px] text-gold-500/60">✦</span>}
+                    Città {(isFixed || (isLoggedIn && city)) && <span className="text-[10px] text-gold-500/60">✦</span>}
                   </label>
-                  <input type="text" required disabled={isFixed && !!city} placeholder="Es. Roma" value={city} onChange={(e) => setCity(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${(isFixed && !!city) ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                  <input type="text" required disabled={isFixed && !!city} placeholder="Es. Roma" value={city} onChange={(e) => setCity(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white ${(isFixed && !!city) ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
+                    Sesso {(isFixed || gender) && <span className="text-[10px] text-gold-500/60">✦</span>}
+                  </label>
+                  <select 
+                    value={gender} 
+                    onChange={e => setGender(e.target.value as 'M'|'F')}
+                    disabled={isFixed && !!gender}
+                    className={`w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 ${(isFixed && !!gender) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    required
+                  >
+                    <option value="" disabled className="text-white/30">Seleziona</option>
+                    <option value="M">Maschile (M)</option>
+                    <option value="F">Femminile (F)</option>
+                  </select>
                 </div>
               </div>
 

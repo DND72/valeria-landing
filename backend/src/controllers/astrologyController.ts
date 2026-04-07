@@ -188,9 +188,26 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
     const { birthDate, birthTime, city, gender } = paidSchema.parse(req.body)
     const cost = 30 // Unified price for Evolutionary Analysis
 
-    // 1. Transaction to deduct credits
     const { pool } = await import('../db.js')
+    
+    // 1. Initial balance check (prevent useless LLM calls)
+    const balanceRes = await pool.query(
+      `SELECT balance_available FROM wallets WHERE clerk_user_id = $1`,
+      [userId]
+    )
+    if (!balanceRes.rows[0] || balanceRes.rows[0].balance_available < cost) {
+      res.status(400).json({ error: 'insufficient_funds' })
+      return
+    }
+
+    // 2. Astrology Engine + LLM Interpretation (Heavy lifting)
+    const chartData = await runNatalCalculation(birthDate, birthTime, city)
+    const { generateChartInterpretation } = await import('../lib/gemini.js')
+    const interpretation = await generateChartInterpretation(chartData, 'advanced', gender)
+
+    // 3. Final atomic deduction & save
     const dbClient = await pool.connect()
+    let chartId;
     
     try {
       await dbClient.query('BEGIN')
@@ -212,6 +229,16 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
         [userId, -cost, `natal_chart_advanced`]
       )
       
+      const insertRes = await dbClient.query(
+        `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
+         DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, gender = EXCLUDED.gender, created_at = now()
+         RETURNING id`,
+        [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation]
+      )
+      chartId = insertRes.rows[0].id
+
       await dbClient.query('COMMIT')
     } catch (dbErr) {
       await dbClient.query('ROLLBACK')
@@ -220,24 +247,14 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
       dbClient.release()
     }
 
-    const chartData = await runNatalCalculation(birthDate, birthTime, city)
-
-    // 3. LLM Interpretation (Always advanced for paid charts)
-    const { generateChartInterpretation } = await import('../lib/gemini.js')
-    const interpretation = await generateChartInterpretation(chartData, 'advanced', gender)
-
-    await pool.query(
-      `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
-       DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, gender = EXCLUDED.gender, created_at = now()`,
-      [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation]
-    )
-
     res.json({
       ...chartData,
+      id: chartId,
       interpretation,
-      chart_type: 'advanced'
+      chart_type: 'advanced',
+      birthDate,
+      birthTime,
+      city
     })
 
   } catch (error: any) {

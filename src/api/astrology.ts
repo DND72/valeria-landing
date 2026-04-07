@@ -5,6 +5,7 @@ export interface NatalChartRequest {
   birthDate: string // YYYY-MM-DD
   birthTime: string // HH:MM
   city: string
+  gender?: 'M' | 'F'
 }
 
 export interface Planet {
