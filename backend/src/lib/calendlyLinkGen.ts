@@ -53,7 +53,6 @@ function mapKindToCalendlySlug(kind: ConsultKind): string {
   const map: Record<ConsultKind, string> = {
     rapido: 'rapido',
     breve: 'breve',
-    online: 'online',
     completo: 'completo',
     coaching_intro: 'coaching-intro',
     coaching_30: 'coaching-30',
