@@ -2,7 +2,7 @@ import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { type FormEvent, useEffect, useRef, useState, useCallback } from 'react'
 import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom'
-import CalendlyEmbed from '../components/CalendlyEmbed'
+import { InternalBookingCalendar } from '../components/InternalBookingCalendar'
 import LegalDeclarationModal from '../components/LegalDeclarationModal'
 import PrivacySealNote from '../components/PrivacySealNote'
 import SiteReviewComposer from '../components/SiteReviewComposer'
@@ -69,10 +69,7 @@ export default function Dashboard() {
   const [taxLegalChecked, setTaxLegalChecked] = useState(false)
   const [taxMessage, setTaxMessage] = useState<string | null>(null)
 
-  // Booking Flow tramite Link Monouso Calendly
-  const [bookingUrl, setBookingUrl] = useState<string | null>(null)
-  const [bookingLoading, setBookingLoading] = useState(false)
-  const [bookingErr, setBookingErr] = useState<string | null>(null)
+  const [bookingConfirmed, setBookingConfirmed] = useState(false)
 
   // Stato Legale e Bonus
   const [ageStatus, setAgeStatus] = useState<{
@@ -130,8 +127,6 @@ export default function Dashboard() {
 
   function selectOfferCategory(cat: OfferCategory) {
     setOfferCategory(cat)
-    setBookingUrl(null)
-    setBookingErr(null)
     setSelectedConsult((prev) => {
       if (!prev) return null
       return consultOfferCategory(prev) === cat ? prev : null
@@ -837,8 +832,6 @@ export default function Dashboard() {
                         className="btn-gold text-sm px-4 py-2.5 inline-flex items-center justify-center gap-2 w-full mt-auto"
                         onClick={() => {
                           setSelectedConsult(c.kind)
-                          setBookingUrl(null)
-                          setBookingErr(null)
                           window.setTimeout(() => {
                             calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                           }, 80)
@@ -871,68 +864,42 @@ export default function Dashboard() {
                 I crediti vengono momentaneamente bloccati dal Wallet e si trasformano nel tuo appuntamento fisso.
               </p>
               <PrivacySealNote className="mb-4 max-w-2xl" />
-              <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate max-h-[min(700px,85vh)] bg-[#0d1627] min-h-[400px]">
-                {selectedConsult && !bookingUrl && (
-                  <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-[400px]">
-                     <span className="text-4xl shadow-gold shadow-lg rounded-full mb-4">💳</span>
-                     <h3 className="text-xl text-white font-serif mb-2">Sei a un passo dal Calendario</h3>
-                     <p className="text-white/50 text-sm mb-6 max-w-sm">Per aprire il calendario Calendly e scegliere l'orario, l'app prima verificherà ed impegnerà i Crediti (CR) necessari dal tuo Wallet.</p>
-                     
-                     {bookingErr && (
-                       <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-md text-sm mb-5">
-                         {bookingErr}
-                       </div>
-                     )}
-
-                     <div className="flex flex-col sm:flex-row gap-3">
-                       <button
-                         disabled={bookingLoading}
-                         onClick={async () => {
-                           setBookingLoading(true)
-                           setBookingErr(null)
-                           try {
-                             const res = await apiJson<{ bookingUrl: string }>(getToken, '/api/booking/start', {
-                               method: 'POST',
-                               body: JSON.stringify({ consultKind: selectedConsult })
-                             })
-                             setBookingUrl(res.bookingUrl)
-                           } catch (err: any) {
-                             setBookingErr(err.message || "Errore sconosciuto durante la prenotazione.")
-                           } finally {
-                             setBookingLoading(false)
-                           }
-                         }}
-                         className="btn-gold px-8 py-2.5 text-sm"
-                       >
-                         {bookingLoading ? 'Verifica disponibilità Wallet...' : 'Impegna Crediti ed Apri Calendario'}
-                       </button>
-                       {bookingErr && bookingErr.toLowerCase().includes('saldo') && (
-                         <Link to="/wallet" className="btn-outline px-6 py-2.5 text-sm whitespace-nowrap">
-                           Ricarica Saldo
-                         </Link>
-                       )}
-                     </div>
-                     <p className="text-white/30 text-[10px] mt-6 max-w-lg">Hai 60 minuti dal momento in cui clicchi qui per completare la scelta sulla data Calendly, poi i crediti verranno sbloccati ed in automatico torneranno nei 'Disponibili'.</p>
-                  </div>
-                )}
-                {bookingUrl && (
-                  <div className="w-full h-full relative">
+              <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate min-h-[400px]">
+                {bookingConfirmed ? (
+                  <div className="flex flex-col items-center justify-center p-8 sm:p-20 text-center animate-in fade-in zoom-in duration-500">
+                    <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 ring-4 ring-emerald-500/10">
+                      <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl text-white font-serif mb-3">Prenotazione Confermata!</h3>
+                    <p className="text-white/50 text-sm mb-8 max-w-sm">
+                      Le stelle si sono allineate. Valeria ti aspetta per il tuo consulto. Riceverai i dettagli via email a breve.
+                    </p>
                     <button 
-                       className="absolute top-2 right-4 z-50 text-xs bg-dark-500/80 px-3 py-1 rounded text-white/50 hover:text-white transition-colors"
-                       onClick={() => setBookingUrl(null)}
+                      onClick={() => {
+                        setBookingConfirmed(false)
+                        setSelectedConsult(null)
+                        void loadMyConsults()
+                        void loadWallet()
+                      }}
+                      className="btn-gold px-10 py-3 text-sm font-bold uppercase tracking-widest"
                     >
-                      Annulla e Chiudi
+                      Ottimo, torna ai miei consulti
                     </button>
-                    <CalendlyEmbed
-                      key={selectedConsult}
-                      url={bookingUrl}
-                      minHeight={700}
-                      prefillName={user.fullName || firstName}
-                      prefillEmail={user.primaryEmailAddress?.emailAddress || ''}
+                  </div>
+                ) : selectedConsult ? (
+                  <div className="w-full h-full">
+                    <InternalBookingCalendar 
+                      consultKind={selectedConsult}
+                      onConfirmed={() => {
+                        setBookingConfirmed(true)
+                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                      }}
+                      onCancel={() => setSelectedConsult(null)}
                     />
                   </div>
-                )}
-                {!selectedConsult && (
+                ) : (
                   <div
                     className="flex min-h-[400px] flex-col items-center justify-center gap-3 px-6 py-16 text-center text-white/45"
                     style={{ background: 'linear-gradient(180deg, rgba(13,27,42,0.5) 0%, rgba(6,6,8,0.9) 100%)' }}
