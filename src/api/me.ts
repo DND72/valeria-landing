@@ -7,6 +7,7 @@ export interface ClientProfile {
   birthTime: string | null
   birthCity: string | null
   taxId: string | null
+  gender: 'M' | 'F' | null
 }
 
 export function useMeApi() {
@@ -38,5 +39,12 @@ export function useMeApi() {
     return authFetch('/api/me/profile')
   }
 
-  return { getProfile }
+  const updateProfile = async (data: Partial<ClientProfile>): Promise<{ ok: boolean }> => {
+    return authFetch('/api/me/profile', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  return { getProfile, updateProfile }
 }

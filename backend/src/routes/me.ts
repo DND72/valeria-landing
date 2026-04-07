@@ -297,7 +297,7 @@ export function createMeRouter(pool: Pool): Router {
 
       // 2. Dati da Billing Profile
       const bpRes = await pool.query(
-        `SELECT first_name, last_name, declared_birthday, birth_time, birth_city, codice_fiscale 
+        `SELECT first_name, last_name, declared_birthday, birth_time, birth_city, codice_fiscale, gender 
          FROM client_billing_profiles WHERE clerk_user_id = $1`,
         [userId]
       )
@@ -305,7 +305,7 @@ export function createMeRouter(pool: Pool): Router {
 
       // 3. Fallback da Natal Charts
       const ncRes = await pool.query(
-        `SELECT birth_date, birth_time, city FROM natal_charts 
+        `SELECT birth_date, birth_time, city, gender FROM natal_charts 
          WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`,
         [userId]
       )
@@ -319,10 +319,48 @@ export function createMeRouter(pool: Pool): Router {
           : (clerkInfo.birthday || (nc?.birth_date ? new Date(nc.birth_date).toISOString().slice(0, 10) : null)),
         birthTime: bp?.birth_time || nc?.birth_time || null,
         birthCity: bp?.birth_city || nc?.city || null,
-        taxId: bp?.codice_fiscale || null
+        taxId: bp?.codice_fiscale || null,
+        gender: bp?.gender || nc?.gender || null
       })
     } catch (e) {
       console.error('[me profile]', e)
+      res.status(500).json({ error: 'Errore database' })
+    }
+  })
+
+  r.post('/profile', async (req, res) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+
+    const schema = z.object({
+      gender: z.enum(['M', 'F']).nullable().optional()
+    })
+
+    const parsed = schema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Dati non validi', details: parsed.error.flatten() })
+      return
+    }
+
+    const { gender } = parsed.data
+
+    try {
+      if (gender) {
+        await pool.query(
+          `INSERT INTO client_billing_profiles (clerk_user_id, gender, updated_at)
+           VALUES ($1, $2, now())
+           ON CONFLICT (clerk_user_id) DO UPDATE SET
+             gender = EXCLUDED.gender,
+             updated_at = now()`,
+          [userId, gender]
+        )
+      }
+      res.json({ ok: true })
+    } catch (e) {
+      console.error('[me POST profile]', e)
       res.status(500).json({ error: 'Errore database' })
     }
   })

@@ -32,14 +32,29 @@ export default function ProfilePage() {
   const [deleting, setDeleting] = useState(false)
 
   // Identity data
-  const { getProfile } = useMeApi()
+  const { getProfile, updateProfile } = useMeApi()
   const [profile, setProfile] = useState<ClientProfile | null>(null)
+  const [savingGender, setSavingGender] = useState(false)
 
   useEffect(() => {
     getProfile()
       .then(setProfile)
       .catch(err => console.error("Errore caricamento profilo:", err))
   }, [])
+
+  async function handleSetGender(g: 'M' | 'F') {
+    if (!profile || profile.gender) return
+    setSavingGender(true)
+    try {
+      await updateProfile({ gender: g })
+      setProfile(prev => prev ? { ...prev, gender: g } : prev)
+    } catch (err) {
+      console.error(err)
+      alert("Errore durante il salvataggio. Riprova.")
+    } finally {
+      setSavingGender(false)
+    }
+  }
 
   if (!isLoaded) {
     return (
@@ -225,6 +240,35 @@ export default function ProfilePage() {
                 label="Codice Fiscale" 
                 value={profile?.taxId || '—'} 
               />
+              
+              {profile?.gender ? (
+                <FieldRow label="Sesso / Genere" value={profile.gender === 'M' ? 'Maschile' : 'Femminile'} />
+              ) : (
+                <div className="bg-white/5 p-3 rounded-xl border border-gold-500/30 sm:col-span-2 shadow-[0_0_15px_rgba(212,160,23,0.1)]">
+                  <dt className="text-gold-400 text-[10px] uppercase tracking-widest mb-3 font-bold flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse" />
+                    Sesso alla nascita (Richiesto per IA)
+                  </dt>
+                  <dd className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void handleSetGender('F')}
+                      disabled={savingGender}
+                      className="flex-1 bg-black/40 hover:bg-gold-500/10 border border-white/10 hover:border-gold-500/40 text-white rounded-lg py-2.5 text-sm font-medium transition-all"
+                    >
+                      Femminile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleSetGender('M')}
+                      disabled={savingGender}
+                      className="flex-1 bg-black/40 hover:bg-gold-500/10 border border-white/10 hover:border-gold-500/40 text-white rounded-lg py-2.5 text-sm font-medium transition-all"
+                    >
+                      Maschile
+                    </button>
+                  </dd>
+                </div>
+              )}
             </dl>
 
             <div className="pt-4 border-t border-white/5">

@@ -40,6 +40,7 @@ type DetailPayload = {
   firstName: string | null
   lastName: string | null
   taxId: string | null
+  gender: 'M' | 'F' | null
   profile: {
     generalNotes: string | null
     lastInvoicedAt: string | null
@@ -55,6 +56,7 @@ type DetailPayload = {
   latestChart: {
     id: string
     interpretation: string | null
+    gender: 'M' | 'F' | null
   } | null
 }
 
@@ -103,6 +105,7 @@ export default function ClientDetailPage() {
   const [birthTime, setBirthTime] = useState('')
   const [birthCity, setBirthCity] = useState('')
   const [taxId, setTaxId] = useState('')
+  const [gender, setGender] = useState<'M' | 'F' | ''>('')
 
   const load = useCallback(async () => {
     if (!apiConfigured || (!email && !clerkId)) {
@@ -125,6 +128,7 @@ export default function ClientDetailPage() {
       setBirthTime(d.birthTime ?? '')
       setBirthCity(d.birthCity ?? '')
       setTaxId(d.taxId ?? '')
+      setGender(d.gender ?? '')
     } catch (e) {
       setError(e instanceof ApiError ? String(e.message) : 'Errore caricamento')
       setData(null)
@@ -171,7 +175,8 @@ export default function ClientDetailPage() {
           declaredBirthday: birthday || null,
           birthTime: birthTime || null,
           birthCity: birthCity || null,
-          taxId: taxId.trim() || null 
+          taxId: taxId.trim() || null,
+          gender: gender || null
         }),
       })
       await load()
@@ -371,6 +376,33 @@ export default function ClientDetailPage() {
                     className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm font-mono text-gold-200 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none uppercase transition-all"
                   />
                 </label>
+                <div className="md:col-span-2">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-2">Sesso (Obbligatorio per personalizzazione e CF)</span>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setGender('M')}
+                      className={`flex-1 py-2.5 rounded-lg border text-sm transition-all flex items-center justify-center gap-2 ${
+                        gender === 'M'
+                          ? 'bg-gold-500/20 border-gold-500 text-gold-200'
+                          : 'bg-black/40 border-white/10 text-white/40 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-lg">♂</span> Maschio
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGender('F')}
+                      className={`flex-1 py-2.5 rounded-lg border text-sm transition-all flex items-center justify-center gap-2 ${
+                        gender === 'F'
+                          ? 'bg-pink-500/20 border-pink-500 text-pink-200'
+                          : 'bg-black/40 border-white/10 text-white/40 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-lg">♀</span> Femmina
+                    </button>
+                  </div>
+                </div>
               </div>
               <button
                 type="button"

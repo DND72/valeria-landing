@@ -11,6 +11,7 @@ const calcSchema = z.object({
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, use YYYY-MM-DD"),
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format, use HH:MM"),
   city: z.string().min(2, "City name must be at least 2 characters"),
+  gender: z.enum(['M', 'F'], { required_error: "Il sesso (M/F) è obbligatorio" }),
   email: z.string().email().optional()
 })
 
@@ -82,7 +83,7 @@ export const getLatestChart = async (req: Request, res: Response): Promise<void>
 
 export const calculateNatalChart = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { birthDate, birthTime, city, email } = calcSchema.parse(req.body)
+    const { birthDate, birthTime, city, gender, email } = calcSchema.parse(req.body)
     const userId = req.auth?.userId
 
     // Se l'utente è loggato, verifichiamo prima se ha già un tema salvato
@@ -114,7 +115,7 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
 
     if (userId) {
       const { generateChartInterpretation } = await import('../lib/gemini.js')
-      interpretation = await generateChartInterpretation(result, 'basic')
+      interpretation = await generateChartInterpretation(result, 'basic', gender)
       
       // 1. Assicuriamoci che l'utente abbia un Wallet e un Profilo (Inizializzazione atomica)
       const { pool } = await import('../db.js')
@@ -131,25 +132,26 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
       if (email) {
         const normEmail = email.toLowerCase().trim();
         await pool.query(
-          `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, declared_birthday, birth_time, birth_city, updated_at)
-           VALUES ($1, $2, $3::date, $4, $5, now())
+          `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, declared_birthday, birth_time, birth_city, gender, updated_at)
+           VALUES ($1, $2, $3::date, $4, $5, $6, now())
            ON CONFLICT (clerk_user_id) DO UPDATE SET 
               email_normalized = COALESCE(client_billing_profiles.email_normalized, EXCLUDED.email_normalized),
               declared_birthday = COALESCE(client_billing_profiles.declared_birthday, EXCLUDED.declared_birthday),
               birth_time = COALESCE(client_billing_profiles.birth_time, EXCLUDED.birth_time),
               birth_city = COALESCE(client_billing_profiles.birth_city, EXCLUDED.birth_city),
+              gender = COALESCE(client_billing_profiles.gender, EXCLUDED.gender),
               updated_at = now()`,
-          [userId, normEmail, birthDate, birthTime, city]
+          [userId, normEmail, birthDate, birthTime, city, gender]
         )
       }
 
       const insertRes = await pool.query(
-        `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
-         DO UPDATE SET interpretation = EXCLUDED.interpretation, created_at = now()
+         DO UPDATE SET interpretation = EXCLUDED.interpretation, gender = EXCLUDED.gender, created_at = now()
          RETURNING id`,
-        [userId, 'basic', birthDate, birthTime, city, result, interpretation]
+        [userId, 'basic', birthDate, birthTime, city, gender, result, interpretation]
       )
       chartId = insertRes.rows[0]?.id
     }
@@ -183,7 +185,7 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
   }
 
   try {
-    const { birthDate, birthTime, city } = paidSchema.parse(req.body)
+    const { birthDate, birthTime, city, gender } = paidSchema.parse(req.body)
     const cost = 30 // Unified price for Evolutionary Analysis
 
     // 1. Transaction to deduct credits
@@ -222,14 +224,14 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
 
     // 3. LLM Interpretation (Always advanced for paid charts)
     const { generateChartInterpretation } = await import('../lib/gemini.js')
-    const interpretation = await generateChartInterpretation(chartData, 'advanced')
+    const interpretation = await generateChartInterpretation(chartData, 'advanced', gender)
 
     await pool.query(
-      `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
-       DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, created_at = now()`,
-      [userId, 'advanced', birthDate, birthTime, city, chartData, interpretation]
+       DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, gender = EXCLUDED.gender, created_at = now()`,
+      [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation]
     )
 
     res.json({
@@ -259,6 +261,7 @@ export const syncNatal = async (req: Request, res: Response) => {
       birthDate: z.string(),
       birthTime: z.string(),
       city: z.string(),
+      gender: z.enum(['M', 'F']),
       email: z.string().email().optional()
     })
 
@@ -268,7 +271,7 @@ export const syncNatal = async (req: Request, res: Response) => {
       return
     }
 
-    const { birthDate, birthTime, city, email } = parsed.data
+    const { birthDate, birthTime, city, gender, email } = parsed.data
     const { pool } = await import('../db.js')
 
     try {
@@ -310,16 +313,17 @@ export const syncNatal = async (req: Request, res: Response) => {
       console.log(`[SYNC] Syncing billing profile for user ${userId}, email provided: ${normEmail}`);
 
       const upRes = await pool.query(
-        `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, declared_birthday, birth_time, birth_city, updated_at)
-         VALUES ($1, $2, $3::date, $4, $5, now())
+        `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, declared_birthday, birth_time, birth_city, gender, updated_at)
+         VALUES ($1, $2, $3::date, $4, $5, $6, now())
          ON CONFLICT (clerk_user_id) DO UPDATE SET 
             email_normalized = COALESCE(client_billing_profiles.email_normalized, EXCLUDED.email_normalized),
             declared_birthday = COALESCE(client_billing_profiles.declared_birthday, EXCLUDED.declared_birthday),
             birth_time = COALESCE(client_billing_profiles.birth_time, EXCLUDED.birth_time),
             birth_city = COALESCE(client_billing_profiles.birth_city, EXCLUDED.birth_city),
+            gender = COALESCE(client_billing_profiles.gender, EXCLUDED.gender),
             updated_at = now()
          RETURNING *`,
-        [userId, normEmail, birthDate, birthTime, city]
+        [userId, normEmail, birthDate, birthTime, city, gender]
       )
       console.log(`[SYNC] Upsert completed. Rows affected: ${upRes.rowCount}. Birthday in DB: ${upRes.rows[0]?.declared_birthday}`);
 
@@ -333,13 +337,13 @@ export const syncNatal = async (req: Request, res: Response) => {
         try {
           const result = await runNatalCalculation(birthDate, birthTime, city)
           const { generateChartInterpretation } = await import('../lib/gemini.js')
-          const interpretation = await generateChartInterpretation(result, 'basic')
+          const interpretation = await generateChartInterpretation(result, 'basic', gender)
           
           const insRes = await pool.query(
-            `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING id`,
-            [userId, 'basic', birthDate, birthTime, city, result, interpretation]
+            [userId, 'basic', birthDate, birthTime, city, gender, result, interpretation]
           )
           finalId = insRes.rows[0]?.id
           created = true
@@ -429,7 +433,7 @@ export const generateSummaryForExistingChart = async (req: Request, res: Respons
     
     // 1. Verifica proprietà
     const { rows } = await pool.query(
-      `SELECT chart_data, interpretation FROM natal_charts 
+      `SELECT chart_data, interpretation, gender FROM natal_charts 
        WHERE id = $1 AND clerk_user_id = $2`,
       [chartId, userId]
     )
@@ -444,7 +448,7 @@ export const generateSummaryForExistingChart = async (req: Request, res: Respons
 
     // 2. Genera Interpretazione tramite Gemini
     const { generateChartInterpretation } = await import('../lib/gemini.js')
-    const interpretation = await generateChartInterpretation(chart.chart_data, 'basic')
+    const interpretation = await generateChartInterpretation(chart.chart_data, 'basic', chart.gender)
 
     // 3. Salva nel DB
     await pool.query(
