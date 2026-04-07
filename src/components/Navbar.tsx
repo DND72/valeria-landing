@@ -73,7 +73,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <ul className="hidden md:flex items-center gap-3 list-none p-0 m-0 shrink min-w-0">
+        <ul className="hidden lg:flex items-center gap-3 list-none p-0 m-0 shrink min-w-0">
           {links.map((link) => (
             <li key={link.href}>
               {link.href.startsWith('#') ? (
@@ -95,7 +95,7 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <div className="hidden md:flex items-center gap-3 shrink-0">
+        <div className="hidden lg:flex items-center gap-3 shrink-0">
           {isLoaded && user ? (
             <button
               type="button"
@@ -132,7 +132,7 @@ export default function Navbar() {
 
         <button
           type="button"
-          className="md:hidden text-white/80 hover:text-gold-400 transition-colors shrink-0"
+          className="lg:hidden text-white/80 hover:text-gold-400 transition-colors shrink-0"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Menu"
         >
@@ -152,7 +152,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-dark-300/95 backdrop-blur-md border-t border-gold-600/20"
+            className="lg:hidden bg-dark-300/95 backdrop-blur-md border-t border-gold-600/20"
           >
             <ul className="flex flex-col px-6 py-4 gap-4 list-none p-0 m-0">
               {links.map((link) => (
