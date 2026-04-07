@@ -228,10 +228,11 @@ export const syncNatal = async (req: Request, res: Response) => {
         return
       }
 
-      // 1. Inserisce o Aggiorna il profilo billing (Sincronizzando l'email per il CRM)
-      const normEmail = email?.toLowerCase().trim() || "";
+      // 1. Inserisce o Aggiorna il profilo billing (Sincronizzando se presente l'email, altrimenti solo ID)
+      const normEmail = email?.toLowerCase().trim() || null;
+      console.log(`[SYNC] Syncing billing profile for user ${userId}, email provided: ${normEmail}`);
 
-      await pool.query(
+      const upRes = await pool.query(
         `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, declared_birthday, birth_time, birth_city, updated_at)
          VALUES ($1, $2, $3::date, $4, $5, now())
          ON CONFLICT (clerk_user_id) DO UPDATE SET 
@@ -239,9 +240,11 @@ export const syncNatal = async (req: Request, res: Response) => {
             declared_birthday = COALESCE(client_billing_profiles.declared_birthday, EXCLUDED.declared_birthday),
             birth_time = COALESCE(client_billing_profiles.birth_time, EXCLUDED.birth_time),
             birth_city = COALESCE(client_billing_profiles.birth_city, EXCLUDED.birth_city),
-            updated_at = now()`,
+            updated_at = now()
+         RETURNING *`,
         [userId, normEmail, birthDate, birthTime, city]
       )
+      console.log(`[SYNC] Upsert completed. Rows affected: ${upRes.rowCount}. Birthday in DB: ${upRes.rows[0]?.declared_birthday}`);
 
       // 2. Verifica se ha già un tema natale. Se no, lo creiamo in automatico (Funnel conversion)
       const existing = await pool.query(`SELECT id FROM natal_charts WHERE clerk_user_id = $1 LIMIT 1`, [userId])

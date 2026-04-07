@@ -34,7 +34,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
     const sort = req.query.sort === 'recent' ? 'recent' : 'alpha'
     try {
       // --- 1. RECUPERO UTENTI DA CLERK ---
-      let clerkDict = new Map<string, { firstName: string | null; lastName: string | null; lastSignInAt: number | null; clerkId: string }>()
+      let clerkDict = new Map<string, { firstName: string | null; lastName: string | null; username: string | null; lastSignInAt: number | null; clerkId: string; email: string | null }>()
       if (clerkClient) {
         try {
           const clerkBatch = await clerkClient.users.getUserList({ limit: 499 })
@@ -42,15 +42,16 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             const primaryId = u.primaryEmailAddressId
             const emails = u.emailAddresses ?? []
             const primary = (primaryId && emails.find((e) => e.id === primaryId)?.emailAddress) || emails[0]?.emailAddress
-            if (typeof primary === 'string' && primary.trim()) {
-              const norm = primary.trim().toLowerCase()
-              clerkDict.set(norm, {
-                firstName: u.firstName,
-                lastName: u.lastName,
-                lastSignInAt: u.lastSignInAt,
-                clerkId: u.id
-              })
-            }
+            const norm = primary ? primary.trim().toLowerCase() : null
+            
+            clerkDict.set(u.id, {
+              firstName: u.firstName,
+              lastName: u.lastName,
+              username: u.username,
+              lastSignInAt: u.lastSignInAt,
+              clerkId: u.id,
+              email: norm
+            })
           }
         } catch (ce) {
           console.error('[clerk sync error]', ce)
@@ -59,7 +60,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
 
       // --- 2. RECUPERO DATI DA DB (CONSULTI E BILLING) ---
       const { rows } = await pool.query<{
-        email_norm: string
+        clerk_user_id: string | null
+        email_norm: string | null
         name_any: string | null
         total_consults: string
         paid_consults: string
@@ -68,6 +70,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         is_verified: boolean
       }>(
         `SELECT
+            bp.clerk_user_id,
             COALESCE(bp.email_normalized, LOWER(TRIM(c.invitee_email))) AS email_norm,
             COALESCE(MAX(bp.first_name || ' ' || bp.last_name), MAX(c.invitee_name)) AS name_any,
             COUNT(c.id)::text AS total_consults,
@@ -76,8 +79,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             MAX(c.start_at) AS last_scheduled,
             COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified
           FROM client_billing_profiles bp
-          FULL OUTER JOIN consults c ON LOWER(TRIM(c.invitee_email)) = bp.email_normalized
-          GROUP BY 1`
+          FULL OUTER JOIN consults c ON LOWER(TRIM(c.invitee_email)) = bp.email_normalized OR c.clerk_user_id = bp.clerk_user_id
+          GROUP BY bp.clerk_user_id, email_norm`
       )
 
       const profiles = await pool.query<{
@@ -99,7 +102,9 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       type Row = {
-        email: string
+        clerkId: string | null
+        email: string | null
+        username: string | null
         name: string | null
         totalConsults: number
         paidConsults: number
@@ -115,17 +120,34 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       // --- 3. MERGE DATI ---
-      // Partiamo dalle email trovate nel DB (che include chi ha consulti e chi è in billing_profiles)
-      const dbEmails = new Set(rows.map(r => r.email_norm))
+      // Partiamo dalle email e clerkId trovati nel DB
+      const dbClerkIds = new Set(rows.map(r => r.clerk_user_id).filter(Boolean) as string[])
       
       const list: Row[] = rows.map((row) => {
+        const cId = row.clerk_user_id
         const email = row.email_norm
-        const clerkInfo = clerkDict.get(email)
-        const lastInv = invMap.get(email) ?? null
+        
+        // Cerchiamo le info di Clerk via ID (priorità) o via email
+        let clerkInfo = cId ? clerkDict.get(cId) : null
+        if (!clerkInfo && email) {
+          // Fallback: se avevamo solo l'email (vecchio clienteguest), 
+          // proviamo a vedere se in clerkDict c'è qualcuno con quell'email
+          for (const info of clerkDict.values()) {
+            if (info.email === email) {
+              clerkInfo = info
+              break
+            }
+          }
+        }
+
+        const lastInv = email ? (invMap.get(email) ?? null) : null
         const invoiced = invoicedThisMonthRome(lastInv)
+        const finalClerkId = cId || clerkInfo?.clerkId || null
         
         return {
+          clerkId: finalClerkId,
           email,
+          username: clerkInfo?.username || null,
           name: clerkInfo ? `${clerkInfo.firstName || ''} ${clerkInfo.lastName || ''}`.trim() || row.name_any : row.name_any,
           totalConsults: Number(row.total_consults),
           paidConsults: Number(row.paid_consults),
@@ -136,16 +158,18 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           isRegistered: !!clerkInfo,
           isVerified: row.is_verified || false,
           lastSignInAt: clerkInfo?.lastSignInAt ? new Date(clerkInfo.lastSignInAt).toISOString() : null,
-          balance: clerkInfo?.clerkId ? (walletsMap.get(clerkInfo.clerkId)?.balance ?? null) : null,
-          lockedBalance: clerkInfo?.clerkId ? (walletsMap.get(clerkInfo.clerkId)?.lockedBalance ?? null) : null,
+          balance: finalClerkId ? (walletsMap.get(finalClerkId)?.balance ?? null) : null,
+          lockedBalance: finalClerkId ? (walletsMap.get(finalClerkId)?.lockedBalance ?? null) : null,
         }
       })
 
       // Aggiungiamo eventuali utenti Clerk che NON sono ancora nel DB (0 consulti, mai entrati in dashboard)
-      for (const [email, info] of clerkDict.entries()) {
-        if (!dbEmails.has(email)) {
+      for (const [cId, info] of clerkDict.entries()) {
+        if (!dbClerkIds.has(cId)) {
           list.push({
-            email,
+            clerkId: cId,
+            email: info.email,
+            username: info.username || null,
             name: `${info.firstName || ''} ${info.lastName || ''}`.trim() || 'Utente registrato',
             totalConsults: 0,
             paidConsults: 0,
@@ -163,7 +187,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       if (sort === 'alpha') {
-        list.sort((a, b) => a.email.localeCompare(b.email, 'it'))
+        list.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'it'))
       } else {
         list.sort((a, b) => {
           const ta = a.lastScheduledAt ? new Date(a.lastScheduledAt).getTime() : 0
@@ -184,22 +208,34 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
   })
 
   r.get('/clients/detail', async (req, res) => {
-    const raw = req.query.email
-    if (typeof raw !== 'string' || !raw.trim()) {
-      res.status(400).json({ error: 'Parametro email mancante' })
+    const rawEmail = req.query.email
+    const rawClerkId = req.query.clerkId
+    
+    if ((typeof rawEmail !== 'string' || !rawEmail.trim()) && (typeof rawClerkId !== 'string' || !rawClerkId.trim())) {
+      res.status(400).json({ error: 'Specifica un parametro email o clerkId' })
       return
     }
-    const email = normalizeEmail(raw)
+
+    const email = rawEmail ? normalizeEmail(rawEmail as string) : null
+    const clerkId = rawClerkId as string || null
+
     try {
-      const { rows: consultRows } = await pool.query(
-        `SELECT id, clerk_user_id, calendly_event_uri, status, is_free_consult,
-                meeting_join_url, meeting_provider, invitee_email, invitee_name,
-                start_at, end_at, created_at, updated_at
-         FROM consults
-         WHERE LOWER(TRIM(invitee_email)) = $1
-         ORDER BY start_at DESC NULLS LAST, created_at DESC`,
-        [email]
-      )
+      // 1. Cerchiamo i consulti via email o via clerkId
+      let consultResult: any;
+      if (email) {
+        consultResult = await pool.query(
+          `SELECT id, clerk_user_id, status, is_free_consult, invitee_email, invitee_name, start_at, end_at, created_at, updated_at
+           FROM consults WHERE LOWER(TRIM(invitee_email)) = $1 ORDER BY start_at DESC`,
+          [email]
+        )
+      } else {
+        consultResult = await pool.query(
+          `SELECT id, clerk_user_id, status, is_free_consult, invitee_email, invitee_name, start_at, end_at, created_at, updated_at
+           FROM consults WHERE clerk_user_id = $1 ORDER BY start_at DESC`,
+          [clerkId]
+        )
+      }
+      const consultRows = consultResult.rows;
 
       // Se non ci sono consulti, non è un errore, ma consultRows sarà []
 
@@ -219,45 +255,62 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         notesByConsult.get(cid)!.push(n)
       }
 
-      const prof = await pool.query(
-        `SELECT email_normalized, general_notes, last_invoiced_at, updated_at, manual_bonus_credits, unlock_review_override
-         FROM client_profiles WHERE email_normalized = $1`,
-        [email]
-      )
-      const profile = prof.rows[0] ?? null
+      let profile: any = null;
+      if (email) {
+        const profRes = await pool.query(
+          `SELECT email_normalized, general_notes, last_invoiced_at, updated_at, manual_bonus_credits, unlock_review_override
+           FROM client_profiles WHERE email_normalized = $1`,
+          [email]
+        )
+        profile = profRes.rows[0] || null
+      }
 
-      // Cerchiamo il profilo specifico per questa email
-      const bpLookup = await pool.query(
-        `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday, birth_time, birth_city, codice_fiscale
-         FROM client_billing_profiles
-         WHERE email_normalized = $1 LIMIT 1`,
-        [email]
-      )
-      const bp = bpLookup.rows[0]
+      // Cerchiamo il profilo billing via email o via clerkId (che è UNIQUE)
+      let bpResult: any;
+      if (clerkId) {
+        bpResult = await pool.query(
+          `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday, birth_time, birth_city, codice_fiscale
+           FROM client_billing_profiles WHERE clerk_user_id = $1 LIMIT 1`,
+          [clerkId]
+        )
+      } else {
+        bpResult = await pool.query(
+          `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday, birth_time, birth_city, codice_fiscale
+           FROM client_billing_profiles WHERE email_normalized = $1 LIMIT 1`,
+          [email]
+        )
+      }
+      const bp = bpResult.rows[0]
       let ageVerified = bp?.age_verified ?? false
       let ageVerifiedAt: string | null = bp?.age_verified_at ? new Date(bp.age_verified_at).toISOString() : null
       let declaredBirthday: string | null = bp?.declared_birthday ? new Date(bp.declared_birthday).toISOString().slice(0, 10) : null
+      let birthTime: string | null = bp?.birth_time || null;
+      let birthCity: string | null = bp?.birth_city || null;
       let firstName = bp?.first_name ?? null
       let lastName = bp?.last_name ?? null
       let taxId = bp?.codice_fiscale ?? null
       let displayName = bp ? `${bp.first_name || ''} ${bp.last_name || ''}`.trim() : (consultRows[0]?.invitee_name ?? null)
 
-      if (!bp && consultRows.length > 0) {
-        // Se non abbiamo un profilo billing ma abbiamo consulti, proviamo a cercare via clerk_user_id dai consulti
-        const clerkUserIds = [...new Set(
-          consultRows
-            .map((c: Record<string, unknown>) => c.clerk_user_id)
-            .filter((id): id is string => typeof id === 'string' && id.length > 0)
-        )]
-        if (clerkUserIds.length > 0) {
-          // fallback placeholder
-        }
-      }
-
       let clrkIdToUse: string | null = bp?.clerk_user_id ?? null
       if (!clrkIdToUse) {
         const consultClerkIds = consultRows.map((c: { clerk_user_id?: string }) => c.clerk_user_id).filter(Boolean) as string[]
         if (consultClerkIds.length > 0) clrkIdToUse = consultClerkIds[0]
+      }
+
+      // --- NUOVA LOGICA FALLBACK: Se mancano i dati nel profilo, li cerchiamo nell'ultimo tema natale ---
+      if (!declaredBirthday || !birthTime || !birthCity) {
+        if (clrkIdToUse) {
+          const lastChart = await pool.query(
+            `SELECT birth_date, birth_time, city FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`,
+            [clrkIdToUse]
+          )
+          if (lastChart.rows.length > 0) {
+            const lc = lastChart.rows[0];
+            if (!declaredBirthday) declaredBirthday = lc.birth_date ? new Date(lc.birth_date).toISOString().slice(0, 10) : null;
+            if (!birthTime) birthTime = lc.birth_time || null;
+            if (!birthCity) birthCity = lc.city || null;
+          }
+        }
       }
       
       let walletInfo: { balance: number; lockedBalance: number } | null = null
@@ -281,8 +334,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         ageVerified,
         ageVerifiedAt,
         declaredBirthday,
-        birthTime: bp?.birth_time ?? null,
-        birthCity: bp?.birth_city ?? null,
+        birthTime,
+        birthCity,
         profile: profile
           ? {
               generalNotes: profile.general_notes,

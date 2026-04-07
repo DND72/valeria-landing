@@ -28,6 +28,7 @@ type ConsultDetail = {
 
 type DetailPayload = {
   email: string
+  username: string | null
   displayName: string | null
   ageVerified: boolean
   ageVerifiedAt: string | null
@@ -62,7 +63,13 @@ function formatWhen(iso: string | null): string {
 
 export default function ClientDetailPage() {
   const { email: emailParam } = useParams()
-  const email = emailParam ? decodeURIComponent(emailParam) : ''
+  const search = typeof window !== 'undefined' ? window.location.search : ''
+  const searchParams = new URLSearchParams(search)
+  const clerkIdParam = searchParams.get('clerkId')
+
+  const email = emailParam && emailParam !== 'detail' ? decodeURIComponent(emailParam) : ''
+  const clerkId = clerkIdParam || ''
+
   const { isLoaded, user } = useUser()
   const { getToken } = useAuth()
   const navigate = useNavigate()
@@ -88,14 +95,17 @@ export default function ClientDetailPage() {
   const [taxId, setTaxId] = useState('')
 
   const load = useCallback(async () => {
-    if (!apiConfigured || !email) {
+    if (!apiConfigured || (!email && !clerkId)) {
       setLoading(false)
       return
     }
     setError(null)
     setLoading(true)
     try {
-      const q = new URLSearchParams({ email })
+      const q = new URLSearchParams()
+      if (email) q.set('email', email)
+      if (clerkId) q.set('clerkId', clerkId)
+      
       const d = await apiJson<DetailPayload>(getToken, `/api/staff/clients/detail?${q.toString()}`)
       setData(d)
       setGeneralNotes(d.profile?.generalNotes ?? '')
@@ -247,11 +257,14 @@ export default function ClientDetailPage() {
         </div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-white mb-1">
+          <h1 className="font-serif text-2xl md:text-3xl font-bold text-white mb-1 flex items-center gap-3">
             {data?.displayName || 'Cliente'}
+            {data?.username && (
+              <span className="text-gold-500/50 text-lg font-sans font-normal">@{data.username}</span>
+            )}
           </h1>
           <div className="flex flex-wrap gap-2 items-center mb-6">
-            <p className="text-white/45 text-sm break-all">{email}</p>
+            <p className="text-white/45 text-sm break-all">{email || data?.email || 'Login via Username'}</p>
             {data?.ageVerified ? (
               <span className="text-[10px] bg-emerald-600/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-600/30">
                 VM18 Verificato

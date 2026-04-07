@@ -8,7 +8,9 @@ import { getApiBaseUrl } from '../constants/api'
 
 type SortMode = 'alpha' | 'recent'
 type ClientRow = {
-  email: string
+  clerkId?: string | null
+  email: string | null
+  username: string | null
   name: string | null
   totalConsults: number
   paidConsults: number
@@ -178,7 +180,7 @@ export default function ClientManagementPage() {
                 )}
                 {!loading &&
                   clients.map((c) => (
-                    <tr key={c.email} className="border-t border-white/[0.06] hover:bg-white/[0.03]">
+                    <tr key={c.clerkId || c.email || 'guest'} className="border-t border-white/[0.06] hover:bg-white/[0.03]">
                       <td className="py-2.5 px-3">
                         <div className="flex flex-col gap-1">
                           {c.isRegistered ? (
@@ -192,9 +194,10 @@ export default function ClientManagementPage() {
                         </div>
                       </td>
                       <td className="py-2.5 px-3">
-                        <div className="text-white/90">{c.name || '—'}</div>
+                        <div className="text-white/90">{c.name || (c.isRegistered ? 'Utente senza nome' : '—')}</div>
+                        {c.username && <div className="text-gold-500/50 text-[10px]">@{c.username}</div>}
                       </td>
-                      <td className="py-2.5 px-3 text-white/55 text-xs break-all">{c.email}</td>
+                      <td className="py-2.5 px-3 text-white/55 text-xs break-all">{c.email || <span className="italic opacity-30 text-[10px]">N/D (Username login)</span>}</td>
                       <td className="py-2.5 px-3 text-center text-white/70">
                         {c.totalConsults > 0 ? (
                           <span className="font-medium text-gold-400/90">{c.totalConsults}</span>
@@ -237,12 +240,21 @@ export default function ClientManagementPage() {
                         )}
                       </td>
                       <td className="py-2.5 px-3">
-                        <Link
-                          to={`/gestione-clienti/${encodeURIComponent(c.email)}`}
-                          className="text-gold-500/90 hover:underline text-xs whitespace-nowrap"
-                        >
-                          Scheda →
-                        </Link>
+                        {c.email ? (
+                          <Link
+                            to={`/gestione-clienti/${encodeURIComponent(c.email)}`}
+                            className="text-gold-500/90 hover:underline text-xs whitespace-nowrap"
+                          >
+                            Scheda →
+                          </Link>
+                        ) : c.clerkId ? (
+                          <Link
+                             to={`/gestione-clienti/detail?clerkId=${c.clerkId}`}
+                             className="text-gold-500/90 hover:underline text-xs whitespace-nowrap"
+                          >
+                            Scheda →
+                          </Link>
+                        ) : null}
                       </td>
                     </tr>
                   ))}
