@@ -37,7 +37,7 @@ ${chartData.case.map((c: any) => `- Casa ${c.numero}: ${c.segno} (${(c.gradi || 
 
 Scrivi l'analisi.`
 
-  // Usiamo lo stesso modello e lo stesso metodo dei Tarocchi che funzionano
+  // Torniamo al modello 2.0 che è quello abilitato per questa chiave (come nei Tarocchi)
   const model = client.getGenerativeModel({ 
     model: 'gemini-2.0-flash',
     systemInstruction: sysPrompt
