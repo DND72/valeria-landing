@@ -302,13 +302,34 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       let firstName = bp?.first_name ?? null
       let lastName = bp?.last_name ?? null
       let taxId = bp?.codice_fiscale ?? null
-      let displayName = bp ? `${bp.first_name || ''} ${bp.last_name || ''}`.trim() : (consultRows[0]?.invitee_name ?? null)
 
       let clrkIdToUse: string | null = bp?.clerk_user_id ?? null
       if (!clrkIdToUse) {
         const consultClerkIds = consultRows.map((c: { clerk_user_id?: string }) => c.clerk_user_id).filter(Boolean) as string[]
         if (consultClerkIds.length > 0) clrkIdToUse = consultClerkIds[0]
       }
+      // Se abbiamo ancora email ma non clerkId, proviamo a cercarlo via email in Clerk (opzionale, ma utile)
+      if (!clrkIdToUse && email && clerkClient) {
+        try {
+          const clerkUsers = await clerkClient.users.getUserList({ emailAddress: [email], limit: 1 })
+          if (clerkUsers.data.length > 0) clrkIdToUse = clerkUsers.data[0].id
+        } catch (ce) { console.error('[clerk search email error]', ce) }
+      }
+
+      // --- NUOVA LOGICA: Se mancano i nomi, li cerchiamo in Clerk ---
+      if (clrkIdToUse && (!firstName || !lastName) && clerkClient) {
+        try {
+          const u = await clerkClient.users.getUser(clrkIdToUse)
+          if (!firstName) firstName = u.firstName || null
+          if (!lastName) lastName = u.lastName || null
+        } catch (ce) {
+          console.error('[clerk fetch detail error]', ce)
+        }
+      }
+
+      let displayName = (firstName || lastName) 
+        ? `${firstName || ''} ${lastName || ''}`.trim() 
+        : (consultRows[0]?.invitee_name ?? null)
 
       // --- NUOVA LOGICA FALLBACK: Se mancano i dati nel profilo, li cerchiamo nell'ultimo tema natale ---
       if (!declaredBirthday || !birthTime || !birthCity) {
