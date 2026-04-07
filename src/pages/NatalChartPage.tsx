@@ -313,7 +313,11 @@ export default function NatalChartPage() {
           const pendingData = localStorage.getItem('valeria_pending_natal')
           if (pendingData) {
             const data = JSON.parse(pendingData)
-            await syncNatalData(data)
+            const syncRes = await syncNatalData({ ...data, email: user?.primaryEmailAddress?.emailAddress })
+            console.log("[VALERIA] Sync successful:", syncRes)
+            if (syncRes?.id) {
+              setResult((prev: any) => ({ ...prev, id: syncRes.id }))
+            }
             localStorage.removeItem('valeria_pending_natal')
             initPersona()
           }
@@ -332,7 +336,9 @@ export default function NatalChartPage() {
     setResult(null)
 
     try {
-      const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim() })
+      const email = user?.primaryEmailAddress?.emailAddress
+      const res = await calculateFreeChart({ birthDate: date, birthTime: time.slice(0, 5), city: city.trim(), email } as any)
+      console.log("[VALERIA] Chart calculated:", res)
       setResult(res)
       localStorage.setItem('valeria_pending_natal', JSON.stringify({
         birthDate: date,
@@ -341,6 +347,7 @@ export default function NatalChartPage() {
       }))
       setTimeout(() => window.scrollBy({ top: 400, behavior: 'smooth' }), 200)
     } catch (err: any) {
+      console.error("[VALERIA] Error:", err)
       setError(err.message || 'Errore di connessione')
     } finally {
       setLoading(false)

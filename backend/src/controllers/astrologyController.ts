@@ -10,7 +10,8 @@ const __dirname = path.dirname(__filename)
 const calcSchema = z.object({
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, use YYYY-MM-DD"),
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format, use HH:MM"),
-  city: z.string().min(2, "City name must be at least 2 characters")
+  city: z.string().min(2, "City name must be at least 2 characters"),
+  email: z.string().email().optional()
 })
 
 /** Helper per lanciare lo script python in modo asincrono */
@@ -37,7 +38,7 @@ async function runNatalCalculation(birthDate: string, birthTime: string, city: s
 
 export const calculateNatalChart = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { birthDate, birthTime, city } = calcSchema.parse(req.body)
+    const { birthDate, birthTime, city, email } = calcSchema.parse(req.body)
     const userId = req.auth?.userId
 
     // Se l'utente è loggato, verifichiamo prima se ha già un tema salvato
@@ -72,6 +73,23 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
       interpretation = await generateChartInterpretation(result, 'basic')
       
       const { pool } = await import('../db.js')
+      
+      // Sincronizziamo l'Anagrafica se l'email è fornita
+      if (email) {
+        const normEmail = email.toLowerCase().trim();
+        await pool.query(
+          `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, declared_birthday, birth_time, birth_city, updated_at)
+           VALUES ($1, $2, $3::date, $4, $5, now())
+           ON CONFLICT (clerk_user_id) DO UPDATE SET 
+              email_normalized = COALESCE(client_billing_profiles.email_normalized, EXCLUDED.email_normalized),
+              declared_birthday = COALESCE(client_billing_profiles.declared_birthday, EXCLUDED.declared_birthday),
+              birth_time = COALESCE(client_billing_profiles.birth_time, EXCLUDED.birth_time),
+              birth_city = COALESCE(client_billing_profiles.birth_city, EXCLUDED.birth_city),
+              updated_at = now()`,
+          [userId, normEmail, birthDate, birthTime, city]
+        )
+      }
+
       const insertRes = await pool.query(
         `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -185,7 +203,8 @@ export const syncNatal = async (req: Request, res: Response) => {
     const syncSchema = z.object({
       birthDate: z.string(),
       birthTime: z.string(),
-      city: z.string()
+      city: z.string(),
+      email: z.string().email().optional()
     })
 
     const parsed = syncSchema.safeParse(req.body)
@@ -194,7 +213,7 @@ export const syncNatal = async (req: Request, res: Response) => {
       return
     }
 
-    const { birthDate, birthTime, city } = parsed.data
+    const { birthDate, birthTime, city, email } = parsed.data
     const { pool } = await import('../db.js')
 
     try {
@@ -209,12 +228,19 @@ export const syncNatal = async (req: Request, res: Response) => {
         return
       }
 
-      // 1. Inserisce (solo se non esiste) il profilo billing
+      // 1. Inserisce o Aggiorna il profilo billing (Sincronizzando l'email per il CRM)
+      const normEmail = email?.toLowerCase().trim() || "";
+
       await pool.query(
-        `INSERT INTO client_billing_profiles (clerk_user_id, declared_birthday, birth_time, birth_city, updated_at)
-         VALUES ($1, $2::date, $3, $4, now())
-         ON CONFLICT (clerk_user_id) DO NOTHING`,
-        [userId, birthDate, birthTime, city]
+        `INSERT INTO client_billing_profiles (clerk_user_id, email_normalized, declared_birthday, birth_time, birth_city, updated_at)
+         VALUES ($1, $2, $3::date, $4, $5, now())
+         ON CONFLICT (clerk_user_id) DO UPDATE SET 
+            email_normalized = COALESCE(client_billing_profiles.email_normalized, EXCLUDED.email_normalized),
+            declared_birthday = COALESCE(client_billing_profiles.declared_birthday, EXCLUDED.declared_birthday),
+            birth_time = COALESCE(client_billing_profiles.birth_time, EXCLUDED.birth_time),
+            birth_city = COALESCE(client_billing_profiles.birth_city, EXCLUDED.birth_city),
+            updated_at = now()`,
+        [userId, normEmail, birthDate, birthTime, city]
       )
 
       // 2. Verifica se ha già un tema natale. Se no, lo creiamo in automatico (Funnel conversion)
