@@ -1,4 +1,5 @@
 import { useAuth } from '@clerk/clerk-react'
+import { useCallback } from 'react'
 
 export interface NatalChartRequest {
   birthDate: string // YYYY-MM-DD
@@ -56,7 +57,7 @@ export function useAstrologyApi() {
   const { getToken } = useAuth()
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
-  const authFetch = async (endpoint: string, options: RequestInit = {}) => {
+  const authFetch = useCallback(async (endpoint: string, options: RequestInit = {}) => {
     const token = await getToken()
     if (!token) throw new Error('Non autenticato')
 
@@ -75,10 +76,9 @@ export function useAstrologyApi() {
     }
     
     return res.json()
-  }
+  }, [getToken, API_URL])
 
-  const calculateFreeChart = async (data: NatalChartRequest): Promise<NatalChartResponse> => {
-    // Chiamata pubblica: usiamo fetch normale se non siamo loggati
+  const calculateFreeChart = useCallback(async (data: NatalChartRequest): Promise<NatalChartResponse> => {
     const token = await getToken().catch(() => null)
     
     const res = await fetch(`${API_URL}/api/astrology/calculate-free`, {
@@ -96,37 +96,37 @@ export function useAstrologyApi() {
     }
 
     return res.json()
-  }
+  }, [getToken, API_URL])
 
-  const generatePaidChart = async (data: NatalChartRequest & { type: 'basic' | 'advanced' }): Promise<NatalChartResponse & { interpretation: string }> => {
+  const generatePaidChart = useCallback(async (data: NatalChartRequest & { type: 'basic' | 'advanced' }): Promise<NatalChartResponse & { interpretation: string }> => {
     return authFetch('/api/astrology/generate-paid', {
       method: 'POST',
       body: JSON.stringify(data),
     })
-  }
+  }, [authFetch])
 
-  const getMyCharts = async (): Promise<SavedNatalChart[]> => {
+  const getMyCharts = useCallback(async (): Promise<SavedNatalChart[]> => {
     const res = await authFetch('/api/astrology/my-charts')
     return res.charts || []
-  }
+  }, [authFetch])
 
-  const syncNatalData = async (data: NatalChartRequest) => {
+  const syncNatalData = useCallback(async (data: NatalChartRequest) => {
     return authFetch('/api/astrology/sync-natal', {
       method: 'POST',
       body: JSON.stringify(data),
     })
-  }
+  }, [authFetch])
 
-  const generateSummary = async (chartId: string): Promise<{ interpretation: string }> => {
+  const generateSummary = useCallback(async (chartId: string): Promise<{ interpretation: string }> => {
     return authFetch('/api/astrology/generate-summary', {
       method: 'POST',
       body: JSON.stringify({ chartId }),
     })
-  }
+  }, [authFetch])
 
-  const getLatestChart = async (): Promise<{ chart: (NatalChartResponse & { chartId: string }) | null }> => {
+  const getLatestChart = useCallback(async (): Promise<{ chart: (NatalChartResponse & { chartId: string }) | null }> => {
     return authFetch('/api/astrology/latest')
-  }
+  }, [authFetch])
 
   return { calculateFreeChart, generatePaidChart, getMyCharts, syncNatalData, generateSummary, getLatestChart }
 }
