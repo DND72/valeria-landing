@@ -75,8 +75,6 @@ Scrivi l'analisi strutturata.`
     return result.response.text() || 'Valeria sta meditando... (Responso vuoto)'
   } catch (err: any) {
     console.error('[astrology-gemini] Error:', err)
-    
-    // Fallback automatico se il modello o la quota falliscono
-    return "C'è un piccolo disturbo nelle frequenze astrali. Riprova tra poco."
+    throw new Error("C'è un piccolo disturbo nelle frequenze astrali. Riprova tra poco.")
   }
 }

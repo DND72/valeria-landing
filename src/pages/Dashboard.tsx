@@ -23,6 +23,7 @@ import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import { apiJson, ApiError } from '../lib/api'
 import { useAstrologyApi } from '../api/astrology'
+import { useMeApi } from '../api/me'
 
 /** Evita .split su null / tipi non stringa (Clerk a volte restituisce valori limite). */
 function displayFirstName(user: {
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const { getToken } = useAuth()
   const { signOut } = useClerk()
   const { syncNatalData, getMyCharts } = useAstrologyApi()
+  const meApi = useMeApi()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const calendarSectionRef = useRef<HTMLElement | null>(null)
@@ -98,6 +100,8 @@ export default function Dashboard() {
   const [myCharts, setMyCharts] = useState<SavedNatalChart[] | null>(null)
   const [myChartsLoading, setMyChartsLoading] = useState(false)
   const [wallet, setWallet] = useState<{ balanceAvailable: number; balanceLocked: number } | null>(null)
+  const [transactions, setTransactions] = useState<any[] | null>(null)
+  const [transactionsLoading, setTransactionsLoading] = useState(false)
 
   const { data: valeriaPresence } = useValeriaPresence(60_000)
   const presenceLabel = labelForPresence(valeriaPresence?.status)
@@ -172,11 +176,25 @@ export default function Dashboard() {
     }
   }, [isLoaded, user, getMyCharts])
 
+  const loadTransactions = useCallback(async () => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
+    setTransactionsLoading(true)
+    try {
+      const res = await meApi.getWalletTransactions()
+      setTransactions(res.transactions)
+    } catch {
+      setTransactions([])
+    } finally {
+      setTransactionsLoading(false)
+    }
+  }, [isLoaded, user, meApi])
+
   useEffect(() => {
     void loadMyConsults()
     void loadWallet()
     void loadMyCharts()
-  }, [loadMyConsults, loadWallet, loadMyCharts])
+    void loadTransactions()
+  }, [loadMyConsults, loadWallet, loadMyCharts, loadTransactions])
 
   // Sync del calcolo Tema Natale pendente (specchietto per le allodole/sync dati fiscali)
   useEffect(() => {
@@ -1184,6 +1202,73 @@ export default function Dashboard() {
               <h2 className="font-serif text-xl font-bold text-white mb-4">La tua opinione è preziosa</h2>
               <SiteReviewComposer />
             </motion.section>
+
+            {/* Storico Transazioni (Diario degli Acquisti) */}
+            {!privileged && (
+              <motion.section
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.45 }}
+                className="mb-10"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <h2 className="font-serif text-xl font-bold text-white">Diario degli acquisti</h2>
+                  <div className="h-px flex-1 bg-white/10" />
+                </div>
+                
+                {transactionsLoading ? (
+                  <p className="text-white/40 text-sm">Recupero storico pagamenti...</p>
+                ) : transactions && transactions.length > 0 ? (
+                  <div className="mystical-card p-0 overflow-hidden border border-white/10">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-white/5 bg-white/[0.02]">
+                            <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold">Tipo</th>
+                            <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold">Data/Ora</th>
+                            <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-white/40 font-bold text-right">Importo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {transactions.map((tx) => {
+                            const date = new Date(tx.created_at)
+                            const isPositive = ['top_up', 'unlock_refund'].includes(tx.tx_type)
+                            const txLabels: Record<string, string> = {
+                              top_up: 'Ricarica Crediti',
+                              consult_lock: 'Prenotazione Consulto',
+                              consult_settle: 'Consulto Terminato',
+                              natal_advanced: 'Analisi Evolutiva',
+                              unlock_refund: 'Rimborso Crediti'
+                            }
+                            return (
+                              <tr key={tx.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors">
+                                <td className="px-4 py-3">
+                                  <p className="text-xs font-medium text-white">{txLabels[tx.tx_type] || tx.tx_type}</p>
+                                  {tx.reference_id && tx.reference_id.startsWith('cs_') && (
+                                    <p className="text-[9px] text-white/20 font-mono mt-0.5">Stripe ref: {tx.reference_id.slice(0, 12)}...</p>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <p className="text-xs text-white/50">
+                                    {date.toLocaleDateString('it-IT')} 
+                                    <span className="text-[10px] ml-1.5 opacity-60 font-mono">{date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
+                                  </p>
+                                </td>
+                                <td className={`px-4 py-3 text-right text-xs font-bold ${isPositive ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                  {isPositive ? '+' : ''}{tx.amount} <span className="text-[10px] font-normal opacity-70">CR</span>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-white/30 text-sm italic">Nessuna transazione registrata nel tuo diario.</p>
+                )}
+              </motion.section>
+            )}
           </>
         )}
 

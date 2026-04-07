@@ -454,5 +454,28 @@ export function createMeRouter(pool: Pool): Router {
     }
   })
 
+  r.get('/wallet-transactions', async (req, res) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+
+    try {
+      const { rows } = await pool.query(
+        `SELECT id, amount, tx_type, reference_id, created_at
+         FROM wallet_transactions
+         WHERE clerk_user_id = $1
+         ORDER BY created_at DESC
+         LIMIT 50`,
+        [userId]
+      )
+      res.json({ transactions: rows })
+    } catch (e) {
+      console.error('[me wallet-transactions]', e)
+      res.status(500).json({ error: 'Errore database' })
+    }
+  })
+
   return r
 }

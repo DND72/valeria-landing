@@ -7,7 +7,7 @@ import { useAstrologyApi, type NatalChartResponse } from '../api/astrology'
 import { useMeApi } from '../api/me'
 import ZodiacWheel from '../components/ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
-import { SIGN_MEANINGS, HOUSE_MEANINGS } from '../constants/astrologyMeanings'
+import { SIGN_MEANINGS } from '../constants/astrologyMeanings'
 
 const PLANET_COLOR: Record<string, string> = {
   'Sole': 'text-amber-400',
@@ -30,9 +30,8 @@ const PLANET_SYMBOLS: Record<string, string> = {
 
 function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedIn: boolean }) {
   const theme = useCircadianTheme()
-  const { generateSummary, generatePaidChart } = useAstrologyApi()
+  const { generateSummary } = useAstrologyApi()
   const [localInterpretation, setLocalInterpretation] = useState(data.interpretation || "")
-  const [localType, setLocalType] = useState(data.chart_type || 'basic')
   const [genLoading, setGenLoading] = useState(false)
   const [genError, setGenError] = useState<string | null>(null)
 
@@ -49,34 +48,6 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
     } catch (err: any) {
       console.error("Errore generazione sintesi:", err)
       setGenError(err.message || "Errore durante la generazione. Riprova tra poco.")
-    } finally {
-      setGenLoading(false)
-    }
-  }
-
-  const handleGenerateAdvanced = async () => {
-    if (!data.birthDate || !data.birthTime || !data.city) {
-      setGenError("Dati di nascita mancanti nel calcolo. Impossibile generare l'analisi.")
-      return
-    }
-    setGenLoading(true)
-    setGenError(null)
-    try {
-      const res = await generatePaidChart({
-        birthDate: data.birthDate,
-        birthTime: data.birthTime,
-        city: data.city,
-        type: 'advanced'
-      })
-      setLocalInterpretation(res.interpretation)
-      setLocalType('advanced')
-    } catch (err: any) {
-      console.error("Errore generazione premium:", err)
-      if (err.message === 'insufficient_funds') {
-        setGenError("Crediti insufficienti (richiesti: 30). Ricarica il tuo wallet.")
-      } else {
-        setGenError(err.message || "Errore durante la generazione. Riprova.")
-      }
     } finally {
       setGenLoading(false)
     }
@@ -140,7 +111,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
               <span className="text-6xl italic font-serif">Valeria</span>
             </div>
             <h3 className="font-serif text-2xl text-white mb-6 flex items-center gap-3">
-              <span className="text-gold-400">{localType === 'advanced' ? "💎" : "✨"}</span> {localInterpretation ? (localType === 'advanced' ? "Analisi Evolutiva Completa" : "La Sintesi di Valeria") : "Analisi Dinamica"}
+              <span className="text-gold-400">✨</span> {localInterpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
             </h3>
             
             {localInterpretation ? (
@@ -196,45 +167,36 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
               </div>
             )}
 
-            {/* Pulsante Upgrade dentro il panel se è ancora Basic */}
-            {localInterpretation && localType === 'basic' && (
+            {/* CTA per sblocco completo */}
+            {localInterpretation && (
               <div className="mt-10 pt-8 border-t border-white/5 text-center">
                 <div className="max-w-md mx-auto">
-                    <p className="text-white/40 text-[11px] mb-4 uppercase tracking-[0.2em]">✦ Espandi la tua consapevolezza</p>
-                    <button 
-                      onClick={handleGenerateAdvanced}
-                      disabled={genLoading}
-                      className="btn-gold w-full py-4 text-xs uppercase tracking-widest shadow-[0_0_40px_rgba(212,160,23,0.15)]"
+                    <p className="text-white/40 text-[11px] mb-4 uppercase tracking-[0.2em]">✦ Approfondimento Evolutivo</p>
+                    <Link 
+                      to="/i-miei-temi"
+                      className="btn-gold w-full py-4 text-xs uppercase tracking-widest shadow-[0_0_40px_rgba(212,160,23,0.15)] inline-block"
                     >
-                      {genLoading ? "Lettura del cielo..." : "✦ Sblocca Analisi Evolutiva (30 crediti)"}
-                    </button>
-                    {genError && (
-                      <p className="text-red-400 text-[10px] mt-4 font-bold uppercase tracking-widest animate-pulse">
-                        ⚠️ {genError}
-                      </p>
-                    )}
+                      ✦ Vai all'Analisi Evolutiva Completa
+                    </Link>
                     <p className="text-[10px] text-white/20 mt-4 italic">
-                      L'analisi completa include aspetti planetari, domificazione e transiti evolutivi.
+                      L'analisi completa esplora il destino della tua anima attraverso tutti i pianeti e le case.
                     </p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Griglia Pianeti */}
-          {(() => {
-             const isBasic = localType === 'basic' || !localType
-             const displayPlanets = isBasic 
-               ? data.pianeti?.filter(p => ['Sole', 'Luna', 'Venere', 'Marte'].includes(p.nome)) 
-               : data.pianeti;
+           {/* Griglia Pianeti Essenziali */}
+           {(() => {
+              const displayPlanets = data.pianeti?.filter(p => ['Sole', 'Luna', 'Venere', 'Marte'].includes(p.nome)) 
 
-             if (!displayPlanets || displayPlanets.length === 0) return null
+              if (!displayPlanets || displayPlanets.length === 0) return null
 
-             return (
-               <div className="mb-14">
-                 <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
-                   <span className="text-gold-400">☉</span> Posizioni Planetarie {isBasic && <span className="text-xs text-white/50 tracking-widest uppercase font-sans font-normal">(Essenziali)</span>}
-                 </h3>
+              return (
+                <div className="mb-14">
+                  <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
+                    <span className="text-gold-400">☉</span> Triade dell'Anima e Astri Personali <span className="text-xs text-white/50 tracking-widest uppercase font-sans font-normal">(Essenziali)</span>
+                  </h3>
                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                    {displayPlanets.map(p => (
                      <div key={p.nome} className="group bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-2xl p-4 text-center cursor-default shadow-lg">
@@ -250,27 +212,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
              )
           })()}
 
-          {/* Cuspidi delle Case */}
-          {localType === 'advanced' && data.case && data.case.length > 0 && (
-            <div className="mb-14">
-              <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
-                <span className="text-indigo-400">🏠</span> Cuspidi delle Case
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {data.case.map(c => (
-                  <div key={c.numero} className="bg-white/[0.03] border border-white/10 rounded-xl p-3 text-center group hover:bg-white/[0.05] transition-colors relative">
-                    <p className="text-[10px] text-white/30 uppercase tracking-tighter mb-1">Casa {c.numero}</p>
-                    <p className="text-white font-serif text-sm font-bold">{c.segno}</p>
-                    <p className="text-[9px] text-indigo-400/60 font-mono mt-1">{c.gradi.toFixed(1)}°</p>
-                    <div className="hidden group-hover:block absolute z-50 bg-black/90 border border-indigo-500/30 p-3 rounded-lg text-[10px] text-white/80 w-48 mt-2 -translate-x-1/4 backdrop-blur-md">
-                       <p className="font-bold text-indigo-400 mb-1">{HOUSE_MEANINGS[c.numero]?.keyword}</p>
-                       {HOUSE_MEANINGS[c.numero]?.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
         </>
       ) : (
         /* Visualizzazione per Ospiti */
@@ -309,7 +251,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
               to="/i-miei-temi"
               className="inline-block btn-gold px-10 py-3.5 text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(212,160,23,0.25)]"
             >
-              Richiedi Interpretazione (30 crediti) →
+              VAI ALL'ANALISI COMPLETA →
             </Link>
           </>
         ) : (

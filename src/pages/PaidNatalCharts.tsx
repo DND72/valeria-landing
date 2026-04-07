@@ -5,6 +5,26 @@ import { useAstrologyApi, type SavedNatalChart, type NatalChartResponse } from '
 import { Link } from 'react-router-dom'
 import ZodiacWheel from '../components/ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
+import { HOUSE_MEANINGS } from '../constants/astrologyMeanings'
+
+const PLANET_COLOR: Record<string, string> = {
+  'Sole': 'text-amber-400',
+  'Luna': 'text-blue-200',
+  'Mercurio': 'text-yellow-300',
+  'Venere': 'text-pink-300',
+  'Marte': 'text-red-400',
+  'Giove': 'text-orange-300',
+  'Saturno': 'text-stone-300',
+  'Urano': 'text-cyan-300',
+  'Nettuno': 'text-indigo-300',
+  'Plutone': 'text-purple-300'
+}
+
+const PLANET_SYMBOLS: Record<string, string> = {
+  'Sole': '☉', 'Luna': '☽', 'Mercurio': '☿', 'Venere': '♀',
+  'Marte': '♂', 'Giove': '♃', 'Saturno': '♄', 'Urano': '♅',
+  'Nettuno': '♆', 'Plutone': '♇'
+}
 
 function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, interpretation: string }) {
   const theme = useCircadianTheme()
@@ -83,6 +103,46 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
         </div>
       </div>
 
+      {chart.pianeti && chart.pianeti.length > 0 && (
+        <div className="mb-14">
+          <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
+            <span className="text-gold-400">☉</span> Posizioni Planetarie
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {chart.pianeti.map((p: any) => (
+              <div key={p.nome} className="group bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-2xl p-4 text-center cursor-default shadow-lg">
+                <p className={`text-3xl mb-2 ${PLANET_COLOR[p.nome] || 'text-white'}`}>{PLANET_SYMBOLS[p.nome] || '✦'}</p>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 font-bold">{p.nome}</p>
+                <p className="font-serif text-lg text-white leading-tight mb-0.5">{p.segno}</p>
+                <p className="text-[10px] text-gold-400/90 font-bold uppercase tracking-tighter">Casa {p.casa}</p>
+                <p className="text-[10px] text-white/30 font-mono mt-1">{p.gradi.toFixed(1)}°</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {chart.case && chart.case.length > 0 && (
+        <div className="mb-14">
+          <h3 className="font-serif text-xl text-white mb-6 flex items-center gap-3">
+            <span className="text-indigo-400">🏠</span> Cuspidi delle Case
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {chart.case.map((c: any) => (
+              <div key={c.numero} className="bg-white/[0.03] border border-white/10 rounded-xl p-3 text-center group hover:bg-white/[0.05] transition-colors relative">
+                <p className="text-[10px] text-white/30 uppercase tracking-tighter mb-1">Casa {c.numero}</p>
+                <p className="text-white font-serif text-sm font-bold">{c.segno}</p>
+                <p className="text-[9px] text-indigo-400/60 font-mono mt-1">{c.gradi.toFixed(1)}°</p>
+                <div className="hidden group-hover:block absolute z-50 bg-black/90 border border-indigo-500/30 p-3 rounded-lg text-[10px] text-white/80 w-48 mt-2 -translate-x-1/4 backdrop-blur-md">
+                   <p className="font-bold text-indigo-400 mb-1">{HOUSE_MEANINGS[c.numero]?.keyword}</p>
+                   {HOUSE_MEANINGS[c.numero]?.description}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="pt-6 border-t border-white/10">
         <h4 className="font-serif text-xl text-gold-500 mb-4">L'Interpretazione di Valeria</h4>
         <div className="prose prose-invert prose-gold max-w-none text-white/80 leading-relaxed space-y-4 whitespace-pre-wrap">
@@ -107,10 +167,19 @@ export default function PaidNatalCharts() {
   const [city, setCity] = useState('')
   const [gender, setGender] = useState<'M'|'F'|''>('')
 
+  const hasAdvanced = myCharts.some(c => c.type === 'advanced')
+
   useEffect(() => {
     fetchCharts()
     import('../api/me').then(m => m.useMeApi().getProfile().then(p => {
-      if (p?.gender) setGender(p.gender)
+      if (p) {
+        if (p.gender) setGender(p.gender)
+        if (p.birthDate) {
+           setDate(p.birthDate)
+           if (p.birthTime) setTime(p.birthTime)
+           if (p.birthCity) setCity(p.birthCity)
+        }
+      }
     }))
   }, [])
 
@@ -127,6 +196,7 @@ export default function PaidNatalCharts() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (hasAdvanced) return
     setLoading(true)
     setError(null)
     setViewingChart(null)
@@ -203,78 +273,105 @@ export default function PaidNatalCharts() {
 
         <div className="grid md:grid-cols-[1fr,300px] gap-8">
           <div className="space-y-8">
-            <div className="bg-[#141418] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-              <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Data</label>
-                    <input
-                      type="date"
-                      required
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
-                    />
+            {!hasAdvanced && (
+              <div className="bg-[#141418] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
+                  <div className="flex items-center gap-2 text-gold-500/80 text-[10px] uppercase tracking-widest mb-2 bg-gold-400/5 p-3 rounded-xl border border-gold-400/10">
+                     <span className="text-sm">🔒</span>
+                     I tuoi dati sono sincronizzati con il profilo e non modificabili per precisione astrale.
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Ora Esatta</label>
-                    <input
-                      type="time"
-                      required
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Data</label>
+                      <input
+                        type="date"
+                        required
+                        disabled={true}
+                        value={date}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Ora Esatta</label>
+                      <input
+                        type="time"
+                        required
+                        disabled={true}
+                        value={time}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Città</label>
+                      <input
+                        type="text"
+                        required
+                        disabled={true}
+                        placeholder="Es. Roma"
+                        value={city}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Sesso</label>
+                      <select
+                        required
+                        disabled={true}
+                        value={gender}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
+                      >
+                        <option value="" disabled className="text-white/30">Select</option>
+                        <option value="M">Maschile (M)</option>
+                        <option value="F">Femminile (F)</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Città</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Es. Roma"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
-                    />
+
+                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center mb-6">
+                    <h4 className="font-serif text-xl font-bold text-white mb-2">Analisi Evolutiva Completa</h4>
+                    <p className="text-white/60 text-sm mb-4 leading-relaxed">
+                      Interpretazione di tutti i Pianeti, Case Astrologiche e principali Aspetti nel tuo Tema Natale. 
+                      Un'analisi olistica focalizzata sul tuo potenziale e sulle sfide evolutive.
+                    </p>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-emerald-400 font-bold text-2xl">30 CR</span>
+                      <span className="text-white/20 text-xs uppercase tracking-widest">(Crediti)</span>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Sesso</label>
-                    <select
-                      required
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value as 'M'|'F')}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full sm:w-auto px-8 py-3 rounded-lg bg-gradient-to-r from-gold-600 to-gold-400 text-dark-500 font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
                     >
-                      <option value="" disabled className="text-white/30">Select</option>
-                      <option value="M">Maschile (M)</option>
-                      <option value="F">Femminile (F)</option>
-                    </select>
+                      {loading ? 'Lettura in corso...' : `Richiedi Analisi Evolutiva (30 CR)`}
+                    </button>
                   </div>
-                </div>
+                </form>
+              </div>
+            )}
 
-                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center mb-6">
-                  <h4 className="font-serif text-xl font-bold text-white mb-2">Analisi Evolutiva Completa</h4>
-                  <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                    Interpretazione di tutti i Pianeti, Case Astrologiche e principali Aspetti nel tuo Tema Natale. 
-                    Un'analisi olistica focalizzata sul tuo potenziale e sulle sfide evolutive.
-                  </p>
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-emerald-400 font-bold text-2xl">30 CR</span>
-                    <span className="text-white/20 text-xs uppercase tracking-widest">(Crediti)</span>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto px-8 py-3 rounded-lg bg-gradient-to-r from-gold-600 to-gold-400 text-dark-500 font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
-                  >
-                    {loading ? 'Lettura in corso...' : `Richiedi Analisi Evolutiva (30 CR)`}
-                  </button>
-                </div>
-              </form>
-            </div>
+            {hasAdvanced && (
+              <div className="mb-10">
+                 <div className="p-6 mystical-card border-emerald-500/30 bg-emerald-500/5 text-center">
+                    <h3 className="text-emerald-400 font-serif text-xl mb-2">✦ La tua Analisi Evolutiva è pronta</h3>
+                    <p className="text-white/60 text-sm mb-4">I tuoi dati di nascita sono cristallizzati. Se hai bisogno di modificarli, contatta l'assistenza di Valeria.</p>
+                    <button 
+                      onClick={() => {
+                        const adv = myCharts.find(c => c.type === 'advanced')
+                        if (adv) {
+                          setViewingChart(adv)
+                          window.scrollTo({ top: 500, behavior: 'smooth' })
+                        }
+                      }}
+                      className="btn-gold px-8 py-2.5 text-sm"
+                    >
+                      Leggi la mia Analisi Completa
+                    </button>
+                 </div>
+              </div>
+            )}
 
             {viewingChart && (
               <ChartDisplay chart={viewingChart.chartData} interpretation={viewingChart.interpretation} />

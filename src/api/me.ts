@@ -46,5 +46,9 @@ export function useMeApi() {
     })
   }
 
-  return { getProfile, updateProfile }
+  const getWalletTransactions = async (): Promise<{ transactions: any[] }> => {
+    return authFetch('/api/me/wallet-transactions')
+  }
+
+  return { getProfile, updateProfile, getWalletTransactions }
 }
