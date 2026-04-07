@@ -37,8 +37,6 @@ export function calendlyUrlForConsult(kind: ConsultKind): string {
       return envTrim('VITE_CALENDLY_CONSULTO_RAPIDO') ?? CALENDLY_BOOKING_URL
     case 'breve':
       return envTrim('VITE_CALENDLY_CONSULTO_BREVE') ?? CALENDLY_BOOKING_URL
-    case 'online':
-      return envTrim('VITE_CALENDLY_CONSULTO_ONLINE') ?? CALENDLY_BOOKING_URL
     case 'completo':
       return envTrim('VITE_CALENDLY_CONSULTO_COMPLETO') ?? CALENDLY_BOOKING_URL
     case 'coaching_intro':

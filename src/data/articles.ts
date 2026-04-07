@@ -151,7 +151,7 @@ export const articles: Article[] = [
     deepenCta: {
       question:
         'Vuoi vedere dove si annidano i momenti critici nelle tue scelte — e quale struttura emerge dalle carte?',
-      consultKind: 'online',
+      consultKind: 'breve',
       track: 'tarocchi',
     },
   },

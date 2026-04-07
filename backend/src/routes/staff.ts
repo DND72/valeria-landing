@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { getStaffAvailabilityOrError } from '../lib/calendlyAvailability.js'
 import {
   getStaffScheduledMeetingsOrError,
-  getStaffTodayMeetingsOrError,
 } from '../lib/calendlyScheduledMeetings.js'
 import { requireClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 import { registerStaffClientRoutes } from './staffClientsRoutes.js'
