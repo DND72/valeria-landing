@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireClerkAuth } from '../middleware/clerkAuth.js'
 import { type ConsultKind, CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
 import { getSingleUseCalendlyLink } from '../lib/calendlyLinkGen.js'
+import { sendTelegramNotification } from '../lib/telegram.js'
 
 const MULTIPACK_STEPS: Partial<Record<ConsultKind, ConsultKind[]>> = {
   coaching_pack5: ['coaching_60', 'coaching_60', 'coaching_60', 'coaching_60', 'coaching_60'],
@@ -203,6 +204,13 @@ export function createBookingRouter(pool: Pool): Router {
         )
 
         await client.query('COMMIT')
+
+        // Invio notifica Telegram a Valeria (Out-of-platform)
+        const dateLoc = slotStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+        const timeLoc = slotStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+        const tgMsg = `🔮 <b>NUOVA PRENOTAZIONE</b>\n\n👤 <b>Cliente:</b> ID ${userId}\n📅 <b>Data:</b> ${dateLoc}\n⏰ <b>Ora:</b> ${timeLoc}\n✨ <b>Tipo:</b> ${consultKind}\n💰 <b>Costo:</b> ${cost} CR`
+        void sendTelegramNotification(tgMsg)
+
         res.json({ ok: true, internal: true })
         return
       }
