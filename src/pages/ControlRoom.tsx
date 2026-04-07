@@ -391,8 +391,8 @@ export default function ControlRoom() {
 
                     return (
                       <div key={type} className={`p-3 rounded-xl border transition-all ${slot.is_active ? 'bg-gold-500/5 border-gold-500/20' : 'bg-black/20 border-white/5 opacity-50'}`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-medium text-white/60">{icon} {labelIT}</span>
+                        <div className="flex items-center justify-between mb-2.5">
+                          <span className="text-xs font-bold text-white/80 uppercase tracking-wider">{icon} {labelIT}</span>
                           <input 
                             type="checkbox" 
                             checked={slot.is_active}
@@ -403,11 +403,11 @@ export default function ControlRoom() {
                               })
                               void loadInternalAvailability()
                             }}
-                            className="accent-gold-500 w-3 h-3"
+                            className="accent-gold-500 w-4 h-4 cursor-pointer"
                           />
                         </div>
                         {slot.is_active && (
-                          <div className="flex gap-2">
+                          <div className="flex gap-2.5">
                             <input 
                               type="text" 
                               defaultValue={slot.start_time}
@@ -419,7 +419,7 @@ export default function ControlRoom() {
                                 })
                                 void loadInternalAvailability()
                               }}
-                              className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono text-center"
+                              className="w-full bg-black/40 border border-white/20 rounded-lg px-2 py-1.5 text-sm text-white font-mono text-center focus:border-gold-500/50 outline-none transition-colors"
                             />
                             <input 
                               type="text" 
@@ -432,7 +432,7 @@ export default function ControlRoom() {
                                 })
                                 void loadInternalAvailability()
                               }}
-                              className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono text-center"
+                              className="w-full bg-black/40 border border-white/20 rounded-lg px-2 py-1.5 text-sm text-white font-mono text-center focus:border-gold-500/50 outline-none transition-colors"
                             />
                           </div>
                         )}
