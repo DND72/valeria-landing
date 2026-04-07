@@ -85,8 +85,8 @@ export function createBookingRouter(pool: Pool): Router {
         const daySlots: string[] = []
         
         for (const pat of dayPatterns) {
-          const [hS, mS] = pat.start_time.split(':').map(Number)
-          const [hE, mE] = pat.end_time.split(':').map(Number)
+          const [hS, mS] = (pat.start_time || '00:00').split(':').map(Number)
+          const [hE, mE] = (pat.end_time || '23:59').split(':').map(Number)
 
           let cursor = new Date(currentRef)
           cursor.setHours(hS, mS, 0, 0)

@@ -7,7 +7,6 @@ import {
   clientServiceMixFromKinds,
   type ClientServiceMix,
   type ServiceKind,
-  serviceKindFromEventName,
 } from '../lib/consultServiceLabel'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
