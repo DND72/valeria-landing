@@ -69,19 +69,24 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         last_scheduled: Date | null
         is_verified: boolean
       }>(
-        `SELECT
-          SELECT
-            COALESCE(bp.clerk_user_id, c.clerk_user_id) as clerk_user_id,
-            COALESCE(bp.email_normalized, LOWER(TRIM(c.invitee_email))) AS email_norm,
+        `WITH identities AS (
+            SELECT clerk_user_id, LOWER(TRIM(invitee_email)) as email_norm FROM consults
+            UNION
+            SELECT clerk_user_id, email_normalized as email_norm FROM client_billing_profiles
+        )
+        SELECT 
+            ids.clerk_user_id,
+            ids.email_norm,
             COALESCE(MAX(bp.first_name || ' ' || bp.last_name), MAX(c.invitee_name)) AS name_any,
             COUNT(c.id)::text AS total_consults,
             SUM(CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS paid_consults,
             SUM(CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS free_consults,
             MAX(c.start_at) AS last_scheduled,
             COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified
-          FROM consults c
-          FULL OUTER JOIN client_billing_profiles bp ON bp.clerk_user_id = c.clerk_user_id OR bp.email_normalized = LOWER(TRIM(c.invitee_email))
-          GROUP BY 1, 2`
+        FROM identities ids
+        LEFT JOIN consults c ON (c.clerk_user_id = ids.clerk_user_id OR LOWER(TRIM(c.invitee_email)) = ids.email_norm)
+        LEFT JOIN client_billing_profiles bp ON (bp.clerk_user_id = ids.clerk_user_id OR bp.email_normalized = ids.email_norm)
+        GROUP BY 1, 2`
       )
 
       const profiles = await pool.query<{
