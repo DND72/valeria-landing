@@ -464,21 +464,23 @@ export default function ClientDetailPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {data.transactions.map((tx) => {
+                          {data.transactions.map((tx: any) => {
                             const date = new Date(tx.created_at)
-                            const isPositive = ['top_up', 'unlock_refund', 'bonus'].includes(tx.tx_type)
+                            const isPositive = ['top_up', 'unlock_refund', 'bonus', 'paypal_direct'].includes(tx.tx_type)
                             const txLabels: Record<string, string> = {
                               top_up: 'Ricarica Crediti',
                               consult_lock: 'Prenotazione Consulto',
                               consult_settle: 'Consulto Terminato',
                               natal_advanced: 'Analisi Evolutiva',
                               unlock_refund: 'Rimborso Crediti',
-                              bonus: 'Bonus Omaggio'
+                              bonus: 'Bonus Omaggio',
+                              paypal_direct: 'Pagamento Diretto PayPal'
                             }
+                            const label = tx.label_override || txLabels[tx.tx_type] || tx.tx_type
                             return (
                               <tr key={tx.id} className="border-b border-white/5 hover:bg-white/[0.01]">
                                 <td className="px-3 py-2">
-                                  <span className="text-white/80">{txLabels[tx.tx_type] || tx.tx_type}</span>
+                                  <span className="text-white/80">{label}</span>
                                   {tx.reference_id && (
                                     <span className="block text-[9px] text-white/20 font-mono mt-0.5">{tx.reference_id}</span>
                                   )}

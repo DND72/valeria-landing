@@ -443,14 +443,13 @@ export default function ControlRoom() {
               )
             })}
           </div>
-
           <div className="border-t border-white/5 pt-6 mt-6">
-            <h3 className="text-white font-medium text-sm mb-4">Chiusure Straordinarie & Override</h3>
+            <h3 className="text-white font-medium text-sm mb-4">Giorni Speciali & Chiusure Eccezionali</h3>
             <div className="grid lg:grid-cols-2 gap-8">
               <div className="space-y-3">
-                <p className="text-white/30 text-[11px] uppercase tracking-widest mb-3 font-bold text-center sm:text-left">Prossimi eventi registrati</p>
+                <p className="text-white/30 text-[11px] uppercase tracking-widest mb-3 font-bold text-center sm:text-left">Date con orari speciali registrate</p>
                 {internalOverrides.length === 0 ? (
-                  <p className="text-white/20 text-xs italic text-center sm:text-left">Nessun override impostato.</p>
+                  <p className="text-white/20 text-xs italic text-center sm:text-left">Nessuna eccezione impostata.</p>
                 ) : (
                   <div className="space-y-2">
                     {internalOverrides.map(ov => (
@@ -481,9 +480,9 @@ export default function ControlRoom() {
                   </div>
                 )}
               </div>
-
+ 
               <div className="bg-white/[0.01] border border-white/5 rounded-xl p-4">
-                <p className="text-white/45 text-[10px] uppercase tracking-widest mb-4 font-bold">Aggiungi Override</p>
+                <p className="text-white/45 text-[10px] uppercase tracking-widest mb-4 font-bold">Aggiungi Giorno Speciale</p>
                 <form 
                   className="grid grid-cols-2 gap-3"
                   onSubmit={async (e) => {

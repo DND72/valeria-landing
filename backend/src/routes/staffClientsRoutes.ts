@@ -59,6 +59,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       // --- 2. RECUPERO DATI DA DB (CONSULTI E BILLING) ---
+      // Usiamo una logica di consolidamento: priorità al clerk_user_id, fallback su email_norm
       const { rows } = await pool.query<{
         clerk_user_id: string | null
         email_norm: string | null
@@ -70,27 +71,51 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         is_verified: boolean
         latest_chart_id: string | null
       }>(
-        `WITH identities AS (
+        `WITH raw_identities AS (
             SELECT clerk_user_id, LOWER(TRIM(invitee_email)) as email_norm FROM consults
             UNION
             SELECT clerk_user_id, email_normalized as email_norm FROM client_billing_profiles
             UNION
             SELECT clerk_user_id, NULL as email_norm FROM natal_charts WHERE clerk_user_id IS NOT NULL
+        ),
+        consolidated_ids AS (
+            -- Per ogni clerk_user_id, prendiamo l'email più recente/comune se esiste
+            SELECT 
+                clerk_user_id, 
+                MAX(email_norm) as email_norm 
+            FROM raw_identities 
+            WHERE clerk_user_id IS NOT NULL 
+            GROUP BY clerk_user_id
+            UNION
+            -- Aggiungiamo le email che NON sono mai state associate a un clerk_user_id (clienti guest purissimi)
+            SELECT 
+                NULL as clerk_user_id, 
+                email_norm
+            FROM raw_identities
+            WHERE email_norm IS NOT NULL 
+              AND email_norm NOT IN (SELECT email_norm FROM raw_identities WHERE clerk_user_id IS NOT NULL AND email_norm IS NOT NULL)
+            GROUP BY email_norm
         )
         SELECT 
             ids.clerk_user_id,
             ids.email_norm,
-            COALESCE(MAX(bp.first_name || ' ' || bp.last_name), MAX(c.invitee_name)) AS name_any,
+            COALESCE(MAX(bp.first_name || ' ' || bp.last_name), MAX(c.invitee_name), MAX(ids.email_norm)) AS name_any,
             COUNT(DISTINCT c.id)::text AS total_consults,
             COUNT(DISTINCT CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN c.id END)::text AS paid_consults,
             COUNT(DISTINCT CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN c.id END)::text AS free_consults,
             MAX(c.start_at) AS last_scheduled,
             COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified,
             (SELECT id FROM natal_charts WHERE clerk_user_id = ids.clerk_user_id ORDER BY created_at DESC LIMIT 1) AS latest_chart_id
-        FROM identities ids
-        LEFT JOIN consults c ON (c.clerk_user_id = ids.clerk_user_id OR (ids.email_norm IS NOT NULL AND LOWER(TRIM(c.invitee_email)) = ids.email_norm))
-        LEFT JOIN client_billing_profiles bp ON (bp.clerk_user_id = ids.clerk_user_id OR (ids.email_norm IS NOT NULL AND bp.email_normalized = ids.email_norm))
-        GROUP BY 1, 2`
+        FROM consolidated_ids ids
+        LEFT JOIN consults c ON (
+            (ids.clerk_user_id IS NOT NULL AND c.clerk_user_id = ids.clerk_user_id) OR 
+            (ids.clerk_user_id IS NULL AND ids.email_norm IS NOT NULL AND LOWER(TRIM(c.invitee_email)) = ids.email_norm)
+        )
+        LEFT JOIN client_billing_profiles bp ON (
+            (ids.clerk_user_id IS NOT NULL AND bp.clerk_user_id = ids.clerk_user_id) OR 
+            (ids.clerk_user_id IS NULL AND ids.email_norm IS NOT NULL AND bp.email_normalized = ids.email_norm)
+        )
+        GROUP BY ids.clerk_user_id, ids.email_norm`
       )
 
       const profiles = await pool.query<{
@@ -377,19 +402,41 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       let transactions: any[] = []
-      if (clrkIdToUse) {
-        const txRes = await pool.query(
-          `SELECT id, amount, tx_type, reference_id, created_at 
-           FROM wallet_transactions WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 50`,
-          [clrkIdToUse]
-        )
-        transactions = txRes.rows.map(t => ({
-          id: t.id,
-          amount: Number(t.amount),
-          tx_type: t.tx_type,
-          reference_id: t.reference_id,
-          created_at: new Date(t.created_at).toISOString()
-        }))
+      if (clrkIdToUse || email) {
+        // 1. RECUPERIAMO TRANSAZIONI WALLET (se esiste clerkId)
+        if (clrkIdToUse) {
+          const txRes = await pool.query(
+            `SELECT id, amount, tx_type, reference_id, created_at 
+             FROM wallet_transactions WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 100`,
+            [clrkIdToUse]
+          )
+          transactions = txRes.rows.map(t => ({
+            id: t.id,
+            amount: Number(t.amount),
+            tx_type: t.tx_type,
+            reference_id: t.reference_id,
+            created_at: new Date(t.created_at).toISOString()
+          }))
+        }
+
+        // 2. RECUPERIAMO GLI "EVENTI" DAI CONSULTI (Omaggi o Schedulati) per non lasciare il diario vuoto
+        for (const c of consultRows) {
+           // Se non è già presente una transazione wallet collegata (es. consult_lock)
+           const isLinked = transactions.some(t => t.reference_id === c.id);
+           if (!isLinked) {
+              transactions.push({
+                id: `evt-${c.id}`,
+                amount: c.cost_credits ? -Number(c.cost_credits) : 0,
+                tx_type: 'consult_event',
+                reference_id: c.id,
+                created_at: new Date(c.start_at || c.created_at).toISOString(),
+                label_override: c.is_free_consult ? 'Consulto Omaggio' : (c.status === 'scheduled' ? 'Consulto Prenotato' : 'Sessione Registrata')
+              });
+           }
+        }
+
+        // Ordiniamo per data decrescente
+        transactions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       }
 
       res.json({
