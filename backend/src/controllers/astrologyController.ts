@@ -53,6 +53,7 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
         const row = existing.rows[0]
         res.json({
           ...row.chart_data,
+          id: (row as any).id, // Includiamo l'ID
           interpretation: row.interpretation,
           isExisting: true
         })
@@ -64,22 +65,27 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
 
     // Generiamo l'interpretazione base (gratuita) solo se loggato
     let interpretation = ""
+    let chartId = null
+
     if (userId) {
       const { generateChartInterpretation } = await import('../lib/gemini.js')
       interpretation = await generateChartInterpretation(result, 'basic')
       
       const { pool } = await import('../db.js')
-      await pool.query(
+      const insertRes = await pool.query(
         `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
-         DO UPDATE SET created_at = now()`,
+         DO UPDATE SET interpretation = EXCLUDED.interpretation, created_at = now()
+         RETURNING id`,
         [userId, 'basic', birthDate, birthTime, city, result, interpretation]
       )
+      chartId = insertRes.rows[0]?.id
     }
 
     res.json({
       ...result,
+      id: chartId,
       interpretation
     })
 
@@ -215,25 +221,28 @@ export const syncNatal = async (req: Request, res: Response) => {
       const existing = await pool.query(`SELECT id FROM natal_charts WHERE clerk_user_id = $1 LIMIT 1`, [userId])
       
       let created = false
+      let finalId = existing.rows[0]?.id || null
+
       if (existing.rows.length === 0) {
         try {
           const result = await runNatalCalculation(birthDate, birthTime, city)
           const { generateChartInterpretation } = await import('../lib/gemini.js')
           const interpretation = await generateChartInterpretation(result, 'basic')
           
-          await pool.query(
+          const insRes = await pool.query(
             `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, chart_data, interpretation)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING id`,
             [userId, 'basic', birthDate, birthTime, city, result, interpretation]
           )
+          finalId = insRes.rows[0]?.id
           created = true
         } catch (calcErr) {
           console.error('[sync-natal] Auto-generation failed:', calcErr)
-          // Non blocchiamo il sync se il calcolo fallisce
         }
       }
       
-      res.json({ ok: true, alreadyHasChart: existing.rows.length > 0, autoCreated: created })
+      res.json({ ok: true, id: finalId, alreadyHasChart: existing.rows.length > 0, autoCreated: created })
     } catch (e) {
       console.error('[me sync-natal]', e)
       res.status(500).json({ error: 'Errore sincronizzazione' })
@@ -325,11 +334,7 @@ export const generateSummaryForExistingChart = async (req: Request, res: Respons
     }
 
     const chart = rows[0]
-    // Se ha già un'interpretazione valida, non la rigeneriamo
-    if (chart.interpretation && chart.interpretation.trim().length > 50) {
-      res.json({ interpretation: chart.interpretation })
-      return
-    }
+    // Rimuoviamo il blocco dell'interpretazione esistente per permettere la rigenerazione!
 
     // 2. Genera Interpretazione tramite Gemini
     const { generateChartInterpretation } = await import('../lib/gemini.js')
