@@ -890,7 +890,7 @@ export default function Dashboard() {
             </motion.section>
 
             <motion.section
-              id="prenota-calendly"
+              id="prenota"
               ref={calendarSectionRef}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -972,7 +972,7 @@ export default function Dashboard() {
                 </Link>
               </div>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
-                Storico degli appuntamenti collegati al tuo account (stessa email con cui prenoti su Calendly). Le note
+                Storico degli appuntamenti prenotati tramite app. Le note
                 interne di Valeria non sono visibili qui.
               </p>
 
@@ -1015,7 +1015,7 @@ export default function Dashboard() {
               {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length === 0 && (
                 <div className="mystical-card border border-white/10">
                   <p className="text-white/50 text-sm">
-                    Non risultano ancora consulti collegati. Quando prenoterai tramite Calendly con la stessa email del tuo account, il tuo percorso comparirà proprio qui.
+                    Non risultano ancora consulti collegati. Quando prenoterai tramite il calendario, il tuo percorso comparirà proprio qui.
                   </p>
                   <div className="relative mt-8 mb-2 mx-2 pl-5 border-l-2 border-white/10 space-y-6 opacity-30 select-none pointer-events-none">
                     <div className="relative">

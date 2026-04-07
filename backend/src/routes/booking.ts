@@ -1,16 +1,11 @@
 import { Router } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
+import crypto from 'crypto'
 import { requireClerkAuth } from '../middleware/clerkAuth.js'
-import { type ConsultKind, CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
-import { getSingleUseCalendlyLink } from '../lib/calendlyLinkGen.js'
+import { CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
 import { sendTelegramNotification } from '../lib/telegram.js'
 
-const MULTIPACK_STEPS: Partial<Record<ConsultKind, ConsultKind[]>> = {
-  coaching_pack5: ['coaching_60', 'coaching_60', 'coaching_60', 'coaching_60', 'coaching_60'],
-  combo_light: ['breve', 'breve', 'coaching_30'],
-  combo_full: ['completo', 'completo', 'coaching_60'],
-}
 
 export function createBookingRouter(pool: Pool): Router {
   const r = Router()
@@ -131,7 +126,7 @@ export function createBookingRouter(pool: Pool): Router {
 
   const bookSchema = z.object({
     consultKind: z.string().min(1),
-    slotIso: z.string().datetime().optional(), // Opzionale per ora, obbligatorio per i nuovi consulti "internal"
+    slotIso: z.string().datetime(),
   })
 
   r.post('/start', requireClerkAuth, async (req, res) => {
@@ -163,70 +158,21 @@ export function createBookingRouter(pool: Pool): Router {
     try {
       await client.query('BEGIN')
 
-      // 1. Verifico slot libero se fornito (per nuovi consulti interni)
-      if (slotIso) {
-        const slotStart = new Date(slotIso)
-        const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000)
+      // 1. Verifico slot libero
+      const slotStart = new Date(slotIso)
+      const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000)
 
-        const { rows: collision } = await client.query(
-          `SELECT id FROM consults WHERE status <> 'cancelled' AND start_at = $1 FOR UPDATE`,
-          [slotStart]
-        )
-        if (collision.length > 0) {
-          await client.query('ROLLBACK')
-          res.status(409).json({ error: 'Spiacenti, questo orario è stato appena occupato da un altro utente.' })
-          return
-        }
-
-        // 2. Verifico saldo
-        const { rows: walletRows } = await client.query(
-          `SELECT balance_available FROM wallets WHERE clerk_user_id = $1 FOR UPDATE`,
-          [userId]
-        )
-
-        if (walletRows.length === 0 || walletRows[0].balance_available < cost) {
-          await client.query('ROLLBACK')
-          res.status(400).json({ error: 'Saldo Crediti insufficiente.' })
-          return
-        }
-
-        // 3. Scalo e blocco fondi
-        if (cost > 0) {
-          await client.query(
-            `UPDATE wallets SET balance_available = balance_available - $1, balance_locked = balance_locked + $1, updated_at = now() WHERE clerk_user_id = $2`,
-            [cost, userId]
-          )
-          await client.query(
-            `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id, created_at)
-             VALUES ($1, $2, 'lock_for_consult', $3, now())`,
-            [userId, cost, bookingId]
-          )
-        }
-
-        // 4. Registro consulto già schedulato (INTERNAL)
-        await client.query(
-          `INSERT INTO consults (
-             stripe_session_id, consult_kind, amount_cents, cost_credits, clerk_user_id, 
-             status, is_free_consult, start_at, end_at, updated_at, meeting_provider
-           ) VALUES ($1, $2, $3, $4, $5, 'scheduled', $6, $7, $8, now(), 'internal')`,
-          [bookingId, consultKind, meta.amountCents, cost, userId, meta.isFree, slotStart, slotEnd]
-        )
-
-        await client.query('COMMIT')
-
-        // Invio notifica Telegram a Valeria (Out-of-platform)
-        const dateLoc = slotStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
-        const timeLoc = slotStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
-        const tgMsg = `🔮 <b>NUOVA PRENOTAZIONE</b>\n\n👤 <b>Cliente:</b> ID ${userId}\n📅 <b>Data:</b> ${dateLoc}\n⏰ <b>Ora:</b> ${timeLoc}\n✨ <b>Tipo:</b> ${consultKind}\n💰 <b>Costo:</b> ${cost} CR`
-        void sendTelegramNotification(tgMsg)
-
-        res.json({ ok: true, internal: true })
+      const { rows: collision } = await client.query(
+        `SELECT id FROM consults WHERE status <> 'cancelled' AND start_at = $1 FOR UPDATE`,
+        [slotStart]
+      )
+      if (collision.length > 0) {
+        await client.query('ROLLBACK')
+        res.status(409).json({ error: 'Spiacenti, questo orario è stato appena occupato da un altro utente.' })
         return
       }
 
-      // --- LOGICA VECCHIA (Calendly Webhook) ---
-      // Se non passa slotIso, usiamo il fallback Calendly (per retrocompatibilità temporanea)
-      
+      // 2. Verifico saldo
       const { rows: walletRows } = await client.query(
         `SELECT balance_available FROM wallets WHERE clerk_user_id = $1 FOR UPDATE`,
         [userId]
@@ -238,6 +184,7 @@ export function createBookingRouter(pool: Pool): Router {
         return
       }
 
+      // 3. Scalo e blocco fondi
       if (cost > 0) {
         await client.query(
           `UPDATE wallets SET balance_available = balance_available - $1, balance_locked = balance_locked + $1, updated_at = now() WHERE clerk_user_id = $2`,
@@ -250,30 +197,24 @@ export function createBookingRouter(pool: Pool): Router {
         )
       }
 
-      const steps = MULTIPACK_STEPS[consultKind] || [consultKind]
-      for (let i = 0; i < steps.length; i++) {
-        const stepKind = steps[i]
-        const currentBookingId = (i === 0) ? bookingId : 'book_' + crypto.randomUUID()
-        const stepCost = Math.floor(cost / steps.length)
-        const finalStepCost = (i === steps.length - 1) ? (cost - (stepCost * (steps.length - 1))) : stepCost
-
-        await client.query(
-          `INSERT INTO consults (
-             stripe_session_id, consult_kind, amount_cents, cost_credits, clerk_user_id, 
-             status, is_free_consult, updated_at
-           ) VALUES ($1, $2, $3, $4, $5, 'pending_booking_calendly', $6, now())`,
-          [currentBookingId, stepKind, Math.floor(meta.amountCents / steps.length), finalStepCost, userId, meta.isFree]
-        )
-      }
+      // 4. Registro consulto già schedulato (INTERNAL)
+      await client.query(
+        `INSERT INTO consults (
+           stripe_session_id, consult_kind, amount_cents, cost_credits, clerk_user_id, 
+           status, is_free_consult, start_at, end_at, updated_at, meeting_provider
+         ) VALUES ($1, $2, $3, $4, $5, 'scheduled', $6, $7, $8, now(), 'internal')`,
+        [bookingId, consultKind, meta.amountCents, cost, userId, meta.isFree, slotStart, slotEnd]
+      )
 
       await client.query('COMMIT')
 
-      const calendlyToken = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN
-      if (!calendlyToken) throw new Error('Calendly Token mancante')
-      const rawBookingUrl = await getSingleUseCalendlyLink(calendlyToken, consultKind)
-      const finalUrl = rawBookingUrl + '?salesforce_uuid=' + bookingId
-      
-      res.json({ ok: true, bookingUrl: finalUrl })
+      // Invio notifica Telegram a Valeria (Out-of-platform)
+      const dateLoc = slotStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+      const timeLoc = slotStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+      const tgMsg = `🔮 <b>NUOVA PRENOTAZIONE</b>\n\n👤 <b>Cliente:</b> ID ${userId}\n📅 <b>Data:</b> ${dateLoc}\n⏰ <b>Ora:</b> ${timeLoc}\n✨ <b>Tipo:</b> ${consultKind}\n💰 <b>Costo:</b> ${cost} CR`
+      void sendTelegramNotification(tgMsg)
+
+      res.json({ ok: true, internal: true })
     } catch (e: any) {
       if (client) await client.query('ROLLBACK')
       console.error('[booking] Errore:', e.message)

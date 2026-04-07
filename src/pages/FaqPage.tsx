@@ -12,7 +12,7 @@ const FAQ_SECTIONS: FaqSection[] = [
     items: [
       {
         q: 'Cosa posso fare su questo sito?',
-        a: "Puoi registrarti gratuitamente, accedere al tuo Diario privato, scegliere il tipo di consulto con Valeria (tarocchi, coaching o percorsi combo), prenotare tramite Calendly e ricevere il link di accesso alla sessione. I servizi sono riservati ai maggiorenni (18+). Hai anche a disposizione 7 minuti di consulto omaggio per il tuo primo incontro.",
+        a: "Puoi registrarti gratuitamente, accedere al tuo Diario privato, scegliere il tipo di consulto con Valeria (tarocchi, coaching o percorsi combo), prenotare tramite il sito e ricevere i dettagli per l'accesso alla videochiamata o telefonata. I servizi sono riservati ai maggiorenni (18+). Hai anche a disposizione 7 minuti di consulto omaggio per il tuo primo incontro.",
       },
       {
         q: 'Devo registrarmi per prenotare?',
@@ -20,7 +20,7 @@ const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: 'Come funziona il consulto omaggio da 7 minuti?',
-        a: "Al primo accesso trovi nel tuo Diario il consulto omaggio da 7 minuti. Puoi prenotarlo selezionando Tarocchi & letture, poi la card Consulto omaggio. L'orario si sceglie su Calendly, senza alcun pagamento.",
+        a: "Al primo accesso trovi nel tuo Diario il consulto omaggio da 7 minuti. Puoi prenotarlo selezionando Tarocchi & letture, poi la card Consulto omaggio. L'orario si sceglie dal tuo Diario, scalando i tuoi crediti gratuiti senza alcun pagamento esterno.",
       },
       {
         q: "Il sito e sicuro? Come vengono protetti i miei dati?",
@@ -41,7 +41,7 @@ const FAQ_SECTIONS: FaqSection[] = [
     ],
   },
   {
-    title: 'Prenotazioni e Calendly',
+    title: 'Prenotazioni',
     emoji: '📅',
     items: [
       {
@@ -54,7 +54,7 @@ const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: 'In che modalita si svolge la sessione?',
-        a: "Le sessioni si svolgono per telefono o videochiamata (a seconda del tipo scelto). Il link per entrare nella videochiamata ti viene inviato via email da Calendly e compare anche nel tuo Diario privato.",
+        a: "Le sessioni si svolgono per telefono o videochiamata (a seconda del tipo scelto o delle tue preferenze di contatto nel profilo). Il link per entrare nella videochiamata compare nel tuo Diario privato nella sezione I tuoi consulti.",
       },
       {
         q: 'Quante volte posso prenotare?',
