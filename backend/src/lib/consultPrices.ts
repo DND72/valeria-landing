@@ -5,7 +5,6 @@
 export type ConsultKind =
   | 'rapido'
   | 'breve'
-  | 'online'
   | 'completo'
   | 'coaching_intro'
   | 'coaching_30'
@@ -35,7 +34,7 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     amountCents: 1500,
     costCredits: 15,
     name: 'Consulto rapido con Valeria',
-    description: '10 min · Sessione telefonica flash di Tarocchi',
+    description: '10 min · Sessione digitale flash (audio/video)',
     isFree: false,
     durationMinutes: 15,
   },
@@ -43,15 +42,7 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     amountCents: 4200,
     costCredits: 42,
     name: 'Consulto approfondito con Valeria',
-    description: '30 min · Sessione telefonica di lettura dei Tarocchi',
-    isFree: false,
-    durationMinutes: 30,
-  },
-  online: {
-    amountCents: 4000,
-    costCredits: 40,
-    name: 'Consulto online con Valeria',
-    description: '30 min · Videochiamata di lettura dei Tarocchi',
+    description: '30 min · Sessione digitale di lettura dei Tarocchi',
     isFree: false,
     durationMinutes: 30,
   },
@@ -59,7 +50,7 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     amountCents: 7800,
     costCredits: 78,
     name: 'Consulto completo con Valeria',
-    description: '60 min · Sessione telefonica approfondita di Tarocchi',
+    description: '60 min · Sessione digitale approfondita di Tarocchi',
     isFree: false,
     durationMinutes: 60,
   },
@@ -67,7 +58,7 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     amountCents: 0,
     costCredits: 0,
     name: 'Sessione di conoscenza Coaching',
-    description: '10 min · Videochiamata o telefono – gratuita',
+    description: '10 min · Sessione digitale di conoscenza – gratuita',
     isFree: true,
     durationMinutes: 15,
   },

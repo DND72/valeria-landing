@@ -54,7 +54,7 @@ const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: 'In che modalita si svolge la sessione?',
-        a: "Le sessioni si svolgono per telefono o videochiamata (a seconda del tipo scelto o delle tue preferenze di contatto nel profilo). Il link per entrare nella videochiamata compare nel tuo Diario privato nella sezione I tuoi consulti.",
+        a: "Le sessioni si svolgono in digitale per garantire la massima privacy e qualità (audio o video, a seconda della tua scelta nel profilo). Anche per i consulti 'telefonici', utilizzeremo un link digitale che troverai nel tuo Diario privato nella sezione I tuoi consulti.",
       },
       {
         q: 'Quante volte posso prenotare?',

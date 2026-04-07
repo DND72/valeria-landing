@@ -793,11 +793,10 @@ export default function Dashboard() {
               </p>
               {/* Disclaimer legale statico — nessuna azione richiesta */}
               <p className="text-white/28 text-[11px] mb-5 max-w-2xl leading-relaxed">
-                Prenotando un consulto dichiari di avere almeno 18 anni e di accettare i{' '}
+                <strong className="text-white/40">Nota importante:</strong> Per garantire la massima qualità e privacy, tutti i consulti (inclusi quelli solo audio) avvengono in forma digitale via <strong>Meet/Zoom</strong>. Riceverai il link nel tuo <strong>Diario</strong> prima dell'inizio. Il tuo numero di cellulare è richiesto solo come backup tecnico in caso di necessità. Prenotando dichiari di avere almeno 18 anni e di accettare i{' '}
                 <Link to="/termini" className="text-gold-500/50 hover:text-gold-400 underline underline-offset-2">
                   Termini di servizio
-                </Link>
-                .
+                </Link>.
               </p>
               {!offerCategory && (
                 <div
@@ -1395,13 +1394,13 @@ export default function Dashboard() {
                   className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-500/50 outline-none"
                 >
                   <option value="none">Nessuna selezionata</option>
-                  <option value="phone">📞 Telefono</option>
-                  <option value="meet">📽️ Google Meet</option>
-                  <option value="zoom">📹 Zoom</option>
+                  <option value="phone">🎧 Solo Audio (Meet/Zoom)</option>
+                  <option value="meet">📽️ Google Meet (Video)</option>
+                  <option value="zoom">📹 Zoom (Video)</option>
                 </select>
               </label>
               <label className="block">
-                <span className="text-white/45 text-xs block mb-1">Recapito Telefonico</span>
+                <span className="text-white/45 text-xs block mb-1">Cellulare (solo per emergenze/backup)</span>
                 <input 
                   type="tel"
                   value={userPhone}
