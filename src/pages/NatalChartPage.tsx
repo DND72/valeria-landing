@@ -357,11 +357,14 @@ export default function NatalChartPage() {
         if (latest.chart) {
            const c = latest.chart
            setResult(c)
-           setDate(c.birthDate || '')
-           setTime(c.birthTime || '')
-           setCity(c.city || '')
-           // Cristallizzazione: se ha una data nel profilo, è immutabile
-           if (c.birthDate) setIsFixed(true)
+           const d = c.birthDate || ''
+           const t = c.birthTime || ''
+           const ct = c.city || ''
+           setDate(d)
+           setTime(t)
+           setCity(ct)
+           // Cristallizzazione COMPLETA: solo se tutti e 3 i campi sono presenti
+           if (d && t && ct) setIsFixed(true)
            return
         }
 
@@ -380,10 +383,14 @@ export default function NatalChartPage() {
         // 3. Fallback Finale: Profilo Utente (Crystallization Fix)
         const profile = await getProfile()
         if (profile && profile.birthDate) {
-           setDate(profile.birthDate)
-           setTime(profile.birthTime || '')
-           setCity(profile.birthCity || '')
-           setIsFixed(true)
+           const d = profile.birthDate
+           const t = profile.birthTime || ''
+           const ct = profile.birthCity || ''
+           setDate(d)
+           setTime(t)
+           setCity(ct)
+           // Se mancano ora o città, non consideriamo ancora il profilo "cristallizzato" per l'UI
+           if (d && t && ct) setIsFixed(true)
         }
       } catch (err) {
         console.error("[VALERIA] Errore init:", err)
@@ -448,21 +455,21 @@ export default function NatalChartPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
-                    Data di Nascita {isFixed && <span className="text-[10px] text-gold-500/60">✦</span>}
+                    Data di Nascita {(isFixed || date) && <span className="text-[10px] text-gold-500/60">✦</span>}
                   </label>
-                  <input type="date" required disabled={isFixed} value={date} onChange={(e) => setDate(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                  <input type="date" required disabled={!!date && isFixed} value={date} onChange={(e) => setDate(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${(!!date && isFixed) ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
-                    Ora Esatta {isFixed && <span className="text-[10px] text-gold-500/60">✦</span>}
+                    Ora Esatta {(isFixed || (isLoggedIn && time)) && <span className="text-[10px] text-gold-500/60">✦</span>}
                   </label>
-                  <input type="time" required disabled={isFixed} value={time} onChange={(e) => setTime(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                  <input type="time" required disabled={isFixed && !!time} value={time} onChange={(e) => setTime(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${(isFixed && !!time) ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
-                    Città di Nascita {isFixed && <span className="text-[10px] text-gold-500/60">✦</span>}
+                    Città di Nascita {(isFixed || (isLoggedIn && city)) && <span className="text-[10px] text-gold-500/60">✦</span>}
                   </label>
-                  <input type="text" required disabled={isFixed} placeholder="Es. Roma" value={city} onChange={(e) => setCity(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                  <input type="text" required disabled={isFixed && !!city} placeholder="Es. Roma" value={city} onChange={(e) => setCity(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${(isFixed && !!city) ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
               </div>
 

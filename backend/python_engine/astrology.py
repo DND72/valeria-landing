@@ -107,24 +107,9 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
             (swe.MEAN_NODE, "Nodo Nord", "punto"),
         ]
 
-        pianeti_calcolati = []
-        for code, name, cat in all_bodies:
-            try:
-                pianeti_calcolati.append(calc_body(code, name, cat))
-            except Exception:
-                pass
-
-        # Nodo Sud = Nodo Nord + 180°
-        nodo_nord = next((p for p in pianeti_calcolati if p["nome"] == "Nodo Nord"), None)
-        if nodo_nord:
-            sud_lon = (nodo_nord["lon_assoluta"] + 180) % 360
-            pianeti_calcolati.append({
-                "nome": "Nodo Sud", "segno": zodiac_signs[int(sud_lon // 30)],
-                "gradi": round(sud_lon % 30, 2), "lon_assoluta": round(sud_lon, 2),
-                "categoria": "punto"
-            })
-
+        # --- CALCOLO CASE (Spostato sopra per assegnare casa a pianeti) ---
         case_calcolate = []
+        cusps = []
         try:
             cusps, ascmc = swe.houses(swe_jd, lat, lon, b'P')
             for i in range(1, 13):
@@ -144,6 +129,45 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
             cusps, ascmc = [], []
             mc_totale, vertex_lon = 0, 0
         vertex_sign = zodiac_signs[min(11, int((vertex_lon % 360) // 30))]
+
+        def get_house(lon_abs):
+            """Determina in quale casa (1-12) si trova una longitudine data."""
+            if not cusps or len(cusps) < 13: return None
+            # cusps[1] è la cuspide della 1ª casa (ASC), cusps[12] della 12ª
+            for i in range(1, 13):
+                c1 = cusps[i]
+                c2 = cusps[i+1] if i < 12 else cusps[1]
+                if c1 < c2:
+                    if c1 <= lon_abs < c2: return i
+                else: # Passaggio per 0°
+                    if lon_abs >= c1 or lon_abs < c2: return i
+            return 1
+
+        pianeti_calcolati = []
+        for code, name, cat in all_bodies:
+            try:
+                pos, _ = swe.calc_ut(swe_jd, code)
+                lon = pos[0]
+                pianeti_calcolati.append({
+                    "nome": name,
+                    "segno": zodiac_signs[min(11, int((lon % 360) // 30))],
+                    "gradi": round(lon % 30, 2),
+                    "lon_assoluta": round(lon, 2),
+                    "casa": get_house(lon % 360),
+                    "categoria": cat
+                })
+            except Exception:
+                pass
+
+        # Nota: Nodo Sud = Nodo Nord + 180°
+        nodo_nord = next((p for p in pianeti_calcolati if p["nome"] == "Nodo Nord"), None)
+        if nodo_nord:
+            sud_lon = (nodo_nord["lon_assoluta"] + 180) % 360
+            pianeti_calcolati.append({
+                "nome": "Nodo Sud", "segno": zodiac_signs[int(sud_lon // 30)],
+                "gradi": round(sud_lon % 30, 2), "lon_assoluta": round(sud_lon, 2),
+                "casa": get_house(sud_lon), "categoria": "punto"
+            })
         
         # Parte della Fortuna = (Asc + Luna - Sole) mod 360
         sole_lon   = next((p["lon_assoluta"] for p in pianeti_calcolati if p["nome"] == "Sole"), 0)
@@ -153,9 +177,9 @@ def get_ascendant(birth_date_str, birth_time_str, city_name):
 
         pianeti_calcolati += [
             {"nome": "Vertex", "segno": vertex_sign, "gradi": round(vertex_lon % 30, 2),
-             "lon_assoluta": round(vertex_lon, 2), "categoria": "punto"},
+             "lon_assoluta": round(vertex_lon, 2), "casa": get_house(vertex_lon), "categoria": "punto"},
             {"nome": "Parte della Fortuna", "segno": pof_sign, "gradi": round(pof_lon % 30, 2),
-             "lon_assoluta": round(pof_lon, 2), "categoria": "punto"},
+             "lon_assoluta": round(pof_lon, 2), "casa": get_house(pof_lon), "categoria": "punto"},
         ]
 
         return {

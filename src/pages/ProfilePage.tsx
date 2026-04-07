@@ -87,6 +87,18 @@ export default function ProfilePage() {
     }
   }
 
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      await user!.setProfileImage({ file })
+      // Clerk updates the user object automatically
+    } catch (err) {
+      console.error("Errore caricamento foto:", err)
+      alert("Impossibile caricare la foto. Riprova con un'immagine più piccola.")
+    }
+  }
+
   async function handleDeleteAccount() {
     if (!deleteConfirm) return
     setDeleting(true)
@@ -139,20 +151,29 @@ export default function ProfilePage() {
             className="mystical-card"
           >
             <div className="flex items-center gap-4 mb-6">
-              {user.imageUrl ? (
-                <img
-                  src={user.imageUrl}
-                  alt={fullName}
-                  className="w-14 h-14 rounded-full border border-white/15 object-cover"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-full border border-white/15 bg-white/5 flex items-center justify-center text-white/50 text-xl font-serif">
-                  {(user.firstName?.[0] ?? email[0] ?? '?').toUpperCase()}
-                </div>
-              )}
+              <div className="relative group">
+                {user.imageUrl ? (
+                  <img
+                    src={user.imageUrl}
+                    alt={fullName}
+                    className="w-14 h-14 rounded-full border border-white/15 object-cover"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full border border-white/15 bg-white/5 flex items-center justify-center text-white/50 text-xl font-serif">
+                    {(user.firstName?.[0] ?? email[0] ?? '?').toUpperCase()}
+                  </div>
+                )}
+                <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 rounded-full cursor-pointer transition-opacity">
+                  <span className="text-[10px] text-white font-bold uppercase tracking-tighter">Edit</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => void handlePhotoChange(e)} />
+                </label>
+              </div>
               <div>
                 <p className="text-white font-semibold">{fullName}</p>
-                <p className="text-white/40 text-xs">{email}</p>
+                <div className="flex items-center gap-2">
+                   <p className="text-white/40 text-xs">{email}</p>
+                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+                </div>
               </div>
             </div>
 
@@ -164,14 +185,9 @@ export default function ProfilePage() {
               <FieldRow label="Tipo account" value={privileged ? 'Staff' : 'Cliente'} />
             </dl>
 
-            <a
-              href="https://accounts.clerk.com/user"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-outline text-sm px-4 py-2 inline-block"
-            >
-              Modifica nome e foto (portale Clerk) ↗
-            </a>
+            <p className="text-[10px] text-white/20 italic mt-4 border-t border-white/5 pt-4">
+              Per modifiche ai dati anagrafici (Nome/Cognome), contatta l'assistenza per preservare la tua identità astrale.
+            </p>
           </motion.section>
 
           {/* Dati Identità (Reliquia) */}
