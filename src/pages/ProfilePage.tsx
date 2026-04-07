@@ -253,7 +253,7 @@ export default function ProfilePage() {
                   value={pwCurrent}
                   onChange={(e) => setPwCurrent(e.target.value)}
                   required
-                  className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                  className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none transition-all"
                 />
               </label>
               <label className="block">
@@ -265,7 +265,7 @@ export default function ProfilePage() {
                   onChange={(e) => setPwNew(e.target.value)}
                   required
                   minLength={8}
-                  className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                  className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none transition-all"
                 />
               </label>
               <label className="block">
@@ -277,7 +277,7 @@ export default function ProfilePage() {
                   onChange={(e) => setPwConfirm(e.target.value)}
                   required
                   minLength={8}
-                  className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                  className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none transition-all"
                 />
               </label>
 
