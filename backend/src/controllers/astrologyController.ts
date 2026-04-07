@@ -89,7 +89,7 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
     if (userId) {
       const { pool } = await import('../db.js')
       const existing = await pool.query(
-        `SELECT chart_data, interpretation FROM natal_charts 
+        `SELECT id, chart_data, interpretation FROM natal_charts 
          WHERE clerk_user_id = $1 AND chart_type = 'basic' LIMIT 1`,
         [userId]
       )
