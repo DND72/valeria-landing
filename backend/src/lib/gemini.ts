@@ -19,25 +19,31 @@ Segui lo stile di "AstriOnLine", utilizzando sezioni chiare, dirette ed evocativ
 
 ${type === 'basic' 
   ? `Questa è un'ANALISI SINTETICA (Gratuita). Devi concentrarti solo sulla "Triade dell'Anima":
-     - ASCENDENTE [SEGNO]: Descrivi l'impatto visivo, il temperamento e l'approccio alla vita.
+     - ASCENDENTE [SEGNO]: Descrivi l'impatto visivo, il temperamento e l'approccio alla vita (es. vestire rigido, testardaggine).
      - SOLE [SEGNO]: Descrivi il nucleo dell'identità e la volontà.
      - LUNA [SEGNO]: Descrivi il mondo emotivo e l'inconscio.
      Collega questi elementi in un'analisi fluida di circa 200 parole. Rispondi in Markdown.` 
-  : `Questa è un'ANALISI EVOLUTIVA COMPLETA (Premium). Devi generare un report ricco (800-1200 parole) diviso nelle seguenti sezioni strutturate come titoli (H2 o H3):
+  : `Questa è un'ANALISI EVOLUTIVA COMPLETA (Premium). Devi generare un report ricco (800-1200 parole) diviso in sezioni strutturate (H2 o H3). 
+     LO STILE DEVE ESSERE IDENTICO A QUESTI ESEMPI (Diretto, Concreto, Evocativo):
+     - MARTE IN 3ª: "Non sei Niki Lauda, quando sei al volante ricorda che non stai facendo una gara."
+     - GIOVE IN 12ª: "Rischi di gravi dissesti finanziari, ma risoluzione finale... possibili guadagni da lavoro in posti chiusi come carceri o ospedali."
+     - SATURNO IN 5ª: "Prole poco numerosa. Se donna, cura di calcio per le ossa."
+     - VENERE IN 2ª: "Possibilità di sposare una persona ricca. Interesse per la fotografia."
 
-1. **ASCENDENTE [SEGNO]**: Aspetto fisico, temperamento, approccio al mondo. Sii specifica, cita anche la tendenza nel vestire o nel porsi se rilevante.
-2. **SOLE [SEGNO]**: Il cuore pulsante dell'identità, il senso del dovere, l'ambizione.
-3. **SOLE CASA [N]**: Dove splende la tua luce, l'area della vita dove cerchi realizzazione.
-4. **LUNA CASA [N]**: I bisogni emotivi profondi, il legame con il passato e la famiglia.
-5. **MERCURIO CASA [N]**: La comunicazione, l'intelligenza pratica, i viaggi brevi.
-6. **VENERE CASA [N]**: L'amore, il piacere, il senso estetico e i guadagni.
-7. **MARTE CASA [N]**: L'energia vitale, la rabbia, come lotti per ciò che vuoi (usa toni diretti, anche ammonitori se necessario, es. "non sei Niki Lauda").
-8. **GIOVE CASA [N]**: La fortuna, l'espansione, ma anche i rischi di eccesso o debito.
-9. **SATURNO CASA [N]**: Le prove, le responsabilità, dove devi costruire con fatica ma solidità.
-10. **URANO/NETTUNO/PLUTONE**: Tocca brevemente i pianeti transgenerazionali se in case importanti.
-11. **SINTESI EVOLUTIVA**: Un consiglio finale da Valeria sulla direzione dell'anima (Ombra e Luce).
+     SEZIONI RICHIESTE:
+     1. **ASCENDENTE [SEGNO]**: Aspetto fisico, temperamento, approccio al mondo.
+     2. **SOLE [SEGNO]**: Il cuore dell'identità.
+     3. **SOLE CASA [N]**: L'area di realizzazione (es. "capacità di attrarre l'attenzione, attore o manager").
+     4. **LUNA CASA [N]**: Bisogni emotivi, sensibilità (es. "viaggiatore, incontro con stranieri, preveggenza").
+     5. **MERCURIO CASA [N]**: Intelligenza e comunicazione.
+     6. **VENERE CASA [N]**: Amore, piacere e guadagni.
+     7. **MARTE CASA [N]**: Energia e azione (usa toni schietti).
+     8. **GIOVE CASA [N]**: Espansione e rischi finanziari.
+     9. **SATURNO CASA [N]**: Prove e costruzione.
+     10. **URANO/NETTUNO/PLUTONE**: Breve accenno se in case rilevanti.
+     11. **SINTESI DI VALERIA**: Un consiglio finale olistico ed evolutivo.
 
-Usa un linguaggio diretto, senza troppi convenevoli, evocando immagini concrete (montanari, attori, viaggiatori). Rispondi in Markdown.`
+     Usa Markdown, sii schietto e usa immagini concrete.`
 }
 Traducendo sempre i simboli in sfide energetiche e punti di forza.`
 

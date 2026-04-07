@@ -232,8 +232,9 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
                   <div key={p.nome} className="group bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-2xl p-4 text-center cursor-default shadow-lg">
                     <p className={`text-3xl mb-2 ${PLANET_COLOR[p.nome] || 'text-white'}`}>{PLANET_SYMBOLS[p.nome] || '✦'}</p>
                     <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 font-bold">{p.nome}</p>
-                    <p className="font-serif text-lg text-white leading-tight mb-1">{p.segno}</p>
-                    <p className="text-[10px] text-white/30 font-mono">{p.gradi.toFixed(1)}°</p>
+                    <p className="font-serif text-lg text-white leading-tight mb-0.5">{p.segno}</p>
+                    <p className="text-[10px] text-gold-400/90 font-bold uppercase tracking-tighter">Casa {p.casa}</p>
+                    <p className="text-[10px] text-white/30 font-mono mt-1">{p.gradi.toFixed(1)}°</p>
                   </div>
                 ))}
               </div>

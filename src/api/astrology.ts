@@ -9,6 +9,7 @@ export interface NatalChartRequest {
 export interface Planet {
   nome: string
   segno: string
+  casa?: number
   gradi: number
   lon_assoluta: number
   categoria: 'veloce' | 'lento' | 'asteroide' | 'punto'
