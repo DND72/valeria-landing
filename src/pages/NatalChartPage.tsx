@@ -401,7 +401,7 @@ export default function NatalChartPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isFixed) return
+    if (isFixed && result) return
 
     setLoading(true)
     setError(null)
@@ -485,7 +485,7 @@ export default function NatalChartPage() {
                     {isFixed ? "✦ Identità Astrale Verificata. Contatta l'assistenza per correzioni eccezionali." : "L'orario è fondamentale per la precisione millimetrica dell'Ascendente."}
                   </p>
                 </div>
-                {!isFixed && (
+                {(!isFixed || !result) && (
                   <button type="submit" disabled={loading} className="btn-gold px-10 py-3.5 text-sm uppercase tracking-wider font-bold">
                     {loading ? "Generazione..." : "Genera Ruota Zodiacale"}
                   </button>
