@@ -289,7 +289,11 @@ export default function NatalChartPage() {
         const charts = await getMyCharts()
         if (charts && charts.length > 0) {
           const mainChart = charts[0]
-          setResult(mainChart.chartData as any)
+          setResult({
+            ...mainChart.chartData as any,
+            id: mainChart.id,
+            interpretation: mainChart.interpretation
+          })
           setDate(mainChart.birthDate)
           setTime(mainChart.birthTime)
           setCity(mainChart.city)
@@ -355,23 +359,37 @@ export default function NatalChartPage() {
             <form onSubmit={handleSubmit} className="relative z-10">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/40">Data di Nascita</label>
+                  <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
+                    Data di Nascita {isFixed && <span className="text-[10px] text-gold-500/60">✦</span>}
+                  </label>
                   <input type="date" required disabled={isFixed} value={date} onChange={(e) => setDate(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/40">Ora Esatta</label>
+                  <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
+                    Ora Esatta {isFixed && <span className="text-[10px] text-gold-500/60">✦</span>}
+                  </label>
                   <input type="time" required disabled={isFixed} value={time} onChange={(e) => setTime(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/40">Città di Nascita</label>
+                  <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
+                    Città di Nascita {isFixed && <span className="text-[10px] text-gold-500/60">✦</span>}
+                  </label>
                   <input type="text" required disabled={isFixed} placeholder="Es. Roma" value={city} onChange={(e) => setCity(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white ${isFixed ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center gap-4 justify-between">
-                <p className="text-white/30 text-[11px] max-w-xs">
-                  {isFixed ? "✦ Dati bloccati. Contatta l'assistenza per correzioni." : "L'orario è fondamentale per il calcolo preciso."}
-                </p>
+              <div className="flex flex-col sm:flex-row items-center gap-4 justify-between pt-4">
+                <div className="flex-1">
+                  {!isFixed && isLoggedIn && (
+                     <div className="flex items-center gap-2 text-gold-400/80 text-[10px] uppercase tracking-wider mb-2 bg-gold-400/5 p-2 rounded-lg border border-gold-400/10">
+                        <span className="text-sm">⚠️</span>
+                        Assicurati dell'orario esatto. Una volta confermati, i dati saranno permanenti.
+                     </div>
+                  )}
+                  <p className="text-white/30 text-[11px] max-w-xs leading-tight">
+                    {isFixed ? "✦ Identità Astrale Verificata. Contatta l'assistenza per correzioni eccezionali." : "L'orario è fondamentale per la precisione millimetrica dell'Ascendente."}
+                  </p>
+                </div>
                 {!isFixed && (
                   <button type="submit" disabled={loading} className="btn-gold px-10 py-3.5 text-sm uppercase tracking-wider font-bold">
                     {loading ? "Generazione..." : "Genera Ruota Zodiacale"}
