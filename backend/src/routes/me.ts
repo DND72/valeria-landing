@@ -283,27 +283,43 @@ export function createMeRouter(pool: Pool): Router {
 
     try {
       // 1. Dati da Clerk
-      let clerkInfo = { firstName: '', lastName: '', birthday: '' }
+      let clerkInfo = { firstName: '', lastName: '', birthday: '', email: '' }
       if (clerkClient) {
         try {
           const u = await clerkClient.users.getUser(userId)
+          const primaryId = u.primaryEmailAddressId
+          const emails = u.emailAddresses ?? []
+          const primary = (primaryId && emails.find((e) => e.id === primaryId)?.emailAddress) || emails[0]?.emailAddress
+
           clerkInfo = { 
             firstName: u.firstName || '', 
             lastName: u.lastName || '',
-            birthday: (u as any).birthday || ''
+            birthday: (u as any).birthday || '',
+            email: primary?.trim().toLowerCase() || ''
           }
         } catch {}
       }
 
       // 2. Dati da Billing Profile
       const bpRes = await pool.query(
-        `SELECT first_name, last_name, declared_birthday, birth_time, birth_city, codice_fiscale, gender 
+        `SELECT first_name, last_name, declared_birthday, birth_time, birth_city, codice_fiscale, gender, email_normalized 
          FROM client_billing_profiles WHERE clerk_user_id = $1`,
         [userId]
       )
       const bp = bpRes.rows[0]
+      const email = bp?.email_normalized || clerkInfo.email
 
-      // 3. Fallback da Natal Charts
+      // 3. Dati da Client Profile (Preferenze contatto)
+      let cp = { contact_preference: 'none', phone_number: '' }
+      if (email) {
+        const cpRes = await pool.query(
+          `SELECT contact_preference, phone_number FROM client_profiles WHERE email_normalized = $1`,
+          [email]
+        )
+        if (cpRes.rows[0]) cp = cpRes.rows[0]
+      }
+
+      // 4. Fallback da Natal Charts
       const ncRes = await pool.query(
         `SELECT birth_date, birth_time, city, gender FROM natal_charts 
          WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`,
@@ -320,7 +336,9 @@ export function createMeRouter(pool: Pool): Router {
         birthTime: bp?.birth_time || nc?.birth_time || null,
         birthCity: bp?.birth_city || nc?.city || null,
         taxId: bp?.codice_fiscale || null,
-        gender: bp?.gender || nc?.gender || null
+        gender: bp?.gender || nc?.gender || null,
+        contactPreference: cp.contact_preference,
+        phoneNumber: cp.phone_number
       })
     } catch (e) {
       console.error('[me profile]', e)
@@ -336,7 +354,9 @@ export function createMeRouter(pool: Pool): Router {
     }
 
     const schema = z.object({
-      gender: z.enum(['M', 'F']).nullable().optional()
+      gender: z.enum(['M', 'F']).nullable().optional(),
+      contactPreference: z.enum(['none', 'phone', 'meet', 'zoom']).optional(),
+      phoneNumber: z.string().max(50).optional()
     })
 
     const parsed = schema.safeParse(req.body)
@@ -345,9 +365,18 @@ export function createMeRouter(pool: Pool): Router {
       return
     }
 
-    const { gender } = parsed.data
+    const { gender, contactPreference, phoneNumber } = parsed.data
 
     try {
+      // Per salvare in client_profiles (preferenze) ci serve l'email
+      let email: string | null = null
+      if (clerkClient) {
+        try {
+          const u = await clerkClient.users.getUser(userId)
+          email = u.emailAddresses[0]?.emailAddress?.trim().toLowerCase() || null
+        } catch {}
+      }
+
       if (gender) {
         await pool.query(
           `INSERT INTO client_billing_profiles (clerk_user_id, gender, updated_at)
@@ -358,6 +387,28 @@ export function createMeRouter(pool: Pool): Router {
           [userId, gender]
         )
       }
+
+      if (email && (contactPreference || phoneNumber !== undefined)) {
+        // Recuperiamo i dati attuali per non sovrascrivere con null se non forniti
+        const prevRes = await pool.query(
+          `SELECT contact_preference, phone_number FROM client_profiles WHERE email_normalized = $1`,
+          [email]
+        )
+        const prev = prevRes.rows[0]
+        const finalCP = contactPreference || prev?.contact_preference || 'none'
+        const finalPN = phoneNumber !== undefined ? phoneNumber : (prev?.phone_number || null)
+
+        await pool.query(
+          `INSERT INTO client_profiles (email_normalized, contact_preference, phone_number, updated_at)
+           VALUES ($1, $2, $3, now())
+           ON CONFLICT (email_normalized) DO UPDATE SET
+             contact_preference = EXCLUDED.contact_preference,
+             phone_number = EXCLUDED.phone_number,
+             updated_at = now()`,
+          [email, finalCP, finalPN]
+        )
+      }
+
       res.json({ ok: true })
     } catch (e) {
       console.error('[me POST profile]', e)

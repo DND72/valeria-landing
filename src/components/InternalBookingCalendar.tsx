@@ -122,11 +122,11 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
                 <span className={`text-[10px] uppercase tracking-tighter ${isSelected ? 'text-black/60 font-bold' : 'text-white/30'}`}>
                   {d.toLocaleDateString('it-IT', { weekday: 'short' })}
                 </span>
-                <span className={`text-xl font-serif mt-1 ${isSelected ? 'text-black' : 'text-white/80'}`}>
+                <span className={`text-2xl font-serif mt-1 ${isSelected ? 'text-black' : 'text-white/80'}`}>
                   {d.getDate()}
                 </span>
-                <span className={`text-[9px] ${isSelected ? 'text-black/60' : 'text-white/30'}`}>
-                  {d.toLocaleDateString('it-IT', { month: 'short' })}
+                <span className={`text-[10px] ${isSelected ? 'text-black/60' : 'text-white/30'}`}>
+                  {d.toLocaleDateString('it-IT', { month: 'short' }).toUpperCase()}
                 </span>
               </button>
             )
@@ -141,7 +141,7 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-8 h-48 overflow-y-auto pr-2 custom-scrollbar"
+          className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-8 h-56 overflow-y-auto pr-2 custom-scrollbar"
         >
           {currentDaySlots.length === 0 ? (
             <div className="col-span-full py-12 text-center text-white/20 text-sm italic">
@@ -156,8 +156,8 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
                 <button
                   key={slot}
                   onClick={() => setSelectedSlot(slot)}
-                  className={`py-3 rounded-xl border text-sm font-medium transition-all ${
-                    isSelected ? 'bg-gold-500 border-gold-400 text-black shadow-lg shadow-gold-500/10' : 'bg-white/5 border-white/5 text-white/60 hover:border-white/20 hover:text-white'
+                  className={`py-4 rounded-xl border text-base font-bold transition-all ${
+                    isSelected ? 'bg-gold-500 border-gold-400 text-black shadow-lg shadow-gold-500/20' : 'bg-white/5 border-white/5 text-white/70 hover:border-white/20 hover:text-white'
                   }`}
                 >
                   {timeStr}

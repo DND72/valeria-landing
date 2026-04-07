@@ -99,6 +99,13 @@ export default function Dashboard() {
   const [wallet, setWallet] = useState<{ balanceAvailable: number; balanceLocked: number } | null>(null)
   const [transactions, setTransactions] = useState<any[] | null>(null)
   const [transactionsLoading, setTransactionsLoading] = useState(false)
+  
+  // Profilo e Preferenze
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [userContactPref, setUserContactPref] = useState<'none' | 'phone' | 'meet' | 'zoom'>('none')
+  const [userPhone, setUserPhone] = useState('')
+  const [profileSuccessMsg, setProfileSuccessMsg] = useState(false)
 
   const { data: valeriaPresence } = useValeriaPresence(60_000)
   const presenceLabel = labelForPresence(valeriaPresence?.status)
@@ -184,12 +191,44 @@ export default function Dashboard() {
     }
   }, [isLoaded, user, meApi])
 
+  const loadProfile = useCallback(async () => {
+    if (!isLoaded || !user || isPrivilegedClerkUser(user)) return
+    setProfileLoading(true)
+    try {
+      const p = await meApi.getProfile()
+      setUserContactPref((p as any).contactPreference || 'none')
+      setUserPhone(p.phoneNumber || '')
+    } catch (err) {
+      console.error('Error loading user profile:', err)
+    } finally {
+      setProfileLoading(false)
+    }
+  }, [isLoaded, user, meApi])
+
+  const saveProfileSettings = async () => {
+    setSavingProfile(true)
+    setProfileSuccessMsg(false)
+    try {
+      await meApi.updateProfile({
+        contactPreference: userContactPref,
+        phoneNumber: userPhone.trim() || null
+      } as any)
+      setProfileSuccessMsg(true)
+      setTimeout(() => setProfileSuccessMsg(false), 3000)
+    } catch (err) {
+      alert("Errore durante il salvataggio: " + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
   useEffect(() => {
     void loadMyConsults()
     void loadWallet()
     void loadMyCharts()
     void loadTransactions()
-  }, [loadMyConsults, loadWallet, loadMyCharts, loadTransactions])
+    void loadProfile()
+  }, [loadMyConsults, loadWallet, loadMyCharts, loadTransactions, loadProfile])
 
   // Sync del calcolo Tema Natale pendente (specchietto per le allodole/sync dati fiscali)
   useEffect(() => {
@@ -749,8 +788,8 @@ export default function Dashboard() {
               <h2 className="font-serif text-xl font-bold text-white mb-1 mt-2">2) Scegli il consulto: breve, online, completo…</h2>
               <p className="text-white/40 text-sm mb-4 max-w-2xl">
                 Tocca <strong className="text-gold-500/90">Continua</strong>: sotto si apre il calendario giusto per quel
-                tipo (anche omaggio, se incluso nel settore). Il pagamento avviene in Calendly quando scegli data e ora
-                tramite <strong className="text-white/55">Stripe</strong> (carta di credito).
+                tipo (anche omaggio, se incluso nel settore). La prenotazione utilizzerà i tuoi{' '}
+                <strong className="text-white/55">Crediti disponibili nel Wallet</strong>. Se non ne hai abbastanza, ricarica nel tuo Portafoglio.
               </p>
               {/* Disclaimer legale statico — nessuna azione richiesta */}
               <p className="text-white/28 text-[11px] mb-5 max-w-2xl leading-relaxed">
@@ -1350,31 +1389,50 @@ export default function Dashboard() {
             <div className="space-y-4">
               <label className="block">
                 <span className="text-white/45 text-xs block mb-1">Preferenza di contatto</span>
-                <select className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white appearance-none">
-                  <option>Telefono</option>
-                  <option>Videochiamata online</option>
+                <select 
+                  value={userContactPref}
+                  onChange={(e) => setUserContactPref(e.target.value as any)}
+                  className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-500/50 outline-none"
+                >
+                  <option value="none">Nessuna selezionata</option>
+                  <option value="phone">📞 Telefono</option>
+                  <option value="meet">📽️ Google Meet</option>
+                  <option value="zoom">📹 Zoom</option>
                 </select>
               </label>
               <label className="block">
-                <span className="text-white/45 text-xs block mb-1">Fuso orario (per i consulti)</span>
-                <select className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white appearance-none">
-                  <option>Europa/Roma (CET)</option>
-                  <option>Europa/Londra (GMT)</option>
-                  <option>America/New York (EST)</option>
-                </select>
+                <span className="text-white/45 text-xs block mb-1">Recapito Telefonico</span>
+                <input 
+                  type="tel"
+                  value={userPhone}
+                  onChange={(e) => setUserPhone(e.target.value)}
+                  placeholder="+39..."
+                  className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-500/50 outline-none transition-all"
+                />
               </label>
             </div>
             <div>
               <label className="block h-full flex flex-col">
-                <span className="text-white/45 text-xs block mb-1">La mia intenzione principale</span>
+                <span className="text-white/45 text-xs block mb-1">Note per Valeria</span>
                 <textarea 
-                  className="w-full flex-1 min-h-[105px] bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white resize-none"
-                  placeholder="Es. Voglio fare chiarezza sulla mia situazione lavorativa o capire le dinamiche di una relazione..."
+                  disabled
+                  className="w-full flex-1 min-h-[105px] bg-dark-400/50 border border-white/5 rounded-lg px-3 py-2 text-sm text-white/30 resize-none cursor-not-allowed"
+                  placeholder="Note salvate durante la prenotazione..."
                 />
               </label>
             </div>
-            <div className="md:col-span-2 text-right">
-              <button type="button" className="btn-gold text-xs px-5 py-2 opacity-50 cursor-not-allowed" title="In fase di sviluppo">Salva preferenze</button>
+            <div className="md:col-span-2 flex flex-col sm:flex-row items-center justify-end gap-4">
+              {profileSuccessMsg && (
+                <span className="text-emerald-400 text-xs animate-in fade-in slide-in-from-right-2">✨ Preferenze salvate con successo!</span>
+              )}
+              <button 
+                type="button" 
+                onClick={saveProfileSettings}
+                disabled={savingProfile || profileLoading}
+                className="btn-gold text-xs px-8 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
+              >
+                {savingProfile ? 'Salvataggio…' : 'Salva preferenze'}
+              </button>
             </div>
           </div>
         </motion.div>

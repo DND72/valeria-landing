@@ -9,6 +9,8 @@ export interface ClientProfile {
   birthCity: string | null
   taxId: string | null
   gender: 'M' | 'F' | null
+  contactPreference: 'none' | 'phone' | 'meet' | 'zoom' | null
+  phoneNumber: string | null
 }
 
 export function useMeApi() {

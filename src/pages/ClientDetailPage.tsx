@@ -46,6 +46,9 @@ type DetailPayload = {
     lastInvoicedAt: string | null
     manualBonusCredits: number
     unlockReviewOverride: boolean
+    contactPreference: 'none' | 'phone' | 'meet' | 'zoom'
+    phoneNumber: string | null
+    contactDetails: string | null
     updatedAt: string | null
   } | null
   consults: ConsultDetail[]
@@ -113,6 +116,9 @@ export default function ClientDetailPage() {
   const [birthCity, setBirthCity] = useState('')
   const [taxId, setTaxId] = useState('')
   const [gender, setGender] = useState<'M' | 'F' | ''>('')
+  const [contactPreference, setContactPreference] = useState<'none' | 'phone' | 'meet' | 'zoom'>('none')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [contactDetails, setContactDetails] = useState('')
 
   const load = useCallback(async () => {
     if (!apiConfigured || (!email && !clerkId)) {
@@ -136,6 +142,9 @@ export default function ClientDetailPage() {
       setBirthCity(d.birthCity ?? '')
       setTaxId(d.taxId ?? '')
       setGender(d.gender ?? '')
+      setContactPreference(d.profile?.contactPreference ?? 'none')
+      setPhoneNumber(d.profile?.phoneNumber ?? '')
+      setContactDetails(d.profile?.contactDetails ?? '')
     } catch (e) {
       setError(e instanceof ApiError ? String(e.message) : 'Errore caricamento')
       setData(null)
@@ -183,7 +192,10 @@ export default function ClientDetailPage() {
           birthTime: birthTime || null,
           birthCity: birthCity || null,
           taxId: taxId.trim() || null,
-          gender: gender || null
+          gender: gender || null,
+          contactPreference: contactPreference || 'none',
+          phoneNumber: phoneNumber.trim() || null,
+          contactDetails: contactDetails.trim() || null
         }),
       })
       await load()
@@ -411,6 +423,58 @@ export default function ClientDetailPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Nuova Sezione Preferenze Contatto */}
+              <div className="mt-8 pt-8 border-t border-white/5">
+                <h3 className="text-white/40 text-[10px] uppercase tracking-widest mb-4 font-bold">Canale &amp; Contatti Preferiti</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="md:col-span-2">
+                    <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-2">Piattaforma Preferita</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: 'none', label: 'Nessuna', icon: '⚪' },
+                        { id: 'phone', label: 'Telefono', icon: '📞' },
+                        { id: 'meet', label: 'Google Meet', icon: '📽️' },
+                        { id: 'zoom', label: 'Zoom', icon: '📹' }
+                      ].map((pref) => (
+                        <button
+                          key={pref.id}
+                          type="button"
+                          onClick={() => setContactPreference(pref.id as any)}
+                          className={`flex-1 min-w-[100px] py-2 rounded-lg border text-xs transition-all flex items-center justify-center gap-2 ${
+                            contactPreference === pref.id
+                              ? 'bg-gold-500/20 border-gold-500 text-gold-200 shadow-lg shadow-gold-500/5'
+                              : 'bg-black/40 border-white/10 text-white/40 hover:border-white/20'
+                          }`}
+                        >
+                          <span>{pref.icon}</span> {pref.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <label className="block">
+                    <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Recapito Telefonico</span>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="+39..."
+                      className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2 text-sm text-white placeholder:text-white/20 focus:border-gold-500/50 outline-none transition-all"
+                    />
+                  </label>
+                </div>
+                <label className="block mb-6">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Dettagli Contatto (ID Zoom, Link o Note)</span>
+                  <input
+                    type="text"
+                    value={contactDetails}
+                    onChange={(e) => setContactDetails(e.target.value)}
+                    placeholder="Esempio: ID Zoom xxxx, oppure link personalizzato..."
+                    className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2 text-sm text-white placeholder:text-white/20 focus:border-gold-500/50 outline-none transition-all"
+                  />
+                </label>
+              </div>
+
               <button
                 type="button"
                 onClick={() => void saveAnagrafica()}

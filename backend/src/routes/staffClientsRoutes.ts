@@ -14,6 +14,7 @@ const profilePatch = z.object({
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
   declaredBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  taxId: z.string().max(50).optional(),
   contactPreference: z.enum(['none', 'phone', 'meet', 'zoom']).optional(),
   phoneNumber: z.string().max(50).optional(),
   contactDetails: z.string().max(1000).optional(),
@@ -298,7 +299,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       let profile: any = null;
       if (email) {
         const profRes = await pool.query(
-          `SELECT email_normalized, general_notes, last_invoiced_at, updated_at, manual_bonus_credits, unlock_review_override
+          `SELECT email_normalized, general_notes, last_invoiced_at, updated_at, manual_bonus_credits, unlock_review_override,
+                  contact_preference, phone_number, contact_details
            FROM client_profiles WHERE email_normalized = $1`,
           [email]
         )
@@ -461,6 +463,9 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
                 : null,
               manualBonusCredits: profile.manual_bonus_credits ?? 0,
               unlockReviewOverride: profile.unlock_review_override ?? false,
+              contactPreference: profile.contact_preference ?? 'none',
+              phoneNumber: profile.phone_number ?? null,
+              contactDetails: profile.contact_details ?? null,
               updatedAt: profile.updated_at ? new Date(profile.updated_at).toISOString() : null,
             }
           : null,
@@ -488,7 +493,11 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       res.status(400).json({ error: 'Payload non valido', details: parsed.error.flatten() })
       return
     }
-    const { email, generalNotes, lastInvoicedAt, markInvoicedNow, manualBonusCredits, unlockReviewOverride, firstName, lastName, declaredBirthday, taxId } = parsed.data
+    const { 
+      email, generalNotes, lastInvoicedAt, markInvoicedNow, manualBonusCredits, 
+      unlockReviewOverride, firstName, lastName, declaredBirthday, taxId,
+      contactPreference, phoneNumber, contactDetails
+    } = parsed.data
     const norm = normalizeEmail(email)
 
     if (
@@ -500,7 +509,10 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       firstName === undefined &&
       lastName === undefined &&
       declaredBirthday === undefined &&
-      taxId === undefined
+      taxId === undefined &&
+      contactPreference === undefined &&
+      phoneNumber === undefined &&
+      contactDetails === undefined
     ) {
       res.status(400).json({ error: 'Specifica un campo da modificare' })
       return
@@ -520,33 +532,50 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       const prev = await pool.query(
-        `SELECT general_notes, last_invoiced_at, manual_bonus_credits, unlock_review_override FROM client_profiles WHERE email_normalized = $1`,
+        `SELECT general_notes, last_invoiced_at, manual_bonus_credits, unlock_review_override,
+                contact_preference, phone_number, contact_details
+         FROM client_profiles WHERE email_normalized = $1`,
         [norm]
       )
       
       let notes = prev.rows[0]?.general_notes ?? null
       if (generalNotes !== undefined) notes = generalNotes
-
+ 
       let lastInv: Date | null = prev.rows[0]?.last_invoiced_at ?? null
       if (markInvoicedNow) lastInv = new Date()
       else if (lastInvoicedAt !== undefined) lastInv = lastInvoicedAt === null ? null : new Date(lastInvoicedAt)
-
+ 
       let bonus = prev.rows[0]?.manual_bonus_credits ?? 0
       if (manualBonusCredits !== undefined) bonus = manualBonusCredits
-
+ 
       let uRev = prev.rows[0]?.unlock_review_override ?? false
       if (unlockReviewOverride !== undefined) uRev = unlockReviewOverride
 
+      let cp = prev.rows[0]?.contact_preference ?? 'none'
+      if (contactPreference !== undefined) cp = contactPreference
+
+      let pn = prev.rows[0]?.phone_number ?? null
+      if (phoneNumber !== undefined) pn = phoneNumber
+
+      let cd = prev.rows[0]?.contact_details ?? null
+      if (contactDetails !== undefined) cd = contactDetails
+ 
       await pool.query(
-        `INSERT INTO client_profiles (email_normalized, general_notes, last_invoiced_at, manual_bonus_credits, unlock_review_override, updated_at)
-         VALUES ($1, $2, $3, $4, $5, now())
+        `INSERT INTO client_profiles (
+           email_normalized, general_notes, last_invoiced_at, manual_bonus_credits, 
+           unlock_review_override, contact_preference, phone_number, contact_details, updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
          ON CONFLICT (email_normalized) DO UPDATE SET
            general_notes = EXCLUDED.general_notes,
            last_invoiced_at = EXCLUDED.last_invoiced_at,
            manual_bonus_credits = EXCLUDED.manual_bonus_credits,
            unlock_review_override = EXCLUDED.unlock_review_override,
+           contact_preference = EXCLUDED.contact_preference,
+           phone_number = EXCLUDED.phone_number,
+           contact_details = EXCLUDED.contact_details,
            updated_at = now()`,
-        [norm, notes, lastInv, bonus, uRev]
+        [norm, notes, lastInv, bonus, uRev, cp, pn, cd]
       )
 
       // Se forniti Nome, Cognome, Compleanno o CF, salviamo in client_billing_profiles
