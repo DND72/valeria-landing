@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+
 
 export async function generateChartInterpretation(chartData: any, type: 'basic' | 'advanced'): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY
