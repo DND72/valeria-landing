@@ -14,7 +14,9 @@ const profilePatch = z.object({
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
   declaredBirthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  taxId: z.string().max(50).optional(),
+  contactPreference: z.enum(['none', 'phone', 'meet', 'zoom']).optional(),
+  phoneNumber: z.string().max(50).optional(),
+  contactDetails: z.string().max(1000).optional(),
 })
 
 function normalizeEmail(email: string): string {

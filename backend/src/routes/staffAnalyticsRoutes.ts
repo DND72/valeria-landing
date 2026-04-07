@@ -11,7 +11,7 @@ export function registerStaffAnalyticsRoutes(r: Router, pool: Pool): void {
    */
   r.get('/analytics', async (_req, res) => {
     try {
-      // === 1. Sessioni mensili (ultime 6 mensilità) ===
+      // === 1. Sessioni mensili (ultime 12 mensilità per vedere meglio il trend) ===
       const monthlyRows = await pool.query<{
         month: string
         total: string
@@ -26,58 +26,66 @@ export function registerStaffAnalyticsRoutes(r: Router, pool: Pool): void {
          FROM consults
          WHERE status <> 'cancelled'
            AND start_at IS NOT NULL
-           AND start_at >= NOW() - INTERVAL '6 months'
+           AND start_at >= NOW() - INTERVAL '12 months'
          GROUP BY 1
          ORDER BY 1 ASC`
       )
-
-      // === 2. Distribuzione per tipo (basata su calendly_event_name) ===
+ 
+      // === 2. Distribuzione per tipo (Supporta sia consult_kind che calendly_event_name) ===
       const typeRows = await pool.query<{ kind: string; n: string }>(
         `SELECT
-           CASE
-             WHEN LOWER(calendly_event_name) ILIKE '%combo full%'   THEN 'combo_full'
-             WHEN LOWER(calendly_event_name) ILIKE '%combo light%'  THEN 'combo_light'
-             WHEN LOWER(calendly_event_name) ILIKE '%coaching%'     THEN 'coaching'
-             WHEN LOWER(calendly_event_name) ILIKE '%tarocch%'      THEN 'tarocchi'
-             ELSE 'altro'
-           END AS kind,
+           COALESCE(
+             consult_kind,
+             CASE
+               WHEN LOWER(calendly_event_name) ILIKE '%combo full%'   THEN 'combo_full'
+               WHEN LOWER(calendly_event_name) ILIKE '%combo light%'  THEN 'combo_light'
+               WHEN LOWER(calendly_event_name) ILIKE '%coaching%'     THEN 'coaching'
+               WHEN LOWER(calendly_event_name) ILIKE '%tarocch%'      THEN 'tarocchi'
+               ELSE 'altro'
+             END
+           ) AS kind,
            COUNT(*)::text AS n
          FROM consults
          WHERE status <> 'cancelled'
-           AND start_at IS NOT NULL
-           AND start_at >= NOW() - INTERVAL '12 months'
+           AND (start_at IS NOT NULL OR created_at >= NOW() - INTERVAL '6 months')
          GROUP BY 1
          ORDER BY 2 DESC`
       )
-
+ 
       // === 3. Clienti nuovi vs di ritorno (nel mese corrente) ===
-      // "Nuovo" = prima prenotazione assoluta su quell'email cade nel mese corrente
       const retentionRows = await pool.query<{ is_new: boolean; n: string }>(
-        `WITH first_per_email AS (
-           SELECT
-             LOWER(TRIM(invitee_email)) AS email,
-             MIN(start_at) AS first_at
-           FROM consults
-           WHERE invitee_email IS NOT NULL AND TRIM(invitee_email) <> '' AND status <> 'cancelled'
-           GROUP BY 1
+        `WITH first_per_user AS (
+            SELECT 
+                COALESCE(clerk_user_id, LOWER(TRIM(invitee_email))) as identity,
+                MIN(created_at) as first_at
+            FROM consults
+            WHERE status <> 'cancelled'
+            GROUP BY 1
          )
          SELECT
            (DATE_TRUNC('month', first_at AT TIME ZONE 'Europe/Rome') = DATE_TRUNC('month', NOW() AT TIME ZONE 'Europe/Rome')) AS is_new,
            COUNT(*)::text AS n
-         FROM first_per_email
+         FROM first_per_user
          GROUP BY 1`
       )
-
-      // === 4. Totale distinto clienti ===
+ 
+      // === 4. Totale distinto anime (CRM completo) ===
       const totalClientsRow = await pool.query<{ n: string }>(
-        `SELECT COUNT(DISTINCT LOWER(TRIM(invitee_email)))::text AS n
-         FROM consults
-         WHERE invitee_email IS NOT NULL AND TRIM(invitee_email) <> '' AND status <> 'cancelled'`
+        `WITH unique_identities AS (
+            SELECT clerk_user_id as id, LOWER(TRIM(invitee_email)) as email FROM consults WHERE invitee_email IS NOT NULL OR clerk_user_id IS NOT NULL
+            UNION
+            SELECT clerk_user_id as id, email_normalized as email FROM client_billing_profiles
+            UNION
+            SELECT clerk_user_id as id, NULL as email FROM natal_charts WHERE clerk_user_id IS NOT NULL
+            UNION
+            SELECT clerk_user_id as id, email_normalized as email FROM wallets WHERE clerk_user_id IS NOT NULL
+         )
+         SELECT COUNT(DISTINCT COALESCE(id, email))::text AS n FROM unique_identities`
       )
-
+ 
       const newClients = Number(retentionRows.rows.find((r) => r.is_new)?.n ?? 0)
       const returningClients = Number(retentionRows.rows.find((r) => !r.is_new)?.n ?? 0)
-
+ 
       res.json({
         monthly: monthlyRows.rows.map((r) => ({
           month: r.month,
