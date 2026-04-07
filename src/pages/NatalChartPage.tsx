@@ -32,15 +32,21 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
   const { generateSummary } = useAstrologyApi()
   const [localInterpretation, setLocalInterpretation] = useState(data.interpretation || "")
   const [genLoading, setGenLoading] = useState(false)
+  const [genError, setGenError] = useState<string | null>(null)
 
   const handleGenerateSummary = async () => {
-    if (!data.id) return
+    if (!data.id) {
+      setGenError("ID del tema mancante. Prova a ricaricare la pagina.")
+      return
+    }
     setGenLoading(true)
+    setGenError(null)
     try {
       const res = await generateSummary(String(data.id))
       setLocalInterpretation(res.interpretation)
-    } catch (err) {
+    } catch (err: any) {
       console.error("Errore generazione sintesi:", err)
+      setGenError(err.message || "Errore durante la generazione. Riprova tra poco.")
     } finally {
       setGenLoading(false)
     }
@@ -148,6 +154,11 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
                   >
                     {genLoading ? "Generazione..." : "✦ Genera la Sintesi di Valeria"}
                   </button>
+                  {genError && (
+                    <p className="text-red-400 text-[10px] mt-2 font-bold uppercase tracking-wider animate-pulse">
+                      ⚠️ {genError}
+                    </p>
+                  )}
                   <p className="text-[10px] text-white/30 mt-3 font-serif italic">
                     L'IA di Valeria analizzerà la tua configurazione planetaria completa.
                   </p>
