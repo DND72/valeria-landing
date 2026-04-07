@@ -917,8 +917,9 @@ export default function Dashboard() {
                       onClick={() => {
                         setBookingConfirmed(false)
                         setSelectedConsult(null)
-                        void loadMyConsults()
-                        void loadWallet()
+                        window.setTimeout(() => {
+                          document.getElementById('storico')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }, 50)
                       }}
                       className="btn-gold px-10 py-3 text-sm font-bold uppercase tracking-widest"
                     >
@@ -931,7 +932,11 @@ export default function Dashboard() {
                       consultKind={selectedConsult}
                       onConfirmed={() => {
                         setBookingConfirmed(true)
-                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                        void loadMyConsults()
+                        void loadWallet()
+                        window.setTimeout(() => {
+                          document.getElementById('storico')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }, 600)
                       }}
                       onCancel={() => setSelectedConsult(null)}
                     />
@@ -954,6 +959,7 @@ export default function Dashboard() {
             </motion.section>
 
             <motion.section
+              id="storico"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.38 }}

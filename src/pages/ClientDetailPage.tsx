@@ -433,7 +433,7 @@ export default function ClientDetailPage() {
                     <div className="flex flex-wrap gap-2">
                       {[
                         { id: 'none', label: 'Nessuna', icon: '⚪' },
-                        { id: 'phone', label: 'Telefono', icon: '📞' },
+                        { id: 'phone', label: 'Solo Audio (Meet/Zoom)', icon: '🎧' },
                         { id: 'meet', label: 'Google Meet', icon: '📽️' },
                         { id: 'zoom', label: 'Zoom', icon: '📹' }
                       ].map((pref) => (

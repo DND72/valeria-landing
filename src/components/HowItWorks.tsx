@@ -12,7 +12,7 @@ const steps = [
     number: '02',
     icon: '🔮',
     title: 'Il tuo consulto gratuito',
-    desc: 'Valeria ti contatta per i tuoi 7 minuti gratuiti. Telefono o videochiamata — tu scegli.',
+    desc: 'Valeria ti contatta per i tuoi 7 minuti gratuiti via Meet o Zoom — il nostro standard per qualità e privacy.',
   },
   {
     number: '03',
@@ -24,24 +24,24 @@ const steps = [
 
 const services = [
   {
-    name: 'Consulto breve',
-    duration: '30 minuti · Telefonico',
-    price: '30€',
+    name: 'Consulto breve Tarocchi',
+    duration: '30 minuti · Sessione Digitale',
+    price: '42 CR',
     ideal: 'Una domanda specifica · Una situazione da chiarire',
     icon: '🌙',
   },
   {
-    name: 'Consulto online',
-    duration: '30 minuti · Videochiamata',
-    price: '40€',
-    ideal: 'Meet o Zoom · Più temi · Visione a distanza',
-    icon: '🌐',
+    name: 'Coaching 30 min',
+    duration: '30 minuti · Sessione Digitale',
+    price: '48 CR',
+    ideal: 'Crescita personale e obiettivi brevi',
+    icon: '🍃',
   },
   {
-    name: 'Consulto completo',
-    duration: '60 minuti · Telefonico',
-    price: '50€',
-    ideal: 'Lettura approfondita · Più temi · Visione d\'insieme',
+    name: 'Combo Light',
+    duration: '2x Tarocchi + 1x Coaching',
+    price: '112 CR',
+    ideal: 'Focus & Azione combinati per la massima resa',
     icon: '✨',
   },
 ]

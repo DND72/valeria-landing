@@ -2,7 +2,6 @@
 export type ConsultKind =
   | 'rapido'
   | 'breve'
-  | 'online'
   | 'completo'
   | 'coaching_intro'
   | 'coaching_30'
@@ -22,14 +21,13 @@ export type ConsultChoice = {
 }
 
 export const CONSULT_CHOICES: ConsultChoice[] = [
-  { kind: 'rapido', name: 'Consulto rapido', duration: '10 min · Telefonico', priceLabel: '1,50 €/min', icon: '🚀', costCredits: 15 },
-  { kind: 'breve', name: 'Consulto approfondito', duration: '30 min · Telefonico', priceLabel: '1,40 €/min', icon: '🌙', costCredits: 42 },
-  { kind: 'online', name: 'Consulto online', duration: '30 min · Videochiamata', priceLabel: '1,40 €/min', icon: '🌐', costCredits: 42 },
-  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Telefonico', priceLabel: '1,30 €/min', icon: '✨', costCredits: 78 },
+  { kind: 'rapido', name: 'Consulto rapido', duration: '10 min · Digitale', priceLabel: '1,50 €/min', icon: '🚀', costCredits: 15 },
+  { kind: 'breve', name: 'Consulto approfondito', duration: '30 min · Digitale', priceLabel: '1,40 €/min', icon: '🌙', costCredits: 42 },
+  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Digitale', priceLabel: '1,30 €/min', icon: '✨', costCredits: 78 },
   {
     kind: 'coaching_intro',
     name: 'Coaching · Conoscenza',
-    duration: '10 min · Video o telefono',
+    duration: '10 min · Digitale',
     priceLabel: 'Gratis',
     icon: '🌱',
     costCredits: 0
@@ -37,7 +35,7 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
   {
     kind: 'coaching_30',
     name: 'Coaching - Sessione 30',
-    duration: '30 min · Video o telefono',
+    duration: '30 min · Digitale',
     priceLabel: '1,60 €/min',
     icon: '🍃',
     costCredits: 48
@@ -45,7 +43,7 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
   {
     kind: 'coaching_60',
     name: 'Coaching - Sessione 60',
-    duration: '60 min · Video o telefono',
+    duration: '60 min · Digitale',
     priceLabel: '1,45 €/min',
     icon: '🌿',
     costCredits: 87
