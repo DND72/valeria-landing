@@ -68,26 +68,28 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         free_consults: string
         last_scheduled: Date | null
         is_verified: boolean
+        latest_chart_id: string | null
       }>(
         `WITH identities AS (
             SELECT clerk_user_id, LOWER(TRIM(invitee_email)) as email_norm FROM consults
             UNION
             SELECT clerk_user_id, email_normalized as email_norm FROM client_billing_profiles
+            UNION
+            SELECT clerk_user_id, NULL as email_norm FROM natal_charts WHERE clerk_user_id IS NOT NULL
         )
         SELECT 
             ids.clerk_user_id,
             ids.email_norm,
             COALESCE(MAX(bp.first_name || ' ' || bp.last_name), MAX(c.invitee_name)) AS name_any,
-            COUNT(c.id)::text AS total_consults,
-            SUM(CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS paid_consults,
-            SUM(CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS free_consults,
+            COUNT(DISTINCT c.id)::text AS total_consults,
+            COUNT(DISTINCT CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN c.id END)::text AS paid_consults,
+            COUNT(DISTINCT CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN c.id END)::text AS free_consults,
             MAX(c.start_at) AS last_scheduled,
             COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified,
-            MAX(nc.id) AS latest_chart_id
+            (SELECT id FROM natal_charts WHERE clerk_user_id = ids.clerk_user_id ORDER BY created_at DESC LIMIT 1) AS latest_chart_id
         FROM identities ids
-        LEFT JOIN consults c ON (c.clerk_user_id = ids.clerk_user_id OR LOWER(TRIM(c.invitee_email)) = ids.email_norm)
-        LEFT JOIN client_billing_profiles bp ON (bp.clerk_user_id = ids.clerk_user_id OR bp.email_normalized = ids.email_norm)
-        LEFT JOIN natal_charts nc ON (nc.clerk_user_id = ids.clerk_user_id)
+        LEFT JOIN consults c ON (c.clerk_user_id = ids.clerk_user_id OR (ids.email_norm IS NOT NULL AND LOWER(TRIM(c.invitee_email)) = ids.email_norm))
+        LEFT JOIN client_billing_profiles bp ON (bp.clerk_user_id = ids.clerk_user_id OR (ids.email_norm IS NOT NULL AND bp.email_normalized = ids.email_norm))
         GROUP BY 1, 2`
       )
 
