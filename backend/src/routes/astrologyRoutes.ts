@@ -1,14 +1,14 @@
 import { Router } from 'express'
 import { calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal, generateSummaryForExistingChart, getLatestChart } from '../controllers/astrologyController.js'
-import { requireClerkAuth } from '../middleware/clerkAuth.js'
+import { requireClerkAuth, optionalClerkAuth } from '../middleware/clerkAuth.js'
 
 const router = Router()
 
 // Endpoint pubblico (nessuna auth) - Cielo attuale per la landing
 router.get('/current-sky', getCurrentSky)
 
-// Endpoint gratuito (ora pubblico per calcolo Ascendente ospiti)
-router.post('/calculate-free', calculateNatalChart)
+// Endpoint gratuito (ora con Auth Opzionale per catturare l'ID se l'utente è loggato)
+router.post('/calculate-free', optionalClerkAuth, calculateNatalChart)
 
 // Sincronizzazione post-login
 router.post('/sync-natal', requireClerkAuth, syncNatal)

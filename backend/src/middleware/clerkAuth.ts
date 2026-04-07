@@ -39,6 +39,22 @@ export const requireClerkAuth: RequestHandler = async (req, res, next) => {
   }
 }
 
+/** Identifica l'utente se presente, ma non blocca se manca (Auth Facoltativa) */
+export const optionalClerkAuth: RequestHandler = async (req, _res, next) => {
+  const token = bearerToken(req.headers.authorization)
+  if (!token || !secretKey) return next()
+  try {
+    const payload = await verifyToken(token, { secretKey })
+    const userId = typeof payload.sub === 'string' ? payload.sub : null
+    if (userId) {
+      req.auth = { userId }
+    }
+  } catch (e) {
+    // Ignoriamo errori di token in modalità opzionale
+  }
+  next()
+}
+
 /** Solo utenti con publicMetadata staff/privileged (come Dashboard “Staff”) */
 export const requireStaff: RequestHandler = async (req, res, next) => {
   const userId = req.auth?.userId
