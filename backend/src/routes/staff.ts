@@ -12,6 +12,7 @@ import { serviceKindFromEventName } from '../lib/consultServiceLabel.js'
 import { registerStaffBlogCommentRoutes } from './staffBlogCommentsRoutes.js'
 import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
+import { registerStaffBookingRoutes } from './staffBooking.js'
 import { askLenormandMentor } from '../lib/lenormandRAG.js'
 
 const noteBody = z.object({
@@ -296,6 +297,7 @@ export function createStaffRouter(pool: Pool): Router {
   registerStaffReviewRoutes(r, pool)
   registerStaffBlogCommentRoutes(r, pool)
   registerStaffAnalyticsRoutes(r, pool)
+  registerStaffBookingRoutes(r, pool)
 
   r.post('/consults/:id/notes', async (req, res) => {
     const id = req.params.id

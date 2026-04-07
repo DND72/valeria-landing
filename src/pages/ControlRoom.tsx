@@ -12,27 +12,10 @@ import {
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 
-const CALENDLY_SCHEDULES_URL = 'https://calendly.com/app/availability/schedules'
 /** Portale Calendly: Meeting / appuntamenti programmati (stessa area dove si gestiscono riprogrammazioni, note, ecc.). */
 const CALENDLY_MEETINGS_URL = 'https://calendly.com/app/scheduled_events/user/me?period=upcoming'
 
-type StaffCalendlyAvailability =
-  | {
-      configured: true
-      userTimeZone: string | null
-      schedules: Array<{
-        name: string
-        timeZone: string | null
-        weekdays: Array<{ key: string; label: string; intervals: string[] }>
-        exceptions: string[]
-      }>
-    }
-  | {
-      configured: false
-      userTimeZone: null
-      schedules: []
-      message: string
-    }
+
 
 type StaffCalendlyMeetings =
   | {
@@ -50,6 +33,26 @@ type StaffCalendlyMeetings =
       meetings: []
       message: string
     }
+
+type InternalAvailability = {
+  day_of_week: number
+  is_active: boolean
+  start_time: string
+  end_time: string
+  start_at?: string
+  end_at?: string
+}
+
+type InternalOverride = {
+  id: string
+  override_date: string
+  is_available: boolean
+  start_time: string | null
+  end_time: string | null
+  reason: string | null
+}
+
+const DAYS_LABELS = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
 
 type ConsultRow = {
   id: string
@@ -129,30 +132,29 @@ export default function ControlRoom() {
 
   const [statusDraft, setStatusDraft] = useState<string>('scheduled')
 
-  const [availability, setAvailability] = useState<StaffCalendlyAvailability | null>(null)
-  const [availabilityLoading, setAvailabilityLoading] = useState(() => Boolean(getApiBaseUrl()))
 
-  const loadAvailability = useCallback(async () => {
-    if (!apiConfigured) return
-    setAvailabilityLoading(true)
-    try {
-      const data = await apiJson<StaffCalendlyAvailability>(getToken, '/api/staff/calendly-availability')
-      setAvailability(data)
-    } catch (e) {
-      setAvailability({
-        configured: false,
-        userTimeZone: null,
-        schedules: [],
-        message:
-          e instanceof ApiError ? String(e.message) : 'Impossibile caricare le disponibilità da Calendly.',
-      })
-    } finally {
-      setAvailabilityLoading(false)
-    }
-  }, [getToken, apiConfigured])
 
   const [meetings, setMeetings] = useState<StaffCalendlyMeetings | null>(null)
   const [meetingsLoading, setMeetingsLoading] = useState(() => Boolean(getApiBaseUrl()))
+
+  const [internalAvailability, setInternalAvailability] = useState<InternalAvailability[]>([])
+  const [internalOverrides, setInternalOverrides] = useState<InternalOverride[]>([])
+  const [internalLoading, setInternalLoading] = useState(false)
+
+  const loadInternalAvailability = useCallback(async () => {
+    if (!apiConfigured) return
+    setInternalLoading(true)
+    try {
+      const res = await apiJson<{ availability: InternalAvailability[] }>(getToken, '/api/staff/booking/availability')
+      setInternalAvailability(res.availability)
+      const res2 = await apiJson<{ overrides: InternalOverride[] }>(getToken, '/api/staff/booking/overrides')
+      setInternalOverrides(res2.overrides)
+    } catch (e) {
+      console.error('[loadInternalAvailability]', e)
+    } finally {
+      setInternalLoading(false)
+    }
+  }, [getToken, apiConfigured])
 
   const loadMeetings = useCallback(async () => {
     if (!apiConfigured) return
@@ -218,9 +220,9 @@ export default function ControlRoom() {
       return
     }
     void loadList()
-    void loadAvailability()
+    void loadInternalAvailability()
     void loadMeetings()
-  }, [isLoaded, user, navigate, loadList, loadAvailability, loadMeetings])
+  }, [isLoaded, user, navigate, loadList, loadInternalAvailability, loadMeetings])
 
   useEffect(() => {
     if (!selectedId) {
@@ -337,110 +339,171 @@ export default function ControlRoom() {
           </div>
         </motion.div>
 
+        {/* Gestione Disponibilità Interna (Sostituisce Calendly) */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.02 }}
           className="mystical-card mb-8"
         >
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="font-serif text-lg text-white">Disponibilità settimanale</h2>
+              <h2 className="font-serif text-lg text-white">Disponibilità Professionale (Booking Interno)</h2>
               <p className="text-white/45 text-sm mt-1 max-w-2xl">
-                Riepilogo informativo di quanto è già impostato su Calendly (fasce ricorrenti e, se presenti, date
-                specifiche). Per modificare orari e settimana usa il pulsante qui sotto.
+                Imposta i tuoi orari settimanali. Queste fasce verranno usate per generare gli slot disponibili per i clienti sul sito.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => void loadAvailability()}
-                className="btn-outline text-sm px-4 py-2"
-                disabled={!apiConfigured || availabilityLoading}
-              >
-                {availabilityLoading ? 'Sincronizzazione…' : 'Sincronizza da Calendly'}
-              </button>
-              <a
-                href={CALENDLY_SCHEDULES_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-gold text-sm px-4 py-2 text-center"
-              >
-                Aggiorna disponibilità
-              </a>
-            </div>
+            {internalLoading && <span className="text-white/30 text-xs">Aggiornamento...</span>}
           </div>
 
-          {!apiConfigured && (
-            <p className="text-amber-200/85 text-sm">
-              Collega il backend (<code className="text-amber-300/90">VITE_API_URL</code>) per leggere le disponibilità
-              da Calendly.
-            </p>
-          )}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-8">
+            {DAYS_LABELS.map((label, idx) => {
+              const day = internalAvailability.find(a => a.day_of_week === idx) || {
+                day_of_week: idx,
+                is_active: false,
+                start_time: '10:00',
+                end_time: '18:00'
+              }
+              const isActive = day.is_active
 
-          {apiConfigured && availabilityLoading && !availability && (
-            <p className="text-white/45 text-sm">Caricamento disponibilità…</p>
-          )}
+              return (
+                <div key={label} className={`p-3 rounded-xl border transition-all ${isActive ? 'bg-gold-500/5 border-gold-500/30' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                  <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2 font-bold">{label}</p>
+                  
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={isActive}
+                        onChange={async (e) => {
+                          const active = e.target.checked
+                          await apiJson(getToken, '/api/staff/booking/availability', {
+                            method: 'POST',
+                            body: JSON.stringify({ ...day, is_active: active, start_time: day.start_at || day.start_time, end_time: day.end_at || day.end_time })
+                          })
+                          void loadInternalAvailability()
+                        }}
+                        className="accent-gold-500"
+                      />
+                      <span className="text-xs text-white/70">{isActive ? 'Attiva' : 'Chiuso'}</span>
+                    </label>
 
-          {apiConfigured && availability && !availability.configured && (
-            <div className="rounded-lg border border-amber-600/25 bg-amber-950/20 px-4 py-3 text-sm text-amber-100/90">
-              {availability.message}
-            </div>
-          )}
-
-          {apiConfigured && availability?.configured && availability.userTimeZone && (
-            <p className="text-xs text-white/35 mb-3">Fuso orario account Calendly: {availability.userTimeZone}</p>
-          )}
-
-          {apiConfigured && availability?.configured && availability.schedules.length === 0 && !availabilityLoading && (
-            <p className="text-white/45 text-sm">Nessun programma di disponibilità restituito dall&apos;API Calendly.</p>
-          )}
-
-          {availability?.configured &&
-            availability.schedules.map((sched, idx) => (
-              <div
-                key={`${sched.name}-${idx}`}
-                className={idx === 0 ? '' : 'mt-6 pt-6 border-t border-white/10'}
-              >
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
-                  <h3 className="font-semibold text-white text-sm">{sched.name}</h3>
-                  {sched.timeZone && (
-                    <span className="text-[11px] text-white/35 uppercase tracking-wide">· {sched.timeZone}</span>
-                  )}
+                    {isActive && (
+                      <div className="space-y-1 mt-1">
+                        <input 
+                          type="text" 
+                          defaultValue={day.start_at || day.start_time}
+                          onBlur={async (e) => {
+                            if (e.target.value === (day.start_at || day.start_time)) return
+                            await apiJson(getToken, '/api/staff/booking/availability', {
+                              method: 'POST',
+                              body: JSON.stringify({ ...day, is_active: true, start_time: e.target.value, end_time: day.end_at || day.end_time })
+                            })
+                            void loadInternalAvailability()
+                          }}
+                          className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono"
+                        />
+                        <input 
+                          type="text" 
+                          defaultValue={day.end_at || day.end_time}
+                          onBlur={async (e) => {
+                            if (e.target.value === (day.end_at || day.end_time)) return
+                            await apiJson(getToken, '/api/staff/booking/availability', {
+                              method: 'POST',
+                              body: JSON.stringify({ ...day, is_active: true, start_time: day.start_at || day.start_time, end_time: e.target.value })
+                            })
+                            void loadInternalAvailability()
+                          }}
+                          className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="overflow-x-auto rounded-lg border border-white/10">
-                  <table className="w-full text-sm text-left min-w-[280px]">
-                    <thead>
-                      <tr className="bg-white/[0.04] text-white/50 text-xs uppercase tracking-wide">
-                        <th className="py-2.5 px-3 font-medium w-[40%]">Giorno</th>
-                        <th className="py-2.5 px-3 font-medium">Fasce orarie</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sched.weekdays.map((row) => (
-                        <tr key={row.key} className="border-t border-white/[0.06]">
-                          <td className="py-2 px-3 text-white/85 whitespace-nowrap">{row.label}</td>
-                          <td className="py-2 px-3 text-white/55">
-                            {row.intervals.length > 0 ? row.intervals.join(' · ') : '—'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {sched.exceptions.length > 0 && (
-                  <div className="mt-3 text-xs text-white/45">
-                    <p className="font-medium text-white/55 mb-1.5">Regole su date specifiche</p>
-                    <ul className="list-disc pl-4 space-y-1">
-                      {sched.exceptions.map((ex, i) => (
-                        <li key={i}>{ex}</li>
-                      ))}
-                    </ul>
+              )
+            })}
+          </div>
+
+          <div className="border-t border-white/5 pt-6 mt-6">
+            <h3 className="text-white font-medium text-sm mb-4">Chiusure Straordinarie & Override</h3>
+            <div className="grid lg:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <p className="text-white/30 text-[11px] uppercase tracking-widest mb-3 font-bold text-center sm:text-left">Prossimi eventi registrati</p>
+                {internalOverrides.length === 0 ? (
+                  <p className="text-white/20 text-xs italic text-center sm:text-left">Nessun override impostato.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {internalOverrides.map(ov => (
+                      <div key={ov.id} className="flex items-center justify-between bg-white/[0.02] border border-white/5 rounded-lg p-2.5 group">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${ov.is_available ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]'}`} />
+                          <div>
+                            <p className="text-white/80 text-xs font-medium">
+                              {new Date(ov.override_date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
+                            <p className="text-[10px] text-white/40 italic">{ov.reason || (ov.is_available ? 'Orario speciale' : 'Chiuso')}</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={async () => {
+                            if (!window.confirm("Rimuovere questa regola?")) return
+                            await apiJson(getToken, `/api/staff/booking/overrides/${ov.id}`, { method: 'DELETE' })
+                            void loadInternalAvailability()
+                          }}
+                          className="text-white/10 hover:text-red-400 p-1.5 transition-colors"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            ))}
+
+              <div className="bg-white/[0.01] border border-white/5 rounded-xl p-4">
+                <p className="text-white/45 text-[10px] uppercase tracking-widest mb-4 font-bold">Aggiungi Override</p>
+                <form 
+                  className="grid grid-cols-2 gap-3"
+                  onSubmit={async (e) => {
+                    e.preventDefault()
+                    const form = e.target as HTMLFormElement
+                    const data = {
+                      override_date: (form.elements.namedItem('date') as HTMLInputElement).value,
+                      is_available: (form.elements.namedItem('available') as HTMLSelectElement).value === 'true',
+                      reason: (form.elements.namedItem('reason') as HTMLInputElement).value
+                    }
+                    await apiJson(getToken, '/api/staff/booking/overrides', {
+                      method: 'POST',
+                      body: JSON.stringify(data)
+                    })
+                    form.reset()
+                    void loadInternalAvailability()
+                  }}
+                >
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] text-white/40 mb-1">Data</label>
+                    <input name="date" type="date" required className="w-full bg-black/40 border border-white/10 rounded px-3 py-1.5 text-xs text-white" />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] text-white/40 mb-1">Stato</label>
+                    <select name="available" className="w-full bg-black/40 border border-white/10 rounded px-3 py-1.5 text-xs text-white">
+                      <option value="false">Chiuso / Ferie</option>
+                      <option value="true">Orario Speciale (Apre)</option>
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-[10px] text-white/40 mb-1">Motivazione (Opzionale)</label>
+                    <input name="reason" type="text" placeholder="Es: Giorno di riposo" className="w-full bg-black/40 border border-white/10 rounded px-3 py-1.5 text-xs text-white" />
+                  </div>
+                  <button type="submit" className="col-span-2 btn-gold text-[10px] py-2 mt-2">Aggiungi Regola</button>
+                </form>
+              </div>
+            </div>
+          </div>
         </motion.section>
+
 
         <motion.section
           initial={{ opacity: 0, y: 12 }}
