@@ -82,10 +82,12 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             SUM(CASE WHEN c.id IS NOT NULL AND NOT COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS paid_consults,
             SUM(CASE WHEN c.id IS NOT NULL AND COALESCE(c.is_free_consult, false) THEN 1 ELSE 0 END)::text AS free_consults,
             MAX(c.start_at) AS last_scheduled,
-            COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified
+            COALESCE(BOOL_OR(bp.age_verified), false) AS is_verified,
+            MAX(nc.id) AS latest_chart_id
         FROM identities ids
         LEFT JOIN consults c ON (c.clerk_user_id = ids.clerk_user_id OR LOWER(TRIM(c.invitee_email)) = ids.email_norm)
         LEFT JOIN client_billing_profiles bp ON (bp.clerk_user_id = ids.clerk_user_id OR bp.email_normalized = ids.email_norm)
+        LEFT JOIN natal_charts nc ON (nc.clerk_user_id = ids.clerk_user_id)
         GROUP BY 1, 2`
       )
 
@@ -123,6 +125,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         lastSignInAt: string | null
         balance: number | null
         lockedBalance: number | null
+        latestChartId: string | null
       }
 
       // --- 3. MERGE DATI ---
@@ -166,6 +169,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           lastSignInAt: clerkInfo?.lastSignInAt ? new Date(clerkInfo.lastSignInAt).toISOString() : null,
           balance: finalClerkId ? (walletsMap.get(finalClerkId)?.balance ?? null) : null,
           lockedBalance: finalClerkId ? (walletsMap.get(finalClerkId)?.lockedBalance ?? null) : null,
+          latestChartId: (row as any).latest_chart_id || null
         }
       })
 
@@ -188,6 +192,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             lastSignInAt: info.lastSignInAt ? new Date(info.lastSignInAt).toISOString() : null,
             balance: walletsMap.get(info.clerkId)?.balance ?? null,
             lockedBalance: walletsMap.get(info.clerkId)?.lockedBalance ?? null,
+            latestChartId: null
           })
         }
       }
@@ -330,6 +335,20 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         }
       }
 
+      let latestChart: { id: string; interpretation: string | null } | null = null
+      if (clrkIdToUse) {
+        const chartRes = await pool.query(
+          `SELECT id, interpretation FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`,
+          [clrkIdToUse]
+        )
+        if (chartRes.rows.length > 0) {
+          latestChart = {
+            id: chartRes.rows[0].id,
+            interpretation: chartRes.rows[0].interpretation
+          }
+        }
+      }
+
       res.json({
         email,
         displayName: displayName || 'Cliente ospite',
@@ -353,6 +372,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
               updatedAt: profile.updated_at ? new Date(profile.updated_at).toISOString() : null,
             }
           : null,
+        latestChart,
         consults: consultRows.map((c: Record<string, unknown>) => ({
           ...c,
           start_at: c.start_at ? new Date(c.start_at as string).toISOString() : null,

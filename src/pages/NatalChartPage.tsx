@@ -344,8 +344,8 @@ export default function NatalChartPage() {
       if (isLoggedIn) {
         // ID Bridge: Syncing data and getting the permanent chartId
         const syncRes = await syncNatalData({ birthDate: date, birthTime: time, city: city.trim() })
-        if (syncRes.chartId) {
-          setResult({ ...res, id: syncRes.chartId })
+        if (syncRes.id) {
+          setResult({ ...res, id: syncRes.id })
           setIsFixed(true) // Crystallize permanently
         }
       }

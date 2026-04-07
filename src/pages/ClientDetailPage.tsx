@@ -2,6 +2,8 @@ import { useAuth, useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
+import { useAstrologyApi } from '../api/astrology'
 import { apiJson, ApiError } from '../lib/api'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
@@ -50,6 +52,10 @@ type DetailPayload = {
     balance: number
     lockedBalance: number
   } | null
+  latestChart: {
+    id: string
+    interpretation: string | null
+  } | null
 }
 
 function formatWhen(iso: string | null): string {
@@ -85,6 +91,10 @@ export default function ClientDetailPage() {
   const [savingAnagrafica, setSavingAnagrafica] = useState(false)
   const [savingInvoiced, setSavingInvoiced] = useState(false)
   const [postingNoteFor, setPostingNoteFor] = useState<string | null>(null)
+
+  const { generateSummary } = useAstrologyApi()
+  const [genLoading, setGenLoading] = useState(false)
+  const [genSintesi, setGenSintesi] = useState<string | null>(null)
 
   // Campi anagrafici editabili
   const [firstName, setFirstName] = useState('')
@@ -399,6 +409,49 @@ export default function ClientDetailPage() {
                 <p className="text-white/40 text-sm">Questo cliente non ha ancora attivato un Wallet o non è registrato sulla piattaforma.</p>
               )}
             </section>
+
+            {data.latestChart && (
+              <section className="mystical-card border-indigo-500/20 bg-indigo-500/5">
+                <h2 className="font-serif text-lg text-indigo-300 mb-4 flex items-center gap-2">
+                  <span className="text-xl">✨</span> Identità Astrale & Sintesi di Valeria
+                </h2>
+                
+                <div className="mb-6 p-4 bg-black/40 border border-white/5 rounded-2xl">
+                  <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">ID Tema Natale</p>
+                  <p className="text-sm font-mono text-indigo-200">{data.latestChart.id}</p>
+                </div>
+
+                <div className="space-y-4">
+                  {(genSintesi || data.latestChart.interpretation) ? (
+                    <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm bg-black/30 p-6 rounded-2xl border border-white/5">
+                      <ReactMarkdown>{genSintesi || data.latestChart.interpretation || ""}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-white/40 text-xs italic mb-4">Nessuna sintesi generata per questo tema.</p>
+                  )}
+
+                  <button
+                    onClick={async () => {
+                      if (!data.latestChart) return
+                      setGenLoading(true)
+                      try {
+                        const res = await generateSummary(data.latestChart.id)
+                        setGenSintesi(res.interpretation)
+                      } catch (e: any) {
+                        alert("Errore generazione: " + e.message)
+                      } finally {
+                        setGenLoading(false)
+                      }
+                    }}
+                    disabled={genLoading}
+                    className="btn-gold text-xs px-6 py-2.5 flex items-center gap-2"
+                  >
+                    {genLoading ? "Generazione..." : (data.latestChart.interpretation ? "✦ Rigenera Sintesi di Valeria" : "✦ Genera Sintesi di Valeria")}
+                  </button>
+                  <p className="text-[10px] text-white/30 italic">L'IA analizzerà la configurazione astrale completa di questo cliente.</p>
+                </div>
+              </section>
+            )}
 
             <section className="mystical-card">
               <h2 className="font-serif text-lg text-white mb-3">Situazione &amp; fatturazione</h2>

@@ -23,6 +23,7 @@ type ClientRow = {
   lastSignInAt: string | null
   balance: number | null
   lockedBalance: number | null
+  latestChartId: string | null
 }
 
 function formatWhen(iso: string | null): string {
@@ -194,7 +195,10 @@ export default function ClientManagementPage() {
                         </div>
                       </td>
                       <td className="py-2.5 px-3">
-                        <div className="text-white/90">{c.name || (c.isRegistered ? 'Utente senza nome' : '—')}</div>
+                        <div className="text-white/90 flex items-center gap-2">
+                          {c.name || (c.isRegistered ? 'Utente senza nome' : '—')}
+                          {c.latestChartId && <span title="Tema calcolato" className="text-gold-500 animate-pulse text-[10px]">✨</span>}
+                        </div>
                         {c.username && <div className="text-gold-500/50 text-[10px]">@{c.username}</div>}
                       </td>
                       <td className="py-2.5 px-3 text-white/55 text-xs break-all">{c.email || <span className="italic opacity-30 text-[10px]">N/D (Username login)</span>}</td>
