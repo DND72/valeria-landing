@@ -263,15 +263,29 @@ export const syncNatal = async (req: Request, res: Response) => {
     const { pool } = await import('../db.js')
 
     try {
-      // 0. Verifica se i dati sono già presenti e bloccati
+      // 0. Verifica se i dati sono già presenti e bloccati (Solo se TUTTI i campi sono pieni)
       const currentProfile = await pool.query(
-        `SELECT declared_birthday FROM client_billing_profiles WHERE clerk_user_id = $1`,
+        `SELECT declared_birthday, birth_time, birth_city FROM client_billing_profiles WHERE clerk_user_id = $1`,
         [userId]
       )
 
-      if (currentProfile.rows.length > 0 && currentProfile.rows[0].declared_birthday) {
-        res.status(403).json({ error: 'I dati di nascita sono bloccati. Contatta l\'assistenza per modificarli.' })
-        return
+      if (currentProfile.rows.length > 0) {
+          const row = currentProfile.rows[0];
+          const isComplete = row.declared_birthday && row.birth_time && row.birth_city;
+          
+          // Se è già completo e l'utente prova a cambiare qualcosa, blocchiamo.
+          // Se non è completo, lasciamo procedere per la "finitura" dell'identità astrale.
+          if (isComplete) {
+              const matches = 
+                  new Date(row.declared_birthday).toISOString().split('T')[0] === birthDate &&
+                  row.birth_time === birthTime &&
+                  row.birth_city === city;
+                  
+              if (!matches) {
+                  res.status(403).json({ error: 'I dati di nascita sono già cristallizzati e non possono essere modificati.' })
+                  return
+              }
+          }
       }
 
       // 1. Inserisce o Aggiorna il profilo billing (Sincronizzando se presente l'email, altrimenti solo ID)
