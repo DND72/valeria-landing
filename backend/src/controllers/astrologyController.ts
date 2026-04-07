@@ -116,9 +116,18 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
       const { generateChartInterpretation } = await import('../lib/gemini.js')
       interpretation = await generateChartInterpretation(result, 'basic')
       
+      // 1. Assicuriamoci che l'utente abbia un Wallet e un Profilo (Inizializzazione atomica)
       const { pool } = await import('../db.js')
       
-      // Sincronizziamo l'Anagrafica se l'email è fornita
+      // Upsert Wallet (Balance 0)
+      await pool.query(
+        `INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, updated_at)
+         VALUES ($1, 0, 0, now())
+         ON CONFLICT (clerk_user_id) DO NOTHING`,
+        [userId]
+      )
+
+      // 2. Sincronizziamo l'Anagrafica se l'email è fornita
       if (email) {
         const normEmail = email.toLowerCase().trim();
         await pool.query(
@@ -287,6 +296,14 @@ export const syncNatal = async (req: Request, res: Response) => {
               }
           }
       }
+
+      // 0.5 Assicuriamoci che l'utente abbia un Wallet (Balance 0)
+      await pool.query(
+        `INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, updated_at)
+         VALUES ($1, 0, 0, now())
+         ON CONFLICT (clerk_user_id) DO NOTHING`,
+        [userId]
+      )
 
       // 1. Inserisce o Aggiorna il profilo billing (Sincronizzando se presente l'email, altrimenti solo ID)
       const normEmail = email?.toLowerCase().trim() || null;

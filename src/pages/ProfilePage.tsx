@@ -8,9 +8,9 @@ import { useEffect } from 'react'
 
 function FieldRow({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <dt className="text-white/40 text-xs mb-0.5">{label}</dt>
-      <dd className="text-white/85 text-sm">{value}</dd>
+    <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+      <dt className="text-gold-400/70 text-[10px] uppercase tracking-widest mb-1 font-bold">{label}</dt>
+      <dd className="text-white text-base font-medium">{value}</dd>
     </div>
   )
 }
