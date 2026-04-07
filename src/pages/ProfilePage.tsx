@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { type FormEvent, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
+import { useMeApi, type ClientProfile } from '../api/me'
+import { useEffect } from 'react'
 
 function FieldRow({ label, value }: { label: string; value: string }) {
   return (
@@ -28,6 +30,16 @@ export default function ProfilePage() {
   // Delete account
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  // Identity data
+  const { getProfile } = useMeApi()
+  const [profile, setProfile] = useState<ClientProfile | null>(null)
+
+  useEffect(() => {
+    getProfile()
+      .then(setProfile)
+      .catch(err => console.error("Errore caricamento profilo:", err))
+  }, [])
 
   if (!isLoaded) {
     return (
@@ -160,6 +172,50 @@ export default function ProfilePage() {
             >
               Modifica nome e foto (portale Clerk) ↗
             </a>
+          </motion.section>
+
+          {/* Dati Identità (Reliquia) */}
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="mystical-card relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 p-4">
+               <span className="text-[10px] uppercase tracking-widest px-2 py-1 bg-gold-500/10 border border-gold-500/20 text-gold-400 rounded-md">
+                 Dati Certificati ✦
+               </span>
+            </div>
+
+            <h2 className="font-serif text-lg text-white mb-1">Dati Identità</h2>
+            <p className="text-white/40 text-[11px] mb-6">
+              Questi dati sono parte della tua identità astrale e fiscale. Una volta inseriti sono <span className="text-gold-500/80">immutabili</span>.
+            </p>
+
+            <dl className="grid sm:grid-cols-2 gap-y-6 gap-x-4 text-sm mb-6">
+              <FieldRow 
+                label="Data di Nascita" 
+                value={profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString('it-IT') : '—'} 
+              />
+              <FieldRow 
+                label="Ora di Nascita" 
+                value={profile?.birthTime || '—'} 
+              />
+              <FieldRow 
+                label="Città di Nascita" 
+                value={profile?.birthCity || '—'} 
+              />
+              <FieldRow 
+                label="Codice Fiscale" 
+                value={profile?.taxId || '—'} 
+              />
+            </dl>
+
+            <div className="pt-4 border-t border-white/5">
+              <p className="text-[11px] text-white/30 italic">
+                Hai bisogno di correggere un errore? <Link to="/faq" className="text-gold-500/50 hover:text-gold-500 underline transition-colors">Contatta Valeria</Link> per una revisione manuale dei dati.
+              </p>
+            </div>
           </motion.section>
 
           {/* Cambio password */}

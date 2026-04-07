@@ -316,12 +316,16 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         } catch (ce) { console.error('[clerk search email error]', ce) }
       }
 
-      // --- NUOVA LOGICA: Se mancano i nomi, li cerchiamo in Clerk ---
-      if (clrkIdToUse && (!firstName || !lastName) && clerkClient) {
+      // --- NUOVA LOGICA: Se mancano i nomi o la data di nascita, li cerchiamo in Clerk ---
+      if (clrkIdToUse && clerkClient) {
         try {
           const u = await clerkClient.users.getUser(clrkIdToUse)
           if (!firstName) firstName = u.firstName || null
           if (!lastName) lastName = u.lastName || null
+          // Fallback per la data di nascita da Clerk se non impostata nel DB
+          if (!declaredBirthday && u.birthday) {
+            declaredBirthday = u.birthday // Clerk format is YYYY-MM-DD
+          }
         } catch (ce) {
           console.error('[clerk fetch detail error]', ce)
         }

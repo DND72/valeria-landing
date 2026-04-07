@@ -337,9 +337,10 @@ export default function ClientDetailPage() {
                   <input
                     type="date"
                     value={birthday}
-                    onChange={(e) => setBirthday(e.target.value)}
-                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none [color-scheme:dark]"
+                    readOnly
+                    className="w-full bg-dark-600/30 border border-white/5 rounded-lg px-3 py-2 text-sm text-white/50 cursor-not-allowed outline-none [color-scheme:dark]"
                   />
+                  <p className="text-[9px] text-white/20 mt-1 italic">Dato prelevato da Clerk/Registrazione (Immutabile)</p>
                 </label>
                 <label className="block">
                   <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Ora di Nascita</span>

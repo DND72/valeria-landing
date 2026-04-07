@@ -274,6 +274,59 @@ export function createMeRouter(pool: Pool): Router {
     }
   })
 
+  r.get('/profile', async (req, res) => {
+    const userId = req.auth?.userId
+    if (!userId) {
+      res.status(401).json({ error: 'Non autenticato' })
+      return
+    }
+
+    try {
+      // 1. Dati da Clerk
+      let clerkInfo = { firstName: '', lastName: '', birthday: '' }
+      if (clerkClient) {
+        try {
+          const u = await clerkClient.users.getUser(userId)
+          clerkInfo = { 
+            firstName: u.firstName || '', 
+            lastName: u.lastName || '',
+            birthday: (u as any).birthday || ''
+          }
+        } catch {}
+      }
+
+      // 2. Dati da Billing Profile
+      const bpRes = await pool.query(
+        `SELECT first_name, last_name, declared_birthday, birth_time, birth_city, codice_fiscale 
+         FROM client_billing_profiles WHERE clerk_user_id = $1`,
+        [userId]
+      )
+      const bp = bpRes.rows[0]
+
+      // 3. Fallback da Natal Charts
+      const ncRes = await pool.query(
+        `SELECT birth_date, birth_time, city FROM natal_charts 
+         WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        [userId]
+      )
+      const nc = ncRes.rows[0]
+
+      res.json({
+        firstName: bp?.first_name || clerkInfo.firstName,
+        lastName: bp?.last_name || clerkInfo.lastName,
+        birthDate: bp?.declared_birthday 
+          ? new Date(bp.declared_birthday).toISOString().slice(0, 10) 
+          : (clerkInfo.birthday || (nc?.birth_date ? new Date(nc.birth_date).toISOString().slice(0, 10) : null)),
+        birthTime: bp?.birth_time || nc?.birth_time || null,
+        birthCity: bp?.birth_city || nc?.city || null,
+        taxId: bp?.codice_fiscale || null
+      })
+    } catch (e) {
+      console.error('[me profile]', e)
+      res.status(500).json({ error: 'Errore database' })
+    }
+  })
+
   registerMeBlogCommentRoutes(r, pool)
   registerMeReviewRoutes(r, pool)
 
