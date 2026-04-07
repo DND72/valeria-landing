@@ -159,18 +159,17 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
       }
 
       // --- 3. MERGE DATI ---
-      // Partiamo dalle email e clerkId trovati nel DB
+      // Usiamo una MAP base email per unificare Cloni (Guest + Registrati)
+      const aggregated = new Map<string, Row>()
       const dbClerkIds = new Set(rows.map(r => r.clerk_user_id).filter(Boolean) as string[])
-      
-      const list: Row[] = rows.map((row) => {
+
+      for (const row of rows) {
+        const email = row.email_norm ? normalizeEmail(row.email_norm) : null
         const cId = row.clerk_user_id
-        const email = row.email_norm
-        
-        // Cerchiamo le info di Clerk via ID (priorità) o via email
+
+        // Cerchiamo le info di Clerk via ID o via email
         let clerkInfo = cId ? clerkDict.get(cId) : null
         if (!clerkInfo && email) {
-          // Fallback: se avevamo solo l'email (vecchio clienteguest), 
-          // proviamo a vedere se in clerkDict c'è qualcuno con quell'email
           for (const info of clerkDict.values()) {
             if (info.email === email) {
               clerkInfo = info
@@ -182,10 +181,11 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         const lastInv = email ? (invMap.get(email) ?? null) : null
         const invoiced = invoicedThisMonthRome(lastInv)
         const finalClerkId = cId || clerkInfo?.clerkId || null
-        
-        return {
+        const finalEmail = email || clerkInfo?.email || null
+
+        const entry: Row = {
           clerkId: finalClerkId,
-          email,
+          email: finalEmail,
           username: clerkInfo?.username || null,
           name: clerkInfo ? `${clerkInfo.firstName || ''} ${clerkInfo.lastName || ''}`.trim() || row.name_any : row.name_any,
           totalConsults: Number(row.total_consults),
@@ -201,12 +201,45 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           lockedBalance: finalClerkId ? (walletsMap.get(finalClerkId)?.lockedBalance ?? null) : null,
           latestChartId: (row as any).latest_chart_id || null
         }
-      })
 
-      // Aggiungiamo eventuali utenti Clerk che NON sono ancora nel DB (0 consulti, mai entrati in dashboard)
+        // Se abbiamo già un'entry per questa email (es. registrato inserito prima da Clerk o altro), unifichiamo
+        if (finalEmail && aggregated.has(finalEmail)) {
+          const prev = aggregated.get(finalEmail)!
+          aggregated.set(finalEmail, {
+            ...prev,
+            ...entry,
+            // Mantieni i valori più "forti" se presenti
+            clerkId: entry.clerkId || prev.clerkId,
+            name: (entry.isRegistered ? entry.name : prev.name) || entry.name || prev.name,
+            totalConsults: entry.totalConsults + prev.totalConsults,
+            paidConsults: entry.paidConsults + prev.paidConsults,
+            freeConsults: entry.freeConsults + prev.freeConsults,
+            lastScheduledAt: (entry.lastScheduledAt && prev.lastScheduledAt) 
+              ? (new Date(entry.lastScheduledAt) > new Date(prev.lastScheduledAt) ? entry.lastScheduledAt : prev.lastScheduledAt)
+              : (entry.lastScheduledAt || prev.lastScheduledAt)
+          })
+        } else {
+          if (finalEmail) aggregated.set(finalEmail, entry)
+          else if (finalClerkId) aggregated.set(`id-${finalClerkId}`, entry) // Fallback raro se manca email
+        }
+      }
+
+      // Aggiungiamo eventuali utenti Clerk che NON sono ancora nel DB o non sono stati unificati
       for (const [cId, info] of clerkDict.entries()) {
+        const norm = info.email ? normalizeEmail(info.email) : null
+        if (norm && aggregated.has(norm)) {
+          // Già unificato sopra o presente
+          const existing = aggregated.get(norm)!
+          if (!existing.clerkId) {
+             existing.clerkId = cId
+             existing.isRegistered = true
+             existing.name = `${info.firstName || ''} ${info.lastName || ''}`.trim() || existing.name
+          }
+          continue
+        }
+        
         if (!dbClerkIds.has(cId)) {
-          list.push({
+          const entry: Row = {
             clerkId: cId,
             email: info.email,
             username: info.username || null,
@@ -223,9 +256,13 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
             balance: walletsMap.get(info.clerkId)?.balance ?? null,
             lockedBalance: walletsMap.get(info.clerkId)?.lockedBalance ?? null,
             latestChartId: null
-          })
+          }
+          if (info.email) aggregated.set(normalizeEmail(info.email), entry)
+          else aggregated.set(`id-${cId}`, entry)
         }
       }
+
+      const list = Array.from(aggregated.values())
 
       if (sort === 'alpha') {
         list.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'it'))
