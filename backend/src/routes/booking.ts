@@ -11,9 +11,14 @@ export function createBookingRouter(pool: Pool): Router {
   const r = Router()
 
   // --- ENGINE DISPONIBILITÀ INTERNA ---
+  const BUFFER_MINS = 10
 
-  r.get('/available-slots', async (_req, res) => {
+  r.get('/available-slots', async (req, res) => {
     try {
+      const kind = req.query.kind as string
+      const duration = (kind && isValidConsultKind(kind)) ? CONSULT_META[kind].durationMinutes : 60
+      const totalNeeded = duration + BUFFER_MINS
+
       const daysAhead = 35
       const now = new Date()
       const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
@@ -89,28 +94,29 @@ export function createBookingRouter(pool: Pool): Router {
           stop.setHours(hE, mE, 0, 0)
 
           while (cursor < stop) {
-            const slotEnd = new Date(cursor.getTime() + 60 * 60 * 1000)
+            const slotEnd = new Date(cursor.getTime() + totalNeeded * 60 * 1000)
             const minLeadTime = new Date(Date.now() + 2 * 60 * 60 * 1000)
             
             if (cursor > minLeadTime) {
-              const isTaken = taken.some(t => {
+              const overlaps = taken.some(t => {
                 const startT = new Date(t.start_at).getTime()
                 const endT = new Date(t.end_at).getTime()
                 const currentT = cursor.getTime()
                 const slotEndT = slotEnd.getTime()
+                // Check if [currentT, slotEndT] overlaps with [startT, endT]
                 return (currentT < endT && slotEndT > startT)
               })
 
-              if (!isTaken) {
+              if (!overlaps) {
                 daySlots.push(cursor.toISOString())
               }
             }
-            cursor = new Date(cursor.getTime() + 60 * 60 * 1000)
+            // Generiamo slot ogni 30 minuti
+            cursor = new Date(cursor.getTime() + 30 * 60 * 1000)
           }
         }
 
         if (daySlots.length > 0) {
-          // Ordiniamo gli slot cronologicamente (fondendo le fasce morning/afternoon/evening)
           availableSlots[dateStr] = daySlots.sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
         }
       }
@@ -151,6 +157,8 @@ export function createBookingRouter(pool: Pool): Router {
 
     const meta = CONSULT_META[consultKind]
     const cost = meta.costCredits
+    const duration = meta.durationMinutes
+    const totalNeeded = duration + BUFFER_MINS
 
     const bookingId = 'book_' + crypto.randomUUID()
 
@@ -160,18 +168,24 @@ export function createBookingRouter(pool: Pool): Router {
 
       // 1. Verifico slot libero
       const slotStart = new Date(slotIso)
-      const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000)
+      const slotEnd = new Date(slotStart.getTime() + totalNeeded * 60 * 1000)
 
+      // Collision check con range overlap
       const { rows: collision } = await client.query(
-        `SELECT id FROM consults WHERE status <> 'cancelled' AND start_at = $1 FOR UPDATE`,
-        [slotStart]
+        `SELECT id FROM consults 
+         WHERE status <> 'cancelled' 
+           AND (start_at < $2 AND end_at > $1)
+         FOR UPDATE`,
+        [slotStart, slotEnd]
       )
+
       if (collision.length > 0) {
         await client.query('ROLLBACK')
         res.status(409).json({ error: 'Spiacenti, questo orario è stato appena occupato da un altro utente.' })
         return
       }
 
+      // 2. Verifico saldo
       // 2. Verifico saldo
       const { rows: walletRows } = await client.query(
         `SELECT balance_available FROM wallets WHERE clerk_user_id = $1 FOR UPDATE`,

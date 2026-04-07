@@ -24,7 +24,7 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
   useEffect(() => {
     async function loadSlots() {
       try {
-        const res = await apiJson<SlotsData>(getToken, '/api/booking/available-slots')
+        const res = await apiJson<SlotsData>(getToken, `/api/booking/available-slots?kind=${consultKind}`)
         setSlots(res || {})
         // Seleziona la prima data disponibile di default
         if (res) {

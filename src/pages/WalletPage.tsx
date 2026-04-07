@@ -96,7 +96,7 @@ export default function WalletPage() {
             Il Tuo <span className="gold-text">Wallet</span>
           </h1>
           <p className="text-white/50 text-sm mb-10 max-w-2xl">
-            Acquista crediti per prenotare i tuoi consulti istantaneamente. I crediti "Impegnati" vengono bloccati quando fissi l'appuntamento su Calendly.
+            Acquista crediti per prenotare i tuoi consulti istantaneamente. I crediti "Impegnati" vengono bloccati quando fissi l'appuntamento dal tuo Diario.
           </p>
           
           {loading ? (

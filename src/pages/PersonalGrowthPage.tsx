@@ -9,9 +9,9 @@ const PACKAGE_BLURBS: Record<string, string> = {
   coaching_intro:
     'Per conoscervi, capire cosa vi serve e iniziare a definire obiettivi. Dieci minuti senza impegno: capite con chi avete a che fare e Valeria capisce voi.',
   coaching_60:
-    'Una sessione da un’ora (80€ su Calendly, come da evento): lavoro su priorità, abitudini e direzione — video o telefono.',
+    'Una sessione da un’ora: lavoro su priorità, abitudini e direzione — video o telefono.',
   coaching_pack5:
-    'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento Calendly a sé — al momento della prenotazione si paga quella seduta (60€). Cinque prenotazioni = cinque pagamenti; totale indicativo 300€. Non esiste un unico addebito che sblocca tutte le date: prenoti (e paghi) una seduta alla volta.',
+    'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento a sé — al momento della prenotazione il sistema impegna i crediti per quella seduta. Cinque prenotazioni = cinque sessioni nel tuo Diario.',
 }
 
 /** Alba fotografica (public/crescita-alba.png) + overlay per leggibilità testi */
@@ -177,14 +177,14 @@ export default function PersonalGrowthPage() {
               <span className="text-emerald-700 shrink-0 font-semibold">2.</span>
               <span>
                 <strong className="text-slate-800">Scegli il pacchetto</strong> — sopra o tra le card nel profilo: poi si
-                apre il Calendly corretto (durata, prezzo e pagamento come da evento configurato).
+                apre il calendario corretto caricando le tue disponibilità in tempo reale.
               </span>
             </li>
             <li className="flex gap-3">
               <span className="text-emerald-700 shrink-0 font-semibold">3.</span>
               <span>
                 <strong className="text-slate-800">Pacchetto 5 sedute</strong> — il cliente prenota (e paga){' '}
-                <strong className="text-slate-800">una seduta alla volta</strong> sullo stesso tipo di evento Calendly
+                <strong className="text-slate-800">una seduta alla volta</strong> sul calendario interno.
                 (60€ per appuntamento del pacchetto 5 sedute, tramite <strong className="text-slate-800">Stripe</strong> in checkout). Ripete per le cinque date. Il sito non
                 &quot;blocca&quot; in automatico le cinque prenotazioni: il percorso è chiaro dalle regole e dal
                 dialogo con Valeria.
