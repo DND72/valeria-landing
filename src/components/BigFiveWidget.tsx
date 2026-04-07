@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown'
 
 interface BigFiveWidgetProps {
   planets: PlanetData[]
-  interpretation: string
+  interpretation?: string
   ascendant?: { segno: string; gradi: number }
 }
 
@@ -59,18 +59,20 @@ export default function BigFiveWidget({ planets, interpretation, ascendant }: Bi
           ))}
         </div>
 
-        {/* AI Interpretation */}
-        <div className="prose prose-invert prose-sm max-w-none border-t border-white/10 pt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-gold-600/20 flex items-center justify-center text-gold-400 text-xs font-bold ring-1 ring-gold-500/30">
-              V
+        {/* AI Interpretation (Hiddne by default if not provided) */}
+        {interpretation && (
+          <div className="prose prose-invert prose-sm max-w-none border-t border-white/10 pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-gold-600/20 flex items-center justify-center text-gold-400 text-xs font-bold ring-1 ring-gold-500/30">
+                V
+              </div>
+              <p className="text-xs text-gold-400 font-medium uppercase tracking-wider">L&apos;analisi di Valeria</p>
             </div>
-            <p className="text-xs text-gold-400 font-medium uppercase tracking-wider">L&apos;analisi di Valeria</p>
+            <div className="text-white/80 leading-relaxed text-sm italic font-serif">
+              <ReactMarkdown>{interpretation}</ReactMarkdown>
+            </div>
           </div>
-          <div className="text-white/80 leading-relaxed text-sm italic font-serif">
-            <ReactMarkdown>{interpretation}</ReactMarkdown>
-          </div>
-        </div>
+        )}
         
         <div className="mt-8 flex justify-center">
           <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Sincronizzato con il tuo profilo Evolutivo</p>

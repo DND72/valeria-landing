@@ -12,35 +12,15 @@ import {
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 
-/** Portale Calendly: Meeting / appuntamenti programmati (stessa area dove si gestiscono riprogrammazioni, note, ecc.). */
-const CALENDLY_MEETINGS_URL = 'https://calendly.com/app/scheduled_events/user/me?period=upcoming'
-
-
-
-type StaffCalendlyMeetings =
-  | {
-      configured: true
-      meetings: Array<{
-        startAt: string
-        endAt: string | null
-        eventName: string
-        inviteeSummary: string
-        joinUrl: string | null
-      }>
-    }
-  | {
-      configured: false
-      meetings: []
-      message: string
-    }
-
+/** Portale azioni rapide: Meeting / appuntamenti programmati . */
+const AGEND_TITLE = 'Agenda Valeria'
 type InternalAvailability = {
   day_of_week: number
+  week_number: number
+  slot_label: string
   is_active: boolean
   start_time: string
   end_time: string
-  start_at?: string
-  end_at?: string
 }
 
 type InternalOverride = {
@@ -134,12 +114,38 @@ export default function ControlRoom() {
 
 
 
-  const [meetings, setMeetings] = useState<StaffCalendlyMeetings | null>(null)
-  const [meetingsLoading, setMeetingsLoading] = useState(() => Boolean(getApiBaseUrl()))
 
   const [internalAvailability, setInternalAvailability] = useState<InternalAvailability[]>([])
   const [internalOverrides, setInternalOverrides] = useState<InternalOverride[]>([])
   const [internalLoading, setInternalLoading] = useState(false)
+  const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1)
+
+  // Helper date
+  const weekInfo = useMemo(() => {
+    const now = new Date()
+    const getWeekNum = (d: Date) => {
+      const ref = new Date('2024-01-01T00:00:00Z')
+      const msPerW = 7 * 24 * 60 * 60 * 1000
+      const weeks = Math.floor((d.getTime() - ref.getTime()) / msPerW)
+      return (Math.abs(weeks) % 2) + 1
+    }
+
+    const currentWeekNum = getWeekNum(now) as 1 | 2
+    
+    // Calcolo date per week 1 e week 2
+    const startOfThisWeek = new Date(now)
+    startOfThisWeek.setDate(now.getDate() - now.getDay()) // Inizio Domenica
+    startOfThisWeek.setHours(0,0,0,0)
+
+    const startOfNextWeek = new Date(startOfThisWeek)
+    startOfNextWeek.setDate(startOfThisWeek.getDate() + 7)
+
+    return {
+      currentWeekNum,
+      w1Start: currentWeekNum === 1 ? startOfThisWeek : startOfNextWeek,
+      w2Start: currentWeekNum === 2 ? startOfThisWeek : startOfNextWeek
+    }
+  }, [])
 
   const loadInternalAvailability = useCallback(async () => {
     if (!apiConfigured) return
@@ -156,23 +162,6 @@ export default function ControlRoom() {
     }
   }, [getToken, apiConfigured])
 
-  const loadMeetings = useCallback(async () => {
-    if (!apiConfigured) return
-    setMeetingsLoading(true)
-    try {
-      const data = await apiJson<StaffCalendlyMeetings>(getToken, '/api/staff/calendly-scheduled-meetings')
-      setMeetings(data)
-    } catch (e) {
-      setMeetings({
-        configured: false,
-        meetings: [],
-        message:
-          e instanceof ApiError ? String(e.message) : 'Impossibile caricare gli appuntamenti da Calendly.',
-      })
-    } finally {
-      setMeetingsLoading(false)
-    }
-  }, [getToken, apiConfigured])
 
   const loadList = useCallback(async () => {
     if (!apiConfigured) {
@@ -221,8 +210,7 @@ export default function ControlRoom() {
     }
     void loadList()
     void loadInternalAvailability()
-    void loadMeetings()
-  }, [isLoaded, user, navigate, loadList, loadInternalAvailability, loadMeetings])
+  }, [isLoaded, user, navigate, loadList, loadInternalAvailability])
 
   useEffect(() => {
     if (!selectedId) {
@@ -321,7 +309,7 @@ export default function ControlRoom() {
             <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Staff</p>
             <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">Control Room</h1>
             <p className="text-white/45 text-sm mt-2 max-w-xl">
-              Consulti da Calendly, note interne e stato. Le note non sono visibili ai clienti.
+              Gestione appuntamenti interni, note evolutive e disponibilità bisettimanale.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -350,75 +338,108 @@ export default function ControlRoom() {
             <div>
               <h2 className="font-serif text-lg text-white">Disponibilità Professionale (Booking Interno)</h2>
               <p className="text-white/45 text-sm mt-1 max-w-2xl">
-                Imposta i tuoi orari settimanali. Queste fasce verranno usate per generare gli slot disponibili per i clienti sul sito.
+                Imposta i tuoi orari bisettimanali. Scegli la settimana e definisci le fasce per mattina, pomeriggio e sera.
               </p>
+            </div>
+            <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+              <button 
+                onClick={() => setSelectedWeek(1)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedWeek === 1 ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/20' : 'text-white/40 hover:text-white/70'}`}
+              >
+                Settimana 1
+              </button>
+              <button 
+                onClick={() => setSelectedWeek(2)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedWeek === 2 ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/20' : 'text-white/40 hover:text-white/70'}`}
+              >
+                Settimana 2
+              </button>
             </div>
             {internalLoading && <span className="text-white/30 text-xs">Aggiornamento...</span>}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-8">
+          <div className="space-y-4">
             {DAYS_LABELS.map((label, idx) => {
-              const day = internalAvailability.find(a => a.day_of_week === idx) || {
+              const daySlots = internalAvailability.filter(a => a.day_of_week === idx && a.week_number === selectedWeek)
+              
+              // Calcolo data reale per questo giorno della settimana selezionata
+              const weekStart = selectedWeek === 1 ? weekInfo.w1Start : weekInfo.w2Start
+              const actualDate = new Date(weekStart)
+              actualDate.setDate(weekStart.getDate() + idx)
+              const dateLabel = actualDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
+
+              const getSlot = (label: string) => daySlots.find(s => s.slot_label === label) || {
                 day_of_week: idx,
+                week_number: selectedWeek,
+                slot_label: label,
                 is_active: false,
-                start_time: '10:00',
-                end_time: '18:00'
+                start_time: label === 'morning' ? '09:00' : label === 'afternoon' ? '14:00' : '19:00',
+                end_time: label === 'morning' ? '13:00' : label === 'afternoon' ? '18:00' : '22:00'
               }
-              const isActive = day.is_active
 
               return (
-                <div key={label} className={`p-3 rounded-xl border transition-all ${isActive ? 'bg-gold-500/5 border-gold-500/30' : 'bg-black/20 border-white/5 opacity-60'}`}>
-                  <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2 font-bold">{label}</p>
-                  
-                  <div className="flex flex-col gap-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={isActive}
-                        onChange={async (e) => {
-                          const active = e.target.checked
-                          await apiJson(getToken, '/api/staff/booking/availability', {
-                            method: 'POST',
-                            body: JSON.stringify({ ...day, is_active: active, start_time: day.start_at || day.start_time, end_time: day.end_at || day.end_time })
-                          })
-                          void loadInternalAvailability()
-                        }}
-                        className="accent-gold-500"
-                      />
-                      <span className="text-xs text-white/70">{isActive ? 'Attiva' : 'Chiuso'}</span>
-                    </label>
-
-                    {isActive && (
-                      <div className="space-y-1 mt-1">
-                        <input 
-                          type="text" 
-                          defaultValue={day.start_at || day.start_time}
-                          onBlur={async (e) => {
-                            if (e.target.value === (day.start_at || day.start_time)) return
-                            await apiJson(getToken, '/api/staff/booking/availability', {
-                              method: 'POST',
-                              body: JSON.stringify({ ...day, is_active: true, start_time: e.target.value, end_time: day.end_at || day.end_time })
-                            })
-                            void loadInternalAvailability()
-                          }}
-                          className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono"
-                        />
-                        <input 
-                          type="text" 
-                          defaultValue={day.end_at || day.end_time}
-                          onBlur={async (e) => {
-                            if (e.target.value === (day.end_at || day.end_time)) return
-                            await apiJson(getToken, '/api/staff/booking/availability', {
-                              method: 'POST',
-                              body: JSON.stringify({ ...day, is_active: true, start_time: day.start_at || day.start_time, end_time: e.target.value })
-                            })
-                            void loadInternalAvailability()
-                          }}
-                          className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono"
-                        />
-                      </div>
-                    )}
+                <div key={label} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                  <div className="flex flex-col justify-center">
+                    <p className="text-xs uppercase tracking-widest text-gold-500 font-bold">{label}</p>
+                    <p className="text-sm text-white font-serif">{dateLabel}</p>
+                    <p className="text-[10px] text-white/30 italic">Settimana {selectedWeek}</p>
                   </div>
+                  
+                  {['morning', 'afternoon', 'evening'].map(type => {
+                    const slot = getSlot(type)
+                    const labelIT = type === 'morning' ? 'Mattina' : type === 'afternoon' ? 'Pomeriggio' : 'Sera';
+                    const icon = type === 'morning' ? '☀️' : type === 'afternoon' ? '🌗' : '🌙';
+
+                    return (
+                      <div key={type} className={`p-3 rounded-xl border transition-all ${slot.is_active ? 'bg-gold-500/5 border-gold-500/20' : 'bg-black/20 border-white/5 opacity-50'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-medium text-white/60">{icon} {labelIT}</span>
+                          <input 
+                            type="checkbox" 
+                            checked={slot.is_active}
+                            onChange={async (e) => {
+                              await apiJson(getToken, '/api/staff/booking/availability', {
+                                method: 'POST',
+                                body: JSON.stringify({ ...slot, is_active: e.target.checked })
+                              })
+                              void loadInternalAvailability()
+                            }}
+                            className="accent-gold-500 w-3 h-3"
+                          />
+                        </div>
+                        {slot.is_active && (
+                          <div className="flex gap-2">
+                            <input 
+                              type="text" 
+                              defaultValue={slot.start_time}
+                              onBlur={async (e) => {
+                                if (e.target.value === slot.start_time) return
+                                await apiJson(getToken, '/api/staff/booking/availability', {
+                                  method: 'POST',
+                                  body: JSON.stringify({ ...slot, start_time: e.target.value })
+                                })
+                                void loadInternalAvailability()
+                              }}
+                              className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono text-center"
+                            />
+                            <input 
+                              type="text" 
+                              defaultValue={slot.end_time}
+                              onBlur={async (e) => {
+                                if (e.target.value === slot.end_time) return
+                                await apiJson(getToken, '/api/staff/booking/availability', {
+                                  method: 'POST',
+                                  body: JSON.stringify({ ...slot, end_time: e.target.value })
+                                })
+                                void loadInternalAvailability()
+                              }}
+                              className="w-full bg-black/40 border border-white/10 rounded px-1.5 py-1 text-[10px] text-white font-mono text-center"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )
             })}
@@ -513,109 +534,80 @@ export default function ControlRoom() {
         >
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
             <div>
-              <h2 className="font-serif text-lg text-white">Prossimi appuntamenti</h2>
+              <h2 className="font-serif text-lg text-white">{AGEND_TITLE} (Prossimi Appuntamenti)</h2>
               <p className="text-white/45 text-sm mt-1 max-w-2xl">
-                Promemoria degli appuntamenti <strong className="text-white/55 font-medium">scheduled</strong> su
-                Calendly (stessa fonte della sezione Meeting). Per cancellare, riprogrammare o usare le azioni native
-                di Calendly apri il portale con il pulsante qui sotto.
+                Visualizzazione bisettimanale degi appuntamenti prenotati sul sito.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => void loadMeetings()}
-                className="btn-outline text-sm px-4 py-2"
-                disabled={!apiConfigured || meetingsLoading}
-              >
-                {meetingsLoading ? 'Sincronizzazione…' : 'Sincronizza da Calendly'}
-              </button>
-              <a
-                href={CALENDLY_MEETINGS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-gold text-sm px-4 py-2 text-center"
-              >
-                Apri meeting in Calendly
-              </a>
+               <button
+                  type="button"
+                  onClick={() => void loadList()}
+                  className="btn-gold text-sm px-4 py-2"
+                >
+                  Aggiorna Agenda
+                </button>
             </div>
           </div>
 
-          {!apiConfigured && (
-            <p className="text-amber-200/85 text-sm">
-              Collega il backend (<code className="text-amber-300/90">VITE_API_URL</code>) per leggere gli appuntamenti
-              da Calendly.
-            </p>
-          )}
+          <div className="grid md:grid-cols-2 gap-6">
+             {[1, 2].map(wNum => {
+                const weekStart = wNum === 1 ? weekInfo.w1Start : weekInfo.w2Start
+                const weekEnd = new Date(weekStart)
+                weekEnd.setDate(weekStart.getDate() + 6)
+                
+                const appointments = list.filter(c => {
+                  if (!c.start_at || c.status === 'cancelled') return false
+                  const d = new Date(c.start_at)
+                  return d >= weekStart && d <= new Date(weekEnd.getTime() + 24*3600*1000)
+                }).sort((a,b) => new Date(a.start_at!).getTime() - new Date(b.start_at!).getTime())
 
-          {apiConfigured && meetingsLoading && !meetings && (
-            <p className="text-white/45 text-sm">Caricamento appuntamenti…</p>
-          )}
+                return (
+                  <div key={wNum} className={`rounded-3xl border p-5 ${wNum === weekInfo.currentWeekNum ? 'bg-gold-500/5 border-gold-500/20 shadow-[0_0_40px_rgba(212,160,23,0.05)]' : 'bg-white/[0.02] border-white/10'}`}>
+                    <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                      <div>
+                        <h3 className="font-serif text-white font-bold">Settimana {wNum}</h3>
+                        <p className="text-[10px] text-white/30 uppercase tracking-widest">
+                          {weekStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {weekEnd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                        </p>
+                      </div>
+                      {wNum === weekInfo.currentWeekNum && (
+                        <span className="text-[9px] bg-gold-500 text-black px-2 py-0.5 rounded-full font-bold uppercase">Corrente</span>
+                      )}
+                    </div>
 
-          {apiConfigured && meetings && !meetings.configured && (
-            <div className="rounded-lg border border-amber-600/25 bg-amber-950/20 px-4 py-3 text-sm text-amber-100/90">
-              {meetings.message}
-            </div>
-          )}
-
-          {meetings?.configured && meetings.meetings.length === 0 && !meetingsLoading && (
-            <p className="text-white/45 text-sm">Nessun appuntamento futuro in elenco.</p>
-          )}
-
-          {meetings?.configured && meetings.meetings.length > 0 && (
-            <>
-              <div className="overflow-x-auto rounded-lg border border-white/10">
-                <table className="w-full text-sm text-left min-w-[320px]">
-                  <thead>
-                    <tr className="bg-white/[0.04] text-white/50 text-xs uppercase tracking-wide">
-                      <th className="py-2.5 px-3 font-medium whitespace-nowrap">Data e ora</th>
-                      <th className="py-2.5 px-3 font-medium">Cliente</th>
-                      <th className="py-2.5 px-3 font-medium">Tipo evento</th>
-                      <th className="py-2.5 px-3 font-medium">Indicativo</th>
-                      <th className="py-2.5 px-3 font-medium">Link</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {meetings.meetings.map((m, i) => {
-                      const sk = serviceKindFromEventName(m.eventName)
-                      return (
-                        <tr key={`${m.startAt}-${i}`} className="border-t border-white/[0.06]">
-                          <td className="py-2 px-3 text-white/85 whitespace-nowrap">{formatWhen(m.startAt)}</td>
-                          <td className="py-2 px-3 text-white/70">{m.inviteeSummary}</td>
-                          <td className="py-2 px-3 text-white/55">{m.eventName}</td>
-                          <td className="py-2 px-3">
-                            <span
-                              className={`inline-block text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border ${badgeClassService(sk)}`}
-                            >
-                              {labelService(sk)}
-                            </span>
-                          </td>
-                          <td className="py-2 px-3">
-                            {m.joinUrl ? (
-                              <a
-                                href={m.joinUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gold-400 hover:underline text-xs"
-                              >
-                                Entra
-                              </a>
-                            ) : (
-                              <span className="text-white/25">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              {meetings.meetings.length >= 25 && (
-                <p className="text-xs text-white/35 mt-3">
-                  Mostrati al massimo 25 appuntamenti; per l&apos;elenco completo usa Calendly.
-                </p>
-              )}
-            </>
-          )}
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                      {appointments.length === 0 ? (
+                        <p className="text-white/20 text-xs italic py-4 text-center">Nessun appuntamento in questa settimana.</p>
+                      ) : (
+                        appointments.map(app => {
+                           const sd = new Date(app.start_at!)
+                           const sk = app.service_kind ?? 'unknown'
+                           return (
+                             <button
+                               key={app.id}
+                               onClick={() => setSelectedId(app.id)}
+                               className={`w-full text-left p-3 rounded-xl border transition-all ${selectedId === app.id ? 'bg-gold-500/20 border-gold-500/40' : 'bg-black/40 border-white/5 hover:border-white/15'}`}
+                             >
+                                <div className="flex items-center justify-between mb-1">
+                                   <span className="text-gold-400 font-serif text-sm font-bold">
+                                     {sd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {sd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                                   </span>
+                                   <span className={`text-[8px] uppercase tracking-tighter px-1.5 py-0.5 rounded-full border ${badgeClassService(sk)}`}>
+                                      {labelService(sk)}
+                                   </span>
+                                </div>
+                                <p className="text-white/90 text-sm font-medium truncate">{app.invitee_name || app.invitee_email || 'Cliente'}</p>
+                                <p className="text-[10px] text-white/30 truncate uppercase tracking-tighter">{app.status}</p>
+                             </button>
+                           )
+                        })
+                      )}
+                    </div>
+                  </div>
+                )
+             })}
+          </div>
         </motion.section>
 
         {!apiConfigured && (

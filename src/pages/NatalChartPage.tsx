@@ -444,9 +444,10 @@ export default function NatalChartPage() {
                     required
                   >
                     <option value="" disabled className="text-white/30">Seleziona</option>
-                    <option value="M">Maschile (M)</option>
-                    <option value="F">Femminile (F)</option>
+                    <option value="M">Maschile (Yang)</option>
+                    <option value="F">Femminile (Yin)</option>
                   </select>
+                  <p className="text-[9px] text-white/20 mt-1 italic leading-tight">La polarità energetica è essenziale per il calcolo delle declinazioni.</p>
                 </div>
               </div>
 

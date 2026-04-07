@@ -21,16 +21,27 @@ export function createBookingRouter(pool: Pool): Router {
     try {
       const daysAhead = 35
       const now = new Date()
-      const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000) // Ieri per sicurezza caricamento
+      const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
       const endDate = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000)
 
-      // 1. Carico patterns settimanali
+      // Helper per determinare la settimana (1 o 2) nel ciclo bisettimanale
+      const getWeekNumber = (date: Date) => {
+        const refDate = new Date('2024-01-01T00:00:00Z') // Lunedì di riferimento
+        const msPerWeek = 7 * 24 * 60 * 60 * 1000
+        const diff = date.getTime() - refDate.getTime()
+        const weeksSinceRef = Math.floor(diff / msPerWeek)
+        return (Math.abs(weeksSinceRef) % 2) + 1
+      }
+
+      // 1. Carico patterns settimanali (Settimana 1/2 e 3 fasce)
       const { rows: patterns } = await pool.query<{
         day_of_week: number
+        week_number: number
+        slot_label: string
         is_active: boolean
         start_time: string
         end_time: string
-      }>(`SELECT day_of_week, is_active, 
+      }>(`SELECT day_of_week, week_number, slot_label, is_active, 
                 TO_CHAR(start_time, 'HH24:MI') as start_time, 
                 TO_CHAR(end_time, 'HH24:MI') as end_time 
          FROM booking_availability`)
@@ -54,64 +65,62 @@ export function createBookingRouter(pool: Pool): Router {
 
       const availableSlots: Record<string, string[]> = {}
 
-      // Itero i prossimi daysAhead
       for (let i = 0; i < daysAhead; i++) {
         const currentRef = new Date()
         currentRef.setDate(currentRef.getDate() + i)
         const dateStr = currentRef.toISOString().split('T')[0]
         const dow = currentRef.getDay()
+        const weekNum = getWeekNumber(currentRef)
 
-        // Cerco override per questo giorno
-        const ov = overrides.find(o => {
-          const d = new Date(o.override_date)
-          return d.toISOString().split('T')[0] === dateStr
-        })
-
+        const ov = overrides.find(o => new Date(o.override_date).toISOString().split('T')[0] === dateStr)
         if (ov && !ov.is_available) continue
 
-        const pattern = patterns.find(p => p.day_of_week === dow)
-        if (!pattern || (!pattern.is_active && !ov)) continue
+        // Se c'è un override specifico di apertura, usiamo quello. Altrimenti usiamo i pattern bisettimanali attivi.
+        const dayPatterns = (ov?.is_available && ov.start_time)
+          ? [{ start_time: ov.start_time, end_time: ov.end_time }]
+          : patterns.filter(p => p.day_of_week === dow && p.week_number === weekNum && p.is_active)
 
-        const startH = (ov?.is_available && ov.start_time) ? ov.start_time : pattern.start_time
-        const endH = (ov?.is_available && ov.end_time) ? ov.end_time : pattern.end_time
-
-        const [hS, mS] = startH.split(':').map(Number)
-        const [hE, mE] = endH.split(':').map(Number)
-
-        let cursor = new Date(currentRef)
-        cursor.setHours(hS, mS, 0, 0)
-        const stop = new Date(currentRef)
-        stop.setHours(hE, mE, 0, 0)
+        if (dayPatterns.length === 0) continue
 
         const daySlots: string[] = []
-        while (cursor < stop) {
-          const slotEnd = new Date(cursor.getTime() + 60 * 60 * 1000)
-          
-          // Almeno 2 ore di preavviso dal momento attuale
-          const minLeadTime = new Date(Date.now() + 2 * 60 * 60 * 1000)
-          
-          if (cursor > minLeadTime) {
-            const isTaken = taken.some(t => {
-              const startT = new Date(t.start_at).getTime()
-              const endT = new Date(t.end_at).getTime()
-              const currentT = cursor.getTime()
-              const slotEndT = slotEnd.getTime()
-              return (currentT < endT && slotEndT > startT)
-            })
+        
+        for (const pat of dayPatterns) {
+          const [hS, mS] = pat.start_time.split(':').map(Number)
+          const [hE, mE] = pat.end_time.split(':').map(Number)
 
-            if (!isTaken) {
-              daySlots.push(cursor.toISOString())
+          let cursor = new Date(currentRef)
+          cursor.setHours(hS, mS, 0, 0)
+          const stop = new Date(currentRef)
+          stop.setHours(hE, mE, 0, 0)
+
+          while (cursor < stop) {
+            const slotEnd = new Date(cursor.getTime() + 60 * 60 * 1000)
+            const minLeadTime = new Date(Date.now() + 2 * 60 * 60 * 1000)
+            
+            if (cursor > minLeadTime) {
+              const isTaken = taken.some(t => {
+                const startT = new Date(t.start_at).getTime()
+                const endT = new Date(t.end_at).getTime()
+                const currentT = cursor.getTime()
+                const slotEndT = slotEnd.getTime()
+                return (currentT < endT && slotEndT > startT)
+              })
+
+              if (!isTaken) {
+                daySlots.push(cursor.toISOString())
+              }
             }
+            cursor = new Date(cursor.getTime() + 60 * 60 * 1000)
           }
-          cursor = new Date(cursor.getTime() + 60 * 60 * 1000)
         }
 
         if (daySlots.length > 0) {
-          availableSlots[dateStr] = daySlots
+          // Ordiniamo gli slot cronologicamente (fondendo le fasce morning/afternoon/evening)
+          availableSlots[dateStr] = daySlots.sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
         }
       }
 
-      res.json({ slots: availableSlots })
+      res.json(availableSlots)
     } catch (e) {
       console.error('[booking available-slots]', e)
       res.status(500).json({ error: 'Errore durante il calcolo della disponibilità.' })

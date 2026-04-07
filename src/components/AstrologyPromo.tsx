@@ -148,11 +148,11 @@ export default function AstrologyPromo() {
                 <span className="text-4xl font-bold text-white">30</span>
                 <span className="text-purple-300/60 text-lg font-serif">CR</span>
               </div>
-              <p className="text-purple-300/60 text-sm font-serif italic">Analisi Evolutiva + IA</p>
+              <p className="text-purple-300/60 text-sm font-serif italic">Analisi Evolutiva Profonda</p>
             </div>
 
             <ul className="space-y-3 mb-8 flex-1 relative">
-              {['Tutto del Base', 'Asterodi: Cerere, Pallade, Giunone, Vesta', 'Griglia Aspetti avanzata', "Interpretazione personale di Valeria (IA)"].map(f => (
+              {['Tutto del Base', 'Asteroidi: Cerere, Pallade, Giunone, Vesta', 'Griglia Aspetti avanzata', "Saggezza interpretativa di Valeria"].map(f => (
                 <li key={f} className="flex items-start gap-2 text-sm text-white/50">
                   <span className="text-purple-400/60 mt-0.5 flex-shrink-0">✦</span>
                   {f}
@@ -182,7 +182,7 @@ export default function AstrologyPromo() {
           transition={{ delay: 0.5 }}
           className="text-center text-white/25 text-xs mt-10 tracking-wide"
         >
-          I crediti si acquistano nel Wallet. Il piano Evolutivo e l'analisi IA di Valeria sono disponibili solo una volta iscritti.
+          I crediti si acquistano nel Wallet. Il piano Evolutivo e le analisi di Valeria sono disponibili solo una volta iscritti.
         </motion.p>
       </div>
     </section>

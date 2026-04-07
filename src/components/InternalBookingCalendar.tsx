@@ -24,11 +24,13 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
   useEffect(() => {
     async function loadSlots() {
       try {
-        const res = await apiJson<{ slots: SlotsData }>(getToken, '/api/booking/available-slots')
-        setSlots(res.slots)
+        const res = await apiJson<SlotsData>(getToken, '/api/booking/available-slots')
+        setSlots(res || {})
         // Seleziona la prima data disponibile di default
-        const dates = Object.keys(res.slots).sort()
-        if (dates.length > 0) setSelectedDate(dates[0])
+        if (res) {
+          const dates = Object.keys(res).sort()
+          if (dates.length > 0) setSelectedDate(dates[0])
+        }
       } catch (e) {
         console.error('[BookingCalendar] Error fetching slots:', e)
         setError('Impossibile caricare le disponibilità. Riprova più tardi.')
@@ -177,7 +179,7 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
           {confirming ? 'Conferma in corso...' : selectedSlot ? 'Conferma Prenotazione' : 'Seleziona un orario'}
         </button>
         <p className="text-[10px] text-center text-white/30 uppercase tracking-tight">
-          L&apos;importo verrà scalato automaticamente dai tuoi crediti.
+          L&apos;importo sarà contabilizzato definitivamente a fine consulto. I crediti passeranno dal tuo saldo &apos;Disponibile&apos; a quello &apos;Impegnato&apos; fino alla chiusura della sessione.
         </p>
       </div>
     </motion.div>

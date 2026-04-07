@@ -624,7 +624,6 @@ export default function Dashboard() {
               <div className="mb-12">
                 <BigFiveWidget 
                   planets={myCharts[0].chartData.pianeti || []}
-                  interpretation={myCharts[0].interpretation}
                   ascendant={{ 
                     segno: myCharts[0].chartData.segno, 
                     gradi: myCharts[0].chartData.grado_nel_segno 
