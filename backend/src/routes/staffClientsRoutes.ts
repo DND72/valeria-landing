@@ -323,8 +323,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           if (!firstName) firstName = u.firstName || null
           if (!lastName) lastName = u.lastName || null
           // Fallback per la data di nascita da Clerk se non impostata nel DB
-          if (!declaredBirthday && u.birthday) {
-            declaredBirthday = u.birthday // Clerk format is YYYY-MM-DD
+          if (!declaredBirthday && (u as any).birthday) {
+            declaredBirthday = (u as any).birthday // Clerk format is YYYY-MM-DD
           }
         } catch (ce) {
           console.error('[clerk fetch detail error]', ce)
