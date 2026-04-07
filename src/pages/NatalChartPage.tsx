@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
@@ -37,7 +37,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
     if (!data.id) return
     setGenLoading(true)
     try {
-      const res = await generateSummary(data.id)
+      const res = await generateSummary(String(data.id))
       setLocalInterpretation(res.interpretation)
     } catch (err) {
       console.error("Errore generazione sintesi:", err)
@@ -273,7 +273,7 @@ export default function NatalChartPage() {
   const isLoggedIn = !!user
   
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [_error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<NatalChartResponse | null>(null)
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')

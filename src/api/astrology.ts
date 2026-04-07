@@ -33,6 +33,7 @@ export interface NatalChartResponse {
   case?: House[]
   interpretation?: string
   error?: string
+  id?: string | number
 }
 
 export interface SavedNatalChart {
