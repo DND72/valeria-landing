@@ -376,6 +376,22 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         }
       }
 
+      let transactions: any[] = []
+      if (clrkIdToUse) {
+        const txRes = await pool.query(
+          `SELECT id, amount, tx_type, reference_id, created_at 
+           FROM wallet_transactions WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 50`,
+          [clrkIdToUse]
+        )
+        transactions = txRes.rows.map(t => ({
+          id: t.id,
+          amount: Number(t.amount),
+          tx_type: t.tx_type,
+          reference_id: t.reference_id,
+          created_at: new Date(t.created_at).toISOString()
+        }))
+      }
+
       res.json({
         email,
         displayName: displayName || 'Cliente ospite',
@@ -408,7 +424,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
           updated_at: new Date(c.updated_at as string).toISOString(),
           notes: notesByConsult.get(c.id as string) ?? [],
         })),
-        wallet: walletInfo
+        wallet: walletInfo,
+        transactions
       })
     } catch (e) {
       console.error('[staff clients detail]', e)

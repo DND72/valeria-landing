@@ -58,6 +58,13 @@ type DetailPayload = {
     interpretation: string | null
     gender: 'M' | 'F' | null
   } | null
+  transactions: {
+    id: string
+    amount: number
+    tx_type: string
+    reference_id: string | null
+    created_at: string
+  }[]
 }
 
 function formatWhen(iso: string | null): string {
@@ -440,6 +447,56 @@ export default function ClientDetailPage() {
                 </div>
               ) : (
                 <p className="text-white/40 text-sm">Questo cliente non ha ancora attivato un Wallet o non è registrato sulla piattaforma.</p>
+              )}
+
+              {/* Storico Transazioni per lo Staff */}
+              {data.transactions && data.transactions.length > 0 && (
+                <div className="mt-8">
+                  <p className="text-white/45 text-[10px] uppercase tracking-widest mb-3">Diario degli Acquisti & Movimenti</p>
+                  <div className="bg-black/30 rounded-xl border border-white/5 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-white/5 bg-white/[0.02]">
+                            <th className="px-3 py-2 text-white/30 font-bold uppercase tracking-tighter">Evento</th>
+                            <th className="px-3 py-2 text-white/30 font-bold uppercase tracking-tighter">Data</th>
+                            <th className="px-3 py-2 text-white/30 font-bold uppercase tracking-tighter text-right">Importo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.transactions.map((tx) => {
+                            const date = new Date(tx.created_at)
+                            const isPositive = ['top_up', 'unlock_refund', 'bonus'].includes(tx.tx_type)
+                            const txLabels: Record<string, string> = {
+                              top_up: 'Ricarica Crediti',
+                              consult_lock: 'Prenotazione Consulto',
+                              consult_settle: 'Consulto Terminato',
+                              natal_advanced: 'Analisi Evolutiva',
+                              unlock_refund: 'Rimborso Crediti',
+                              bonus: 'Bonus Omaggio'
+                            }
+                            return (
+                              <tr key={tx.id} className="border-b border-white/5 hover:bg-white/[0.01]">
+                                <td className="px-3 py-2">
+                                  <span className="text-white/80">{txLabels[tx.tx_type] || tx.tx_type}</span>
+                                  {tx.reference_id && (
+                                    <span className="block text-[9px] text-white/20 font-mono mt-0.5">{tx.reference_id}</span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2 text-white/40">
+                                  {date.toLocaleDateString('it-IT')}
+                                </td>
+                                <td className={`px-3 py-2 text-right font-mono font-bold ${isPositive ? 'text-emerald-400' : 'text-amber-500'}`}>
+                                  {isPositive ? '+' : ''}{tx.amount}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               )}
             </section>
 
