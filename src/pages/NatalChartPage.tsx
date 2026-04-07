@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useAstrologyApi, type NatalChartResponse } from '../api/astrology'
+import { useMeApi } from '../api/me'
 import ZodiacWheel from '../components/ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
 import { SIGN_MEANINGS, HOUSE_MEANINGS } from '../constants/astrologyMeanings'
@@ -29,8 +30,9 @@ const PLANET_SYMBOLS: Record<string, string> = {
 
 function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedIn: boolean }) {
   const theme = useCircadianTheme()
-  const { generateSummary } = useAstrologyApi()
+  const { generateSummary, generatePaidChart } = useAstrologyApi()
   const [localInterpretation, setLocalInterpretation] = useState(data.interpretation || "")
+  const [localType, setLocalType] = useState(data.chart_type || 'basic')
   const [genLoading, setGenLoading] = useState(false)
   const [genError, setGenError] = useState<string | null>(null)
 
@@ -47,6 +49,34 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
     } catch (err: any) {
       console.error("Errore generazione sintesi:", err)
       setGenError(err.message || "Errore durante la generazione. Riprova tra poco.")
+    } finally {
+      setGenLoading(false)
+    }
+  }
+
+  const handleGenerateAdvanced = async () => {
+    if (!data.birthDate || !data.birthTime || !data.city) {
+      setGenError("Dati di nascita mancanti nel calcolo. Impossibile generare l'analisi.")
+      return
+    }
+    setGenLoading(true)
+    setGenError(null)
+    try {
+      const res = await generatePaidChart({
+        birthDate: data.birthDate,
+        birthTime: data.birthTime,
+        city: data.city,
+        type: 'advanced'
+      })
+      setLocalInterpretation(res.interpretation)
+      setLocalType('advanced')
+    } catch (err: any) {
+      console.error("Errore generazione premium:", err)
+      if (err.message === 'insufficient_funds') {
+        setGenError("Crediti insufficienti (richiesti: 30). Ricarica il tuo wallet.")
+      } else {
+        setGenError(err.message || "Errore durante la generazione. Riprova.")
+      }
     } finally {
       setGenLoading(false)
     }
@@ -110,7 +140,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
               <span className="text-6xl italic font-serif">Valeria</span>
             </div>
             <h3 className="font-serif text-2xl text-white mb-6 flex items-center gap-3">
-              <span className="text-gold-400">✨</span> {localInterpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
+              <span className="text-gold-400">{localType === 'advanced' ? "💎" : "✨"}</span> {localInterpretation ? (localType === 'advanced' ? "Analisi Evolutiva Completa" : "La Sintesi di Valeria") : "Analisi Dinamica"}
             </h3>
             
             {localInterpretation ? (
@@ -162,6 +192,30 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
                   <p className="text-[10px] text-white/30 mt-3 font-serif italic">
                     L'IA di Valeria analizzerà la tua configurazione planetaria completa.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {/* Pulsante Upgrade dentro il panel se è ancora Basic */}
+            {localInterpretation && localType === 'basic' && (
+              <div className="mt-10 pt-8 border-t border-white/5 text-center">
+                <div className="max-w-md mx-auto">
+                    <p className="text-white/40 text-[11px] mb-4 uppercase tracking-[0.2em]">✦ Espandi la tua consapevolezza</p>
+                    <button 
+                      onClick={handleGenerateAdvanced}
+                      disabled={genLoading}
+                      className="btn-gold w-full py-4 text-xs uppercase tracking-widest shadow-[0_0_40px_rgba(212,160,23,0.15)]"
+                    >
+                      {genLoading ? "Lettura del cielo..." : "✦ Sblocca Analisi Evolutiva (30 crediti)"}
+                    </button>
+                    {genError && (
+                      <p className="text-red-400 text-[10px] mt-4 font-bold uppercase tracking-widest animate-pulse">
+                        ⚠️ {genError}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-white/20 mt-4 italic">
+                      L'analisi completa include aspetti planetari, domificazione e transiti evolutivi.
+                    </p>
                 </div>
               </div>
             )}
@@ -280,6 +334,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
 
 export default function NatalChartPage() {
   const { calculateFreeChart, syncNatalData, getMyCharts, getLatestChart } = useAstrologyApi()
+  const { getProfile } = useMeApi()
   const { user } = useUser()
   const isLoggedIn = !!user
   
@@ -314,11 +369,21 @@ export default function NatalChartPage() {
         const charts = await getMyCharts()
         if (charts && charts.length > 0) {
           const last = charts[0]
-          setResult({ ...last.chartData, id: last.id })
+          setResult({ ...last.chartData, id: last.id, chart_type: last.type })
           setDate(last.birthDate)
           setTime(last.birthTime)
           setCity(last.city)
           setIsFixed(true)
+          return
+        }
+
+        // 3. Fallback Finale: Profilo Utente (Crystallization Fix)
+        const profile = await getProfile()
+        if (profile && profile.birthDate) {
+           setDate(profile.birthDate)
+           setTime(profile.birthTime || '')
+           setCity(profile.birthCity || '')
+           setIsFixed(true)
         }
       } catch (err) {
         console.error("[VALERIA] Errore init:", err)

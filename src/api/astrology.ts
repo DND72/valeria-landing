@@ -32,6 +32,7 @@ export interface NatalChartResponse {
   pianeti?: Planet[]
   case?: House[]
   interpretation?: string
+  chart_type?: 'basic' | 'advanced'
   error?: string
   id?: string | number
   birthDate?: string

@@ -47,7 +47,7 @@ export const getLatestChart = async (req: Request, res: Response): Promise<void>
     const { pool } = await import('../db.js')
     const result = await pool.query(
       `SELECT 
-         nc.id, nc.chart_data, nc.interpretation,
+         nc.id, nc.chart_data, nc.interpretation, nc.chart_type,
          bp.declared_birthday, bp.birth_time, bp.birth_city
        FROM natal_charts nc
        LEFT JOIN client_billing_profiles bp ON bp.clerk_user_id = nc.clerk_user_id
@@ -68,6 +68,7 @@ export const getLatestChart = async (req: Request, res: Response): Promise<void>
         chartId: row.id,
         id: row.id,
         interpretation: row.interpretation,
+        chart_type: row.chart_type,
         birthDate: row.declared_birthday ? new Date(row.declared_birthday).toISOString().split('T')[0] : null,
         birthTime: row.birth_time,
         city: row.birth_city
@@ -147,7 +148,8 @@ export const calculateNatalChart = async (req: Request, res: Response): Promise<
     res.json({
       ...result,
       id: chartId,
-      interpretation
+      interpretation,
+      chart_type: 'basic'
     })
 
   } catch (error: any) {
@@ -223,7 +225,8 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
 
     res.json({
       ...chartData,
-      interpretation
+      interpretation,
+      chart_type: 'advanced'
     })
 
   } catch (error: any) {
