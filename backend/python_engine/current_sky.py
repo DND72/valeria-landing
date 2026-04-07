@@ -148,7 +148,7 @@ def get_current_sky():
             monthly_phases = all_found[:6]
         except: pass
 
-        # 5. ECLISSI
+        # 5. ECLISSI CON DETTAGLI ORARI
         eclipses = []
         VISIBILITY_LOOKUP = {"2026-02-17": "Antartide", "2026-08-12": "Spagna, Islanda", "2027-02-06": "Sud America", "2027-08-02": "Nord Africa"}
         try:
@@ -161,18 +161,109 @@ def get_current_sky():
                         if jm <= 0 or jm > jd + 730: break
                         t = ("Totale","🌑") if r[0] & swe.ECL_TOTAL else (("Parziale","🌒"))
                         cat = "Solare"
+                        # tr: 0=max, 1=inizio, 4=fine
+                        t0, t1, t4 = tr[0], tr[1], tr[4]
                     else:
                         r = swe.lun_eclipse_when(temp_js, swe.FLG_SWIEPH, 0, False)
-                        jm, tr = r[1][0], r[1]
+                        jm, tr = r[1][0], r[1] # jm = eclipse maximum
                         if jm <= 0 or jm > jd + 730: break
                         t = ("Totale","🌕") if r[0] & swe.ECL_TOTAL else (("Parziale","🌓"))
                         cat = "Lunare"
+                        # r[1]: 0=max, 1=partial start, 2=total start, 3=total end, 4=partial end, 5=penumbral start, 6=penumbral end
+                        t0, t1, t4 = tr[0], tr[1], tr[4] # partial/total start to end
+
                     dt = swe.revjul(jm)
                     dk = f"{int(dt[0])}-{int(dt[1]):02d}-{int(dt[2]):02d}"
-                    eclipses.append({"tipo": cat, "sottotipo": t[0], "emoji": t[1], "data": f"{int(dt[2]):02d}/{int(dt[1]):02d}/{int(dt[0])}", "visibilità": VISIBILITY_LOOKUP.get(dk, "Visibilità globale"), "jd": jm})
+                    
+                    def jd_to_gmt(jt):
+                        if jt <= 0: return ""
+                        y, m, d, h = swe.revjul(jt)
+                        return f"{int(h):02d}:{int((h-int(h))*60):02d}"
+
+                    # Orari: Cerchiamo di prendere l'inizio e la fine più larghi disponibili
+                    # Solare: 1=inizio, 4=fine. Lunare: 5=penumbrale inizio, 6=penumbrale fine (o 1 e 4 per parziale)
+                    start_jd = tr[1] if tr[1] > 0 else (tr[5] if not is_sol and tr[5] > 0 else 0)
+                    end_jd = tr[4] if tr[4] > 0 else (tr[6] if not is_sol and tr[6] > 0 else 0)
+
+                    gmt_start = jd_to_gmt(start_jd)
+                    gmt_end = jd_to_gmt(end_jd)
+                    
+                    duration = ""
+                    if start_jd > 0 and end_jd > 0:
+                        dur_m = int((end_jd - start_jd) * 24 * 60)
+                        if dur_m > 0:
+                            duration = f"{dur_m // 60}h {dur_m % 60}m"
+
+                    eclipses.append({
+                        "tipo": cat, 
+                        "sottotipo": t[0], 
+                        "emoji": t[1], 
+                        "data": f"{int(dt[2]):02d}/{int(dt[1]):02d}/{int(dt[0])}", 
+                        "visibilità": VISIBILITY_LOOKUP.get(dk, "Visibilità globale"), 
+                        "gmt_inizio": gmt_start,
+                        "gmt_fine": gmt_end,
+                        "durata": duration,
+                        "jd": jm
+                    })
                     temp_js = jm + 30
             eclipses.sort(key=lambda x: x["jd"])
         except: pass
+
+        # 6. TIMELINE LUNARE (Prossimi 3 Giorni)
+        timeline_lunare = []
+        try:
+            # Calcoliamo aspetti e ingressi per 72 ore
+            step_h = 1.0 # Vediamo ogni ora
+            jd_scan = jd
+            current_sign_idx = int((swe.calc_ut(jd_scan, swe.MOON)[0][0] % 360) // 30)
+            
+            p_codes = [swe.SUN, swe.MERCURY, swe.VENUS, swe.MARS, swe.JUPITER, swe.SATURN]
+            p_names = {swe.SUN: "Sole", swe.MERCURY: "Mercurio", swe.VENUS: "Venere", swe.MARS: "Marte", swe.JUPITER: "Giove", swe.SATURN: "Saturno"}
+            aspects = [(0, "Congiunzione"), (60, "Sestile"), (90, "Quadratura"), (120, "Trigono"), (180, "Opposizione")]
+
+            for i in range(72):
+                t_test = jd + (i / 24.0)
+                m_lon, _ = swe.calc_ut(t_test, swe.MOON)
+                m_lon = m_lon[0]
+                new_sign_idx = int((m_lon % 360) // 30)
+                
+                # Ingressi (Solo se cambia segno)
+                if new_sign_idx != current_sign_idx:
+                    sign_name = zodiac_signs[new_sign_idx]
+                    y, m, d, h = swe.revjul(t_test)
+                    timeline_lunare.append({
+                        "evento": f"Luna entra in {sign_name}",
+                        "timestamp": datetime(int(y), int(m), int(d), int(h), int((h-int(h))*60), tzinfo=timezone.utc).isoformat(),
+                        "tipo": "ingresso",
+                        "segno": sign_name
+                    })
+                    current_sign_idx = new_sign_idx
+
+                # Aspetti (Molto semplificato: cerchiamo orbe < 0.5 gradi ogni ora)
+                for p_code in p_codes:
+                    p_lon, _ = swe.calc_ut(t_test, p_code)
+                    p_lon = p_lon[0]
+                    diff = abs(m_lon - p_lon) % 360.0
+                    if diff > 180: diff = 360 - diff
+                    
+                    for angle, aspect_name in aspects:
+                        if abs(diff - angle) < 0.35: # Orb molto stretto per lo scan orario
+                            # Evitiamo duplicati vicini
+                            if not any(e["evento"] == f"Luna {aspect_name} {p_names[p_code]}" and (t_test - swe.julday(*swe.revjul(t_test)[:3], swe.revjul(t_test)[3])) < 0.1 for e in timeline_lunare):
+                                y, m, d, h = swe.revjul(t_test)
+                                timeline_lunare.append({
+                                    "evento": f"Luna {aspect_name} {p_names[p_code]}",
+                                    "timestamp": datetime(int(y), int(m), int(d), int(h), int((h-int(h))*60), tzinfo=timezone.utc).isoformat(),
+                                    "tipo": "aspetto",
+                                    "aspetto": aspect_name,
+                                    "pianeta": p_names[p_code]
+                                })
+            
+            timeline_lunare.sort(key=lambda x: x["timestamp"])
+            # Filtro per non avere troppi eventi (massimo 10)
+            timeline_lunare = timeline_lunare[:12]
+        except: pass
+
 
         return {
             "timestamp": now.strftime("%Y-%m-%dT%H:%M:00Z"),
@@ -185,7 +276,8 @@ def get_current_sky():
                 "angolo": round(phase_angle, 2), "segno": next((p["segno"] for p in pianeti if p["nome"] == "Luna"), "N/A"),
                 "elemento": next((p["elemento"] for p in pianeti if p["nome"] == "Luna"), "N/A")
             },
-            "fasi_mensili": monthly_phases
+            "fasi_mensili": monthly_phases,
+            "timeline_lunare": timeline_lunare
         }
     except Exception as e:
         return {"error": str(e)}
