@@ -34,6 +34,27 @@
   p, span, li, a, label, blockquote {
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.6);
   }
+
+  /* Global Input Styles: Valeria Dark Theme */
+  input:not([type="checkbox"]):not([type="radio"]), 
+  textarea, 
+  select {
+    background-color: rgba(0, 0, 0, 0.45) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(212, 160, 23, 0.2) !important;
+  }
+  
+  input::placeholder, 
+  textarea::placeholder {
+    color: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  input:focus, 
+  textarea:focus {
+    border-color: rgba(212, 160, 23, 0.5) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 1px rgba(212, 160, 23, 0.2) !important;
+  }
 }
 
 @layer components {

@@ -319,7 +319,7 @@ export default function ClientDetailPage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Nome dichiarato..."
-                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none"
+                    className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none transition-all"
                   />
                 </label>
                 <label className="block">
@@ -329,7 +329,7 @@ export default function ClientDetailPage() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Cognome dichiarato..."
-                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none"
+                    className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none transition-all"
                   />
                 </label>
                 <label className="block">
@@ -338,7 +338,7 @@ export default function ClientDetailPage() {
                     type="date"
                     value={birthday}
                     readOnly
-                    className="w-full bg-dark-600/30 border border-white/5 rounded-lg px-3 py-2 text-sm text-white/50 cursor-not-allowed outline-none [color-scheme:dark]"
+                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white/40 cursor-not-allowed outline-none [color-scheme:dark]"
                   />
                   <p className="text-[9px] text-white/20 mt-1 italic">Dato prelevato da Clerk/Registrazione (Immutabile)</p>
                 </label>
@@ -348,7 +348,7 @@ export default function ClientDetailPage() {
                     type="time"
                     value={birthTime}
                     onChange={(e) => setBirthTime(e.target.value)}
-                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none [color-scheme:dark]"
+                    className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none transition-all [color-scheme:dark]"
                   />
                 </label>
                 <label className="block">
@@ -358,7 +358,7 @@ export default function ClientDetailPage() {
                     value={birthCity}
                     onChange={(e) => setBirthCity(e.target.value)}
                     placeholder="Luogo di nascita..."
-                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none"
+                    className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none transition-all"
                   />
                 </label>
                 <label className="block">
@@ -368,7 +368,7 @@ export default function ClientDetailPage() {
                     value={taxId}
                     onChange={(e) => setTaxId(e.target.value)}
                     placeholder="Inserisci CF..."
-                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-gold-200/80 focus:border-gold-600/40 outline-none uppercase"
+                    className="w-full bg-black/40 border border-white/20 rounded-lg px-4 py-2.5 text-sm font-mono text-gold-200 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 outline-none uppercase transition-all"
                   />
                 </label>
               </div>
