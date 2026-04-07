@@ -32,6 +32,8 @@ type DetailPayload = {
   ageVerified: boolean
   ageVerifiedAt: string | null
   declaredBirthday: string | null
+  birthTime: string | null
+  birthCity: string | null
   firstName: string | null
   lastName: string | null
   taxId: string | null
@@ -81,6 +83,8 @@ export default function ClientDetailPage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [birthday, setBirthday] = useState('')
+  const [birthTime, setBirthTime] = useState('')
+  const [birthCity, setBirthCity] = useState('')
   const [taxId, setTaxId] = useState('')
 
   const load = useCallback(async () => {
@@ -98,6 +102,8 @@ export default function ClientDetailPage() {
       setFirstName(d.firstName ?? '')
       setLastName(d.lastName ?? '')
       setBirthday(d.declaredBirthday ?? '')
+      setBirthTime(d.birthTime ?? '')
+      setBirthCity(d.birthCity ?? '')
       setTaxId(d.taxId ?? '')
     } catch (e) {
       setError(e instanceof ApiError ? String(e.message) : 'Errore caricamento')
@@ -143,6 +149,8 @@ export default function ClientDetailPage() {
           firstName: firstName.trim() || null, 
           lastName: lastName.trim() || null, 
           declaredBirthday: birthday || null,
+          birthTime: birthTime || null,
+          birthCity: birthCity || null,
           taxId: taxId.trim() || null 
         }),
       })
@@ -308,6 +316,25 @@ export default function ClientDetailPage() {
                     value={birthday}
                     onChange={(e) => setBirthday(e.target.value)}
                     className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none [color-scheme:dark]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Ora di Nascita</span>
+                  <input
+                    type="time"
+                    value={birthTime}
+                    onChange={(e) => setBirthTime(e.target.value)}
+                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none [color-scheme:dark]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-white/45 text-[10px] uppercase tracking-wider block mb-1">Città di Nascita</span>
+                  <input
+                    type="text"
+                    value={birthCity}
+                    onChange={(e) => setBirthCity(e.target.value)}
+                    placeholder="Luogo di nascita..."
+                    className="w-full bg-dark-600/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-600/40 outline-none"
                   />
                 </label>
                 <label className="block">

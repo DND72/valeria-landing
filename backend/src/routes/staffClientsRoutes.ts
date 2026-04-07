@@ -228,7 +228,7 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
 
       // Cerchiamo il profilo specifico per questa email
       const bpLookup = await pool.query(
-        `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday, codice_fiscale
+        `SELECT clerk_user_id, first_name, last_name, age_verified, age_verified_at, declared_birthday, birth_time, birth_city, codice_fiscale
          FROM client_billing_profiles
          WHERE email_normalized = $1 LIMIT 1`,
         [email]
@@ -281,6 +281,8 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         ageVerified,
         ageVerifiedAt,
         declaredBirthday,
+        birthTime: bp?.birth_time ?? null,
+        birthCity: bp?.birth_city ?? null,
         profile: profile
           ? {
               generalNotes: profile.general_notes,
