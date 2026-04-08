@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useSearchParams } from 'react-router-dom'
 import StaffPersonalSpace from '../../components/StaffPersonalSpace'
@@ -8,24 +7,21 @@ type TabId = 'oggi' | 'crm' | 'analytics' | 'lenormand' | 'astrologia'
 
 export default function StaffDashboard() {
   const { user } = useUser()
-  const [searchParams] = useSearchParams()
-  const [tab, setTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'oggi')
-
-  useEffect(() => {
-    const t = searchParams.get('tab') as TabId
-    if (t && t !== tab) {
-      setTab(t)
-    }
-  }, [searchParams, tab])
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (searchParams.get('tab') as TabId) || 'oggi'
 
   const firstName = user?.firstName || 'Valeria'
+
+  const handleTabChange = (newTab: string) => {
+    setSearchParams({ tab: newTab })
+  }
 
   return (
     <StaffLayout 
       title={`Ciao, ${firstName}`} 
       subtitle={`Staff Workspace / ${tab === 'oggi' ? 'Oggi' : tab.toUpperCase()}`}
       activeTab={tab}
-      onTabChange={(t: string) => setTab(t as TabId)}
+      onTabChange={handleTabChange}
     >
 
         <StaffPersonalSpace activeTab={tab as any} />

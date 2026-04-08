@@ -498,6 +498,13 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
     const { birthDate, birthTime, city, gender } = paidSchema.parse(req.body)
 
 
+    // 1. Assicuriamoci che l'utente esista nel DB (per evitare errori di FK se lo staff non è sincronizzato)
+    await pool.query(
+      `INSERT INTO users (clerk_user_id, updated_at) VALUES ($1, now()) ON CONFLICT (clerk_user_id) DO NOTHING`,
+      [userId]
+    )
+
+
     // 2. Astrology Engine + LLM Interpretation (Gratis per lo staff)
     const chartData = await runNatalCalculation(birthDate, birthTime, city)
     const { generateChartInterpretation } = await import('../lib/gemini.js')

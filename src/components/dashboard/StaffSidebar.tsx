@@ -70,7 +70,9 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
       initial={{ x: -260 }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-      className="fixed left-0 top-0 bottom-0 w-64 bg-[#0a0a0a] border-r border-white/10 z-50 flex flex-col shadow-2xl"
+      className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col shadow-2xl transition-colors duration-500 backdrop-blur-md ${
+        theme === 'light' ? 'bg-staff-sidebar-bg border-r border-staff-gold/10' : 'bg-black/80 border-r border-white/10'
+      }`}
     >
 
       {/* Brand / Logo */}
