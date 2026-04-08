@@ -10,7 +10,9 @@ export type ConsultKind =
   | 'combo_light'
   | 'combo_full'
   | 'free'
+  | 'chat_15'
   | 'chat_30'
+  | 'chat_60'
 
 export type ConsultChoice = {
   kind: ConsultKind
@@ -58,13 +60,16 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
     costCredits: 390
   },
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Free', icon: '🎁', costCredits: 0 },
-  { kind: 'chat_30', name: 'Live ChatRoom', duration: '30 min · Privata in Piattaforma', priceLabel: '1,40 €/min', icon: '💬', costCredits: 42 },
+  { kind: 'chat_15', name: 'Chat Flash', duration: '15 min · Testo in Diretta', priceLabel: '1,40 €/min', icon: '⚡', costCredits: 21 },
+  { kind: 'chat_30', name: 'Chat Standard', duration: '30 min · Testo in Diretta', priceLabel: '1,40 €/min', icon: '💬', costCredits: 42 },
+  { kind: 'chat_60', name: 'Chat Profonda', duration: '60 min · Testo in Diretta', priceLabel: '1,40 €/min', icon: '✨', costCredits: 84 },
 ]
 
 /** Settore offerta nel Diario cliente: letture vs coaching/crescita personale vs combo. */
-export type OfferCategory = 'tarocchi' | 'crescita' | 'combo'
+export type OfferCategory = 'tarocchi' | 'crescita' | 'combo' | 'chat'
 
 export function consultOfferCategory(kind: ConsultKind): OfferCategory {
+  if (kind.startsWith('chat_')) return 'chat'
   if (kind.startsWith('combo_')) return 'combo'
   if (kind.startsWith('coaching_')) return 'crescita'
   return 'tarocchi'

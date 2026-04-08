@@ -13,7 +13,9 @@ export type ConsultKind =
   | 'combo_light'
   | 'combo_full'
   | 'free'
+  | 'chat_15'
   | 'chat_30'
+  | 'chat_60'
 
 export type ConsultMeta = {
   /** Prezzo originario Stripe (mantenuto per legacy) */
@@ -111,13 +113,29 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     isFree: true,
     durationMinutes: 15,
   },
+  chat_15: {
+    amountCents: 2100,
+    costCredits: 21,
+    name: 'Live Chat (15 min)',
+    description: '15 min · Sessione flash in ChatRoom',
+    isFree: false,
+    durationMinutes: 15,
+  },
   chat_30: {
     amountCents: 4200,
     costCredits: 42,
     name: 'Live Chat (30 min)',
-    description: '30 min · Sessione in Live ChatRoom',
+    description: '30 min · Sessione standard in ChatRoom',
     isFree: false,
     durationMinutes: 30,
+  },
+  chat_60: {
+    amountCents: 8400,
+    costCredits: 84,
+    name: 'Live Chat (60 min)',
+    description: '60 min · Sessione approfondita in ChatRoom',
+    isFree: false,
+    durationMinutes: 60,
   },
 }
 

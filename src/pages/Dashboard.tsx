@@ -762,7 +762,7 @@ export default function Dashboard() {
                 (focus sull'azione), e <strong className="text-white/55">percorsi evolutivi (Combo)</strong> (l'unione dei due). Scegli sotto il percorso che ti interessa: compariranno le
                 opzioni pertinenti.
               </p>
-              <div className="grid md:grid-cols-3 gap-4 mb-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <button
                   type="button"
                   onClick={() => selectOfferCategory('tarocchi')}
@@ -829,14 +829,48 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => selectOfferCategory('chat')}
+                  className={`mystical-card text-left p-5 transition-all border ${
+                    offerCategory === 'chat'
+                      ? 'ring-2 ring-emerald-400/40 border-emerald-500/40 shadow-[0_0_20px_rgba(52,211,153,0.15)]'
+                      : 'border-white/10 hover:border-emerald-500/25'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-3xl shrink-0" aria-hidden>
+                      💬
+                    </span>
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-white mb-1">Live Chat</h3>
+                      <p className="text-white/50 text-xs xl:text-sm leading-relaxed mb-3">
+                        Sessione testuale in tempo reale. Veloce (15m), Standard (30m) o Profonda (60m). Privacy totale e massima discrezione.
+                      </p>
+                      <span className="text-emerald-400 text-sm font-medium hover:underline">Vedi opzioni chat →</span>
+                    </div>
+                  </div>
+                </button>
               </div>
 
               {offerCategory === 'tarocchi' && (
                 <p className="text-white/38 text-xs leading-relaxed mb-6 border-l border-gold-600/25 pl-3 max-w-3xl">
                   Le letture hanno natura simbolica e di orientamento:{' '}
                   <strong className="text-white/55">non sostituiscono</strong> pareri medici, psicologici specialistici,
-                  legali né trattamenti sanitari. <strong className="text-gold-500/80">L'opzione Live ChatRoom è privata e basata solo su testo.</strong>
+                  legali né trattamenti sanitari.
                 </p>
+              )}
+
+              {offerCategory === 'chat' && (
+                <div className="mystical-card border border-emerald-600/25 mb-6">
+                  <h3 className="font-serif text-base font-bold text-white mb-2">Informativa Live Chat</h3>
+                  <p className="text-white/60 text-sm leading-relaxed mb-3">
+                    La Live Chat avviene all'interno della nostra piattaforma crittografata. <strong className="text-emerald-400/80">Pagherai solo per i minuti effettivi di connessione.</strong>
+                  </p>
+                  <p className="text-white/45 text-[11px] leading-relaxed">
+                    Il tempo impiegato da Valeria per digitare i messaggi viene <strong className="text-emerald-400/80">scontato del 50%</strong> (tariffa 0,7 CR/min invece di 1,4 CR/min) per garantirti la massima equità economica. Lo storno dei crediti in eccesso avverrà automaticamente a fine sessione.
+                  </p>
+                </div>
               )}
 
               {offerCategory === 'crescita' && (
