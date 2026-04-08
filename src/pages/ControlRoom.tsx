@@ -712,7 +712,7 @@ export default function ControlRoom() {
                       <dd className="text-white/90 font-mono text-xs break-all">{detailConsult.clerk_user_id || '—'}</dd>
                     </div>
                     <div>
-                      <dt className="text-white/40">Tipo evento (Calendly)</dt>
+                      <dt className="text-white/40">Tipo consulto (Interno)</dt>
                       <dd className="text-white/90">{detailConsult.calendly_event_name?.trim() || '—'}</dd>
                     </div>
                     <div>

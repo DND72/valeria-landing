@@ -67,9 +67,9 @@ export default function TermsPage() {
           </Section>
 
           <Section title="Art. 4 — Modalità di Erogazione">
-            <p>Le sessioni si svolgono via telefono o videochiamata tramite l'integrazione con <strong>Calendly</strong>.</p>
+            <p>Le sessioni si svolgono in forma digitale (audio o video) tramite il sistema di prenotazione e la stanza di consulto privata interna alla Piattaforma.</p>
             <p className="bg-gold-500/5 p-3 border-l-2 border-gold-500/30">
-              <strong>Gestione Telefonica:</strong> Il Gestore risponde esclusivamente al numero fornito e negli orari concordati. Al di fuori di tali finestre, i sistemi sono automatizzati e non presidiati.
+              <strong>Gestione Sessioni:</strong> Il Gestore garantisce la disponibilità esclusivamente negli orari concordati e prenotati tramite il calendario del Diario. Al di fuori di tali finestre, i sistemi non sono presidiati.
             </p>
           </Section>
 
@@ -101,7 +101,7 @@ export default function TermsPage() {
           </Section>
 
           <Section title="Art. 8 — Convenzione di Prova e Valore Probatorio">
-            <p>L'Utente riconosce che i <strong>Documenti Elettronici</strong> (log di connessione, metadati di Calendly, registrazioni di transazione Stripe, durata della sessione) costituiscono piena e definitiva prova legale dell'avvenuta prestazione del servizio e del relativo pagamento in qualsiasi sede di controversia.</p>
+            <p>L'Utente riconosce che i <strong>Documenti Elettronici</strong> (log di connessione, registri della piattaforma interna, registrazioni di transazione Stripe, durata della sessione rilevata dal sistema) costituiscono piena e definitiva prova legale dell'avvenuta prestazione del servizio e del relativo pagamento in qualsiasi sede di controversia.</p>
           </Section>
 
           <Section title="Art. 9 — Proprietà Intellettuale">

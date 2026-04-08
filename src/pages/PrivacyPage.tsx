@@ -50,7 +50,7 @@ export default function PrivacyPage() {
             <ul>
               <li><strong>Dati Identificativi e di Contatto:</strong> Nome, cognome, luogo e data di nascita (per verifica maggiore età), codice fiscale (per fatturazione), indirizzo di residenza, numero di telefono e indirizzo email.</li>
               <li><strong>Dati di Navigazione:</strong> Indirizzi IP, log di sistema, orari delle richieste e metadati relativi all'utilizzo del sito raccolti tramite cookie.</li>
-              <li><strong>Dati delle Sessioni:</strong> Metadati relativi alla durata e all'orario delle consulenze effettuate tramite Calendly/Stripe.</li>
+              <li><strong>Dati delle Sessioni:</strong> Metadati relativi alla durata e all'orario delle consulenze effettuate (registrati dal sistema interno e da Stripe).</li>
             </ul>
           </Section>
 
@@ -78,7 +78,6 @@ export default function PrivacyPage() {
             <ul>
               <li><strong>Clerk:</strong> Per la gestione dell'autenticazione e del profilo utente.</li>
               <li><strong>Stripe:</strong> Per la gestione sicura dei pagamenti.</li>
-              <li><strong>Calendly:</strong> Per la gestione delle prenotazioni.</li>
               <li><strong>Consulenti Fiscali/Informatici:</strong> Per la gestione della contabilità e dell'infrastruttura web (es. Railway, Vercel).</li>
             </ul>
           </Section>

@@ -54,7 +54,7 @@ export default function Dashboard() {
   /** Flusso cliente: settore  // Stato per settore e consulto scelti */
   const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
   const [lastConsultTheme, setLastConsultTheme] = useState<'generico' | 'amore' | 'lavoro' | 'crescita'>('generico')
-  /** Flusso cliente: prima card dorata, poi Calendly con URL per quel tipo di consulto. */
+  /** Flusso cliente: prima card dorata, poi selezione data dal calendario interno. */
   const [selectedConsult, setSelectedConsult] = useState<ConsultKind | null>(null)
 
   const [taxInfo, setTaxInfo] = useState<{
@@ -791,7 +791,6 @@ export default function Dashboard() {
                 tipo (anche omaggio, se incluso nel settore). La prenotazione utilizzerà i tuoi{' '}
                 <strong className="text-white/55">Crediti disponibili nel Wallet</strong>. Se non ne hai abbastanza, ricarica nel tuo Portafoglio.
               </p>
-              {/* Disclaimer legale statico — nessuna azione richiesta */}
               <p className="text-white/28 text-[11px] mb-5 max-w-2xl leading-relaxed">
                 <strong className="text-white/40">Nota importante:</strong> Per garantire la massima qualità e privacy, tutti i consulti (inclusi quelli solo audio) avvengono in forma digitale via <strong>Meet/Zoom</strong>. Riceverai il link nel tuo <strong>Diario</strong> prima dell'inizio. Il tuo numero di cellulare è richiesto solo come backup tecnico in caso di necessità. Prenotando dichiari di avere almeno 18 anni e di accettare i{' '}
                 <Link to="/termini" className="text-gold-500/50 hover:text-gold-400 underline underline-offset-2">
@@ -969,7 +968,6 @@ export default function Dashboard() {
                 interne di Valeria non sono visibili qui.
               </p>
 
-              {/* Contatori aggregati */}
               {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length > 0 && (() => {
                 const total = myConsults.length
                 const paid = myConsults.filter((c) => !c.is_free_consult).length
@@ -1036,7 +1034,6 @@ export default function Dashboard() {
                       ? { label: isPast ? 'Passato' : 'In programma', cls: isPast ? 'border-white/15 text-white/35' : 'border-gold-600/35 text-gold-400/80', dot: isPast ? 'bg-white/30' : 'bg-gold-400 animate-pulse' }
                       : { label: c.status, cls: 'border-white/15 text-white/35', dot: 'bg-white/20' }
 
-                    // Logica icone e testi in base al provider
                     let callIcon = '🔮'
                     let callDetail = ''
                     let callActionLabel = 'Partecipa'
@@ -1139,7 +1136,6 @@ export default function Dashboard() {
               )}
             </motion.section>
 
-            {/* Cross-Selling: Il Tuo Prossimo Passo (Ora Dinamico in base al Consulto) */}
             <motion.section
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1149,7 +1145,6 @@ export default function Dashboard() {
               <div className="flex flex-wrap justify-between items-end mb-3">
                 <h2 className="font-serif text-xl font-bold text-white">Il tuo prossimo passo</h2>
                 
-                {/* Dev toggle block: Simulatore dinamico del tema per l'anteprima */}
                 {myConsults && myConsults.length > 0 && (
                   <div className="flex gap-2">
                     {(['generico', 'amore', 'lavoro', 'crescita'] as const).map(theme => (
@@ -1193,7 +1188,6 @@ export default function Dashboard() {
                       <div className="mt-6 border-t border-emerald-500/20 pt-5">
                         <h4 className="text-white/90 text-sm font-semibold mb-3 uppercase tracking-wider">Cosa puoi fare adesso</h4>
                         <div className="grid md:grid-cols-2 gap-4 mb-5">
-                          {/* Opzione 1 */}
                           <div className="bg-dark-400/50 border border-white/10 rounded-lg p-4 hover:border-gold-500/30 transition-colors">
                             <h5 className="text-gold-400 font-medium text-sm mb-1.5 flex items-center gap-2">
                               <span aria-hidden>🔮</span> Approfondimento mirato
@@ -1202,7 +1196,6 @@ export default function Dashboard() {
                               Consulto breve focalizzato esclusivamente sulla domanda di oggi per sciogliere gli ultimi dubbi.
                             </p>
                           </div>
-                          {/* Opzione 2 */}
                           <div className="bg-dark-400/50 border border-emerald-500/20 rounded-lg p-4 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
                             <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
                             <h5 className="text-emerald-400 font-medium text-sm mb-1.5 flex items-center gap-2">
@@ -1241,7 +1234,6 @@ export default function Dashboard() {
               </div>
             </motion.section>
 
-            {/* Contenuti Consigliati */}
             <motion.section
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1261,7 +1253,6 @@ export default function Dashboard() {
                 </a>
               </div>
             </motion.section>
-            {/* Recensioni in-app integrate */}
             <motion.section
               id="recensioni"
               initial={{ opacity: 0, y: 16 }}

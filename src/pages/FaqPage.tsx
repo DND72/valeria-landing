@@ -131,8 +131,8 @@ const FAQ_SECTIONS: FaqSection[] = [
         a: "Si. Il tuo Diario e visibile solo a te. Le note interne di Valeria sui consulti sono separate e non sono visibili ai clienti. I tuoi dati non vengono venduti ne ceduti a terzi.",
       },
       {
-        q: 'Posso usare un indirizzo email diverso da quello con cui prenoto su Calendly?',
-        a: "Ti consigliamo di usare la stessa email sia per l'account sul sito che per le prenotazioni su Calendly. In questo modo lo storico dei tuoi consulti appare automaticamente nel Diario privato.",
+        q: 'Posso usare un indirizzo email diverso per prenotare?',
+        a: "Le prenotazioni avvengono direttamente sul sito nel tuo Diario privato dopo aver caricato i crediti nel Wallet. Non è più necessario usare sistemi esterni: tutto è centralizzato nel tuo account per garantirti la massima privacy.",
       },
     ],
   },
