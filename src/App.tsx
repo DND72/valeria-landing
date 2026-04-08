@@ -83,6 +83,7 @@ function AppRoutes() {
             <Route path="/area-personale" element={<Dashboard />} />
             <Route path="/area-personale/astrologia" element={<Dashboard />} />
 
+            <Route path="/area-personale/miei-consulti" element={<Navigate to="/area-personale/i-miei-consulti" replace />} />
             <Route path="/control-room" element={<StaffGuard><ControlRoom /></StaffGuard>} />
             <Route path="/gestione-clienti" element={<StaffGuard><ClientManagementPage /></StaffGuard>} />
             <Route path="/gestione-clienti/:email" element={<StaffGuard><ClientDetailPage /></StaffGuard>} />

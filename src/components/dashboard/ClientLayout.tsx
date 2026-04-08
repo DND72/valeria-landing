@@ -21,7 +21,7 @@ export default function ClientLayout({ children, title, subtitle }: ClientLayout
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
 
   return (
-    <div className={`flex min-h-screen ${theme === 'light' ? 'staff-light' : 'bg-[#0a0a0a] text-white'}`}>
+    <div className={`flex min-h-screen transition-colors duration-500 ${theme === 'light' ? 'staff-light' : 'bg-black/60 text-white backdrop-blur-[2px]'}`}>
       {/* Sidebar fissa */}
       <ClientSidebar 
         theme={theme} 

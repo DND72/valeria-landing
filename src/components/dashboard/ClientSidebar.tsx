@@ -10,7 +10,7 @@ type ClientSidebarProps = {
 const CLIENT_LINKS = [
   { to: '/area-personale', label: 'Il mio Diario', emoji: '📒' },
   { to: '/area-personale/wallet', label: 'Il mio Wallet', emoji: '💰' },
-  { to: '/area-personale/miei-consulti', label: 'I miei Consulti', emoji: '🔮' },
+  { to: '/area-personale/i-miei-consulti', label: 'I miei Consulti', emoji: '🔮' },
   { to: '/area-personale/i-miei-temi', label: 'Mappe Astrali', emoji: '🌌' },
 ]
 
@@ -31,8 +31,8 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
       initial={{ x: -260 }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-      className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col shadow-2xl transition-colors duration-500 ${
-        theme === 'light' ? 'bg-staff-sidebar-bg border-r border-staff-gold/10' : 'bg-[#0a0a0a] border-r border-white/10'
+      className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col shadow-2xl transition-colors duration-500 backdrop-blur-md ${
+        theme === 'light' ? 'bg-staff-sidebar-bg border-r border-staff-gold/10' : 'bg-black/80 border-r border-white/10'
       }`}
     >
 
