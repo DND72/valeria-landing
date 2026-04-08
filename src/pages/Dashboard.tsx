@@ -110,6 +110,8 @@ export default function Dashboard() {
   const { data: valeriaPresence } = useValeriaPresence(60_000)
   const presenceLabel = labelForPresence(valeriaPresence?.status)
 
+  const [liveWindows, setLiveWindows] = useState<Array<{ start: string, end: string, label: string }> | null>(null)
+
   useEffect(() => {
     try {
       setFreeHidden(window.localStorage.getItem('freeConsultHidden') === '1')
@@ -297,6 +299,26 @@ export default function Dashboard() {
       cancelled = true
     }
   }, [isLoaded, user, getToken])
+
+  // Recupero finestre live
+  useEffect(() => {
+    if (!isLoaded || !user) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const url = getApiBaseUrl() + '/api/booking/live-windows'
+        const res = await fetch(url)
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled && data.windows) {
+          setLiveWindows(data.windows)
+        }
+      } catch (e) {
+        console.error('[live windows]', e)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [isLoaded, user])
 
   // Deve stare prima del return: gli hook non possono essere dopo if (!user) return null
   const showFreeCard = !freeHidden
@@ -553,6 +575,50 @@ export default function Dashboard() {
               <span className="text-white/35 text-xs ml-2">(utile per capire se può rispondere subito)</span>
             </span>
           </p>
+        )}
+
+        {liveWindows && liveWindows.length > 0 && !privileged && (
+          <div className="mb-6 mystical-card border-gold-500/30 bg-gold-900/10 shadow-[0_0_20px_rgba(212,160,23,0.05)]">
+            <h3 className="text-gold-500 font-bold mb-2 flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-gold-500"></span>
+              </span>
+              Onda Sincronica (Live ChatRoom)
+            </h3>
+            <p className="text-white/70 text-sm mb-4">
+              I momenti di maggiore connessione in cui puoi trovare Valeria disponibile per un consulto testuale in tempo reale.
+            </p>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {liveWindows.map((w, idx) => {
+                const now = new Date()
+                const wStart = new Date(w.start)
+                const wEnd = new Date(w.end)
+                const isNow = now >= wStart && now <= wEnd
+                const itOpts = { timeZone: 'local' }
+                const startStr = wStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
+                const endStr = wEnd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
+                const dayStr = wStart.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
+                const isToday = dayStr === now.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
+                
+                return (
+                  <div key={idx} className={`p-3 rounded-lg border ${isNow ? 'border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-white/10 bg-black/40'}`}>
+                    <p className={`text-sm font-bold capitalize ${isNow ? 'text-emerald-400' : 'text-gold-400'}`}>
+                      {isToday ? 'Oggi' : dayStr}
+                      {isNow && <span className="ml-2 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded tracking-widest uppercase">In Corso</span>}
+                    </p>
+                    <p className="text-white/80 text-xs mt-1">{w.label}</p>
+                    <p className="font-mono text-white/50 text-[11px] mt-1">{startStr} — {endStr}</p>
+                    {isNow && (
+                      <Link to="/sessione/live" className="mt-3 block w-full text-center py-2 rounded-lg bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-emerald-500 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                        Entra in Stanza
+                      </Link>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         )}
 
         {!privileged && showFreeCard && (

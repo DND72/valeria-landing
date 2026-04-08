@@ -110,7 +110,7 @@ export default function ControlRoom() {
   const [noteSaving, setNoteSaving] = useState(false)
 
   const [statusDraft, setStatusDraft] = useState<string>('scheduled')
-
+  const [actualDurationDraft, setActualDurationDraft] = useState<string>('')
 
 
 
@@ -777,26 +777,45 @@ export default function ControlRoom() {
                   </button>
 
                   {(detailConsult.status_billing !== 'billed' && detailConsult.cost_credits && detailConsult.cost_credits > 0) ? (
-                    <>
+                    <div className="flex flex-col gap-2 ml-auto items-end">
+                       <div className="flex items-center gap-2">
+                         <label htmlFor="duration-draft" className="text-white/40 text-[10px] uppercase">Minuti Effettivi</label>
+                         <input
+                           id="duration-draft"
+                           type="number"
+                           min="0"
+                           value={actualDurationDraft}
+                           onChange={(e) => setActualDurationDraft(e.target.value)}
+                           className="w-16 bg-dark-400 border border-gold-500/30 rounded px-2 py-1 text-xs text-white text-center focus:border-gold-400"
+                           placeholder="Tutti"
+                           title="Lascia vuoto per incassare l'intero importo, inserisci i minuti per stornare il resto al cliente."
+                         />
+                       </div>
                        <button
                          type="button"
-                         className="btn-gold text-sm px-4 py-2 ml-auto"
+                         className="btn-gold text-sm px-4 py-2 w-full"
                          onClick={async () => {
-                           if (!window.confirm(`Vuoi incassare i ${detailConsult.cost_credits} crediti finali di questo consulto chiudendolo con successo?`)) return
+                           const durationParams = actualDurationDraft.trim() !== '' ? { actualDurationMinutes: parseInt(actualDurationDraft, 10) } : {}
+                           const msg = Object.keys(durationParams).length > 0 
+                             ? `Vuoi incassare solo i crediti per ${durationParams.actualDurationMinutes} minuti e stornare automaticamente il resto del tempo prenotato (${detailConsult.cost_credits} CR max)?`
+                             : `Vuoi incassare integralmente i ${detailConsult.cost_credits} crediti finali di questo consulto chiudendolo con successo?`
+                             
+                           if (!window.confirm(msg)) return
                            try {
-                             await apiJson(getToken, `/api/staff/consults/${selectedId}/claim`, { method: 'POST' })
+                             await apiJson(getToken, `/api/staff/consults/${selectedId}/claim`, { method: 'POST', body: JSON.stringify(durationParams) })
                              await loadDetail(selectedId!)
                              await loadList()
+                             setActualDurationDraft('')
                            } catch (e: any) {
                              setDetailError("Impossibile Terminare: " + e.message)
                            }
                          }}
                        >
-                         Termina (Incassa)
+                         Termina (Incassa / Storna)
                        </button>
                        <button
                          type="button"
-                         className="btn-outline border-red-500/50 text-red-300 hover:bg-red-500/10 text-sm px-4 py-2"
+                         className="btn-outline border-red-500/50 text-red-300 hover:bg-red-500/10 text-xs px-4 py-1.5 w-full mt-1"
                          onClick={async () => {
                            if (!window.confirm("Il cliente non si è presentato? Tratterrai una penale di 5 CR e rimborserai il resto. L'azione è irreversibile.")) return
                            try {
@@ -810,7 +829,7 @@ export default function ControlRoom() {
                        >
                          No-Show (Penale)
                        </button>
-                    </>
+                    </div>
                   ) : null}
                 </div>
 

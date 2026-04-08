@@ -128,6 +128,70 @@ export function createBookingRouter(pool: Pool): Router {
     }
   })
 
+  // --- FINESTRE LIVE (PER WIDGET FRONTEND) ---
+  r.get('/live-windows', async (_req, res) => {
+    try {
+      const daysAhead = 7
+      const now = new Date()
+
+      // Helper per determinare la settimana (1 o 2) nel ciclo bisettimanale
+      const getWeekNumber = (date: Date) => {
+        const refDate = new Date('2024-01-01T00:00:00Z')
+        const msPerWeek = 7 * 24 * 60 * 60 * 1000
+        const diff = date.getTime() - refDate.getTime()
+        const weeksSinceRef = Math.floor(diff / msPerWeek)
+        return (Math.abs(weeksSinceRef) % 2) + 1
+      }
+
+      const { rows: patterns } = await pool.query(`SELECT day_of_week, week_number, slot_label, is_active, TO_CHAR(start_time, 'HH24:MI') as start_time, TO_CHAR(end_time, 'HH24:MI') as end_time FROM booking_availability WHERE is_active = true`)
+      
+      const { rows: overrides } = await pool.query(`SELECT override_date, is_available, TO_CHAR(start_time, 'HH24:MI') as start_time, TO_CHAR(end_time, 'HH24:MI') as end_time FROM booking_overrides WHERE override_date >= CURRENT_DATE AND override_date <= CURRENT_DATE + INTERVAL '7 days'`)
+
+      const activeWindows: { start: string, end: string, label: string }[] = []
+
+      for (let i = 0; i < daysAhead; i++) {
+        const currentRef = new Date()
+        currentRef.setDate(currentRef.getDate() + i)
+        const dateStr = currentRef.toISOString().split('T')[0]
+        const dow = currentRef.getDay()
+        const weekNum = getWeekNumber(currentRef)
+
+        const ov = overrides.find(o => new Date(o.override_date).toISOString().split('T')[0] === dateStr)
+        
+        if (ov && !ov.is_available) continue
+
+        const dayPatterns = (ov?.is_available && ov.start_time)
+          ? [{ start_time: ov.start_time, end_time: ov.end_time, slot_label: 'Custom' }]
+          : patterns.filter(p => p.day_of_week === dow && p.week_number === weekNum)
+
+        for (const pat of dayPatterns) {
+          const [hS, mS] = (pat.start_time || '00:00').split(':').map(Number)
+          const [hE, mE] = (pat.end_time || '23:59').split(':').map(Number)
+          
+          let windowStart = new Date(currentRef)
+          windowStart.setHours(hS, mS, 0, 0)
+          let windowEnd = new Date(currentRef)
+          windowEnd.setHours(hE, mE, 0, 0)
+          
+          if (windowEnd > now) {
+            activeWindows.push({
+              start: windowStart.toISOString(),
+              end: windowEnd.toISOString(),
+              label: pat.slot_label
+            })
+          }
+        }
+      }
+
+      res.json({ 
+        windows: activeWindows.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()).slice(0, 5) 
+      })
+    } catch (e) {
+      console.error('[live windows error]', e)
+      res.status(500).json({ error: 'Errore durante il recupero delle finestre live.' })
+    }
+  })
+
   // --- LOGICA DI PRENOTAZIONE ORIGINALE ---
 
   const bookSchema = z.object({

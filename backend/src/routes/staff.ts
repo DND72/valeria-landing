@@ -13,6 +13,7 @@ import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
 import { registerStaffBookingRoutes } from './staffBooking.js'
 import { askLenormandMentor } from '../lib/lenormandRAG.js'
+import { CONSULT_META } from '../lib/consultPrices.js'
 
 const noteBody = z.object({
   body: z.string().min(1).max(20000),
@@ -375,12 +376,13 @@ export function createStaffRouter(pool: Pool): Router {
 
   r.post('/consults/:id/claim', async (req, res) => {
     const id = req.params.id
+    const { actualDurationMinutes } = req.body
     const client = await pool.connect()
     try {
       await client.query('BEGIN')
       
       const { rows } = await client.query(
-         `SELECT clerk_user_id, cost_credits, status, status_billing 
+         `SELECT clerk_user_id, cost_credits, status, status_billing, consult_kind 
           FROM consults WHERE id = $1 FOR UPDATE`, 
          [id]
       )
@@ -397,17 +399,43 @@ export function createStaffRouter(pool: Pool): Router {
         return
       }
 
+      let actualCost = consult.cost_credits
+      let refundAmount = 0
+      
+      if (typeof actualDurationMinutes === 'number' && consult.consult_kind && consult.consult_kind in CONSULT_META) {
+         const kind = consult.consult_kind as keyof typeof CONSULT_META
+         const expectedDuration = CONSULT_META[kind].durationMinutes
+         if (actualDurationMinutes < expectedDuration && actualDurationMinutes >= 0) {
+             const costPerMinute = consult.cost_credits / expectedDuration
+             actualCost = Math.round(costPerMinute * actualDurationMinutes)
+             refundAmount = consult.cost_credits - actualCost
+         }
+      }
+
       if (consult.cost_credits > 0 && consult.clerk_user_id) {
         // Scala definitivamente dai blocchi
         await client.query(
-          `UPDATE wallets SET balance_locked = balance_locked - $1, updated_at = now() WHERE clerk_user_id = $2`,
-          [consult.cost_credits, consult.clerk_user_id]
+          `UPDATE wallets SET 
+             balance_locked = balance_locked - $1, 
+             balance_available = balance_available + $2,
+             updated_at = now() 
+           WHERE clerk_user_id = $3`,
+          [consult.cost_credits, refundAmount, consult.clerk_user_id]
         )
         // Ledger entry (costo effettivo consulto)
-        await client.query(
-          `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'staff_claim', $3)`,
-          [consult.clerk_user_id, consult.cost_credits, id]
-        )
+        if (actualCost > 0) {
+          await client.query(
+            `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'staff_claim', $3)`,
+            [consult.clerk_user_id, actualCost, id]
+          )
+        }
+        // Ledger entry (refund)
+        if (refundAmount > 0) {
+          await client.query(
+             `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'unlock_refund', $3)`,
+             [consult.clerk_user_id, refundAmount, id]
+          )
+        }
       }
 
       // Evidenzia operazione terminata
