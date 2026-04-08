@@ -140,7 +140,7 @@ export default function Reviews() {
             Voci dal <span className="gold-text">percorso</span>
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto mb-2">
-            Recensioni delle clienti sul sito e testimonianze importate da altre piattaforme (Kang, Profetum e simili),
+            Recensioni delle clienti sul sito e testimonianze importate dalle migliori piattaforme nazionali ed estere,
             insieme alle statistiche storiche.
           </p>
         </motion.div>

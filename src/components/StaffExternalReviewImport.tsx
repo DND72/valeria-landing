@@ -10,7 +10,7 @@ export default function StaffExternalReviewImport() {
   const { getToken } = useAuth()
   const api = Boolean(getApiBaseUrl())
   const [authorDisplayName, setAuthorDisplayName] = useState('')
-  const [platform, setPlatform] = useState('Kang')
+  const [platform, setPlatform] = useState('Piattaforma certificata')
   const [rating, setRating] = useState(5)
   const [body, setBody] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -25,7 +25,7 @@ export default function StaffExternalReviewImport() {
         method: 'POST',
         body: JSON.stringify({
           authorDisplayName: authorDisplayName.trim() || 'Cliente',
-          platform: platform.trim() || 'Altra piattaforma',
+          platform: platform.trim() || 'Piattaforma certificata',
           rating,
           body: body.trim(),
         }),
@@ -51,9 +51,9 @@ export default function StaffExternalReviewImport() {
       transition={{ delay: 0.12 }}
       className="mystical-card border border-gold-600/20"
     >
-      <h2 className="font-serif text-xl font-bold text-white mb-1">Importa recensione da altra piattaforma</h2>
+      <h2 className="font-serif text-xl font-bold text-white mb-1">Importa recensione esterna</h2>
       <p className="text-white/40 text-sm mb-4">
-        Kang, Profetum, Wengo, ecc. Resta in coda finché non la pubblichi da{' '}
+        Importa feedback dalle migliori piattaforme nazionali ed estere. Resta in coda finché non la pubblichi da{' '}
         <Link to="/gestione-recensioni" className="text-gold-500/90 hover:underline">
           Gestione recensioni
         </Link>
@@ -61,12 +61,12 @@ export default function StaffExternalReviewImport() {
       </p>
       <div className="grid sm:grid-cols-2 gap-3 mb-3">
         <label className="block">
-          <span className="text-white/45 text-xs block mb-1">Piattaforma</span>
+          <span className="text-white/45 text-xs block mb-1">Fonte / Piattaforma</span>
           <input
             value={platform}
             onChange={(e) => setPlatform(e.target.value)}
             className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white"
-            placeholder="es. Kang, Profetum"
+            placeholder="es. Piattaforma certificata"
             maxLength={80}
           />
         </label>

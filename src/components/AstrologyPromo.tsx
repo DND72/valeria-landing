@@ -8,14 +8,6 @@ const FEATURES_FREE = [
   'Griglia degli aspetti',
 ]
 
-const TIER_BASE = [
-  'Tutto il gratuito',
-  'Le 12 Case Astrologiche',
-  'Pianeti lenti e Chirone',
-  'Nodi Lunari e Lilith',
-  'Vertex e Parte della Fortuna',
-]
-
 export default function AstrologyPromo() {
   return (
     <section id="astrologia" className="relative py-28 px-6 overflow-hidden">
@@ -49,74 +41,81 @@ export default function AstrologyPromo() {
         </motion.div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Card 1: Gratuito */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="relative flex flex-col rounded-3xl border border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden p-7"
+            transition={{ duration: 0.6 }}
+            className="relative flex flex-col rounded-3xl border border-white/10 bg-black/40 backdrop-blur-sm overflow-hidden p-8"
           >
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/[0.02] blur-3xl rounded-full pointer-events-none" />
             <div className="mb-6">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-medium">Gratis</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-medium tracking-widest">Base</span>
               <div className="flex items-baseline gap-1 mt-2 mb-1">
                 <span className="text-4xl font-bold text-white">0 €</span>
               </div>
-              <p className="text-gold-400/70 text-sm font-serif italic">Calcolo Ascendente</p>
+              <p className="text-gold-400/70 text-sm font-serif italic">Calcolo Ascendente Rapido</p>
             </div>
 
-            <ul className="space-y-3 mb-8 flex-1">
+            <ul className="space-y-4 mb-10 flex-1">
               {FEATURES_FREE.map(f => (
-                <li key={f} className="flex items-start gap-2 text-sm text-white/60">
-                  <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                <li key={f} className="flex items-start gap-2.5 text-sm text-white/60">
+                  <span className="text-emerald-400 mt-1 flex-shrink-0 text-xs">✓</span>
                   {f}
                 </li>
               ))}
+              <li className="flex items-start gap-2.5 text-sm text-white/40">
+                <span className="text-white/20 mt-1 flex-shrink-0 text-xs">✓</span>
+                Analisi posizioni planetarie
+              </li>
             </ul>
 
             <Link
               to="/tema-natale"
               id="cta-ascendente-gratis"
-              className="w-full text-center border border-gold-500/40 text-gold-400 hover:bg-gold-500/10 py-3 rounded-xl text-sm font-medium uppercase tracking-wider transition-all"
+              className="w-full text-center border border-gold-500/30 text-gold-400/80 hover:text-gold-400 hover:bg-gold-500/10 py-4 rounded-xl text-sm font-medium uppercase tracking-widest transition-all"
             >
-              Calcola Gratis →
+              Prova il Calcolatore →
             </Link>
           </motion.div>
 
-          {/* Card 2: Base — EVIDENZIATA */}
+          {/* Card 2: Tema Natale Evolutivo Integrale */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="relative flex flex-col rounded-3xl overflow-hidden p-7"
+            transition={{ duration: 0.6 }}
+            className="relative flex flex-col rounded-3xl overflow-hidden p-8"
             style={{
-              background: 'linear-gradient(145deg, rgba(212,160,23,0.12) 0%, rgba(8,4,20,0.95) 100%)',
-              border: '1px solid rgba(212,160,23,0.35)',
-              boxShadow: '0 0 50px rgba(212,160,23,0.08)',
+              background: 'linear-gradient(145deg, rgba(212,160,23,0.15) 0%, rgba(8,4,20,0.98) 100%)',
+              border: '1px solid rgba(212,160,23,0.4)',
+              boxShadow: '0 0 60px rgba(212,160,23,0.1)',
             }}
           >
             {/* Badge */}
-            <div className="absolute top-5 right-5 bg-gold-500/20 border border-gold-500/40 rounded-full px-3 py-0.5 text-[10px] uppercase tracking-widest text-gold-400 font-semibold">
-              Più Popolare
+            <div className="absolute top-6 right-6 bg-gold-500/20 border border-gold-500/40 rounded-full px-4 py-1 text-[10px] uppercase tracking-widest text-gold-400 font-bold">
+              Consigliato
             </div>
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gold-500/5 to-transparent pointer-events-none" />
-
+            
             <div className="mb-6 relative">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gold-400/60 font-medium">Tema Base</span>
-              <div className="flex items-baseline gap-1 mt-2 mb-1">
-                <span className="text-4xl font-bold text-white">15</span>
-                <span className="text-gold-400/70 text-lg font-serif">CR</span>
-              </div>
-              <p className="text-gold-400/70 text-sm font-serif italic">Tema Natale Completo</p>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-gold-400 font-medium tracking-widest leading-none">Esperienza Premium</span>
+              <h3 className="text-2xl font-serif font-bold text-white mt-3 mb-1">Tema Evolutivo Integrale</h3>
+              <p className="text-gold-400/80 text-sm font-serif italic">Interpretazione Professionale di Valeria</p>
             </div>
 
-            <ul className="space-y-3 mb-8 flex-1 relative">
-              {TIER_BASE.map(f => (
-                <li key={f} className="flex items-start gap-2 text-sm text-white/70">
-                  <span className="text-gold-400 mt-0.5 flex-shrink-0">✦</span>
+            <ul className="space-y-4 mb-10 flex-1 relative">
+              {[
+                'Analisi psicologica ed evolutiva profonda',
+                'Ruota Zodiacale Integrata (The Wheel)',
+                'Dinamiche delle 12 Case e Nodi Lunari',
+                'Saggezza degli Asteroidi e Chirone',
+                'Griglia degli Aspetti e Punti Fittizi',
+                'Il dono interpretativo unico di Valeria'
+              ].map(f => (
+                <li key={f} className="flex items-start gap-2.5 text-sm text-white/80">
+                  <span className="text-gold-500 mt-1 flex-shrink-0">✦</span>
                   {f}
                 </li>
               ))}
@@ -124,52 +123,10 @@ export default function AstrologyPromo() {
 
             <Link
               to="/sign-up"
-              id="cta-tema-base"
-              className="btn-gold w-full text-center py-3 rounded-xl text-sm font-bold uppercase tracking-wider shadow-[0_0_25px_rgba(212,160,23,0.2)] hover:shadow-[0_0_40px_rgba(212,160,23,0.4)] transition-shadow"
+              id="cta-tema-consulenza"
+              className="btn-gold w-full text-center py-4 rounded-xl text-sm font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(212,160,23,0.25)] hover:shadow-[0_0_50px_rgba(212,160,23,0.45)] transition-all"
             >
-              Iscriviti e Inizia →
-            </Link>
-          </motion.div>
-
-          {/* Card 3: Evolutivo — solo in app */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="relative flex flex-col rounded-3xl border border-white/8 bg-black/30 backdrop-blur-sm overflow-hidden p-7"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/5 to-transparent pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
-
-            <div className="mb-6 relative">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-purple-300/50 font-medium">Tema Evolutivo</span>
-              <div className="flex items-baseline gap-1 mt-2 mb-1">
-                <span className="text-4xl font-bold text-white">30</span>
-                <span className="text-purple-300/60 text-lg font-serif">CR</span>
-              </div>
-              <p className="text-purple-300/60 text-sm font-serif italic">Analisi Evolutiva Profonda</p>
-            </div>
-
-            <ul className="space-y-3 mb-8 flex-1 relative">
-              {['Tutto del Base', 'Asteroidi: Cerere, Pallade, Giunone, Vesta', 'Griglia Aspetti avanzata', "Saggezza interpretativa di Valeria"].map(f => (
-                <li key={f} className="flex items-start gap-2 text-sm text-white/50">
-                  <span className="text-purple-400/60 mt-0.5 flex-shrink-0">✦</span>
-                  {f}
-                </li>
-              ))}
-              <li className="flex items-start gap-2 text-sm text-white/30 italic">
-                <span className="text-white/20 mt-0.5 flex-shrink-0">🔒</span>
-                Disponibile solo nel Diario
-              </li>
-            </ul>
-
-            <Link
-              to="/sign-up"
-              id="cta-tema-evolutivo"
-              className="w-full text-center border border-purple-500/25 text-purple-300/60 hover:text-purple-300 hover:border-purple-500/50 py-3 rounded-xl text-sm font-medium uppercase tracking-wider transition-all"
-            >
-              Iscriviti per Accedere
+              Prenota il tuo Tema Natale →
             </Link>
           </motion.div>
         </div>
@@ -180,9 +137,9 @@ export default function AstrologyPromo() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="text-center text-white/25 text-xs mt-10 tracking-wide"
+          className="text-center text-white/30 text-[11px] mt-12 tracking-widest uppercase"
         >
-          I crediti si acquistano nel Wallet. Il piano Evolutivo e le analisi di Valeria sono disponibili solo una volta iscritti.
+          L'Analisi Evolutiva e la Ruota Integrata sono disponibili nel tuo Diario dopo l'iscrizione.
         </motion.p>
       </div>
     </section>

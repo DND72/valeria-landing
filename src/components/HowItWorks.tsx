@@ -128,11 +128,9 @@ export default function HowItWorks() {
                 {service.name}
               </h3>
               <p className="text-gold-500 font-medium text-sm mb-1">{service.duration}</p>
-              <p className="font-serif text-2xl font-bold mb-3" style={{
-                background: 'linear-gradient(135deg, #ffe066, #ffd700)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>{service.price}</p>
+              <p className="font-serif text-2xl font-bold mb-3 text-gold-400" style={{ textShadow: 'none' }}>
+                {service.price}
+              </p>
               <p className="text-white/40 text-xs mt-auto">{service.ideal}</p>
             </motion.div>
           ))}
