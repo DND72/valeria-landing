@@ -2,6 +2,7 @@ import { useLayoutEffect } from 'react'
 import { Routes, Route, useLocation, Link } from 'react-router-dom'
 import CookieConsent from 'react-cookie-consent'
 import CosmicBackground from './components/CosmicBackground'
+import ScrollToTop from './components/ScrollToTop'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Stats from './components/Stats'
@@ -69,9 +70,6 @@ function AppRoutes() {
     body.style.removeProperty('width')
     body.style.removeProperty('height')
     body.style.removeProperty('padding-right')
-    
-    // Assicura che la pagina torni in cima al cambio rotta
-    window.scrollTo(0, 0)
   }, [pathname])
 
   return (
@@ -108,6 +106,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
+      <ScrollToTop />
       <CosmicBackground />
       <Navbar />
       <main className="relative z-0 pt-24 md:pt-28">

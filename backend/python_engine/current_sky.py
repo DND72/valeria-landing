@@ -181,18 +181,28 @@ def get_current_sky():
                         return f"{int(h):02d}:{int((h-int(h))*60):02d}"
 
                     # Orari: Cerchiamo di prendere l'inizio e la fine più larghi disponibili
-                    # Solare: 1=inizio, 4=fine. Lunare: 5=penumbrale inizio, 6=penumbrale fine (o 1 e 4 per parziale)
-                    start_jd = tr[1] if tr[1] > 0 else (tr[5] if not is_sol and tr[5] > 0 else 0)
-                    end_jd = tr[4] if tr[4] > 0 else (tr[6] if not is_sol and tr[6] > 0 else 0)
+                    if is_sol:
+                        # Solare glob: 1=inizio (C1), 2=fine (C4)
+                        start_jd = tr[1]
+                        end_jd = tr[2]
+                    else:
+                        # Lunare: 5=inizio penumbale, 6=fine penumbrale (più larga)
+                        # Se vogliamo la parziale/totale usiamo 1 e 4
+                        start_jd = tr[5] if tr[5] > 0 else tr[1]
+                        end_jd = tr[6] if tr[6] > 0 else tr[4]
 
                     gmt_start = jd_to_gmt(start_jd)
                     gmt_end = jd_to_gmt(end_jd)
                     
                     duration = ""
-                    if start_jd > 0 and end_jd > 0:
-                        dur_m = int((end_jd - start_jd) * 24 * 60)
+                    if start_jd > 0 and end_jd > 1000: # Controllo JD valido
+                        dur_m = int(round((end_jd - start_jd) * 24 * 60))
                         if dur_m > 0:
-                            duration = f"{dur_m // 60}h {dur_m % 60}m"
+                            h = dur_m // 60
+                            m = dur_m % 60
+                            duration = f"{h}h {m}m" if h > 0 else f"{m}m"
+                        else:
+                            duration = "Pochi minuti"
 
                     eclipses.append({
                         "tipo": cat, 
