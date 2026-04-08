@@ -37,6 +37,8 @@ import CurrentSkyPage from './pages/CurrentSkyPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import StaffGuard from './components/StaffGuard'
 
+import LiveSessionPage from './pages/LiveSessionPage'
+
 function HomePage() {
   return (
     <>
@@ -97,6 +99,7 @@ function AppRoutes() {
             <Route path="/tema-natale" element={<NatalChartPage />} />
             <Route path="/i-miei-temi" element={<PaidNatalCharts />} />
             <Route path="/cielo" element={<CurrentSkyPage />} />
+            <Route path="/sessione/:id" element={<LiveSessionPage />} />
       </Routes>
     </RouteErrorBoundary>
   )

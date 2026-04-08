@@ -1036,22 +1036,19 @@ export default function Dashboard() {
 
                     let callIcon = '🔮'
                     let callDetail = ''
-                    let callActionLabel = 'Partecipa'
                     
                     if (c.meeting_join_url?.includes('meet.google.com') || c.meeting_provider === 'google_conference') {
                       callIcon = '📽️'
-                      callDetail = 'Si svolge su Google Meet (anche da browser senza app).'
-                      callActionLabel = isSoon ? 'Entra ora' : 'Vai alla stanza'
+                      callDetail = 'Si svolge nella ChatRoom privata o su Meet/Zoom.'
                     } else if (c.meeting_join_url?.includes('zoom.us') || c.meeting_provider === 'zoom_conference') {
                       callIcon = '📹'
-                      callDetail = 'Si svolge su Zoom. Si consiglia di avere l\'app installata.'
-                      callActionLabel = isSoon ? 'Entra ora' : 'Apri Zoom'
+                      callDetail = 'Si svolge nella ChatRoom privata o su Meet/Zoom.'
                     } else if (c.meeting_join_url) {
                       callIcon = '🌐'
                       callDetail = 'Sessione Digitale tramite link (Audio/Video).'
                     } else {
-                      callIcon = '⏳'
-                      callDetail = 'Valeria aggiungerà a breve qui il link per la sessione (Meet o Zoom).'
+                      callIcon = '💬'
+                      callDetail = 'Consulta il sistema dal vivo nella ChatRoom interna.'
                     }
 
                     return (
@@ -1081,22 +1078,18 @@ export default function Dashboard() {
                           </div>
 
                           <div className="flex flex-wrap gap-3 p-3 bg-white/[0.03] border-t border-white/5 items-center justify-between">
-                            {c.meeting_join_url && !isPast && c.status === 'scheduled' ? (
-                              <a 
-                                href={c.meeting_join_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
+                            {c.status === 'scheduled' && !isPast ? (
+                              <Link 
+                                to={`/sessione/${c.id}`}
                                 className={`px-4 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 ${
                                   isSoon 
                                     ? 'bg-gold-500 text-dark-500 hover:bg-gold-400 shadow-[0_0_12px_rgba(212,160,23,0.3)]' 
-                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                    : 'bg-white/10 text-gold-400 hover:bg-white/20 border border-gold-500/30'
                                 }`}
                               >
-                                {callActionLabel}
+                                {isSoon ? 'Entra nel Consulto Live' : 'Apri la ChatRoom'}
                                 <span aria-hidden>→</span>
-                              </a>
-                            ) : c.status === 'scheduled' && !isPast ? (
-                              <span className="text-white/30 text-xs italic">Nessun link aggiunto al momento. Apparirà qui prima dell'appuntamento.</span>
+                              </Link>
                             ) : null}
 
                             {isPast && c.status !== 'cancelled' && (

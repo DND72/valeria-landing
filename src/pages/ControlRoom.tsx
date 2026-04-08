@@ -736,20 +736,15 @@ export default function ControlRoom() {
                       </div>
                     )}
                     <div className="sm:col-span-2">
-                      <dt className="text-white/40">Link riunione</dt>
-                      <dd className="text-white/90">
-                        {detailConsult.meeting_join_url ? (
-                          <a
-                            href={detailConsult.meeting_join_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gold-400 hover:underline break-all"
-                          >
-                            {detailConsult.meeting_join_url}
-                          </a>
-                        ) : (
-                          '—'
-                        )}
+                      <dt className="text-white/40">Accesso alla Stanza in Diretta</dt>
+                      <dd className="text-white/90 mt-2">
+                        <Link
+                          to={`/sessione/${detailConsult.id}`}
+                          className="inline-flex items-center gap-2 bg-gold-500 text-dark-500 hover:bg-gold-400 px-6 py-2 rounded-full text-sm font-bold shadow-[0_0_15px_rgba(212,160,23,0.3)] transition-all"
+                        >
+                          Entra nella Live Chat
+                          <span aria-hidden>→</span>
+                        </Link>
                       </dd>
                     </div>
                   </dl>
