@@ -598,11 +598,10 @@ export default function Dashboard() {
                   const wStart = new Date(w.start)
                   const wEnd = new Date(w.end)
                   const isNow = now >= wStart && now <= wEnd
-                  const itOpts = { timeZone: 'local' }
-                  const startStr = wStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
-                  const endStr = wEnd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
-                  const dayStr = wStart.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
-                  const isToday = dayStr === now.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
+                  const startStr = wStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+                  const endStr = wEnd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+                  const dayStr = wStart.toLocaleDateString('it-IT', { weekday: 'long' })
+                  const isToday = dayStr === now.toLocaleDateString('it-IT', { weekday: 'long' })
                   
                   return (
                     <div key={idx} className={`p-3 rounded-lg border ${isNow ? 'border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-white/10 bg-black/40'}`}>
