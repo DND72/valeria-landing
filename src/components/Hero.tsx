@@ -86,112 +86,124 @@ export default function Hero() {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
-        {/* Valeria photo — centered */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="mb-8"
-        >
-          <div
-            className="mx-auto rounded-2xl overflow-hidden border border-gold-500/30 ring-1 ring-gold-500/20"
-            style={{
-              width: '160px',
-              aspectRatio: '1/1',
-              boxShadow: '0 0 40px rgba(212,160,23,0.15), 0 10px 40px rgba(0,0,0,0.8)',
-            }}
-          >
-            <img
-              src="/valeria-navbar.png"
-              alt="Valeria Di Pace"
-              className="w-full h-full object-cover"
-              style={{ objectPosition: '50% 15%' }}
-            />
-          </div>
-        </motion.div>
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium mb-8"
-        >
-          <TarotCardIcon />
-          <span>Tarologa · Naturopata · Tarocchi di Marsiglia</span>
-        </motion.div>
-
-        {/* Main heading */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="font-serif text-5xl md:text-7xl font-bold leading-tight mb-6"
-        >
-          Le carte non mentono.
-          <br />
-          Valeria è la tua <ShiningStella />
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.25 }}
-          className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed text-justify hyphens-auto"
-        >
-          Oltre <strong className="text-gold-400">3.000 consulti</strong> sulle più rinomate piattaforme online — ora puoi
-          trovarla direttamente qui.
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.35 }}
-          className="text-white/40 text-base md:text-lg mb-12 italic font-serif max-w-2xl mx-auto leading-relaxed text-justify hyphens-auto"
-        >
-          <span className="not-italic text-gold-400/95 font-medium tracking-wide">Esperienza, precisione e visione.</span>{' '}
-          Valeria applica un{' '}
-          <span className="not-italic text-gold-400/90">protocollo di analisi profonda</span> che va oltre la semplice
-          lettura, offrendo uno <span className="not-italic text-gold-400/90">strumento antico</span> per comprendere le{' '}
-          <span className="not-italic text-gold-400/90">dinamiche reali</span> della tua esistenza.
-        </motion.p>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.45 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          <a href="https://stese.nonsolotarocchi.it" target="_blank" rel="noopener noreferrer" className="btn-outline text-base">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Prova gratis le carte
-          </a>
-        </motion.div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        >
+      <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        {/* Left Side: Content */}
+        <div className="text-left order-2 lg:order-1">
+          {/* Badge */}
           <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="flex flex-col items-center gap-1 text-white/30 text-xs"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium mb-8"
           >
-            <span className="tracking-widest uppercase text-[10px]">Scopri</span>
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-            </svg>
+            <TarotCardIcon />
+            <span>Attrice · Giornalista · Tarologa · Naturopata</span>
           </motion.div>
+
+          {/* Main heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="font-serif text-5xl md:text-7xl font-bold leading-tight mb-6"
+          >
+            Le carte non mentono.
+            <br />
+            Valeria è la tua <ShiningStella />
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.25 }}
+            className="text-white/60 text-lg md:text-xl max-w-2xl mb-4 leading-relaxed"
+          >
+            Oltre <strong className="text-gold-400">3.000 consulti</strong> sulle più rinomate piattaforme online — ora puoi
+            trovarla direttamente qui.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.35 }}
+            className="text-white/40 text-base md:text-lg mb-12 italic font-serif max-w-2xl leading-relaxed"
+          >
+            <span className="not-italic text-gold-400/95 font-medium tracking-wide">Esperienza, precisione e visione.</span>{' '}
+            Valeria applica un{' '}
+            <span className="not-italic text-gold-400/90">protocollo di analisi profonda</span> che va oltre la semplice
+            lettura, offrendo uno <span className="not-italic text-gold-400/90">strumento antico</span> per comprendere le{' '}
+            <span className="not-italic text-gold-400/90">dinamiche reali</span> della tua esistenza.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.45 }}
+            className="flex flex-col sm:flex-row items-center gap-4"
+          >
+            <a href="https://stese.nonsolotarocchi.it" target="_blank" rel="noopener noreferrer" className="btn-outline text-base">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Prova gratis le carte
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Right Side: Valeria photo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, x: 20 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="relative order-1 lg:order-2"
+        >
+          <div className="relative z-10 w-full max-w-[500px] lg:max-w-none">
+            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-gold-900/20">
+              <img
+                src="/valeria-tarots-glass.jpg"
+                alt="Valeria - Consulto Tarocchi di Marsiglia"
+                className="w-full h-full object-cover"
+              />
+              {/* Overlay gradient for depth */}
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-500/40 via-transparent to-transparent" />
+            </div>
+          </div>
+          
+          {/* Decorative floating elements */}
+          <motion.div 
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-6 -right-6 w-24 h-24 bg-gold-400/5 blur-3xl rounded-full" 
+          />
+          <motion.div 
+            animate={{ y: [0, 15, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            className="absolute -bottom-10 -left-10 w-32 h-32 bg-gold-400/10 blur-3xl rounded-full" 
+          />
         </motion.div>
       </div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex flex-col items-center gap-1 text-white/30 text-xs"
+        >
+          <span className="tracking-widest uppercase text-[10px]">Scopri</span>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+          </svg>
+        </motion.div>
+      </motion.div>
     </section>
   )
 }

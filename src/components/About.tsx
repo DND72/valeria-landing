@@ -5,9 +5,9 @@ type PillarIcon = 'structure' | 'vision' | 'care' | 'tradition'
 const credentials: { icon: PillarIcon; title: string; desc: string }[] = [
   {
     icon: 'structure',
-    title: 'Analisi e Struttura del Pensiero',
+    title: 'Analisi e Struttura Strategica',
     desc:
-      'Il rigore del ragionamento giuridico unito alla comprensione profonda delle dinamiche mentali. Questa base accademica permette una lettura dei simboli che non è mai casuale, ma basata su una struttura logica e psicologica ferma.',
+      'Il rigore del ragionamento strategico unito al titolo di Arena International Master (FIDE). Questa eccellenza negli scacchi permette una lettura dei simboli che non è mai casuale, ma basata su una struttura logica, tattica e psicologica di altissimo livello.',
   },
   {
     icon: 'vision',
@@ -102,16 +102,17 @@ export default function About() {
           >
             <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-4">Chi è Valeria</p>
             <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight mb-6">
-              Tre percorsi universitari.
+              Arena International Master.
               <br />
-              Una carriera in TV.
+              Red Carpet a Roma.
               <br />
               <span className="gold-text italic">Un dono antico.</span>
             </h2>
             <div className="space-y-4 text-white/60 leading-relaxed">
               <p>
                 Valeria Di Pace non è la solita tarologa. Il suo metodo nasce dall&apos;unione tra tre diversi percorsi
-                accademici, tra scoperte in ambito olistico e una ricerca interiore profonda durata oltre un ventennio.
+                accademici, una carriera nel <strong>giornalismo</strong> e nel <strong>cinema</strong> (presente al Rome Film Fest),
+                e una mente strategica riconosciuta a livello mondiale con il titolo di <strong>Arena International Master (FIDE)</strong> negli scacchi.
               </p>
               <p>
                 La sua analisi dei Tarocchi di Marsiglia integra il rigore del pensiero con una straordinaria capacità
@@ -140,6 +141,47 @@ export default function About() {
               </p>
             </div>
 
+            <div className="mt-12">
+               <p className="text-gold-500 text-xs font-bold tracking-[0.2em] uppercase mb-6 flex items-center gap-3">
+                 <span className="h-[1px] w-8 bg-gold-500/30" />
+                 Carriera e Riconoscimenti
+               </p>
+               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                 <motion.div 
+                   whileHover={{ scale: 1.02 }}
+                   className="relative group rounded-xl overflow-hidden border border-white/10 aspect-[4/5]"
+                 >
+                   <img src="/valeria-award-1.jpg" alt="Premio Rete 4" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                   <div className="absolute inset-x-0 bottom-0 p-3 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                     <p className="text-[10px] text-gold-400 font-bold uppercase">Premio alla Carriera</p>
+                     <p className="text-[9px] text-white/70">Programma Modamania, Rete Quattro</p>
+                   </div>
+                 </motion.div>
+                 
+                 <motion.div 
+                   whileHover={{ scale: 1.02 }}
+                   className="relative group rounded-xl overflow-hidden border border-white/10 aspect-[4/5]"
+                 >
+                   <img src="/valeria-award-2.jpg" alt="Anzio Film Festival" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                   <div className="absolute inset-x-0 bottom-0 p-3 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                     <p className="text-[10px] text-gold-400 font-bold uppercase">Premio Speciale 2024</p>
+                     <p className="text-[9px] text-white/70">Anzio Film Festival, Attrice</p>
+                   </div>
+                 </motion.div>
+
+                 <motion.div 
+                   whileHover={{ scale: 1.02 }}
+                   className="relative group rounded-xl overflow-hidden border border-white/10 aspect-[4/5] col-span-2 md:col-span-1"
+                 >
+                   <img src="/valeria-carriera.jpg" alt="Valeria sul palco" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                   <div className="absolute inset-x-0 bottom-0 p-3 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                     <p className="text-[10px] text-gold-400 font-bold uppercase">Madrina d'Eccezione</p>
+                     <p className="text-[9px] text-white/70">Eventi Cinema e Moda</p>
+                   </div>
+                 </motion.div>
+               </div>
+            </div>
+ 
             <div className="mt-8 flex items-center gap-4">
               <a href="#prenota" className="btn-gold">
                 Prenota ora
@@ -181,8 +223,18 @@ export default function About() {
                   transition={{ duration: 0.45, delay: 0.08 + i * 0.06 }}
                   className="group rounded-xl border border-white/[0.08] bg-black/35 backdrop-blur-sm p-4 transition-colors hover:border-gold-600/25"
                 >
-                  <div className="mb-3 flex items-center gap-2.5">
+                  <div className="mb-3 flex items-center justify-between gap-2.5">
                     <PillarIconSvg name={cred.icon} />
+                    {cred.icon === 'structure' && (
+                      <div className="w-14 h-14 rounded-full overflow-hidden border border-gold-500/30">
+                        <img src="/valeria-chess.jpg" alt="Valeria Scacchi" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    {cred.icon === 'tradition' && (
+                      <div className="w-12 h-12 rounded-full overflow-hidden border border-gold-500/30">
+                        <img src="/valeria-templare-mini.jpg" alt="Valeria Templare" className="w-full h-full object-cover" />
+                      </div>
+                    )}
                   </div>
                   <h3 className="font-serif text-[15px] font-semibold leading-snug text-white/95 mb-2 group-hover:text-gold-400/95 transition-colors">
                     {cred.title}

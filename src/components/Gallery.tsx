@@ -7,34 +7,81 @@ interface GalleryItem {
   category: 'templare' | 'onorificenze' | 'parafarmacia' | 'altro'
 }
 
-// Inserisci qui i percorsi delle foto reali.
-// Metti i file nella cartella public/gallery/ e usa il nome file come src.
-// Es: { src: '/gallery/templare-1.jpg', caption: 'Cerimonia Templare', category: 'templare' }
 const galleryItems: GalleryItem[] = [
   {
-    src: '',
-    caption: 'Cerimonia Templare',
-    category: 'templare',
+    src: '/valeria-tarots-glass.jpg',
+    caption: 'La Visione: Consulto Professionale',
+    category: 'altro',
   },
   {
-    src: '',
-    caption: 'Onorificenza Ambasciatrice di Pace',
+    src: '/valeria-chess.jpg',
+    caption: 'La Strategia: Arena International Master (FIDE)',
     category: 'onorificenze',
   },
   {
-    src: '',
-    caption: 'Investitura Commander Regionale',
+    src: '/valeria-fide.jpg',
+    caption: 'Arena International Master (FIDE)',
+    category: 'onorificenze',
+  },
+  {
+    src: '/valeria-sanremo.jpg',
+    caption: 'Collaborazione a Casa Sanremo',
+    category: 'altro',
+  },
+  {
+    src: '/valeria-award-1.jpg',
+    caption: 'Premio alla Carriera - Rete Quattro',
+    category: 'onorificenze',
+  },
+  {
+    src: '/valeria-award-2.jpg',
+    caption: 'Premio Speciale 2024 - Anzio Film Festival',
+    category: 'onorificenze',
+  },
+  {
+    src: '/valeria-giornalista.jpg',
+    caption: 'Dott.ssa Valeria Di Pace - Attrice Giornalista',
+    category: 'onorificenze',
+  },
+  {
+    src: '/valeria-templare-1.jpg',
+    caption: 'Tradizione e Lignaggio Templare',
     category: 'templare',
   },
   {
-    src: '',
-    caption: 'Parafarmacia Energia & Benessere',
-    category: 'parafarmacia',
+    src: '/valeria-templare-2.jpg',
+    caption: 'Investitura e Firma del Vessillo',
+    category: 'templare',
   },
   {
-    src: '',
-    caption: 'Manuale Heel Guna - Eccellenza Olistica',
-    category: 'parafarmacia', // Inserito qui perché legato al benessere
+    src: '/valeria-templare-3.jpg',
+    caption: 'Cerimonia Solenne',
+    category: 'templare',
+  },
+  {
+    src: '/valeria-templare-5.jpg',
+    caption: 'Custode della Tradizione',
+    category: 'templare',
+  },
+  {
+    src: '/valeria-specchio.jpg',
+    caption: 'Introspezione e Simboli',
+    category: 'altro',
+  },
+  {
+    src: '/valeria-social.jpg',
+    caption: 'Impegno Sociale e Civile',
+    category: 'onorificenze',
+  },
+  {
+    src: '/valeria-hero.jpg',
+    caption: 'Consulenza Professionale',
+    category: 'altro',
+  },
+  {
+    src: '/valeria-seminario.jpg',
+    caption: 'Leadership e Formazione',
+    category: 'altro',
   },
 ]
 
@@ -55,7 +102,7 @@ function PlaceholderCard({ caption }: { caption: string }) {
       }}
     >
       <svg className="w-8 h-8 text-gold-600/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="L4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
       <span className="text-white/20 text-xs text-center px-4">{caption}</span>
     </div>
@@ -69,8 +116,6 @@ export default function Gallery() {
   const filtered = filter === 'tutti'
     ? galleryItems
     : galleryItems.filter((item) => item.category === filter)
-
-  const hasRealPhotos = galleryItems.some((item) => item.src !== '')
 
   return (
     <section id="galleria" className="py-24 px-6 relative">
@@ -89,7 +134,7 @@ export default function Gallery() {
             Un cammino di <span className="gold-text">luce</span>
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto">
-            Cerimonie templari, onorificenze, momenti di un percorso che pochi hanno il privilegio di vivere.
+            Testimonianze di una vita trascorsa tra arte, impegno sociale e ricerca spirituale.
           </p>
         </motion.div>
 
@@ -122,7 +167,7 @@ export default function Gallery() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.07 }}
-              className="group relative cursor-pointer overflow-hidden rounded-lg"
+              className="group relative cursor-pointer overflow-hidden rounded-lg bg-black/40"
               onClick={() => item.src && setLightbox(item)}
             >
               {item.src ? (
@@ -132,10 +177,10 @@ export default function Gallery() {
                     alt={item.caption}
                     className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-end p-4 opacity-0 group-hover:opacity-100">
-                    <p className="text-white text-sm font-medium">{item.caption}</p>
+                  <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white text-[11px] font-medium">{item.caption}</p>
                   </div>
-                  <div className="absolute inset-0 border border-gold-600/0 group-hover:border-gold-600/40 rounded-lg transition-all duration-300" />
+                  <div className="absolute inset-0 border border-gold-600/0 group-hover:border-gold-600/30 rounded-lg transition-all duration-300" />
                 </>
               ) : (
                 <PlaceholderCard caption={item.caption} />
@@ -143,17 +188,6 @@ export default function Gallery() {
             </motion.div>
           ))}
         </div>
-
-        {!hasRealPhotos && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center text-white/25 text-sm mt-8 italic"
-          >
-            Le foto saranno aggiunte a breve — inseriscile in <code className="text-gold-600/50">public/gallery/</code>
-          </motion.p>
-        )}
       </div>
 
       {/* Lightbox */}
@@ -162,18 +196,25 @@ export default function Gallery() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6"
+          className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4 md:p-8"
           onClick={() => setLightbox(null)}
         >
-          <div className="relative max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
-            <img src={lightbox.src} alt={lightbox.caption} className="w-full rounded-lg shadow-2xl" />
-            <p className="text-center text-white/60 text-sm mt-4">{lightbox.caption}</p>
+          <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
             <button
-              className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+              className="absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 text-sm uppercase tracking-widest"
               onClick={() => setLightbox(null)}
             >
-              ✕
+              Chiudi ✕
             </button>
+            
+            <div className="rounded-xl overflow-hidden bg-black shadow-2xl border border-white/10">
+              <img src={lightbox.src} alt={lightbox.caption} className="w-full max-h-[80vh] object-contain" />
+            </div>
+            
+            <div className="mt-6 text-center">
+              <p className="text-gold-400 text-xs font-bold uppercase tracking-[0.2em] mb-2">{lightbox.category}</p>
+              <h3 className="text-white text-lg font-serif">{lightbox.caption}</h3>
+            </div>
           </div>
         </motion.div>
       )}

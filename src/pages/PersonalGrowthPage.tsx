@@ -15,22 +15,22 @@ const PACKAGE_BLURBS: Record<string, string> = {
 }
 
 /** Alba fotografica (public/crescita-alba.png) + overlay per leggibilità testi */
-function CoachingDawnBackground() {
+function CoachingSeminarBackground() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
       <div
-        className="absolute inset-0 bg-no-repeat"
+        className="absolute inset-0 bg-no-repeat opacity-20"
         style={{
           backgroundColor: '#dfe5df',
-          backgroundImage: 'url(/crescita-alba.png)',
-          backgroundSize: 'contain',
-          backgroundPosition: 'center top',
+          backgroundImage: 'url(/valeria-seminario.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 20%',
         }}
       />
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(to top, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.8) 100%)',
+          background: 'linear-gradient(to top, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%)',
         }}
       />
     </div>
@@ -45,7 +45,7 @@ export default function PersonalGrowthPage() {
 
   return (
     <div className="coaching-light-page relative left-1/2 w-screen -translate-x-1/2 min-h-screen overflow-hidden text-slate-800">
-      <CoachingDawnBackground />
+      <CoachingSeminarBackground />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-24">
         <motion.div
