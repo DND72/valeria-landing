@@ -1,9 +1,7 @@
 import { useAuth } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
-import type { ValeriaPresenceStatus } from '../lib/valeriaPresence'
 import { getApiBaseUrl } from '../constants/api'
 import StaffExternalReviewImport from './StaffExternalReviewImport'
 import StaffAnalyticsWidget from './StaffAnalyticsWidget'
@@ -75,9 +73,6 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
 
   const tab = activeTab
 
-  const [presence, setPresence] = useState<{ status: ValeriaPresenceStatus; updatedAt: string | null } | null>(null)
-  const [presenceSaving, setPresenceSaving] = useState(false)
-
   const [today, setToday] = useState<MeetingsPayload | null>(null)
   const [todayLoading, setTodayLoading] = useState(false)
 
@@ -89,16 +84,6 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
   const [crmLoading, setCrmLoading] = useState(false)
   const [crmSearch, setCrmSearch] = useState('')
   const [drawerEmail, setDrawerEmail] = useState<string | null>(null)
-
-  const loadPresence = useCallback(async () => {
-    if (!apiConfigured) return
-    try {
-      const r = await apiJson<{ status: ValeriaPresenceStatus; updatedAt: string | null }>(getToken, '/api/staff/presence')
-      setPresence({ status: r.status, updatedAt: r.updatedAt })
-    } catch {
-      setPresence(null)
-    }
-  }, [getToken, apiConfigured])
 
   const loadToday = useCallback(async () => {
     if (!apiConfigured) return
@@ -140,10 +125,9 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
   }, [getToken, apiConfigured])
 
   useEffect(() => {
-    void loadPresence()
     void loadToday()
     void loadClientsWeek()
-  }, [loadPresence, loadToday, loadClientsWeek])
+  }, [loadToday, loadClientsWeek])
 
   useEffect(() => {
     if (tab === 'crm' && allClients === null) void loadAllClients()
@@ -185,85 +169,15 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
     }
   }
 
-  const setPresenceStatus = async (status: ValeriaPresenceStatus) => {
-    if (!apiConfigured) return
-    setPresenceSaving(true)
-    try {
-      const r = await apiJson<{ status: ValeriaPresenceStatus; updatedAt: string }>(getToken, '/api/staff/presence', {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      })
-      setPresence({ status: r.status, updatedAt: r.updatedAt })
-    } catch { /* ignore */ } finally {
-      setPresenceSaving(false)
-    }
-  }
-
-  const presenceOptions: { value: ValeriaPresenceStatus; label: string; hint: string }[] = [
-    { value: 'online', label: 'Online', hint: 'Disponibile per messaggi o chiamate rapide' },
-    { value: 'busy', label: 'Occupata', hint: 'In sessione o non disponibile al momento' },
-    { value: 'offline', label: 'Offline', hint: 'Non in linea' },
-  ]
-
   const filteredClients = (allClients ?? []).filter((c) =>
     !crmSearch ||
     c.email.toLowerCase().includes(crmSearch.toLowerCase()) ||
     (c.name ?? '').toLowerCase().includes(crmSearch.toLowerCase())
   )
 
-
-
   return (
     <>
       <div className="space-y-6">
-        <p className="text-white/40 text-sm border-l border-gold-600/25 pl-3">
-          Spazio di lavoro: consulti, clienti e stato visibile alle clienti sulle schede prenotazione. Il calendario
-          interattivo resta in{' '}
-          <Link to="/control-room" className="text-gold-500/90 hover:underline">
-            Control Room
-          </Link>
-          .
-        </p>
-
-        {/* Presenza — sempre visibile */}
-        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mystical-card">
-          <h2 className="font-serif text-xl font-bold text-white mb-1">Come ti vedono le clienti</h2>
-          <p className="text-white/40 text-sm mb-4">
-            Lo stato scelto qui compare sulle schede consulto nella loro area e si aggiorna automaticamente in pagina.
-          </p>
-          {!apiConfigured && <p className="text-amber-200/85 text-sm">Collega il backend per salvare lo stato.</p>}
-          {apiConfigured && (
-            <>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {presenceOptions.map((o) => {
-                  const active = presence?.status === o.value
-                  return (
-                    <button
-                      key={o.value}
-                      type="button"
-                      disabled={presenceSaving}
-                      onClick={() => void setPresenceStatus(o.value)}
-                      className={`text-sm px-4 py-2 rounded-lg border transition-colors ${
-                        active
-                          ? 'border-gold-500/70 bg-gold-600/15 text-gold-200'
-                          : 'border-white/15 text-white/60 hover:border-white/25 hover:text-white/80'
-                      }`}
-                    >
-                      {o.label}
-                    </button>
-                  )
-                })}
-              </div>
-              <p className="text-white/30 text-xs">
-                {presenceOptions.find((o) => o.value === (presence?.status ?? 'offline'))?.hint}
-                {presence?.updatedAt && (
-                  <span className="ml-2">· Aggiornato {formatWhen(presence.updatedAt)}</span>
-                )}
-              </p>
-            </>
-          )}
-        </motion.section>
-
         {/* ===== TAB: OGGI ===== */}
         {tab === 'oggi' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -274,7 +188,7 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 <div>
                   <h2 className="font-serif text-xl font-bold text-white mb-1">Agenda: I Consulti di Oggi</h2>
-                  <p className="text-white/40 text-xs">
+                  <p className="text-white/45 text-xs">
                     Elenco in tempo reale delle sessioni programmate per la data odierna.
                   </p>
                 </div>
@@ -390,7 +304,7 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
               )}
               {clientsWeek && clientsWeek.clients.length > 0 && (
                 <ul className="space-y-6">
-                  {clientsWeek.clients.map((c) => (
+                  {clientsWeek.clients.map((c: any) => (
                     <li key={c.email} className="border border-white/10 rounded-lg p-4 bg-white/[0.02]">
                       <div className="flex items-center justify-between gap-3 mb-2">
                         <div>
@@ -406,7 +320,7 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
                         </button>
                       </div>
                       <ul className="space-y-1.5 text-sm text-white/55 border-t border-white/5 pt-3">
-                        {c.slots.map((s) => (
+                        {c.slots.map((s: any) => (
                           <li key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-black/20 rounded">
                             <div className="flex flex-wrap gap-x-3 gap-y-0.5 items-center">
                               <span className="font-medium text-white/80">{formatWhen(s.startAt)}</span>

@@ -18,6 +18,6 @@ router.get('/latest', requireClerkAuth, getLatestChart)
 router.post('/generate-paid', requireClerkAuth, generatePaidChart)
 router.get('/my-charts', requireClerkAuth, getMyCharts)
 router.post('/generate-summary', requireClerkAuth, generateSummaryForExistingChart)
-router.post('/generate-staff', requireStaff, generateStaffChart)
+router.post('/generate-staff', requireClerkAuth, requireStaff, generateStaffChart)
 
 export default router

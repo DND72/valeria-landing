@@ -15,7 +15,9 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <div className="h-10 w-10 rounded-full border-2 border-gold-500/30 border-t-gold-400 animate-spin" aria-hidden />
-        <p className="text-white/60 text-sm">Caricamento del tuo diario…</p>
+        <p className="text-white/60 text-sm">
+          {isPrivilegedClerkUser(user) ? 'Inizializzazione Staff Hub…' : 'Caricamento del tuo diario…'}
+        </p>
       </div>
     )
   }

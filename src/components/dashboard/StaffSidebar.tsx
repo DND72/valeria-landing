@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth, useClerk, useUser } from '@clerk/clerk-react'
 import { useState, useEffect, useCallback } from 'react'
 import { apiJson } from '../../lib/api'
@@ -31,6 +31,7 @@ export default function StaffSidebar({ activeTab, onTabChange }: StaffSidebarPro
   const { signOut } = useClerk()
   const { getToken } = useAuth()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   
   const [presence, setPresence] = useState<ValeriaPresenceStatus>('offline')
   const [presenceSaving, setPresenceSaving] = useState(false)
@@ -114,7 +115,14 @@ export default function StaffSidebar({ activeTab, onTabChange }: StaffSidebarPro
               return (
                 <button
                   key={link.id}
-                  onClick={() => onTabChange(link.id)}
+                  onClick={() => {
+                    if (!isHome) {
+                      // Se non siamo in area-personale, ci andiamo prima
+                      navigate(`/area-personale?tab=${link.id}`)
+                    } else {
+                      onTabChange(link.id)
+                    }
+                  }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
                     active 
                       ? 'bg-gold-500 text-black font-bold shadow-lg shadow-gold-500/20' 
