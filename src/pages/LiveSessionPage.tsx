@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useUser, useAuth } from '@clerk/clerk-react'
+import { useNavigate } from 'react-router-dom'
 
 interface Message {
   id: string
@@ -11,9 +10,6 @@ interface Message {
 }
 
 export default function LiveSessionPage() {
-  const { id } = useParams()
-  const { user } = useUser()
-  const { getToken } = useAuth()
   const navigate = useNavigate()
   
   const [messages, setMessages] = useState<Message[]>([
