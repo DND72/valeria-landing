@@ -6,6 +6,28 @@ import { requireClerkAuth, clerkClient } from '../middleware/clerkAuth.js'
 import { TOPUP_META, isValidTopUpKind } from '../lib/walletPrices.js'
 
 // ---------------------------------------------------------------------------
+// PayPal helper — per parlare con le REST API di PayPal
+// ---------------------------------------------------------------------------
+const PAYPAL_API = process.env.NODE_ENV === 'production' 
+  ? 'https://api-m.paypal.com' 
+  : 'https://api-m.sandbox.paypal.com'
+
+async function getPayPalAccessToken() {
+  const auth = Buffer.from(
+    `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`
+  ).toString('base64')
+  const response = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
+    method: 'POST',
+    body: 'grant_type=client_credentials',
+    headers: {
+      Authorization: `Basic ${auth}`,
+    },
+  })
+  const data = await response.json()
+  return data.access_token
+}
+
+// ---------------------------------------------------------------------------
 // Stripe client — singleton lazy per evitare errori di startup senza chiave
 // ---------------------------------------------------------------------------
 function getStripe(): Stripe {
@@ -312,6 +334,115 @@ export function createPaymentsRouter(pool: Pool): Router {
     } catch (e) {
       console.error('[payments session-status]', e)
       res.status(500).json({ error: 'Errore nel recupero dello stato della sessione' })
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // PAYPAL: POST /api/payments/paypal/create-order
+  // -------------------------------------------------------------------------
+  r.post('/paypal/create-order', json(), requireClerkAuth, async (req, res) => {
+    const { topUpKind } = req.body
+    const userId = req.auth?.userId
+
+    if (!isValidTopUpKind(topUpKind) || !userId) {
+      res.status(400).json({ error: 'Pacchetto non valido' })
+      return
+    }
+
+    const meta = TOPUP_META[topUpKind]
+    const amount = (meta.amountCents / 100).toFixed(2)
+
+    try {
+      const accessToken = await getPayPalAccessToken()
+      const response = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          intent: 'CAPTURE',
+          purchase_units: [
+            {
+              amount: {
+                currency_code: 'EUR',
+                value: amount,
+              },
+              description: meta.name,
+              custom_id: `${userId}|${topUpKind}`, // Per riconoscerlo al capture
+            },
+          ],
+        }),
+      })
+
+      const order = await response.json()
+      res.json(order)
+    } catch (e) {
+      console.error('[paypal create-order]', e)
+      res.status(500).json({ error: 'Impossibile creare ordine PayPal' })
+    }
+  })
+
+  // -------------------------------------------------------------------------
+  // PAYPAL: POST /api/payments/paypal/capture-order
+  // -------------------------------------------------------------------------
+  r.post('/paypal/capture-order', json(), requireClerkAuth, async (req, res) => {
+    const { orderID } = req.body
+    const userId = req.auth?.userId
+
+    if (!orderID || !userId) {
+      res.status(400).json({ error: 'Dati mancanti' })
+      return
+    }
+
+    try {
+      const accessToken = await getPayPalAccessToken()
+      const response = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderID}/capture`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
+      const captureData = await response.json()
+
+      if (captureData.status === 'COMPLETED') {
+        const purchaseUnit = captureData.purchase_units[0]
+        const [metaUserId, topUpKind] = (purchaseUnit.payments.captures[0].custom_id || '').split('|')
+
+        if (metaUserId === userId && topUpKind && isValidTopUpKind(topUpKind)) {
+          const meta = TOPUP_META[topUpKind]
+          const creditsToAdd = meta.credits
+
+          await pool.query('BEGIN')
+          try {
+            await pool.query(
+              `INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, updated_at)
+               VALUES ($1, $2, 0, now())
+               ON CONFLICT (clerk_user_id) DO UPDATE SET
+                 balance_available = wallets.balance_available + EXCLUDED.balance_available,
+                 updated_at = now()`,
+              [userId, creditsToAdd]
+            )
+            await pool.query(
+              `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id, created_at)
+               VALUES ($1, $2, 'top_up', $3, now())`,
+              [userId, creditsToAdd, `paypal_${orderID}`]
+            )
+            await pool.query('COMMIT')
+            console.log(`[paypal capture] ✅ Ricarica completata — order: ${orderID}, +${creditsToAdd} crediti / user: ${userId}`)
+          } catch (dbErr) {
+            await pool.query('ROLLBACK')
+            throw dbErr
+          }
+        }
+      }
+
+      res.json(captureData)
+    } catch (e) {
+      console.error('[paypal capture-order]', e)
+      res.status(500).json({ error: 'Errore cattura pagamento PayPal' })
     }
   })
 
