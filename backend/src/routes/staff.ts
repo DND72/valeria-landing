@@ -407,7 +407,12 @@ export function createStaffRouter(pool: Pool): Router {
          const expectedDuration = CONSULT_META[kind].durationMinutes
          if (actualDurationMinutes < expectedDuration && actualDurationMinutes >= 0) {
              const costPerMinute = consult.cost_credits / expectedDuration
-             actualCost = Math.round(costPerMinute * actualDurationMinutes)
+             // PALETTO: Fatturazione minima al 75% del tempo previsto
+             const minBillableMinutes = expectedDuration * 0.75
+             const billableMinutes = Math.max(actualDurationMinutes, minBillableMinutes)
+             
+             actualCost = Math.round(costPerMinute * billableMinutes)
+             actualCost = Math.min(actualCost, consult.cost_credits) // Sicurezza per non sforare i crediti bloccati
              refundAmount = consult.cost_credits - actualCost
          }
       }
