@@ -39,6 +39,9 @@ import CurrentSkyPage from './pages/CurrentSkyPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import StaffGuard from './components/StaffGuard'
 import Breadcrumbs from './components/Breadcrumbs'
+import { useUser } from '@clerk/clerk-react'
+import { isPrivilegedClerkUser } from './lib/privilegedUser'
+
 
 
 import LiveSessionPage from './pages/LiveSessionPage'
@@ -111,19 +114,28 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const { pathname } = useLocation()
+  const { user, isLoaded } = useUser()
+  const isPrivileged = isLoaded && user && isPrivilegedClerkUser(user)
+  
+  // Le pagine di gestione dello staff e il Dashboard (se privilegiato) non mostrano Navbar/Footer globali
+  const isStaffPage = pathname.startsWith('/control-room') || pathname.startsWith('/gestione-')
+  const isStaffHub = isStaffPage || (pathname === '/area-personale' && isPrivileged)
+
   return (
     <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
       <ScrollToTop />
       <CosmicBackground />
-      <Navbar />
-      <main className="relative z-0 pt-24 md:pt-28">
-        <div className="max-w-7xl mx-auto px-4">
-          <Breadcrumbs />
+      {!isStaffHub && <Navbar />}
+      <main className={`relative z-0 ${isStaffHub ? 'pt-0' : 'pt-24 md:pt-28'}`}>
+        <div className={isStaffHub ? 'w-full' : 'max-w-7xl mx-auto px-4'}>
+          {!isStaffHub && <Breadcrumbs />}
           <AppRoutes />
         </div>
       </main>
 
-      <Footer />
+      {!isStaffHub && <Footer />}
+
       <CookieConsent
         location="bottom"
         buttonText="Accetto"

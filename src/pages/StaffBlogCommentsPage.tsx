@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
+import StaffLayout from '../components/dashboard/StaffLayout'
 
 type CommentRow = {
   id: string
@@ -49,7 +50,7 @@ export default function StaffBlogCommentsPage() {
   useEffect(() => {
     if (!isLoaded) return
     if (!user || !isPrivilegedClerkUser(user)) {
-      navigate('/dashboard', { replace: true })
+      navigate('/area-personale', { replace: true })
       return
     }
     void load()
@@ -63,9 +64,7 @@ export default function StaffBlogCommentsPage() {
         body: JSON.stringify({ status }),
       })
       await load()
-    } catch {
-      // ignore
-    } finally {
+    } catch { /* ignore */ } finally {
       setSavingId(null)
     }
   }
@@ -74,57 +73,39 @@ export default function StaffBlogCommentsPage() {
   if (!isPrivilegedClerkUser(user)) return null
 
   return (
-    <div className="min-h-screen px-6 py-24">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 70% 40% at 50% 20%, rgba(212,160,23,0.06) 0%, transparent 70%)',
-        }}
-      />
-
+    <StaffLayout title="Commenti Blog" subtitle="Dialogo con la community e moderazione">
       <div className="relative z-10 max-w-5xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Staff</p>
-          <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-2">Commenti al blog</h1>
-          <p className="text-white/45 text-sm max-w-2xl">
-            Approva i commenti degli articoli o nascondili. Solo i commenti pubblicati sono visibili in pagina.
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex justify-between items-center">
+           <p className="text-white/45 text-sm max-w-2xl font-serif italic">
+            "Le riflessioni delle lettrici sono semi per nuove scoperte."
           </p>
-          <div className="flex flex-wrap gap-3 mt-4">
-            <button
-              type="button"
-              onClick={() => void load()}
-              className="btn-outline text-sm px-4 py-2"
-              disabled={loading || !apiConfigured}
-            >
-              Aggiorna
-            </button>
-            <Link to="/dashboard" className="btn-gold text-sm px-4 py-2 text-center">
-              Il tuo Diario
-            </Link>
-          </div>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="btn-outline text-xs px-4 py-2"
+            disabled={loading || !apiConfigured}
+          >
+            Sincronizza
+          </button>
         </motion.div>
 
-        {!apiConfigured && <p className="text-amber-200/85 text-sm mb-6">Backend non collegato.</p>}
-        {error && (
-          <p className="text-red-400/90 text-sm mb-4" role="alert">
-            {error}
-          </p>
-        )}
+        {!apiConfigured && <p className="text-amber-200/85 text-xs mb-6">Backend non collegato.</p>}
+        {error && <p className="text-red-400 text-xs mb-4" role="alert">{error}</p>}
 
-        {loading && <p className="text-white/45 text-sm">Caricamento…</p>}
+        {loading && <p className="text-white/45 text-sm italic">Ascoltando le voci nel blog...</p>}
 
         {!loading && (
           <ul className="space-y-4">
             {list.map((c) => (
-              <li key={c.id} className="mystical-card border border-white/10">
-                <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+              <li key={c.id} className="mystical-card border border-white/5 hover:border-white/10 transition-all">
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                   <div>
-                    <p className="text-white font-medium text-sm">{c.authorDisplayName}</p>
-                    <p className="text-white/35 text-xs mt-0.5">
+                    <p className="text-white font-bold text-sm">{c.authorDisplayName}</p>
+                    <p className="text-white/30 text-[10px] mt-1 uppercase tracking-widest font-bold">
                       Articolo:{' '}
                       <Link
                         to={`/blog/${c.articleSlug}`}
-                        className="text-gold-500/85 hover:underline"
+                        className="text-gold-500/80 hover:text-gold-400 transition-colors underline"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -132,12 +113,12 @@ export default function StaffBlogCommentsPage() {
                       </Link>
                     </p>
                     <span
-                      className={`inline-block mt-2 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded ${
+                      className={`inline-block mt-3 text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded ${
                         c.status === 'published'
-                          ? 'bg-emerald-500/20 text-emerald-300'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                           : c.status === 'pending'
-                            ? 'bg-amber-500/20 text-amber-200'
-                            : 'bg-white/10 text-white/50'
+                            ? 'bg-amber-500/10 text-amber-200 border border-amber-500/20'
+                            : 'bg-white/5 text-white/30 border border-white/10'
                       }`}
                     >
                       {c.status}
@@ -148,7 +129,7 @@ export default function StaffBlogCommentsPage() {
                       <button
                         type="button"
                         disabled={savingId === c.id}
-                        className="btn-gold text-xs px-3 py-1.5"
+                        className="btn-gold text-[10px] uppercase font-bold tracking-widest px-3 py-1.5"
                         onClick={() => void patch(c.id, 'published')}
                       >
                         Pubblica
@@ -158,17 +139,17 @@ export default function StaffBlogCommentsPage() {
                       <button
                         type="button"
                         disabled={savingId === c.id}
-                        className="btn-outline text-xs px-3 py-1.5"
+                        className="btn-outline text-[10px] uppercase font-bold tracking-widest px-3 py-1.5"
                         onClick={() => void patch(c.id, 'pending')}
                       >
-                        Moderazione
+                        Modera
                       </button>
                     )}
                     {c.status !== 'hidden' && (
                       <button
                         type="button"
                         disabled={savingId === c.id}
-                        className="text-xs text-white/45 hover:text-white/70 px-2"
+                        className="text-[10px] uppercase font-bold text-white/30 hover:text-white/60 px-2"
                         onClick={() => void patch(c.id, 'hidden')}
                       >
                         Nascondi
@@ -176,8 +157,10 @@ export default function StaffBlogCommentsPage() {
                     )}
                   </div>
                 </div>
-                <p className="text-white/65 text-sm mt-3 whitespace-pre-wrap border-t border-white/5 pt-3">{c.body}</p>
-                <p className="text-white/25 text-xs mt-2">
+                <p className="text-white/70 text-sm mt-3 whitespace-pre-wrap border-t border-white/5 pt-4 italic leading-relaxed">
+                  &ldquo;{c.body}&rdquo;
+                </p>
+                <p className="text-white/20 text-[10px] mt-3 font-mono">
                   {new Intl.DateTimeFormat('it-IT', { dateStyle: 'short', timeStyle: 'short' }).format(
                     new Date(c.createdAt)
                   )}
@@ -185,11 +168,11 @@ export default function StaffBlogCommentsPage() {
               </li>
             ))}
             {list.length === 0 && (
-              <li className="text-white/40 text-sm text-center py-12">Nessun commento ancora.</li>
+              <li className="text-white/20 text-sm text-center py-20 italic">Nessun commento all'orizzonte.</li>
             )}
           </ul>
         )}
       </div>
-    </div>
+    </StaffLayout>
   )
 }

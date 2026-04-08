@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
+import StaffLayout from '../components/dashboard/StaffLayout'
 
 type SortMode = 'alpha' | 'recent'
 type ClientRow = {
@@ -67,7 +68,7 @@ export default function ClientManagementPage() {
   useEffect(() => {
     if (!isLoaded) return
     if (!user || !isPrivilegedClerkUser(user)) {
-      navigate('/dashboard', { replace: true })
+      navigate('/area-personale', { replace: true })
       return
     }
     void load()
@@ -77,14 +78,7 @@ export default function ClientManagementPage() {
   if (!isPrivilegedClerkUser(user)) return null
 
   return (
-    <div className="min-h-screen px-6 py-24">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 70% 40% at 50% 20%, rgba(212,160,23,0.06) 0%, transparent 70%)',
-        }}
-      />
-
+    <StaffLayout title="Gestione Clienti" subtitle="Anagrafica profonda e storico crediti">
       <div className="relative z-10 max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -92,20 +86,17 @@ export default function ClientManagementPage() {
           className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-8"
         >
           <div>
-            <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Staff</p>
-            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">Gestione clienti</h1>
-            <p className="text-white/45 text-sm mt-2 max-w-2xl">
-              Elenco da email dei consulti registrati. Ordine alfabetico o per ultimo appuntamento. Apri la scheda per
-              note, fatturazione e storico.
+            <p className="text-white/45 text-sm max-w-2xl font-serif italic">
+              "Il database è la memoria del percorso di ogni anima."
             </p>
           </div>
           <div className="flex flex-wrap gap-3 items-center">
-            <div className="flex rounded-lg border border-white/15 p-0.5 bg-dark-400/80">
+            <div className="flex rounded-lg border border-white/15 p-0.5 bg-dark-400/80 shadow-inner">
               <button
                 type="button"
                 onClick={() => setSort('alpha')}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
-                  sort === 'alpha' ? 'bg-gold-600/25 text-gold-200' : 'text-white/50 hover:text-white/75'
+                className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-md transition-all ${
+                  sort === 'alpha' ? 'bg-gold-600 text-black' : 'text-white/50 hover:text-white/75'
                 }`}
               >
                 A → Z
@@ -113,148 +104,128 @@ export default function ClientManagementPage() {
               <button
                 type="button"
                 onClick={() => setSort('recent')}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
-                  sort === 'recent' ? 'bg-gold-600/25 text-gold-200' : 'text-white/50 hover:text-white/75'
+                className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-md transition-all ${
+                  sort === 'recent' ? 'bg-gold-600 text-black' : 'text-white/50 hover:text-white/75'
                 }`}
               >
-                Ultimo consulto
+                Recenti
               </button>
             </div>
             <button
               type="button"
               onClick={() => void load()}
-              className="btn-outline text-sm px-4 py-2"
+              className="btn-outline text-xs px-4 py-2"
               disabled={loading || !apiConfigured}
             >
-              {loading ? 'Aggiornamento…' : 'Aggiorna'}
+              {loading ? 'Aggiornamento…' : 'Sincronizza'}
             </button>
-            <Link to="/dashboard" className="btn-gold text-sm px-4 py-2 text-center">
-              Il tuo Diario
-            </Link>
           </div>
         </motion.div>
 
         {!apiConfigured && (
-          <div className="mystical-card border border-amber-600/30 text-amber-200/90 text-sm mb-6">
-            Backend non collegato (<code className="text-amber-300/90">VITE_API_URL</code>).
+          <div className="rounded-xl border border-amber-600/30 bg-amber-950/20 px-4 py-3 text-amber-100 text-sm mb-6">
+            Backend non collegato (VITE_API_URL).
           </div>
         )}
 
         {error && (
-          <p className="text-red-400/90 text-sm mb-4" role="alert">
+          <p className="text-red-400 text-sm mb-4" role="alert">
             {error}
           </p>
         )}
 
-        <div className="mystical-card p-0 overflow-hidden">
+        <div className="mystical-card p-0 overflow-hidden border border-white/5">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left min-w-[800px]">
               <thead>
-                <tr className="bg-white/[0.04] text-white/50 text-xs uppercase tracking-wide">
-                  <th className="py-3 px-3 font-medium">Stato</th>
-                  <th className="py-3 px-3 font-medium">Cliente</th>
-                  <th className="py-3 px-3 font-medium">Email</th>
-                  <th className="py-3 px-3 font-medium text-center">Consulti</th>
-                  <th className="py-3 px-3 font-medium">Acquisti</th>
-                  <th className="py-3 px-3 font-medium whitespace-nowrap">Ultimo in calendario</th>
-                  <th className="py-3 px-3 font-medium text-right whitespace-nowrap">Crediti Disp.</th>
-                  <th className="py-3 px-3 font-medium text-right whitespace-nowrap">Crediti Imp.</th>
-                  <th className="py-3 px-3 font-medium whitespace-nowrap">Ultimo Accesso</th>
-                  <th className="py-3 px-3 font-medium">Fatt. mese</th>
-                  <th className="py-3 px-3 font-medium" />
+                <tr className="bg-white/[0.04] text-white/50 text-[10px] uppercase tracking-widest">
+                  <th className="py-4 px-4 font-black">Stato</th>
+                  <th className="py-4 px-4 font-black">Cliente</th>
+                  <th className="py-4 px-4 font-black">Email</th>
+                  <th className="py-4 px-4 font-black text-center">Consulti</th>
+                  <th className="py-4 px-4 font-black">Acquisti</th>
+                  <th className="py-4 px-4 font-black whitespace-nowrap">Ultimo booking</th>
+                  <th className="py-4 px-4 font-black text-right whitespace-nowrap">Saldo</th>
+                  <th className="py-4 px-4 font-black text-right whitespace-nowrap">Bloccati</th>
+                  <th className="py-4 px-4 font-black" />
                 </tr>
               </thead>
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={11} className="py-10 text-center text-white/40">
-                      Caricamento…
+                    <td colSpan={11} className="py-20 text-center text-white/20 italic">
+                      Caricamento database...
                     </td>
                   </tr>
                 )}
                 {!loading && clients.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="py-10 text-center text-white/40">
-                      Nessun cliente con email nei consulti o registrato.
+                    <td colSpan={11} className="py-20 text-center text-white/20 italic">
+                      Nessun cliente registrato al momento.
                     </td>
                   </tr>
                 )}
                 {!loading &&
                   clients.map((c) => (
-                    <tr key={c.clerkId || c.email || 'guest'} className="border-t border-white/[0.06] hover:bg-white/[0.03]">
-                      <td className="py-2.5 px-3">
+                    <tr key={c.clerkId || c.email || 'guest'} className="border-t border-white/[0.06] hover:bg-white/[0.02] transition-colors">
+                      <td className="py-3 px-4">
                         <div className="flex flex-col gap-1">
                           {c.isRegistered ? (
-                            <span className="text-[10px] bg-gold-600/20 text-gold-300 px-1.5 py-0.5 rounded border border-gold-600/30 w-fit">Registrato</span>
+                            <span className="text-[9px] bg-gold-600/20 text-gold-400 px-1.5 py-0.5 rounded border border-gold-600/30 w-fit uppercase font-black tracking-tighter shadow-sm">Registrato</span>
                           ) : (
-                            <span className="text-[10px] bg-white/5 text-white/30 px-1.5 py-0.5 rounded border border-white/10 w-fit">Guest</span>
+                            <span className="text-[9px] bg-white/5 text-white/30 px-1.5 py-0.5 rounded border border-white/10 w-fit uppercase font-bold tracking-tighter">Guest</span>
                           )}
                           {c.isVerified && (
-                             <span className="text-[10px] bg-emerald-600/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-600/30 w-fit">VM18</span>
+                             <span className="text-[9px] bg-emerald-600/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-600/30 w-fit uppercase font-bold tracking-tighter">VM18</span>
                           )}
                         </div>
                       </td>
-                      <td className="py-2.5 px-3">
-                        <div className="text-white/90 flex items-center gap-2">
+                      <td className="py-3 px-4">
+                        <div className="text-white font-bold flex items-center gap-2">
                           {c.name || (c.isRegistered ? 'Utente senza nome' : '—')}
-                          {c.latestChartId && <span title="Tema calcolato" className="text-gold-500 animate-pulse text-[10px]">✨</span>}
+                          {c.latestChartId && <span title="Tema calcolato" className="text-gold-500 animate-pulse text-xs">✨</span>}
                         </div>
                         {c.username && <div className="text-gold-500/50 text-[10px]">@{c.username}</div>}
                       </td>
-                      <td className="py-2.5 px-3 text-white/55 text-xs break-all">{c.email || <span className="italic opacity-30 text-[10px]">N/D (Username login)</span>}</td>
-                      <td className="py-2.5 px-3 text-center text-white/70">
+                      <td className="py-3 px-4 text-white/50 text-[11px] break-all">{c.email || <span className="italic opacity-30 text-[10px]">Username login</span>}</td>
+                      <td className="py-3 px-4 text-center text-white/70">
                         {c.totalConsults > 0 ? (
-                          <span className="font-medium text-gold-400/90">{c.totalConsults}</span>
+                          <span className="font-mono font-bold text-gold-400 lg:text-base">{c.totalConsults}</span>
                         ) : (
                           <span className="text-white/20">0</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-white/55 text-xs">
+                      <td className="py-3 px-4 text-white/40 text-[11px]">
                         {c.totalConsults > 0 ? (
-                          <>{c.paidConsults} pag. · {c.freeConsults} omag.</>
+                          <span className="opacity-80">
+                            <span className="text-white/60">{c.paidConsults}</span> pag. / <span className="text-emerald-500/60">{c.freeConsults}</span> omag.
+                          </span>
                         ) : (
                           <span className="text-white/20">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-white/60 whitespace-nowrap text-xs">
+                      <td className="py-3 px-4 text-white/40 whitespace-nowrap text-[11px] font-mono">
                         {formatWhen(c.lastScheduledAt)}
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        {c.balance !== null ? <span className="text-gold-400 font-medium">{c.balance} CR</span> : <span className="text-white/20">—</span>}
+                      <td className="py-3 px-4 text-right">
+                        {c.balance !== null ? <span className="text-gold-400 font-mono font-bold">{c.balance}</span> : <span className="text-white/20">—</span>}
+                        <span className="text-[9px] text-white/20 ml-1">CR</span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
+                      <td className="py-3 px-4 text-right">
                         {c.lockedBalance !== null ? (
                           c.lockedBalance > 0 ? (
-                            <span className="text-amber-400 font-medium">{c.lockedBalance} CR</span>
+                            <span className="text-amber-500 font-mono font-bold">{c.lockedBalance}</span>
                           ) : (
-                            <span className="text-white/50">0 CR</span>
+                            <span className="text-white/20">0</span>
                           )
                         ) : <span className="text-white/20">—</span>}
+                        <span className="text-[9px] text-white/20 ml-1">CR</span>
                       </td>
-                      <td className="py-2.5 px-3 text-white/60 whitespace-nowrap text-xs">
-                        {formatWhen(c.lastSignInAt)}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs">
-                        {c.invoicedThisMonth ? (
-                          <span className="text-emerald-400/90">Sì</span>
-                        ) : c.lastInvoicedAt ? (
-                          <span className="text-white/45">No · {formatWhen(c.lastInvoicedAt)}</span>
-                        ) : (
-                          <span className="text-amber-400/80">Non indicato</span>
-                        )}
-                      </td>
-                      <td className="py-2.5 px-3">
+                      <td className="py-3 px-4 text-right">
                         {c.email ? (
                           <Link
                             to={`/gestione-clienti/${encodeURIComponent(c.email)}`}
-                            className="text-gold-500/90 hover:underline text-xs whitespace-nowrap"
-                          >
-                            Scheda →
-                          </Link>
-                        ) : c.clerkId ? (
-                          <Link
-                             to={`/gestione-clienti/detail?clerkId=${c.clerkId}`}
-                             className="text-gold-500/90 hover:underline text-xs whitespace-nowrap"
+                            className="text-gold-500/80 hover:text-gold-400 text-xs font-bold whitespace-nowrap px-3 py-1 bg-white/5 rounded-lg border border-white/5 hover:border-gold-500/30 transition-all"
                           >
                             Scheda →
                           </Link>
@@ -267,6 +238,6 @@ export default function ClientManagementPage() {
           </div>
         </div>
       </div>
-    </div>
+    </StaffLayout>
   )
 }

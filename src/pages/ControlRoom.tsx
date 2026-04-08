@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import {
-  clientServiceMixFromKinds,
-  type ClientServiceMix,
   type ServiceKind,
 } from '../lib/consultServiceLabel'
+
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
+import StaffLayout from '../components/dashboard/StaffLayout'
 
 /** Portale azioni rapide: Meeting / appuntamenti programmati . */
 const AGEND_TITLE = 'Agenda Valeria'
@@ -66,12 +66,6 @@ function labelService(kind: ServiceKind): string {
   return 'Non class.'
 }
 
-function labelClientMix(mix: ClientServiceMix): string {
-  if (mix === 'entrambi') return 'Cliente: tarocchi e coaching'
-  if (mix === 'tarocchi') return 'Cliente: solo tarocchi'
-  if (mix === 'coaching') return 'Cliente: solo coaching'
-  return 'Cliente: tipo non chiaro'
-}
 
 type NoteRow = {
   id: string
@@ -161,7 +155,6 @@ export default function ControlRoom() {
     }
   }, [getToken, apiConfigured])
 
-
   const loadList = useCallback(async () => {
     if (!apiConfigured) {
       setLoading(false)
@@ -204,7 +197,7 @@ export default function ControlRoom() {
   useEffect(() => {
     if (!isLoaded) return
     if (!user || !isPrivilegedClerkUser(user)) {
-      navigate('/dashboard', { replace: true })
+      navigate('/area-personale', { replace: true })
       return
     }
     void loadList()
@@ -232,24 +225,8 @@ export default function ControlRoom() {
     return () => clearInterval(t)
   }, [user, isLoaded, loadList])
 
-  const clientMixByEmail = useMemo(() => {
-    const kindsByEmail = new Map<string, ServiceKind[]>()
-    for (const c of list) {
-      const em = (c.invitee_email || '').toLowerCase().trim()
-      if (!em) continue
-      const k = c.service_kind ?? 'unknown'
-      const arr = kindsByEmail.get(em) ?? []
-      arr.push(k)
-      kindsByEmail.set(em, arr)
-    }
-    const out = new Map<string, ClientServiceMix>()
-    for (const [em, kinds] of kindsByEmail) {
-      out.set(em, clientServiceMixFromKinds(kinds))
-    }
-    return out
-  }, [list])
-
   if (!isLoaded || !user) return null
+
   if (!isPrivilegedClerkUser(user)) return null
 
   const submitNote = async () => {
@@ -289,43 +266,27 @@ export default function ControlRoom() {
     }
   }
 
+  const handleClaimCredits = async () => {
+    if (!selectedId || !apiConfigured) return
+    if (!window.confirm("Confermi l'incasso dei crediti?")) return
+    setDetailLoading(true)
+    try {
+      await apiJson(getToken, `/api/staff/consults/${selectedId}/claim`, {
+        method: 'POST',
+        body: JSON.stringify({ actual_duration_minutes: actualDurationDraft ? parseInt(actualDurationDraft) : null })
+      })
+      await loadDetail(selectedId)
+      await loadList()
+    } catch (e) {
+      setDetailError(e instanceof ApiError ? String(e.message) : 'Errore durante l\'incasso')
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen px-6 py-24">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 70% 40% at 50% 20%, rgba(212,160,23,0.06) 0%, transparent 70%)',
-        }}
-      />
-
+    <StaffLayout title="Control Room" subtitle="Gestione appuntamenti interni e disponibilità">
       <div className="relative z-10 max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10"
-        >
-          <div>
-            <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">Staff</p>
-            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">Control Room</h1>
-            <p className="text-white/45 text-sm mt-2 max-w-xl">
-              Gestione appuntamenti interni, note evolutive e disponibilità bisettimanale.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => void loadList()}
-              className="btn-outline text-sm px-4 py-2"
-              disabled={loading || !apiConfigured}
-            >
-              Aggiorna elenco
-            </button>
-            <Link to="/dashboard" className="btn-gold text-sm px-4 py-2 text-center">
-              Il tuo Diario
-            </Link>
-          </div>
-        </motion.div>
-
         {/* Gestione Disponibilità Interna (Sostituisce Calendly) */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
@@ -361,19 +322,18 @@ export default function ControlRoom() {
             {DAYS_LABELS.map((label, idx) => {
               const daySlots = internalAvailability.filter(a => a.day_of_week === idx && a.week_number === selectedWeek)
               
-              // Calcolo data reale per questo giorno della settimana selezionata
               const weekStart = selectedWeek === 1 ? weekInfo.w1Start : weekInfo.w2Start
               const actualDate = new Date(weekStart)
               actualDate.setDate(weekStart.getDate() + idx)
               const dateLabel = actualDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
 
-              const getSlot = (label: string) => daySlots.find(s => s.slot_label === label) || {
+              const getSlot = (slotLabel: string) => daySlots.find(s => s.slot_label === slotLabel) || {
                 day_of_week: idx,
                 week_number: selectedWeek,
-                slot_label: label,
+                slot_label: slotLabel,
                 is_active: false,
-                start_time: label === 'morning' ? '09:00' : label === 'afternoon' ? '14:00' : '19:00',
-                end_time: label === 'morning' ? '13:00' : label === 'afternoon' ? '18:00' : '22:00'
+                start_time: slotLabel === 'morning' ? '09:00' : slotLabel === 'afternoon' ? '14:00' : '19:00',
+                end_time: slotLabel === 'morning' ? '13:00' : slotLabel === 'afternoon' ? '18:00' : '22:00'
               }
 
               return (
@@ -415,7 +375,7 @@ export default function ControlRoom() {
                                 if (e.target.value === slot.start_time) return
                                 await apiJson(getToken, '/api/staff/booking/availability', {
                                   method: 'POST',
-                                  body: JSON.stringify({ ...slot, start_time: e.target.value })
+                                  body: JSON.stringify({ ...slot, start_time: (e.target as HTMLInputElement).value })
                                 })
                                 void loadInternalAvailability()
                               }}
@@ -428,7 +388,7 @@ export default function ControlRoom() {
                                 if (e.target.value === slot.end_time) return
                                 await apiJson(getToken, '/api/staff/booking/availability', {
                                   method: 'POST',
-                                  body: JSON.stringify({ ...slot, end_time: e.target.value })
+                                  body: JSON.stringify({ ...slot, end_time: (e.target as HTMLInputElement).value })
                                 })
                                 void loadInternalAvailability()
                               }}
@@ -523,7 +483,6 @@ export default function ControlRoom() {
           </div>
         </motion.section>
 
-
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -583,9 +542,9 @@ export default function ControlRoom() {
                            const sk = app.service_kind ?? 'unknown'
                            return (
                              <button
-                               key={app.id}
-                               onClick={() => setSelectedId(app.id)}
-                               className={`w-full text-left p-4 rounded-xl border transition-all ${selectedId === app.id ? 'bg-gold-500/30 border-gold-500/60 ring-1 ring-gold-500/20' : 'bg-white/[0.05] border-white/10 hover:border-gold-500/30'}`}
+                                key={app.id}
+                                onClick={() => setSelectedId(app.id)}
+                                className={`w-full text-left p-4 rounded-xl border transition-all ${selectedId === app.id ? 'bg-gold-500/30 border-gold-500/60 ring-1 ring-gold-500/20' : 'bg-white/[0.05] border-white/10 hover:border-gold-500/30'}`}
                              >
                                 <div className="flex items-center justify-between mb-2">
                                    <span className="text-gold-400 font-serif text-sm font-bold tracking-tight">
@@ -669,9 +628,6 @@ export default function ControlRoom() {
                         </span>
                       )}
                     </div>
-                    {c.invitee_email && clientMixByEmail.get(c.invitee_email.toLowerCase().trim()) === 'entrambi' && (
-                      <p className="text-[10px] text-gold-500/85 mt-1.5">Percorso misto (tarocchi + coaching)</p>
-                    )}
                   </button>
                 </li>
               ))}
@@ -730,27 +686,17 @@ export default function ControlRoom() {
                         </span>
                       </dd>
                     </div>
-                    {detailConsult.invitee_email && (
-                      <div className="sm:col-span-2">
-                        <dt className="text-white/40">Profilo cliente (da elenco)</dt>
-                        <dd className="text-white/75 text-sm">
-                          {labelClientMix(
-                            clientMixByEmail.get(detailConsult.invitee_email.toLowerCase().trim()) ?? 'sconosciuto'
-                          )}
-                        </dd>
-                      </div>
-                    )}
                     <div className="sm:col-span-2">
-                      <dt className="text-white/40">Accesso alla Stanza in Diretta</dt>
-                      <dd className="text-white/90 mt-2">
-                        <Link
-                          to={`/sessione/${detailConsult.id}`}
-                          className="inline-flex items-center gap-2 bg-gold-500 text-dark-500 hover:bg-gold-400 px-8 py-3 rounded-xl text-sm font-bold transition-all border border-gold-400/20"
-                        >
-                          Entra nella Live Chat
-                          <span className="text-lg leading-none">→</span>
-                        </Link>
-                      </dd>
+                       <dt className="text-white/40">Accesso alla Stanza in Diretta</dt>
+                       <dd className="text-white/90 mt-2">
+                         <Link
+                           to={`/sessione/${detailConsult.id}`}
+                           className="inline-flex items-center gap-2 bg-gold-500 text-dark-500 hover:bg-gold-400 px-8 py-3 rounded-xl text-sm font-bold transition-all border border-gold-400/20"
+                         >
+                           Entra nella Live Chat
+                           <span className="text-lg leading-none">→</span>
+                         </Link>
+                       </dd>
                     </div>
                   </dl>
                 </div>
@@ -781,7 +727,7 @@ export default function ControlRoom() {
                     Salva stato
                   </button>
 
-                  {(detailConsult.status_billing !== 'billed' && detailConsult.cost_credits && detailConsult.cost_credits > 0) ? (
+                  {(detailConsult.status_billing !== 'billed' && detailConsult.cost_credits && detailConsult.cost_credits > 0) && (
                     <div className="flex flex-col gap-2 ml-auto items-end">
                        <div className="flex items-center gap-2">
                          <label htmlFor="duration-draft" className="text-white/40 text-[10px] uppercase">Minuti Effettivi</label>
@@ -791,85 +737,56 @@ export default function ControlRoom() {
                            min="0"
                            value={actualDurationDraft}
                            onChange={(e) => setActualDurationDraft(e.target.value)}
-                           className="w-16 bg-dark-400 border border-gold-500/30 rounded px-2 py-1 text-xs text-white text-center focus:border-gold-400"
+                           className="w-16 bg-dark-400 border border-gold-500/30 rounded px-2 py-1 text-xs text-white text-center"
                            placeholder="Tutti"
-                           title="Lascia vuoto per incassare l'intero importo, inserisci i minuti per stornare il resto al cliente."
                          />
                        </div>
                        <button
                          type="button"
-                         className="btn-gold text-sm px-4 py-2 w-full"
-                         onClick={async () => {
-                           const durationParams = actualDurationDraft.trim() !== '' ? { actualDurationMinutes: parseInt(actualDurationDraft, 10) } : {}
-                           const msg = Object.keys(durationParams).length > 0 
-                             ? `Vuoi incassare solo i crediti per ${durationParams.actualDurationMinutes} minuti e stornare automaticamente il resto del tempo prenotato (${detailConsult.cost_credits} CR max)?`
-                             : `Vuoi incassare integralmente i ${detailConsult.cost_credits} crediti finali di questo consulto chiudendolo con successo?`
-                             
-                           if (!window.confirm(msg)) return
-                           try {
-                             await apiJson(getToken, `/api/staff/consults/${selectedId}/claim`, { method: 'POST', body: JSON.stringify(durationParams) })
-                             await loadDetail(selectedId!)
-                             await loadList()
-                             setActualDurationDraft('')
-                           } catch (e: any) {
-                             setDetailError("Impossibile Terminare: " + e.message)
-                           }
-                         }}
+                         onClick={handleClaimCredits}
+                         disabled={detailLoading}
+                         className="btn-gold text-[10px] px-4 py-2 uppercase tracking-widest"
                        >
-                         Termina (Incassa / Storna)
-                       </button>
-                       <button
-                         type="button"
-                         className="btn-outline border-red-500/50 text-red-300 hover:bg-red-500/10 text-xs px-4 py-1.5 w-full mt-1"
-                         onClick={async () => {
-                           if (!window.confirm("Il cliente non si è presentato? Tratterrai una penale di 5 CR e rimborserai il resto. L'azione è irreversibile.")) return
-                           try {
-                             await apiJson(getToken, `/api/staff/consults/${selectedId}/no-show`, { method: 'POST' })
-                             await loadDetail(selectedId!)
-                             await loadList()
-                           } catch (e: any) {
-                             setDetailError("Impossibile processare No Show: " + e.message)
-                           }
-                         }}
-                       >
-                         No-Show (Penale)
+                         Incassa Crediti
                        </button>
                     </div>
-                  ) : null}
+                  )}
                 </div>
 
-                <div>
-                  <h4 className="font-semibold text-white/80 text-sm mb-2">Note interne</h4>
-                  <ul className="space-y-3 mb-4 max-h-48 overflow-y-auto">
-                    {notes.length === 0 && <li className="text-white/35 text-sm">Nessuna nota.</li>}
+                <div className="pt-6 border-t border-white/10">
+                  <h4 className="text-white font-medium text-sm mb-4">Note Evolutive</h4>
+                  <div className="space-y-4 mb-4 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                    {notes.length === 0 && <p className="text-white/25 text-xs italic">Nessuna nota presente.</p>}
                     {notes.map((n) => (
-                      <li key={n.id} className="text-sm border-l-2 border-gold-600/40 pl-3">
-                        <p className="text-white/85 whitespace-pre-wrap">{n.body}</p>
-                        <p className="text-white/30 text-[11px] mt-1">{formatWhen(n.created_at)}</p>
-                      </li>
+                      <div key={n.id} className="bg-white/[0.03] p-3 rounded-lg border border-white/5">
+                        <p className="text-white/80 text-sm">{n.body}</p>
+                        <p className="text-white/20 text-[10px] mt-1">{formatWhen(n.created_at)}</p>
+                      </div>
                     ))}
-                  </ul>
-                  <textarea
-                    value={noteDraft}
-                    onChange={(e) => setNoteDraft(e.target.value)}
-                    placeholder="Aggiungi una nota…"
-                    rows={4}
-                    className="w-full bg-dark-400 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 mb-2"
-                  />
-                  <button
-                    type="button"
-                    className="btn-gold text-sm px-4 py-2"
-                    onClick={() => void submitNote()}
-                    disabled={noteSaving || !noteDraft.trim() || !apiConfigured}
-                  >
-                    {noteSaving ? 'Salvataggio…' : 'Aggiungi nota'}
-                  </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <textarea
+                      value={noteDraft}
+                      onChange={(e) => setNoteDraft(e.target.value)}
+                      placeholder="Aggiungi una nota privata su questa cliente…"
+                      className="flex-1 bg-dark-400 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-gold-500/50 outline-none resize-none"
+                      rows={2}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void submitNote()}
+                      disabled={noteSaving || !noteDraft}
+                      className="btn-outline text-xs px-4"
+                    >
+                      {noteSaving ? '…' : 'Invia'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
           </motion.section>
         </div>
       </div>
-    </div>
+    </StaffLayout>
   )
 }

@@ -15,15 +15,21 @@ L'obiettivo è trasformare il progetto da un monolite a un'architettura modulare
   - [x] Estrarre **Storico Transazioni** (`TransactionHistory.tsx`)
   - [x] Estrarre **Flusso Prenotazione** (`BookingFlow.tsx`)
 
-## [x] **Fase 3: Navigazione Professionale** (Completata ✅)
+- [x] **Fase 3: Navigazione Professionale** (Completata ✅)
   - [x] Creazione di una Navbar dinamica (Context-aware)
   - [x] Standardizzazione dei link nel footer per utenti loggati
   - [x] Implementazione Breadcrumbs globali
 
-## [x] **Fase 4: Ottimizzazione Backend & SEO** (Completata ✅)
+- [x] **Fase 4: Ottimizzazione Backend & SEO** (Completata ✅)
   - [x] Ridenominazione rotte sotto namespace `/area-personale/`
   - [x] Allineamento di tutti i link interni (Navbar, Footer, App.tsx)
   - [x] Chiarificazione distinzione tra pagine pubbliche e private
+
+- [x] **Fase 5: Unificazione Navigazione Staff** (Completata ✅)
+  - [x] Creazione `StaffSidebar` con switcher stato (Online/Offline).
+  - [x] Creazione `StaffLayout` per unificare tutte le pagine di gestione.
+  - [x] Rimozione Navbar/Footer globali nell'ambiente Staff.
+  - [x] Refactoring `Control Room`, `Gestione Clienti`, `Recensioni` e `Commenti`.
 
 ---
 

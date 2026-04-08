@@ -494,21 +494,9 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
   try {
     const { pool } = await import('../db.js')
     
-    // 1. Verifica se l'utente è effettivamente Staff
-    const { rows: staffCheck } = await pool.query(
-      `SELECT is_staff FROM client_billing_profiles WHERE clerk_user_id = $1`,
-      [userId]
-    )
-    
-    // In alternativa, se usiamo i ruoli di Clerk, dovremmo controllare req.auth.sessionClaims.publicMetadata
-    const isStaff = staffCheck[0]?.is_staff === true || (req as any).auth?.sessionClaims?.publicMetadata?.role === 'staff'
-    
-    if (!isStaff) {
-      res.status(403).json({ error: "Accesso riservato allo staff" })
-      return
-    }
-
+    // Auth is handled by the requireStaff middleware in routes
     const { birthDate, birthTime, city, gender } = paidSchema.parse(req.body)
+
 
     // 2. Astrology Engine + LLM Interpretation (Gratis per lo staff)
     const chartData = await runNatalCalculation(birthDate, birthTime, city)
