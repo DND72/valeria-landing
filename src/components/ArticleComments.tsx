@@ -76,8 +76,8 @@ export default function ArticleComments({ articleSlug }: { articleSlug: string }
       } else {
         setEditingId(null)
         setBody('')
-        const fn = user.firstName?.trim()
-        setAuthorDisplayName(fn ?? '')
+        const dn = user.username || user.firstName?.trim() || ''
+        setAuthorDisplayName(dn)
       }
     } catch {
       setMine([])
