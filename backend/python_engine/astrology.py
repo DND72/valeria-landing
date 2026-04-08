@@ -1,10 +1,15 @@
 import sys
 import json
+import os
 from datetime import datetime
 import pytz
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 import swisseph as swe
+
+# Imposta il percorso delle effemeridi (se1 files)
+EPHE_PATH = os.path.join(os.path.dirname(__file__), 'ephe')
+swe.set_ephe_path(EPHE_PATH)
 
 def get_astrology_data(birth_date_str, birth_time_str, city_name):
     try:
