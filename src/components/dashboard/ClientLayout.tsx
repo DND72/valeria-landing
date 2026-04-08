@@ -35,13 +35,13 @@ export default function ClientLayout({ children, title, subtitle }: ClientLayout
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-10 pb-6 border-b border-white/5"
+            className={`flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-10 pb-6 border-b ${theme === 'light' ? 'border-staff-gold/10' : 'border-white/5'}`}
           >
-            <h1 className="font-serif text-3xl md:text-3xl font-bold text-white">
+            <h1 className={`font-serif text-3xl md:text-3xl font-bold ${theme === 'light' ? 'text-dark-500' : 'text-white'}`}>
               {title}
             </h1>
             {subtitle && (
-              <span className="text-[10px] uppercase tracking-[0.3em] font-black text-white/30">
+              <span className={`text-[10px] uppercase tracking-[0.3em] font-black ${theme === 'light' ? 'text-dark-500/40' : 'text-white/30'}`}>
                 {subtitle}
               </span>
             )}

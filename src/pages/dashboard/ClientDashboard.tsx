@@ -11,7 +11,6 @@ import TaxInfoForm from '../../components/dashboard/TaxInfoForm'
 import BookingFlow from '../../components/dashboard/BookingFlow'
 import ClientLayout from '../../components/dashboard/ClientLayout'
 import { type SavedNatalChart } from '../../api/astrology'
-import { type OfferCategory } from '../../constants/consultations'
 import { useValeriaPresence } from '../../hooks/useValeriaPresence'
 import { labelForPresence } from '../../lib/valeriaPresence'
 import { getApiBaseUrl } from '../../constants/api'
@@ -40,7 +39,6 @@ export default function ClientDashboard() {
   const meApi = useMeApi()
 
   const [freeHidden, setFreeHidden] = useState(false)
-  const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
 
   const [taxInfo, setTaxInfo] = useState<{
     showReminder: boolean
@@ -309,7 +307,6 @@ export default function ClientDashboard() {
             void loadMyConsults()
             void loadWallet()
           }}
-          onCategoryChange={(cat) => setOfferCategory(cat)}
         />
 
         {/* ── Storico consulti ── */}
