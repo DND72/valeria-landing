@@ -8,7 +8,7 @@ type TabId = 'oggi' | 'crm' | 'analytics' | 'lenormand' | 'astrologia'
 
 export default function StaffDashboard() {
   const { user } = useUser()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const [tab, setTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'oggi')
 
   useEffect(() => {
