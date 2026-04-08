@@ -501,7 +501,7 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
     )
     
     // In alternativa, se usiamo i ruoli di Clerk, dovremmo controllare req.auth.sessionClaims.publicMetadata
-    const isStaff = staffCheck[0]?.is_staff === true || req.auth?.sessionClaims?.publicMetadata?.role === 'staff'
+    const isStaff = staffCheck[0]?.is_staff === true || (req as any).auth?.sessionClaims?.publicMetadata?.role === 'staff'
     
     if (!isStaff) {
       res.status(403).json({ error: "Accesso riservato allo staff" })

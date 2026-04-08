@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
-import { useAstrologyApi, type NatalChartResponse, type SavedNatalChart } from '../api/astrology'
+import { useAstrologyApi, type SavedNatalChart, type Planet } from '../api/astrology'
 import ZodiacWheel from './ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
-import StarsRating from './StarsRating'
 
 const PLANET_COLOR: Record<string, string> = {
   'Sole': 'text-amber-400',
@@ -35,7 +34,7 @@ export default function StaffAstrology() {
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [city, setCity] = useState('')
-  const [gender, setGender] = useState<'M'|'F'|''>('F')
+  const [gender] = useState<'M'|'F'|''>('F')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -166,7 +165,7 @@ export default function StaffAstrology() {
 
           <div className="p-6 md:p-10 space-y-12">
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-              {(viewingChart.chartData.pianeti || []).slice(0, 10).map((p) => (
+              {(viewingChart.chartData.pianeti || []).slice(0, 10).map((p: Planet) => (
                 <div key={p.nome} className="bg-white/[0.03] border border-white/5 rounded-xl p-3 text-center">
                   <span className={`text-2xl block mb-1 ${PLANET_COLOR[p.nome] || 'text-white'}`}>{PLANET_SYMBOLS[p.nome] || '✦'}</span>
                   <p className="text-[9px] uppercase tracking-widest text-white/30 font-bold">{p.nome}</p>
@@ -194,7 +193,7 @@ export default function StaffAstrology() {
 
       {myCharts.length > 0 && !viewingChart && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {myCharts.map(c => (
+          {myCharts.map((c: SavedNatalChart) => (
             <button
               key={c.id}
               onClick={() => setViewingChart(c)}
