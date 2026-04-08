@@ -18,9 +18,9 @@ export default function SignUpPage() {
         className="relative z-10 w-full flex flex-col items-center gap-8"
       >
         <div className="text-center">
-          <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-2">Benvenuta</p>
-          <h1 className="font-serif text-3xl font-bold text-white mb-2">
-            Crea il tuo <span className="gold-text">Diario</span>
+          <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-2">Il tuo percorso</p>
+          <h1 className="font-serif text-3xl font-bold text-white mb-2" style={{ textShadow: 'none' }}>
+            Inizia il tuo <span className="gold-text">viaggio</span>
           </h1>
           <p className="text-white/50 text-sm max-w-xs mx-auto">
             Registrati e ricevi subito un{' '}

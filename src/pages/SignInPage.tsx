@@ -17,7 +17,7 @@ export default function SignInPage() {
         className="relative z-10 w-full flex flex-col items-center gap-8"
       >
         <div className="text-center">
-          <h1 className="font-serif text-3xl font-bold gold-text mb-2">Bentornata</h1>
+          <h1 className="font-serif text-3xl font-bold gold-text mb-2" style={{ textShadow: 'none' }}>Ti diamo il benvenuto</h1>
           <p className="text-white/50 text-sm">Accedi al tuo Diario d&apos;Evoluzione</p>
         </div>
         <SignIn

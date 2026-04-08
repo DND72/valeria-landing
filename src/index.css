@@ -160,6 +160,9 @@
   .btn-gold *,
   .btn-outline,
   .btn-outline *,
+  /* Reset globale Clerk per massima nitidezza (rimuove blur/ombre dai pulsanti Google, Email, ecc.) */
+  [class*="cl-"], 
+  [class*="cl-"] *,
   .clerk-button-reset,
   .clerk-button-reset * {
     text-shadow: none !important;
