@@ -45,6 +45,10 @@ export default function SignUpPage() {
           path="/registrati"
           fallbackRedirectUrl="/dashboard"
           appearance={{
+            layout: {
+              socialButtonsVariant: 'blockButton',
+              socialButtonsPlacement: 'top',
+            },
             variables: {
               colorPrimary: '#d4a017',
               colorBackground: '#0d1b2a',
