@@ -9,6 +9,7 @@ import StaffExternalReviewImport from './StaffExternalReviewImport'
 import StaffAnalyticsWidget from './StaffAnalyticsWidget'
 import StaffCrmDrawer from './StaffCrmDrawer'
 import StaffLenormandMentor from './StaffLenormandMentor'
+import StaffAstrology from './StaffAstrology'
 
 type MeetingsPayload =
   | {
@@ -51,7 +52,7 @@ type ClientRow = {
   lastScheduledAt: string | null
 }
 
-type Tab = 'oggi' | 'crm' | 'analytics' | 'lenormand'
+type Tab = 'oggi' | 'crm' | 'analytics' | 'lenormand' | 'astrologia'
 
 function formatWhen(iso: string): string {
   try {
@@ -215,6 +216,7 @@ export default function StaffPersonalSpace() {
     { id: 'crm', label: 'CRM Clienti', emoji: '👥' },
     { id: 'analytics', label: 'Analytics', emoji: '📊' },
     { id: 'lenormand', label: 'Il Mentore', emoji: '🃏' },
+    { id: 'astrologia', label: 'Tema Staff', emoji: '🌑' },
   ]
 
   return (
@@ -558,6 +560,13 @@ export default function StaffPersonalSpace() {
         {tab === 'lenormand' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <StaffLenormandMentor />
+          </motion.div>
+        )}
+
+        {/* ===== TAB: ASTROLOGIA STAFF ===== */}
+        {tab === 'astrologia' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <StaffAstrology />
           </motion.div>
         )}
       </div>

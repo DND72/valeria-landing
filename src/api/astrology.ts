@@ -124,6 +124,12 @@ export function useAstrologyApi() {
     },
     getLatestChart: async (): Promise<{ chart: (NatalChartResponse & { chartId: string }) | null }> => {
       return authFetch('/api/astrology/latest')
+    },
+    generateStaffChart: async (data: NatalChartRequest): Promise<NatalChartResponse & { interpretation: string }> => {
+      return authFetch('/api/astrology/generate-staff', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
     }
   }), [getToken, API_URL, authFetch])
 }

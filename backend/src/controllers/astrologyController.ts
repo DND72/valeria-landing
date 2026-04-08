@@ -484,4 +484,64 @@ export const generateSummaryForExistingChart = async (req: Request, res: Respons
   }
 }
 
+export const generateStaffChart = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.auth?.userId
+  if (!userId) {
+    res.status(401).json({ error: "Non autorizzato" })
+    return
+  }
 
+  try {
+    const { pool } = await import('../db.js')
+    
+    // 1. Verifica se l'utente è effettivamente Staff
+    const { rows: staffCheck } = await pool.query(
+      `SELECT is_staff FROM client_billing_profiles WHERE clerk_user_id = $1`,
+      [userId]
+    )
+    
+    // In alternativa, se usiamo i ruoli di Clerk, dovremmo controllare req.auth.sessionClaims.publicMetadata
+    const isStaff = staffCheck[0]?.is_staff === true || req.auth?.sessionClaims?.publicMetadata?.role === 'staff'
+    
+    if (!isStaff) {
+      res.status(403).json({ error: "Accesso riservato allo staff" })
+      return
+    }
+
+    const { birthDate, birthTime, city, gender } = paidSchema.parse(req.body)
+
+    // 2. Astrology Engine + LLM Interpretation (Gratis per lo staff)
+    const chartData = await runNatalCalculation(birthDate, birthTime, city)
+    const { generateChartInterpretation } = await import('../lib/gemini.js')
+    const interpretation = await generateChartInterpretation(chartData, 'advanced', gender)
+
+    // 3. Salvataggio diretto (senza transazione Wallet)
+    const insertRes = await pool.query(
+      `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
+       DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, gender = EXCLUDED.gender, created_at = now()
+       RETURNING id`,
+      [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation]
+    )
+
+    res.json({
+      ...chartData,
+      id: insertRes.rows[0].id,
+      interpretation,
+      chart_type: 'advanced',
+      created_at: new Date().toISOString(),
+      birthDate,
+      birthTime,
+      city
+    })
+
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.errors[0].message })
+      return
+    }
+    console.error("Generate Staff API Error:", error)
+    res.status(500).json({ error: error.message || 'Internal server error' })
+  }
+}

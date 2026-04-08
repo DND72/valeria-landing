@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal, generateSummaryForExistingChart, getLatestChart } from '../controllers/astrologyController.js'
+import { calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal, generateSummaryForExistingChart, getLatestChart, generateStaffChart } from '../controllers/astrologyController.js'
 import { requireClerkAuth, optionalClerkAuth } from '../middleware/clerkAuth.js'
 
 const router = Router()
@@ -18,5 +18,6 @@ router.get('/latest', requireClerkAuth, getLatestChart)
 router.post('/generate-paid', requireClerkAuth, generatePaidChart)
 router.get('/my-charts', requireClerkAuth, getMyCharts)
 router.post('/generate-summary', requireClerkAuth, generateSummaryForExistingChart)
+router.post('/generate-staff', requireClerkAuth, generateStaffChart)
 
 export default router
