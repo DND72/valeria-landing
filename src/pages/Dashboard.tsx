@@ -410,6 +410,13 @@ export default function Dashboard() {
       />
 
       <div className="relative z-10 max-w-4xl mx-auto">
+         {/* Menu Navigazione Cliente — sticky, sempre in cima */}
+         {!privileged && (
+           <div className="sticky top-20 z-30 mb-8">
+             <ClientNavigation />
+           </div>
+         )}
+
         {/* Header */}
         <motion.div
            initial={{ opacity: 0, y: 20 }}
@@ -459,16 +466,6 @@ export default function Dashboard() {
                  </span>
                )}
              </div>
-             {!privileged && (
-               <div className="mt-5 flex flex-wrap gap-3">
-                 <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 text-center">
-                   Prenota un consulto
-                 </a>
-                 <Link to="/profilo" className="btn-outline text-sm px-5 py-2">
-                   Il mio profilo
-                 </Link>
-               </div>
-             )}
            </div>
            <div className="flex flex-wrap items-center gap-3 justify-end">
              {privileged && (
@@ -498,9 +495,6 @@ export default function Dashboard() {
            </button>
            </div>
          </motion.div>
- 
-         {/* Menu Navigazione Cliente */}
-         {!privileged && <ClientNavigation />}
 
          {/* Astral Status Insight Card */}
          {user && !privileged && (

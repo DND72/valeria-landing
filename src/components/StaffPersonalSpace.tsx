@@ -221,6 +221,28 @@ export default function StaffPersonalSpace() {
 
   return (
     <>
+      {/* Sticky Tab Navigation — always visible */}
+      <div className="sticky top-20 z-30 mb-6">
+        <nav className="flex flex-wrap gap-2 p-1.5 bg-[#0a0a0a]/95 border border-white/10 rounded-2xl w-fit max-w-full backdrop-blur-md shadow-2xl">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-200 whitespace-nowrap ${
+                tab === t.id
+                  ? 'bg-[#d4a017] text-black shadow-none border-none'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+              style={{ textShadow: 'none', boxShadow: 'none' }}
+            >
+              <span className="text-base">{t.emoji}</span>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
       <div className="space-y-6">
         <p className="text-white/40 text-sm border-l border-gold-600/25 pl-3">
           Spazio di lavoro: consulti, clienti e stato visibile alle clienti sulle schede prenotazione. Il calendario
@@ -269,24 +291,6 @@ export default function StaffPersonalSpace() {
             </>
           )}
         </motion.section>
-
-        {/* Tab bar */}
-        <div className="flex gap-1 p-1 bg-white/[0.04] rounded-xl border border-white/8 w-fit">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={`text-sm px-4 py-2 rounded-lg font-medium transition-all ${
-                tab === t.id
-                  ? 'bg-gold-600/20 text-gold-300 border border-gold-600/30'
-                  : 'text-white/50 hover:text-white/80'
-              }`}
-            >
-              <span className="mr-1.5">{t.emoji}</span>{t.label}
-            </button>
-          ))}
-        </div>
 
         {/* ===== TAB: OGGI ===== */}
         {tab === 'oggi' && (
