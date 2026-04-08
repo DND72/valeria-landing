@@ -498,9 +498,11 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
     const { birthDate, birthTime, city, gender } = paidSchema.parse(req.body)
 
 
-    // 1. Assicuriamoci che l'utente esista nel DB (per evitare errori di FK se lo staff non è sincronizzato)
+    // 1. Assicuriamoci che l'utente staff esista in client_billing_profiles (per soddisfare FK di natal_charts)
     await pool.query(
-      `INSERT INTO users (clerk_user_id, updated_at) VALUES ($1, now()) ON CONFLICT (clerk_user_id) DO NOTHING`,
+      `INSERT INTO client_billing_profiles (clerk_user_id, updated_at) 
+       VALUES ($1, now()) 
+       ON CONFLICT (clerk_user_id) DO NOTHING`,
       [userId]
     )
 

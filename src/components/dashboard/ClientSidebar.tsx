@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useClerk, useUser } from '@clerk/clerk-react'
+import { isPrivilegedClerkUser } from '../../lib/privilegedUser'
 
 type ClientSidebarProps = {
   theme?: 'dark' | 'light'
@@ -124,7 +125,9 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
           {user?.imageUrl && <img src={user.imageUrl} alt="" className={`w-8 h-8 rounded-full border ${theme === 'light' ? 'border-staff-gold/20' : 'border-white/10'}`} />}
           <div className="min-w-0">
             <p className={`text-xs font-bold truncate ${theme === 'light' ? 'text-dark-500' : 'text-white'}`}>{user?.firstName || 'Cara Cliente'}</p>
-            <p className={`text-[10px] truncate ${theme === 'light' ? 'text-dark-500/40' : 'text-white/40'}`}>Membro Evolutivo</p>
+            <p className={`text-[10px] truncate ${theme === 'light' ? 'text-dark-500/40' : 'text-white/40'}`}>
+              {isPrivilegedClerkUser(user) ? 'Master Admin' : 'Membro Evolutivo'}
+            </p>
           </div>
         </div>
         <button
