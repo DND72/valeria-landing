@@ -612,9 +612,18 @@ export default function Dashboard() {
                       <p className="text-white/80 text-xs mt-1">{w.label}</p>
                       <p className="font-mono text-white/50 text-[11px] mt-1">{startStr} — {endStr}</p>
                       {isNow && (
-                        <Link to="/sessione/live" className="mt-3 block w-full text-center py-2 rounded-lg bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-emerald-500 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">
-                          Entra in Stanza
-                        </Link>
+                        <button 
+                          onClick={() => {
+                            selectOfferCategory('tarocchi')
+                            setSelectedConsult('chat_30')
+                            window.setTimeout(() => {
+                               calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }, 100)
+                          }}
+                          className="mt-3 block w-full text-center py-2 rounded-lg bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-emerald-500 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                        >
+                          Prenota Ora
+                        </button>
                       )}
                     </div>
                   )
@@ -768,9 +777,9 @@ export default function Dashboard() {
                       🃏
                     </span>
                     <div>
-                      <h3 className="font-serif text-lg font-bold text-white mb-1">Tarocchi &amp; letture</h3>
+                      <h3 className="font-serif text-lg font-bold text-white mb-1">Tarocchi &amp; Letture</h3>
                       <p className="text-white/50 text-xs xl:text-sm leading-relaxed mb-3">
-                        Consulti tramite Carte: breve (30m), online (30m video), completo (60m). Fare chiarezza sulle domande e capire come orientarsi.
+                        Consulti tramite Carte: Breve (30m), Completo (60m) o <strong>Live Chat (30m)</strong>. Fare chiarezza sulle domande e capire come orientarsi.
                       </p>
                       <span className="text-gold-500 text-sm font-medium hover:underline">Vedi i consulti →</span>
                     </div>
@@ -826,7 +835,7 @@ export default function Dashboard() {
                 <p className="text-white/38 text-xs leading-relaxed mb-6 border-l border-gold-600/25 pl-3 max-w-3xl">
                   Le letture hanno natura simbolica e di orientamento:{' '}
                   <strong className="text-white/55">non sostituiscono</strong> pareri medici, psicologici specialistici,
-                  legali né trattamenti sanitari.
+                  legali né trattamenti sanitari. <strong className="text-gold-500/80">L'opzione Live ChatRoom è privata e basata solo su testo.</strong>
                 </p>
               )}
 

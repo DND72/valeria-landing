@@ -10,6 +10,7 @@ export type ConsultKind =
   | 'combo_light'
   | 'combo_full'
   | 'free'
+  | 'chat_30'
 
 export type ConsultChoice = {
   kind: ConsultKind
@@ -57,6 +58,7 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
     costCredits: 390
   },
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Free', icon: '🎁', costCredits: 0 },
+  { kind: 'chat_30', name: 'Live ChatRoom', duration: '30 min · Privata in Piattaforma', priceLabel: '1,40 €/min', icon: '💬', costCredits: 42 },
 ]
 
 /** Settore offerta nel Diario cliente: letture vs coaching/crescita personale vs combo. */
