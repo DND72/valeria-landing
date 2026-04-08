@@ -1,8 +1,13 @@
 import sys
 import json
 import math
+import os
 from datetime import datetime, timezone, timedelta
 import swisseph as swe
+
+# Imposta il percorso delle effemeridi (se1 files)
+EPHE_PATH = os.path.join(os.path.dirname(__file__), 'ephe')
+swe.set_ephe_path(EPHE_PATH)
 
 def get_current_sky():
     """Calcola le posizioni di tutti i corpi celesti per l'istante corrente (UTC)."""
