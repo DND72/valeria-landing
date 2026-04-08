@@ -128,7 +128,7 @@ export function useAstrologyApi() {
     generateStaffChart: async (data: NatalChartRequest): Promise<NatalChartResponse & { interpretation: string }> => {
       return authFetch('/api/astrology/generate-staff', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, type: 'advanced' }),
       })
     }
   }), [getToken, API_URL, authFetch])

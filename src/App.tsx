@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react'
-import { Routes, Route, useLocation, Link } from 'react-router-dom'
+import { Routes, Route, useLocation, Link, Navigate } from 'react-router-dom'
 import CookieConsent from 'react-cookie-consent'
 import CosmicBackground from './components/CosmicBackground'
 import ScrollToTop from './components/ScrollToTop'
@@ -39,10 +39,6 @@ import CurrentSkyPage from './pages/CurrentSkyPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import StaffGuard from './components/StaffGuard'
 import Breadcrumbs from './components/Breadcrumbs'
-import { useUser } from '@clerk/clerk-react'
-
-
-
 import LiveSessionPage from './pages/LiveSessionPage'
 
 function HomePage() {
@@ -83,6 +79,7 @@ function AppRoutes() {
             <Route path="/" element={<HomePage />} />
             <Route path="/accedi/*" element={<SignInPage />} />
             <Route path="/registrati/*" element={<SignUpPage />} />
+            <Route path="/dashboard" element={<Navigate to="/area-personale" replace />} />
             <Route path="/area-personale" element={<Dashboard />} />
             <Route path="/area-personale/astrologia" element={<Dashboard />} />
 
