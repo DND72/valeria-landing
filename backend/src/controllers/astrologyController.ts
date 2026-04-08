@@ -192,14 +192,21 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
 
     const { pool } = await import('../db.js')
     
-    // 1. Initial balance check (prevent useless LLM calls)
-    const balanceRes = await pool.query(
-      `SELECT balance_available FROM wallets WHERE clerk_user_id = $1`,
-      [userId]
-    )
-    if (!balanceRes.rows[0] || balanceRes.rows[0].balance_available < cost) {
-      res.status(400).json({ error: 'insufficient_funds' })
-      return
+    // 1. Superuser Check: Staff/Admin skip payment
+    const auth = (req as any).auth
+    const metadata = (auth?.sessionClaims?.publicMetadata as any) || {}
+    const isStaff = metadata.role === 'staff' || metadata.role === 'admin' || metadata.privileged === true
+
+    if (!isStaff) {
+      // 1b. Initial balance check (for regular clients)
+      const balanceRes = await pool.query(
+        `SELECT balance_available FROM wallets WHERE clerk_user_id = $1`,
+        [userId]
+      )
+      if (!balanceRes.rows[0] || balanceRes.rows[0].balance_available < cost) {
+        res.status(400).json({ error: 'insufficient_funds' })
+        return
+      }
     }
 
     // 2. Astrology Engine + LLM Interpretation (Heavy lifting)
@@ -207,29 +214,38 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
     const { generateChartInterpretation } = await import('../lib/gemini.js')
     const interpretation = await generateChartInterpretation(chartData, 'advanced', gender)
 
-    // 3. Final atomic deduction & save
+    // 3. Final atomic deduction & save (Only for non-staff)
     const dbClient = await pool.connect()
     let chartId;
     
     try {
       await dbClient.query('BEGIN')
       
-      const { rows } = await dbClient.query(
-        `UPDATE wallets SET balance_available = balance_available - $1, updated_at = now() 
-         WHERE clerk_user_id = $2 AND balance_available >= $1 RETURNING balance_available`,
-        [cost, userId]
-      )
-      
-      if (rows.length === 0) {
-        await dbClient.query('ROLLBACK')
-        res.status(400).json({ error: 'insufficient_funds' })
-        return
+      if (!isStaff) {
+        const { rows } = await dbClient.query(
+          `UPDATE wallets SET balance_available = balance_available - $1, updated_at = now() 
+           WHERE clerk_user_id = $2 AND balance_available >= $1 RETURNING balance_available`,
+          [cost, userId]
+        )
+        
+        if (rows.length === 0) {
+          await dbClient.query('ROLLBACK')
+          res.status(400).json({ error: 'insufficient_funds' })
+          return
+        }
+        
+        await dbClient.query(
+          `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, $3)`,
+          [userId, -cost, `natal_chart_advanced`]
+        )
+      } else {
+        // Staff Initialization (Ensures wallet exists for FK but doesn't touch balance)
+        await dbClient.query(
+          `INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, updated_at) 
+           VALUES ($1, 0, 0, now()) ON CONFLICT (clerk_user_id) DO NOTHING`,
+          [userId]
+        )
       }
-      
-      await dbClient.query(
-        `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, $3)`,
-        [userId, -cost, `natal_chart_advanced`]
-      )
       
       const insertRes = await dbClient.query(
         `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
@@ -498,10 +514,10 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
     const { birthDate, birthTime, city, gender } = paidSchema.parse(req.body)
 
 
-    // 1. Assicuriamoci che l'utente staff esista in client_billing_profiles (per soddisfare FK di natal_charts)
+    // 1. Assicuriamoci che l'utente staff abbia un wallet (richiesto da FK di natal_charts)
     await pool.query(
-      `INSERT INTO client_billing_profiles (clerk_user_id, updated_at) 
-       VALUES ($1, now()) 
+      `INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, updated_at) 
+       VALUES ($1, 0, 0, now()) 
        ON CONFLICT (clerk_user_id) DO NOTHING`,
       [userId]
     )
