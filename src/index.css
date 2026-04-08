@@ -159,9 +159,14 @@
   .btn-gold,
   .btn-gold *,
   .btn-outline,
-  .btn-outline * {
+  .btn-outline *,
+  .clerk-button-reset,
+  .clerk-button-reset * {
     text-shadow: none !important;
     filter: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    transition: none !important;
   }
 
   .btn-gold:hover {

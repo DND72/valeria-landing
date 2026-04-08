@@ -57,12 +57,11 @@ export default function SignUpPage() {
             elements: {
               card: 'shadow-2xl border border-gold-600/20',
               headerTitle: 'font-serif text-white',
-              socialButtonsBlockButton: 'border-gold-600/30 text-white hover:bg-gold-600/10',
-              formButtonPrimary: 'bg-gradient-to-r from-gold-600 to-gold-300 text-dark-500 font-semibold',
+              socialButtonsBlockButton: 'bg-white border-none text-black hover:bg-white/90 font-medium',
+              formButtonPrimary: 'clerk-button-reset bg-[#d4a017] hover:bg-[#b8860b] text-dark-500 font-bold uppercase transition-colors',
               footerActionLink: 'text-gold-400 hover:text-gold-300',
               formFieldErrorText: 'text-red-400 text-sm',
               alertText: 'text-red-300 text-sm',
-              footer: 'hidden',
             },
           }}
           signInUrl="/accedi"
