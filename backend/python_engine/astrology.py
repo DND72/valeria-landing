@@ -100,6 +100,7 @@ def get_astrology_data(birth_date_str, birth_time_str, city_name):
                     "categoria": cat
                 })
             except Exception:
+                # Skip bodies that fail (e.g. missing ephemeris files)
                 pass
 
         # Nodo Sud
@@ -142,6 +143,41 @@ def get_astrology_data(birth_date_str, birth_time_str, city_name):
 
         asc_sign, asc_deg_sign = get_sign_info(asc_deg)
 
+        # 6. CALCOLO ASPETTI (Novità per Analisi 4000 parole)
+        def get_aspects(pianeti):
+            aspect_list = []
+            # Definiamo i pianeti "maggiori" per evitare rumore (Sole fino a Plutone + Nodi)
+            targets = [p for p in pianeti if p["categoria"] in ["veloce", "lento"] or "Nodo" in p["nome"]]
+            
+            # Configurazioni aspetti: (angolo, nome, orbita)
+            configs = [
+                (0, "Congiunzione", 8),
+                (180, "Opposizione", 8),
+                (120, "Trigono", 8),
+                (90, "Quadrato", 7),
+                (60, "Sestile", 5)
+            ]
+            
+            for i in range(len(targets)):
+                for j in range(i + 1, len(targets)):
+                    p1 = targets[i]
+                    p2 = targets[j]
+                    
+                    diff = abs(p1["lon_assoluta"] - p2["lon_assoluta"])
+                    if diff > 180: diff = 360 - diff
+                    
+                    for angle, name, orb in configs:
+                        if abs(diff - angle) <= orb:
+                            aspect_list.append({
+                                "p1": p1["nome"],
+                                "p2": p2["nome"],
+                                "tipo": name,
+                                "orbita": round(abs(diff - angle), 2)
+                            })
+            return aspect_list
+
+        aspects_calcolati = get_aspects(pianeti_calcolati)
+
         return {
             "citta": city_name,
             "coordinate": [geo_lat, geo_lon],
@@ -150,9 +186,10 @@ def get_astrology_data(birth_date_str, birth_time_str, city_name):
             "ascendente_totale": round(asc_deg, 2),
             "mc_totale": round(mc_deg, 2),
             "segno": asc_sign,
-            "grado_nel_segno": asc_deg_sign,
+            "grado_nel_segno": round(asc_deg_sign, 2),
             "pianeti": pianeti_calcolati,
-            "case": case_list
+            "case": case_list,
+            "aspetti": aspects_calcolati
         }
 
     except Exception as e:
