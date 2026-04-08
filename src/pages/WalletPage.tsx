@@ -53,7 +53,7 @@ export default function WalletPage() {
   useEffect(() => {
     const script = document.createElement('script')
     // Cambiare client-id qui quando si passa in produzione
-    script.src = `https://www.paypal.com/sdk/js?client-id=AcwBYEOUUpJfpmcddgx8fvXg99s67A0X961p-3mYfF-W6Z9lW4-94-9L7k-4&currency=EUR&components=buttons`
+    script.src = `https://www.paypal.com/sdk/js?client-id=Adqa31k26hBAtk7DDavQZ_7j-PT0GyS9LuA0eZNrQLJ6Zq_zxapC1CVr0ySlXdAcwxR2XkRb3JZP5CPG&currency=EUR&components=buttons`
     script.async = true
     script.onload = () => setPaypalLoaded(true)
     document.body.appendChild(script)
