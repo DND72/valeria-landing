@@ -24,9 +24,9 @@ export type ConsultChoice = {
 }
 
 export const CONSULT_CHOICES: ConsultChoice[] = [
-  { kind: 'rapido', name: 'Consulto rapido', duration: '10 min · Digitale', priceLabel: '1,50 €/min', icon: '🚀', costCredits: 15 },
-  { kind: 'breve', name: 'Consulto approfondito', duration: '30 min · Digitale', priceLabel: '1,40 €/min', icon: '🌙', costCredits: 42 },
-  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Digitale', priceLabel: '1,30 €/min', icon: '✨', costCredits: 78 },
+  { kind: 'rapido', name: 'Consulto rapido', duration: '15 min · Digitale', priceLabel: '1,33 €/min', icon: '🚀', costCredits: 20 },
+  { kind: 'breve', name: 'Consulto approfondito', duration: '30 min · Digitale', priceLabel: '1,20 €/min', icon: '🌙', costCredits: 36 },
+  { kind: 'completo', name: 'Consulto completo', duration: '60 min · Digitale', priceLabel: '1,10 €/min', icon: '✨', costCredits: 66 },
   {
     kind: 'coaching_intro',
     name: 'Coaching · Conoscenza',
@@ -60,9 +60,9 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
     costCredits: 390
   },
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Free', icon: '🎁', costCredits: 0 },
-  { kind: 'chat_15', name: 'Chat Flash', duration: '15 min · Testo in Diretta', priceLabel: '1,40 €/min', icon: '⚡', costCredits: 21 },
-  { kind: 'chat_30', name: 'Chat Standard', duration: '30 min · Testo in Diretta', priceLabel: '1,40 €/min', icon: '💬', costCredits: 42 },
-  { kind: 'chat_60', name: 'Chat Profonda', duration: '60 min · Testo in Diretta', priceLabel: '1,40 €/min', icon: '✨', costCredits: 84 },
+  { kind: 'chat_15', name: 'Chat Flash', duration: '15 min · Testo in Diretta', priceLabel: '1,20 €/min', icon: '⚡', costCredits: 18 },
+  { kind: 'chat_30', name: 'Chat Standard', duration: '30 min · Testo in Diretta', priceLabel: '1,10 €/min', icon: '💬', costCredits: 33 },
+  { kind: 'chat_60', name: 'Chat Profonda', duration: '60 min · Testo in Diretta', priceLabel: '1,00 €/min', icon: '✨', costCredits: 60 },
 ]
 
 /** Settore offerta nel Diario cliente: letture vs coaching/crescita personale vs combo. */
