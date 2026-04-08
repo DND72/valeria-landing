@@ -74,13 +74,11 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                    active 
-                      ? 'bg-gold-500 text-black font-bold shadow-lg shadow-gold-500/20' 
-                      : theme === 'light'
-                        ? 'text-dark-500/60 hover:text-dark-500 hover:bg-staff-gold/10'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                  }`}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+                  active 
+                    ? (theme === 'light' ? 'bg-staff-gold text-white font-bold' : 'bg-white/10 text-white font-bold ring-1 ring-white/20')
+                    : (theme === 'light' ? 'text-dark-500/60 hover:text-dark-500 hover:bg-staff-gold/5' : 'text-white/60 hover:text-white hover:bg-white/5')
+                }`}
                 >
                   <span className="text-base">{link.emoji}</span>
                   {link.label}

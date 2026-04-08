@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import { useAstrologyApi, type SavedNatalChart, type Planet } from '../api/astrology'
 import ZodiacWheel from './ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
+import { HOUSE_MEANINGS } from '../constants/astrologyMeanings'
 
 const PLANET_COLOR: Record<string, string> = {
   'Sole': 'text-amber-400',
@@ -183,6 +184,32 @@ export default function StaffAstrology() {
                 </div>
               ))}
             </div>
+
+            {/* CUSPIDI DELLE CASE (NOVITÀ STAFF) */}
+            {viewingChart.chartData.case && viewingChart.chartData.case.length > 0 && (
+              <div className="space-y-4 border-t border-white/10 pt-10">
+                <h3 className="font-serif text-lg text-white mb-4 flex items-center gap-3">
+                  <span className="text-indigo-400 font-bold">🏠</span> 
+                  <span className="uppercase tracking-[0.2em] text-xs font-bold text-white/70">Cuspidi delle Case</span>
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {viewingChart.chartData.case.map((c: any) => (
+                    <div key={c.numero} className="bg-white/[0.03] border border-white/5 rounded-xl p-3 text-center group hover:bg-white/[0.05] transition-colors relative cursor-help">
+                      <p className="text-[10px] text-white/30 uppercase tracking-tighter mb-1 font-bold">Casa {c.numero}</p>
+                      <p className="text-white font-serif text-sm font-bold leading-tight">{c.segno}</p>
+                      <p className="text-[9px] text-indigo-400/60 font-mono mt-1 font-extrabold">{c.gradi.toFixed(1)}°</p>
+                      
+                      {/* Tooltip con significato (Floating) */}
+                      <div className="hidden group-hover:block absolute z-50 bg-[#0c0c14] border border-indigo-500/30 p-3 rounded-xl text-[10px] text-white/80 w-48 -top-24 left-1/2 -translate-x-1/2 backdrop-blur-xl shadow-2xl pointer-events-none">
+                         <p className="font-bold text-indigo-400 mb-1 uppercase tracking-widest">{HOUSE_MEANINGS[c.numero]?.keyword}</p>
+                         <p className="leading-relaxed opacity-80">{HOUSE_MEANINGS[c.numero]?.description}</p>
+                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#0c0c14] border-r border-b border-indigo-500/30 rotate-45"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="prose prose-invert prose-gold max-w-none border-t border-white/10 pt-10">
               <h4 className="font-serif text-2xl text-gold-500 mb-6 text-center uppercase tracking-widest italic">Saggezza Evolutiva</h4>

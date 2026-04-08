@@ -28,7 +28,7 @@ const PLANET_SYMBOLS: Record<string, string> = {
   'Nettuno': '♆', 'Plutone': '♇'
 }
 
-function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedIn: boolean }) {
+function ResultPanel({ data, isLoggedIn, hasAdvanced }: { data: NatalChartResponse; isLoggedIn: boolean; hasAdvanced: boolean }) {
   const theme = useCircadianTheme()
   const { generateSummary } = useAstrologyApi()
   const [localInterpretation, setLocalInterpretation] = useState(data.interpretation || "")
@@ -187,22 +187,24 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
             )}
 
             {/* CTA per sblocco completo */}
-            {localInterpretation && (
-              <div className="mt-10 pt-8 border-t border-white/5 text-center">
+            <div className="mt-10 pt-8 border-t border-white/5 text-center">
                 <div className="max-w-md mx-auto">
-                    <p className="text-white/40 text-[11px] mb-4 uppercase tracking-[0.2em]">✦ Approfondimento Evolutivo</p>
+                    <p className="text-white/40 text-[11px] mb-4 uppercase tracking-[0.2em]">
+                      {hasAdvanced ? "✦ Archivio Evolutivo" : "✦ Approfondimento Evolutivo"}
+                    </p>
                     <Link 
                       to="/i-miei-temi"
-                      className="btn-gold w-full py-4 text-xs uppercase tracking-widest shadow-[0_0_40px_rgba(212,160,23,0.15)] inline-block"
+                      className={`btn-gold w-full py-4 text-xs uppercase tracking-widest inline-block ${hasAdvanced ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'shadow-[0_0_40px_rgba(212,160,23,0.15)]'}`}
                     >
-                      ✦ Vai all'Analisi Evolutiva Completa
+                      {hasAdvanced ? "✦ Leggi la tua Analisi Completa" : "✦ Vai all'Analisi Evolutiva Completa"}
                     </Link>
                     <p className="text-[10px] text-white/20 mt-4 italic">
-                      L'analisi completa esplora il destino della tua anima attraverso tutti i pianeti e le case.
+                      {hasAdvanced 
+                        ? "La tua interpretazione olistica è già pronta per essere consultata." 
+                        : "L'analisi completa esplora il destino della tua anima attraverso tutti i pianeti e le case."}
                     </p>
                 </div>
-              </div>
-            )}
+            </div>
           </div>
 
            {/* Griglia Pianeti Essenziali */}
@@ -260,17 +262,18 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
         {isLoggedIn ? (
           <>
             <h3 className="font-serif text-2xl text-white mb-3">
-              Richiedi l'Analisi <span className="gold-text italic">Evolutiva Completa</span>
+              {hasAdvanced ? "La tua Analisi è" : "Richiedi l'Analisi"} <span className="gold-text italic">{hasAdvanced ? "Pronta" : "Evolutiva Completa"}</span>
             </h3>
             <p className="text-white/50 text-sm mb-6 max-w-md mx-auto leading-relaxed">
-              Ricevi un'interpretazione olistica e profonda di tutti i tuoi pianeti, case e aspetti, 
-              curata personalmente dalla saggezza di Valeria. Il prossimo passo verso la tua consapevolezza (Analisi da circa 4000 parole).
+              {hasAdvanced 
+                ? "Hai già sbloccato l'interpretazione olistica completa. Torna a consultarla ogni volta che cerchi chiarezza e direzione."
+                : "Ricevi un'interpretazione olistica e profonda di tutti i tuoi pianeti, case e aspetti, curata personalmente dalla saggezza di Valeria."}
             </p>
             <Link
               to="/i-miei-temi"
               className="inline-block btn-gold px-10 py-3.5 text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(212,160,23,0.25)]"
             >
-              VAI ALL'ANALISI COMPLETA →
+              {hasAdvanced ? "LEGGI ORA →" : "VAI ALL'ANALISI COMPLETA →"}
             </Link>
           </>
         ) : (
@@ -317,6 +320,7 @@ export default function NatalChartPage() {
   const [city, setCity] = useState('')
   const [gender, setGender] = useState<'M' | 'F' | ''>('')
   const [isFixed, setIsFixed] = useState(false)
+  const [hasAdvanced, setHasAdvanced] = useState(false)
 
   // Calcolo / Recupero persistente all'avvio
   useEffect(() => {
@@ -335,14 +339,14 @@ export default function NatalChartPage() {
            setDate(d)
            setTime(t)
            setCity(ct)
-           // Cristallizzazione COMPLETA: solo se tutti e 3 i campi sono presenti
+           if (c.chart_type === 'advanced') setHasAdvanced(true)
            if (d && t && ct) setIsFixed(true)
-           return
         }
 
         // 2. Fallback: vecchi temi se getLatestChart è vuoto
         const charts = await getMyCharts()
         if (charts && charts.length > 0) {
+          if (charts.some(c => c.type === 'advanced')) setHasAdvanced(true)
           const last = charts[0]
           setResult({ ...last.chartData, id: last.id, chart_type: last.type })
           setDate(last.birthDate)
@@ -476,7 +480,7 @@ export default function NatalChartPage() {
             </form>
           </motion.div>
 
-          {result && <ResultPanel data={result} isLoggedIn={isLoggedIn} />}
+          {result && <ResultPanel data={result} isLoggedIn={isLoggedIn} hasAdvanced={hasAdvanced} />}
       </div>
     </div>
   )

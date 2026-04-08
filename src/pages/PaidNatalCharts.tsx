@@ -203,6 +203,9 @@ export default function PaidNatalCharts() {
     try {
       const charts = await getMyCharts()
       setMyCharts(charts)
+      // Auto-load advanced chart if exists
+      const adv = charts.find(c => c.type === 'advanced')
+      if (adv) setViewingChart(adv)
     } catch (e) {
       console.error(e)
     } finally {
