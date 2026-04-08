@@ -70,3 +70,40 @@ Genera l'Analisi Evolutiva Completa.`
     throw new Error("C'è un piccolo disturbo nelle frequenze astrali. Riprova tra poco.")
   }
 }
+
+export async function generateTransitInterpretation(natalData: any, currentSky: any, transits: any, gender: 'M' | 'F' = 'M'): Promise<string> {
+  const client = getGeminiClient()
+  
+  const sysPrompt = `Sei Valeria, la tua Stella. Il tuo compito è scrivere l'OROSCOPO PERSONALIZZATO DEI TRANSITI. 
+  ${gender === 'F' ? 'Rivolgiti alla cliente al FEMMINILE.' : 'Rivolgiti al cliente al MASCHILE.'}
+  
+  NON descrivere la personalità di base (che è nel Tema Natale), ma descrivi come le energie di OGGI impattano sulla sua vita.
+  
+  STRUTTURA:
+  1. **IL CIELO DI OGGI**: Una breve panoramica sulle energie collettive (es. Fasi Lunari, pianeti in transito).
+  2. **I TUOI TRANSITI CHIAVE**: Analizza gli aspetti tra i pianeti attuali e quelli natali. Sii ${gender === 'F' ? 'concreta' : 'concreto'}.
+     - Es: "Oggi Marte tocca il tuo Sole natale: avrai una spinta di energia incredibile, usala per quel progetto che rimandi."
+  3. **CONSIGLIO DELLA STELLA**: Un'indicazione pratica per affrontare al meglio la giornata.
+
+  Usa un tono incoraggiante, schietto e magico. Firma: "Valeria, la tua Stella".`
+
+  const userPrompt = `
+  Dati Natali: ${JSON.stringify(natalData.pianeti || [])}
+  Cielo Attuale: ${JSON.stringify(currentSky.luna)} e pianeti ${JSON.stringify(currentSky.pianeti || [])}
+  Transiti Rilevati: ${JSON.stringify(transits)}
+  
+  Scrivi l'oroscopo personalizzato.`
+
+  const model = client.getGenerativeModel({ 
+    model: 'gemini-2.0-flash',
+    systemInstruction: sysPrompt
+  })
+
+  try {
+    const result = await model.generateContent(userPrompt)
+    return result.response.text() || 'Le stelle sono timide oggi...'
+  } catch (err: any) {
+    console.error('[transit-gemini] Error:', err)
+    return "Valeria sta ricalcolando le orbite... riprova tra un istante."
+  }
+}

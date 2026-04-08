@@ -7,6 +7,10 @@ from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 import swisseph as swe
 
+# Forza l'output in UTF-8 per evitare errori su Windows (emojis)
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Imposta il percorso delle effemeridi (se1 files)
 EPHE_PATH = os.path.join(os.path.dirname(__file__), 'ephe')
 swe.set_ephe_path(EPHE_PATH)

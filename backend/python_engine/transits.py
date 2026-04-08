@@ -44,12 +44,15 @@ def calculate_transits(natal_planets, current_planets):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print(json.dumps({"error": "Dati natali o attuali mancanti."}))
+        print(json.dumps({"error": "Percorsi file natali o attuali mancanti."}))
         sys.exit(1)
         
     try:
-        natal_data = json.loads(sys.argv[1])
-        current_data = json.loads(sys.argv[2])
+        # Leggiamo da file invece che da stringa
+        with open(sys.argv[1], 'r', encoding='utf-8') as f:
+            natal_data = json.load(f)
+        with open(sys.argv[2], 'r', encoding='utf-8') as f:
+            current_data = json.load(f)
         
         # Estraiamo le liste pianeti
         natal_p = natal_data.get("pianeti", [])
