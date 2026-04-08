@@ -428,16 +428,22 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
         }
       }
 
-      let latestChart: { id: string; interpretation: string | null } | null = null
+      let latestChart: any = null
       if (clrkIdToUse) {
         const chartRes = await pool.query(
-          `SELECT id, interpretation FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`,
+          `SELECT id, interpretation, birth_date, birth_time, city, chart_data 
+           FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`,
           [clrkIdToUse]
         )
         if (chartRes.rows.length > 0) {
+          const c = chartRes.rows[0]
           latestChart = {
-            id: chartRes.rows[0].id,
-            interpretation: chartRes.rows[0].interpretation
+            id: c.id,
+            interpretation: c.interpretation,
+            birthDate: c.birth_date ? new Date(c.birth_date).toISOString().slice(0, 10) : null,
+            birthTime: c.birth_time,
+            city: c.city,
+            chartData: c.chart_data
           }
         }
       }

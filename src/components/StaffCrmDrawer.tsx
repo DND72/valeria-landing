@@ -2,6 +2,9 @@ import { useAuth } from '@clerk/clerk-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { apiJson, ApiError } from '../lib/api'
 import { getApiBaseUrl } from '../constants/api'
+import ReactMarkdown from 'react-markdown'
+import ZodiacWheel from './ZodiacWheel'
+import { useCircadianTheme } from '../hooks/useCircadianTheme'
 
 type ConsultRow = {
   id: string
@@ -26,6 +29,14 @@ type ClientDetail = {
   displayName: string | null
   profile: ClientProfile | null
   consults: ConsultRow[]
+  latestChart?: {
+    id: string
+    interpretation: string | null
+    birthDate: string | null
+    birthTime: string | null
+    city: string | null
+    chartData: any
+  } | null
 }
 
 export type { ClientDetail }
@@ -46,6 +57,7 @@ function formatWhen(iso: string | null): string {
 
 export default function StaffCrmDrawer({ email, onClose }: Props) {
   const { getToken } = useAuth()
+  const theme = useCircadianTheme()
   const api = Boolean(getApiBaseUrl())
   const drawerRef = useRef<HTMLDivElement>(null)
 
@@ -236,6 +248,44 @@ export default function StaffCrmDrawer({ email, onClose }: Props) {
                 </div>
               </div>
             </section>
+
+            {/* === Tema Natale Cliente === */}
+             {detail.latestChart && (
+               <section className="bg-black/20 rounded-xl overflow-hidden border border-white/10 shadow-inner">
+                 <div className="p-4 border-b border-white/10 bg-white/[0.03] flex items-center justify-between">
+                   <div>
+                     <h3 className="text-white font-serif font-bold text-sm">Tema Natale del Cliente</h3>
+                     <p className="text-[10px] text-white/40 uppercase tracking-widest">Calculato il {detail.latestChart.birthDate} - {detail.latestChart.city}</p>
+                   </div>
+                   <span className="text-xl">✨</span>
+                 </div>
+                 
+                 <div className="p-4 bg-[#060608] flex justify-center">
+                   <div className="w-full max-w-[280px]">
+                     <ZodiacWheel 
+                        planets={detail.latestChart.chartData?.pianeti || []}
+                        ascLon={detail.latestChart.chartData?.ascendente_totale}
+                        ascSign={detail.latestChart.chartData?.segno}
+                        ascDeg={detail.latestChart.chartData?.grado_nel_segno}
+                        theme={theme}
+                     />
+                   </div>
+                 </div>
+
+                 <div className="p-4 prose prose-invert prose-xs max-h-[300px] overflow-y-auto bg-black/40">
+                    <ReactMarkdown 
+                      components={{
+                        p: ({node, ...props}) => <p className="mb-2 text-white/70 leading-relaxed text-[11px]" {...props} />,
+                        h1: ({node, ...props}) => <h1 className="text-sm text-gold-400 mt-4 mb-2" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xs text-gold-500 mt-3 mb-1" {...props} />,
+                        li: ({node, ...props}) => <li className="text-white/60 text-[11px] mb-0.5" {...props} />,
+                      }}
+                    >
+                      {detail.latestChart.interpretation || "Nessuna interpretazione disponibile."}
+                    </ReactMarkdown>
+                 </div>
+               </section>
+             )}
 
             {/* === Note generali cliente === */}
             <section>

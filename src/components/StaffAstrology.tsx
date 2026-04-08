@@ -84,17 +84,27 @@ export default function StaffAstrology() {
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mystical-card border-emerald-500/20 bg-emerald-500/5"
+        className="mystical-card border-gold-500/20 bg-gold-500/5 shadow-2xl"
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="text-3xl text-emerald-400">🌕</div>
-          <div>
-            <h2 className="font-serif text-xl font-bold text-white mb-0.5">Il Tuo Tema Natale (Staff)</h2>
-            <p className="text-emerald-400/70 text-sm">Un dono di saggia consapevolezza per chi cammina con noi.</p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="text-3xl text-gold-500">🌌</div>
+            <div>
+              <h2 className="font-serif text-xl font-bold text-white mb-0.5">Calcolatore Natale Universale</h2>
+              <p className="text-gold-400/70 text-sm">Strumento professionale per analizzare il cielo di qualsiasi persona.</p>
+            </div>
           </div>
+          {viewingChart && (
+            <button 
+              onClick={() => { setViewingChart(null); setDate(''); setTime(''); setCity(''); }}
+              className="text-[10px] uppercase font-bold tracking-widest text-white/40 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Nuovo Calcolo ↺
+            </button>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
           <div className="space-y-1.5">
             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Data di Nascita</label>
             <input
@@ -102,7 +112,7 @@ export default function StaffAstrology() {
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-500/50 outline-none"
             />
           </div>
           <div className="space-y-1.5">
@@ -112,18 +122,18 @@ export default function StaffAstrology() {
               required
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-500/50 outline-none"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Città</label>
+            <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Città di Nascita</label>
             <input
               type="text"
               required
-              placeholder="Es. Roma"
+              placeholder="Es. Roma, Milano..."
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-gold-500/50 outline-none"
             />
           </div>
           <div className="flex items-end">
@@ -132,12 +142,12 @@ export default function StaffAstrology() {
               disabled={loading}
               className="w-full btn-gold text-xs py-2.5 rounded-lg font-bold uppercase tracking-widest"
             >
-              {loading ? 'Lettura...' : 'Calcola Gratis'}
+              {loading ? 'Generazione...' : 'Genera Analisi ✦'}
             </button>
           </div>
         </form>
 
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+        {error && <p className="text-red-400 text-xs mt-4 bg-red-950/20 p-2 rounded border border-red-900/40 text-center">{error}</p>}
       </motion.section>
 
       {viewingChart && (
