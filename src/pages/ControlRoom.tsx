@@ -585,18 +585,23 @@ export default function ControlRoom() {
                              <button
                                key={app.id}
                                onClick={() => setSelectedId(app.id)}
-                               className={`w-full text-left p-3 rounded-xl border transition-all ${selectedId === app.id ? 'bg-gold-500/20 border-gold-500/40' : 'bg-black/40 border-white/5 hover:border-white/15'}`}
+                               className={`w-full text-left p-4 rounded-xl border transition-all ${selectedId === app.id ? 'bg-gold-500/30 border-gold-500/60 ring-1 ring-gold-500/20' : 'bg-white/[0.05] border-white/10 hover:border-gold-500/30'}`}
                              >
-                                <div className="flex items-center justify-between mb-1">
-                                   <span className="text-gold-400 font-serif text-sm font-bold">
+                                <div className="flex items-center justify-between mb-2">
+                                   <span className="text-gold-400 font-serif text-sm font-bold tracking-tight">
                                      {sd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {sd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
                                    </span>
-                                   <span className={`text-[8px] uppercase tracking-tighter px-1.5 py-0.5 rounded-full border ${badgeClassService(sk)}`}>
+                                   <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded border ${badgeClassService(sk)}`}>
                                       {labelService(sk)}
                                    </span>
                                 </div>
-                                <p className="text-white/90 text-sm font-medium truncate">{app.invitee_name || app.invitee_email || 'Cliente'}</p>
-                                <p className="text-[10px] text-white/30 truncate uppercase tracking-tighter">{app.status}</p>
+                                <div className="space-y-0.5">
+                                  <p className="text-white font-bold text-sm">{app.invitee_name || 'Cliente senza nome'}</p>
+                                  <p className="text-white/60 text-xs truncate">{app.invitee_email || 'No email'}</p>
+                                </div>
+                                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-white/5">
+                                  <span className="text-[9px] text-gold-500/80 uppercase font-black tracking-widest">{app.status}</span>
+                                </div>
                              </button>
                            )
                         })
@@ -740,10 +745,10 @@ export default function ControlRoom() {
                       <dd className="text-white/90 mt-2">
                         <Link
                           to={`/sessione/${detailConsult.id}`}
-                          className="inline-flex items-center gap-2 bg-gold-500 text-dark-500 hover:bg-gold-400 px-6 py-2 rounded-full text-sm font-bold shadow-[0_0_15px_rgba(212,160,23,0.3)] transition-all"
+                          className="inline-flex items-center gap-2 bg-gold-500 text-dark-500 hover:bg-gold-400 px-8 py-3 rounded-xl text-sm font-bold transition-all border border-gold-400/20"
                         >
                           Entra nella Live Chat
-                          <span aria-hidden>→</span>
+                          <span className="text-lg leading-none">→</span>
                         </Link>
                       </dd>
                     </div>

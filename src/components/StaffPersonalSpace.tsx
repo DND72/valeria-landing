@@ -297,9 +297,9 @@ export default function StaffPersonalSpace() {
             <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mystical-card">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 <div>
-                  <h2 className="font-serif text-xl font-bold text-white mb-1">Appuntamenti di oggi</h2>
-                  <p className="text-white/40 text-sm">
-                    Solo il giorno corrente (fuso Europe/Rome), dal calendario interno.
+                  <h2 className="font-serif text-xl font-bold text-white mb-1">Agenda: I Consulti di Oggi</h2>
+                  <p className="text-white/40 text-xs">
+                    Elenco in tempo reale delle sessioni programmate per la data odierna.
                   </p>
                 </div>
                 <button
@@ -334,10 +334,14 @@ export default function StaffPersonalSpace() {
                     </thead>
                     <tbody>
                       {today.meetings.map((m, i) => (
-                        <tr key={`${m.startAt}-${i}`} className="border-t border-white/[0.06]">
-                          <td className="py-2 px-3 text-white/85 whitespace-nowrap">{formatWhen(m.startAt)}</td>
-                          <td className="py-2 px-3 text-white/70">{m.inviteeSummary}</td>
-                          <td className="py-2 px-3 text-white/55">{m.eventName}</td>
+                        <tr key={`${m.startAt}-${i}`} className="border-t border-white/[0.06] hover:bg-white/[0.02] transition-colors">
+                          <td className="py-3 px-3 text-gold-400 font-mono font-bold whitespace-nowrap">{formatWhen(m.startAt)}</td>
+                          <td className="py-3 px-3">
+                            <p className="text-white font-bold text-sm leading-none">{m.inviteeSummary}</p>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="text-[10px] uppercase font-black tracking-widest text-white/40 border border-white/10 px-1.5 py-0.5 rounded">{m.eventName}</span>
+                          </td>
                           <td className="py-2 px-3">
                             <div className="flex items-center gap-2">
                               {m.joinUrl ? (
@@ -390,10 +394,9 @@ export default function StaffPersonalSpace() {
             <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mystical-card">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 <div>
-                  <h2 className="font-serif text-xl font-bold text-white mb-1">Consulti previsti (prossimi 7 giorni)</h2>
-                  <p className="text-white/40 text-sm">
-                    Dal calendario interno. Email distinte in archivio:{' '}
-                    <strong className="text-white/55">{clientsWeek?.totalDistinctEmails ?? '—'}</strong>.
+                  <h2 className="font-serif text-xl font-bold text-white mb-1">Prossimi Consulti (7 giorni)</h2>
+                  <p className="text-white/40 text-xs">
+                    Panoramica settimanale degli impegni futuri e database clienti associato.
                   </p>
                 </div>
                 <button
