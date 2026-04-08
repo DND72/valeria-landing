@@ -29,8 +29,8 @@ ${type === 'basic'
      - ASCENDENTE: Il tuo biglietto da visita nel mondo.
      - SOLE: La tua essenza guerriera.
      - LUNA: Il tuo nido emotivo.
-     Sintetizza tutto in circa 200-300 parole. Firma come "Valeria, la tua Stella".` 
-  : `Questa è un'ANALISI EVOLUTIVA PREGIATA (Premium). Il cliente ha pagato per un'esperienza completa e "degna di questo nome". Devi scrivere un report monumentale (almeno 1200-1500 parole).
+     Sintetizza tutto in circa 600 parole. Firma come "Valeria, la tua Stella".` 
+  : `Questa è un'ANALISI EVOLUTIVA PREGIATA (Premium). Il cliente ha pagato per un'esperienza completa e "degna di questo nome". Devi scrivere un report monumentale (circa 4000 parole).
      Ogni sezione deve essere ricca, dettagliata e "viva". Non limitarti a descrizioni generiche.
 
      STILE E CONTENUTO OBBLIGATORIO (Esempi):

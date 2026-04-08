@@ -24,24 +24,24 @@ const steps = [
 
 const services = [
   {
-    name: 'Consulto breve Tarocchi',
-    duration: '30 minuti · Sessione Digitale',
-    price: '42 CR',
-    ideal: 'Una domanda specifica · Una situazione da chiarire',
-    icon: '🌙',
+    name: 'Consulto rapido',
+    duration: '10 min · Sessione Digitale',
+    price: '1,50 €/min',
+    ideal: 'Consulto istantaneo per dubbi rapidi e precisi.',
+    icon: '🚀',
   },
   {
     name: 'Coaching 30 min',
     duration: '30 minuti · Sessione Digitale',
-    price: '48 CR',
-    ideal: 'Crescita personale e obiettivi brevi',
+    price: '1,60 €/min',
+    ideal: 'Percorso evolutivo focalizzato su un obiettivo.',
     icon: '🍃',
   },
   {
-    name: 'Combo Light',
-    duration: '2x Tarocchi + 1x Coaching',
-    price: '112 CR',
-    ideal: 'Focus & Azione combinati per la massima resa',
+    name: 'Combo Evolutiva',
+    duration: 'Valore massimo · Percorso misto',
+    price: '1,25 €/min',
+    ideal: 'Tarocchi + Coaching insieme per la massima chiarezza.',
     icon: '✨',
   },
 ]
@@ -133,8 +133,7 @@ export default function HowItWorks() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>{service.price}</p>
-              <p className="text-white/40 text-xs mb-4">{service.ideal}</p>
-              <span className="text-white/25 text-xs italic">Acquistabile dal tuo profilo</span>
+              <p className="text-white/40 text-xs mt-auto">{service.ideal}</p>
             </motion.div>
           ))}
         </div>

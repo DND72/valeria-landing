@@ -68,9 +68,7 @@
       #ffdd00 100%
     );
     text-shadow: none;
-    filter:
-      drop-shadow(0 0 12px rgba(255, 230, 50, 1))
-      drop-shadow(0 0 28px rgba(255, 180, 0, 0.8));
+    /* Rimosso drop-shadow per evitare effetto sfocato richiesto dall'utente */
   }
 
   .glow-text-gold {
@@ -105,9 +103,7 @@
       #ffdd00 100%
     );
     text-shadow: none;
-    filter:
-      drop-shadow(0 0 14px rgba(255, 235, 50, 1))
-      drop-shadow(0 0 35px rgba(255, 200, 0, 0.9));
+    /* Rimosso drop-shadow per evitare effetto sfocato richiesto dall'utente */
   }
 
   /* Annulla text-shadow su tutti i figli di gold-text e gold-number */
@@ -155,7 +151,8 @@
   .btn-gold {
     @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-semibold text-dark-500 transition-all duration-300;
     background: linear-gradient(135deg, #f5a623 0%, #ffe066 50%, #e07b00 100%);
-    box-shadow: 0 0 30px rgba(245, 166, 35, 0.4), 0 2px 0 rgba(180,100,0,0.5);
+    /* Rimosso glow shadow esterno per massima nitidezza */
+    box-shadow: 0 2px 0 rgba(180,100,0,0.5);
   }
 
   /* Testo scuro su oro: niente shadow (evita effetto "sfocato") */
@@ -169,7 +166,7 @@
 
   .btn-gold:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 50px rgba(255, 200, 50, 0.6), 0 2px 0 rgba(180,100,0,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 2px 0 rgba(180,100,0,0.5);
   }
 
   .btn-outline {

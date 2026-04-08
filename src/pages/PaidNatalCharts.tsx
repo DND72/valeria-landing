@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import ReactMarkdown from 'react-markdown'
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { useAstrologyApi, type SavedNatalChart, type NatalChartResponse } from '../api/astrology'
 import { Link } from 'react-router-dom'
@@ -44,13 +45,15 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
       </div>
 
       <div className="mb-10 w-full flex justify-center">
-        <ZodiacWheel
-          planets={chart.pianeti || []}
-          ascLon={chart.ascendente_totale}
-          ascSign={chart.segno}
-          ascDeg={chart.grado_nel_segno}
-          theme={theme}
-        />
+        <div className="w-full max-w-4xl max-h-[85vh]">
+          <ZodiacWheel
+            planets={chart.pianeti || []}
+            ascLon={chart.ascendente_totale}
+            ascSign={chart.segno}
+            ascDeg={chart.grado_nel_segno}
+            theme={theme}
+          />
+        </div>
       </div>
 
       <div className="mb-10 p-4 border border-white/5 bg-white/[0.02] rounded-2xl">
@@ -143,10 +146,22 @@ function ChartDisplay({ chart, interpretation }: { chart: NatalChartResponse, in
         </div>
       )}
 
-      <div className="pt-6 border-t border-white/10">
-        <h4 className="font-serif text-xl text-gold-500 mb-4">L'Interpretazione di Valeria</h4>
-        <div className="prose prose-invert prose-gold max-w-none text-white/80 leading-relaxed space-y-4 whitespace-pre-wrap">
-          {interpretation}
+      <div className="pt-8 border-t border-white/10">
+        <h4 className="font-serif text-3xl text-gold-500 mb-8 text-center uppercase tracking-widest">L'Interpretazione di Valeria</h4>
+        <div className="prose prose-invert prose-gold max-w-none text-white/80 leading-relaxed space-y-4">
+          <ReactMarkdown
+            components={{
+              h1: ({node, ...props}) => <h1 className="font-serif text-3xl text-gold-400 mt-12 mb-6 border-b border-gold-500/20 pb-4" {...props} />,
+              h2: ({node, ...props}) => <h2 className="font-serif text-2xl text-gold-500 mt-10 mb-4" {...props} />,
+              h3: ({node, ...props}) => <h3 className="font-serif text-xl text-cyan-400 mt-8 mb-3" {...props} />,
+              strong: ({node, ...props}) => <strong className="text-white font-bold" {...props} />,
+              p: ({node, ...props}) => <p className="mb-6 text-lg tracking-wide text-white/80 leading-relaxed text-justify" {...props} />,
+              ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-6 space-y-3" {...props} />,
+              li: ({node, ...props}) => <li className="text-white/80 text-lg" {...props} />,
+            }}
+          >
+            {interpretation}
+          </ReactMarkdown>
         </div>
       </div>
     </motion.div>
@@ -226,7 +241,9 @@ export default function PaidNatalCharts() {
         interpretation: res.interpretation,
         createdAt: new Date().toISOString()
       })
-      window.scrollTo({ top: 500, behavior: 'smooth' })
+      window.setTimeout(() => {
+        document.getElementById('chart-display')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 300)
     } catch (err: any) {
       setError(err.message || 'Errore di connessione')
     } finally {
@@ -235,7 +252,7 @@ export default function PaidNatalCharts() {
   }
 
   return (
-    <div className="min-h-screen py-24 px-6 relative max-w-5xl mx-auto">
+    <div className="min-h-screen py-24 px-6 relative max-w-7xl mx-auto">
       <SignedOut>
         <RedirectToSignIn afterSignInUrl="/i-miei-temi" />
       </SignedOut>
@@ -362,7 +379,9 @@ export default function PaidNatalCharts() {
                         const adv = myCharts.find(c => c.type === 'advanced')
                         if (adv) {
                           setViewingChart(adv)
-                          window.scrollTo({ top: 500, behavior: 'smooth' })
+                          window.setTimeout(() => {
+                            document.getElementById('chart-display')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }, 100)
                         }
                       }}
                       className="btn-gold px-8 py-2.5 text-sm"
@@ -373,9 +392,7 @@ export default function PaidNatalCharts() {
               </div>
             )}
 
-            {viewingChart && (
-              <ChartDisplay chart={viewingChart.chartData} interpretation={viewingChart.interpretation} />
-            )}
+            {/* ChartDisplay moved below grid */}
           </div>
 
           <div className="space-y-4">
@@ -394,7 +411,9 @@ export default function PaidNatalCharts() {
                      key={c.id}
                      onClick={() => {
                         setViewingChart(c)
-                        window.scrollTo({ top: 500, behavior: 'smooth' })
+                        window.setTimeout(() => {
+                           document.getElementById('chart-display')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }, 100)
                      }}
                      className={`text-left p-4 rounded-lg border transition-all ${
                        viewingChart?.id === c.id ? 'bg-white/5 border-gold-500/50' : 'bg-[#141418] border-white/10'
@@ -407,38 +426,45 @@ export default function PaidNatalCharts() {
                </div>
             )}
 
-            {/* 🔥 Prossimamente Flag */}
-            <div className="mt-8 p-6 rounded-2xl border border-gold-500/20 bg-black/40 relative overflow-hidden group">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-500"></span>
-                </span>
-                <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-gold-500">Evoluzione</p>
+          </div>
+        </div>
+
+        {viewingChart && (
+          <div className="mt-12 w-full pt-8" id="chart-display">
+            <ChartDisplay chart={viewingChart.chartData} interpretation={viewingChart.interpretation} />
+          </div>
+        )}
+
+        {/* 🔥 Prossimamente Flag - Full Width Horizontal */}
+        <div className="mt-20 p-8 rounded-2xl border border-gold-500/20 bg-black/40 relative overflow-hidden group w-full">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-500"></span>
+            </span>
+            <p className="text-xs uppercase tracking-[0.3em] font-bold text-gold-500">Evoluzione in Arrivo</p>
+          </div>
+          <h4 className="font-serif text-2xl text-white mb-8">Oltre il Tema</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex gap-4">
+              <div className="text-3xl">🧬</div>
+              <div>
+                <p className="text-lg font-bold text-white/90">Bi-Wheel</p>
+                <p className="text-sm text-white/40 leading-relaxed mt-1">Il respiro del cielo sulla tua impronta natale.</p>
               </div>
-              <h4 className="font-serif text-lg text-white mb-4">Oltre il Tema</h4>
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <div className="text-lg">🧬</div>
-                  <div>
-                    <p className="text-[11px] font-bold text-white/90">Bi-Wheel</p>
-                    <p className="text-[9px] text-white/40 leading-relaxed">Il respiro del cielo sulla tua impronta natale.</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="text-lg">✨</div>
-                  <div>
-                    <p className="text-[11px] font-bold text-white/90">La Mentore Silente</p>
-                    <p className="text-[9px] text-white/40 leading-relaxed">Un dialogo profondo per navigare le sfide del presente.</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="text-lg">🗺️</div>
-                  <div>
-                    <p className="text-[11px] font-bold text-white/90">Astro-Cartografia</p>
-                    <p className="text-[9px] text-white/40 leading-relaxed">Trova nel mondo il tuo luogo sacro.</p>
-                  </div>
-                </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-3xl">✨</div>
+              <div>
+                <p className="text-lg font-bold text-white/90">La Mentore Silente</p>
+                <p className="text-sm text-white/40 leading-relaxed mt-1">Un dialogo profondo per navigare le sfide del presente.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-3xl">🗺️</div>
+              <div>
+                <p className="text-lg font-bold text-white/90">Astro-Cartografia</p>
+                <p className="text-sm text-white/40 leading-relaxed mt-1">Trova nel mondo il tuo luogo sacro.</p>
               </div>
             </div>
           </div>

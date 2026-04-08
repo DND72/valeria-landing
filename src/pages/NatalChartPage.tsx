@@ -35,6 +35,11 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
   const [genLoading, setGenLoading] = useState(false)
   const [genError, setGenError] = useState<string | null>(null)
 
+  const createdAt = data.created_at ? new Date(data.created_at) : new Date()
+  const now = new Date()
+  const diffHours = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
+  const isPending = diffHours < 12 && data.chart_type === 'basic' && !localInterpretation
+
   const handleGenerateSummary = async () => {
     if (!data.id) {
       setGenError("ID del tema mancante. Prova a ricaricare la pagina.")
@@ -147,23 +152,37 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
                     )
                   })()}
                 </div>
-                <div className="mt-8 pt-6 border-t border-white/10 text-center">
-                  <button 
-                    onClick={handleGenerateSummary}
-                    disabled={genLoading}
-                    className="btn-gold px-6 py-2 text-xs uppercase tracking-widest"
-                  >
-                    {genLoading ? "Generazione..." : "✦ Genera la Sintesi di Valeria"}
-                  </button>
-                  {genError && (
-                    <p className="text-red-400 text-[10px] mt-2 font-bold uppercase tracking-wider animate-pulse">
-                      ⚠️ {genError}
+                {isPending ? (
+                  <div className="mt-8 pt-6 border-t border-white/10 text-center animate-in fade-in slide-in-from-bottom-2 duration-1000">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-12 h-12 rounded-full border border-gold-500/30 flex items-center justify-center">
+                        <span className="text-xl animate-pulse">⏳</span>
+                      </div>
+                      <h4 className="font-serif text-lg text-gold-200">Valeria sta consultando gli astri per te...</h4>
+                      <p className="text-white/50 text-[11px] max-w-sm mx-auto leading-relaxed">
+                        L'interpretazione evolutiva richiede tempo e dedizione. Valeria vaglierà personalmente la tua configurazione e riceverai il responso qui, nel tuo Diario, tra circa <strong className="text-gold-400">12 ore</strong>. Torna a visitarci tra poco.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-8 pt-6 border-t border-white/10 text-center">
+                    <button 
+                      onClick={handleGenerateSummary}
+                      disabled={genLoading}
+                      className="btn-gold px-6 py-2 text-xs uppercase tracking-widest"
+                    >
+                      {genLoading ? "Generazione..." : "✦ Richiedi la Sintesi di Valeria"}
+                    </button>
+                    {genError && (
+                      <p className="text-red-400 text-[10px] mt-2 font-bold uppercase tracking-wider animate-pulse">
+                        ⚠️ {genError}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-white/30 mt-3 font-serif italic">
+                      Valeria analizzerà la tua configurazione planetaria completa per offrirti una lettura unica.
                     </p>
-                  )}
-                  <p className="text-[10px] text-white/30 mt-3 font-serif italic">
-                    L'IA di Valeria analizzerà la tua configurazione planetaria completa.
-                  </p>
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -245,7 +264,7 @@ function ResultPanel({ data, isLoggedIn }: { data: NatalChartResponse; isLoggedI
             </h3>
             <p className="text-white/50 text-sm mb-6 max-w-md mx-auto leading-relaxed">
               Ricevi un'interpretazione olistica e profonda di tutti i tuoi pianeti, case e aspetti, 
-              curata personalmente dalla saggezza di Valeria. Il prossimo passo verso la tua consapevolezza.
+              curata personalmente dalla saggezza di Valeria. Il prossimo passo verso la tua consapevolezza (Analisi da circa 4000 parole).
             </p>
             <Link
               to="/i-miei-temi"

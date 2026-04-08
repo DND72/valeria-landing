@@ -7,11 +7,12 @@ interface BookingCalendarProps {
   consultKind: string
   onConfirmed?: () => void
   onCancel?: () => void
+  previewMode?: boolean
 }
 
 type SlotsData = Record<string, string[]>
 
-export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: BookingCalendarProps) {
+export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel, previewMode = false }: BookingCalendarProps) {
   const { getToken } = useAuth()
   
   const [slots, setSlots] = useState<SlotsData>({})
@@ -155,9 +156,14 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
               return (
                 <button
                   key={slot}
+                  disabled={previewMode}
                   onClick={() => setSelectedSlot(slot)}
-                  className={`py-4 rounded-xl border text-base font-bold transition-all ${
-                    isSelected ? 'bg-gold-500 border-gold-400 text-black shadow-lg shadow-gold-500/20' : 'bg-white/5 border-white/5 text-white/70 hover:border-white/20 hover:text-white'
+                  className={`py-4 rounded-xl border text-base font-bold transition-all duration-500 ${
+                    isSelected 
+                      ? 'bg-gold-500 border-gold-400 text-black shadow-lg shadow-gold-500/20' 
+                      : previewMode
+                        ? 'bg-white/5 border-white/5 text-white/20 cursor-not-allowed opacity-40'
+                        : 'bg-white/5 border-white/5 text-white/70 hover:border-white/20 hover:text-white'
                   }`}
                 >
                   {timeStr}
@@ -171,12 +177,12 @@ export function InternalBookingCalendar({ consultKind, onConfirmed, onCancel }: 
       <div className="flex flex-col gap-4">
         <button
           onClick={handleConfirm}
-          disabled={!selectedSlot || confirming}
+          disabled={!selectedSlot || confirming || previewMode}
           className={`btn-gold w-full py-4 text-sm font-bold uppercase tracking-widest transition-all ${
-            (!selectedSlot || confirming) ? 'opacity-30 cursor-not-allowed grayscale' : 'hover:scale-[1.02] active:scale-95'
+            (!selectedSlot || confirming || previewMode) ? 'opacity-30 cursor-not-allowed grayscale' : 'hover:scale-[1.02] active:scale-95'
           }`}
         >
-          {confirming ? 'Conferma in corso...' : selectedSlot ? 'Conferma Prenotazione' : 'Seleziona un orario'}
+          {previewMode ? 'Scegli un consulto sopra per prenotare' : confirming ? 'Conferma in corso...' : selectedSlot ? 'Conferma Prenotazione' : 'Seleziona un orario'}
         </button>
         <p className="text-[10px] text-center text-white/30 uppercase tracking-tight">
           L&apos;importo sarà contabilizzato definitivamente a fine consulto. I crediti passeranno dal tuo saldo &apos;Disponibile&apos; a quello &apos;Impegnato&apos; fino alla chiusura della sessione.

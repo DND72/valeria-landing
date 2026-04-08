@@ -926,10 +926,11 @@ export default function Dashboard() {
                       Ottimo, torna ai miei consulti
                     </button>
                   </div>
-                ) : selectedConsult ? (
+                ) : (
                   <div className="w-full h-full">
                     <InternalBookingCalendar 
-                      consultKind={selectedConsult}
+                      consultKind={selectedConsult || 'rapido'}
+                      previewMode={!selectedConsult}
                       onConfirmed={() => {
                         setBookingConfirmed(true)
                         void loadMyConsults()
@@ -940,19 +941,6 @@ export default function Dashboard() {
                       }}
                       onCancel={() => setSelectedConsult(null)}
                     />
-                  </div>
-                ) : (
-                  <div
-                    className="flex min-h-[400px] flex-col items-center justify-center gap-3 px-6 py-16 text-center text-white/45"
-                    style={{ background: 'linear-gradient(180deg, rgba(13,27,42,0.5) 0%, rgba(6,6,8,0.9) 100%)' }}
-                  >
-                    <span className="text-3xl" aria-hidden>
-                      👆
-                    </span>
-                    <p className="max-w-sm text-sm leading-relaxed">
-                      Seleziona settore e tipo di consulto nelle sezioni <strong className="text-white/70">1</strong> e{' '}
-                      <strong className="text-white/70">2</strong>, poi il calendario apparirà qui.
-                    </p>
                   </div>
                 )}
               </div>
