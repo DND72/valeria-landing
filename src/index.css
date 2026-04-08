@@ -328,3 +328,70 @@ nav {
 .calendly-badge-widget {
   z-index: 2147483000 !important;
 }
+
+/* ── STAFF LIGHT THEME ── */
+.staff-light {
+  --staff-bg: #fcfaf7;
+  --staff-sidebar-bg: #f5f2ed;
+  --staff-card-bg: #ffffff;
+  --staff-text-main: #1a1a1a;
+  --staff-text-muted: #5e5e5e;
+  --staff-border: rgba(184, 134, 11, 0.15);
+  --staff-gold: #b8860b;
+}
+
+.staff-light body,
+.staff-light .flex.min-h-screen {
+  background-color: var(--staff-bg) !important;
+  color: var(--staff-text-main) !important;
+}
+
+.staff-light aside {
+  background-color: var(--staff-sidebar-bg) !important;
+  border-right-color: var(--staff-border) !important;
+}
+
+.staff-light .mystical-card {
+  background: var(--staff-card-bg) !important;
+  border-color: var(--staff-border) !important;
+  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.08) !important;
+}
+
+.staff-light h1, .staff-light h2, .staff-light h3, .staff-light h4 {
+  color: var(--staff-text-main) !important;
+  text-shadow: none !important;
+}
+
+.staff-light p, .staff-light span:not(.text-base), .staff-light li {
+  color: var(--staff-text-muted) !important;
+  text-shadow: none !important;
+}
+
+.staff-light .text-gold-500, .staff-light .text-gold-400 {
+  color: var(--staff-gold) !important;
+}
+
+.staff-light .bg-white\/5, .staff-light .bg-white\/10 {
+  background-color: rgba(184, 134, 11, 0.1) !important;
+}
+
+.staff-light .border-white\/5, .staff-light .border-white\/10 {
+  border-color: var(--staff-border) !important;
+}
+
+.staff-light .text-white\/30, .staff-light .text-white\/40, .staff-light .text-white\/60 {
+  color: var(--staff-text-muted) !important;
+}
+
+.staff-light .custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--staff-sidebar-bg) !important;
+}
+
+.staff-light input:not([type="checkbox"]), .staff-light textarea, .staff-light select {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: rgba(184, 134, 11, 0.3) !important;
+}
+
+.staff-light .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1) !important; }
+.staff-light .bg-red-500\/10 { background-color: rgba(239, 68, 68, 0.1) !important; }

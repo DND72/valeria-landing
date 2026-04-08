@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import StaffSidebar from './StaffSidebar'
 import { motion } from 'framer-motion'
 
@@ -11,10 +11,25 @@ type StaffLayoutProps = {
 }
 
 export default function StaffLayout({ children, activeTab = '', onTabChange = () => {}, title, subtitle }: StaffLayoutProps) {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('staff-theme') as 'dark' | 'light') || 'dark'
+  })
+
+  useEffect(() => {
+    localStorage.setItem('staff-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+
   return (
-    <div className="flex min-h-screen bg-[#050505] text-white">
+    <div className={`flex min-h-screen ${theme === 'light' ? 'staff-light' : 'bg-[#050505] text-white'}`}>
       {/* Sidebar fissa */}
-      <StaffSidebar activeTab={activeTab} onTabChange={onTabChange} />
+      <StaffSidebar 
+        activeTab={activeTab} 
+        onTabChange={onTabChange} 
+        theme={theme} 
+        onToggleTheme={toggleTheme} 
+      />
 
       {/* Contenuto principale */}
       <div className="flex-1 ml-64 p-8 relative">

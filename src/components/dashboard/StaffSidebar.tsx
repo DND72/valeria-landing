@@ -9,6 +9,8 @@ import { getApiBaseUrl } from '../../constants/api'
 type StaffSidebarProps = {
   activeTab: string
   onTabChange: (tab: any) => void
+  theme?: 'dark' | 'light'
+  onToggleTheme?: () => void
 }
 
 const WORKSPACE_LINKS = [
@@ -26,7 +28,7 @@ const ADMIN_LINKS = [
   { to: '/gestione-commenti-blog', label: 'Commenti Blog', emoji: '💬' },
 ]
 
-export default function StaffSidebar({ activeTab, onTabChange }: StaffSidebarProps) {
+export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', onToggleTheme }: StaffSidebarProps) {
   const { user } = useUser()
   const { signOut } = useClerk()
   const { getToken } = useAuth()
@@ -72,12 +74,24 @@ export default function StaffSidebar({ activeTab, onTabChange }: StaffSidebarPro
     >
 
       {/* Brand / Logo */}
-      <div className="p-6 border-b border-white/5 flex items-center gap-3">
-        <img src="/logo-small.png" alt="Logo" className="w-8 h-8 object-contain" />
-        <div>
-          <p className="font-serif text-lg font-bold text-white leading-none">Staff Hub</p>
-          <p className="text-[9px] uppercase tracking-widest text-gold-500 font-bold mt-1">Valeria Di Pace</p>
+      <div className="p-6 border-b border-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <img src="/logo-small.png" alt="Logo" className="w-8 h-8 object-contain" />
+          <div className="min-w-0">
+            <p className="font-serif text-lg font-bold text-white leading-none truncate">Staff Hub</p>
+            <p className="text-[9px] uppercase tracking-widest text-gold-500 font-bold mt-1">Valeria</p>
+          </div>
         </div>
+        
+        {onToggleTheme && (
+          <button
+            onClick={onToggleTheme}
+            className="p-1.5 rounded-lg border border-white/10 text-white/40 hover:text-gold-500 hover:border-gold-500/30 transition-all"
+            title={theme === 'dark' ? 'Modalità Giorno' : 'Modalità Notte'}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
