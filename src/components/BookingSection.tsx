@@ -50,7 +50,7 @@ export default function BookingSection() {
                  <p className="text-white/70 text-lg mb-6 max-w-lg mx-auto leading-relaxed">
                    Hai già effettuato l'accesso. Visita la tua Dashboard per vedere le disponibilità di Valeria e prenotare il tuo prossimo consulto in pochi click.
                  </p>
-                 <Link to="/dashboard" className="px-8 py-4 bg-gold-600 hover:bg-gold-500 text-dark-500 font-medium rounded-full transition-colors flex items-center justify-center gap-2">
+                 <Link to="/area-personale" className="px-8 py-4 bg-gold-600 hover:bg-gold-500 text-dark-500 font-medium rounded-full transition-colors flex items-center justify-center gap-2">
                    Vai allo Spazio privato
                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />

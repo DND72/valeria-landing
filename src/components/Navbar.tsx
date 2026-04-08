@@ -14,6 +14,24 @@ const links = [
   { label: 'FAQ', href: '/faq' },
 ]
 
+const privateClientLinks = [
+  { label: 'Diario', href: '/area-personale' },
+  { label: 'Wallet', href: '/area-personale/wallet' },
+  { label: 'Consulti', href: '/area-personale/miei-consulti' },
+  { label: 'Temi Natali', href: '/area-personale/i-miei-temi' },
+  { label: 'Cielo', href: '/cielo' },
+]
+
+const staffLinks = [
+  { label: 'Staff Hub', href: '/area-personale' },
+  { label: 'Control Room', href: '/control-room' },
+  { label: 'Clienti', href: '/gestione-clienti' },
+  { label: 'Recensioni', href: '/gestione-recensioni' },
+  { label: 'Commenti', href: '/gestione-commenti-blog' },
+]
+
+
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -21,9 +39,17 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const privileged = isLoaded && user ? isPrivilegedClerkUser(user) : false
-  /** Sfondo chiaro (es. Crescita personale): barra scura sempre, come dopo lo scroll */
+
   const isCoachingPage = pathname === '/crescita-personale'
-  const barSolid = scrolled || isCoachingPage
+  const isDashboardArea = pathname.startsWith('/area-personale')
+
+
+  const isStaffArea = pathname.startsWith('/control-room') ||
+                      pathname.startsWith('/gestione-')
+
+  const activeLinks = isStaffArea ? staffLinks : (isDashboardArea ? privateClientLinks : links)
+  const barSolid = scrolled || isCoachingPage || isDashboardArea || isStaffArea
+
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40)
@@ -74,7 +100,8 @@ export default function Navbar() {
         </div>
 
         <ul className="hidden lg:flex items-center gap-3 list-none p-0 m-0 shrink min-w-0">
-          {links.map((link) => (
+          {activeLinks.map((link) => (
+
             <li key={link.href}>
               {link.href.startsWith('#') ? (
                 <a
@@ -99,7 +126,7 @@ export default function Navbar() {
           {isLoaded && user ? (
             <button
               type="button"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/area-personale')}
               className="flex items-center gap-2 px-3 py-2 rounded-full border border-gold-600/30 text-gold-400 text-sm hover:bg-gold-600/10 transition-colors"
             >
               {user.imageUrl && <img src={user.imageUrl} alt="" className="w-5 h-5 rounded-full" />}
@@ -155,7 +182,8 @@ export default function Navbar() {
             className="lg:hidden bg-dark-300/95 backdrop-blur-md border-t border-gold-600/20"
           >
             <ul className="flex flex-col px-6 py-4 gap-4 list-none p-0 m-0">
-              {links.map((link) => (
+              {activeLinks.map((link) => (
+
                 <li key={link.href}>
                   {link.href.startsWith('#') ? (
                     <a
@@ -181,7 +209,7 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={() => {
-                      navigate('/dashboard')
+                      navigate('/area-personale')
                       setMenuOpen(false)
                     }}
                     className="text-left text-white/80 hover:text-gold-400 transition-colors flex items-center gap-2 flex-wrap"

@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const navItems = [
-  { label: 'Il mio Diario', to: '/dashboard', icon: '🏠' },
-  { label: 'Prenota', to: '/dashboard', icon: '🔮', scrollTo: 'scegli-consulto' },
-  { label: 'I miei Consulti', to: '/i-miei-consulti', icon: '📋' },
-  { label: 'Wallet', to: '/wallet', icon: '👛' },
-  { label: 'Tema Astrale', to: '/i-miei-temi', icon: '✨' },
+  { label: 'Il mio Diario', to: '/area-personale', icon: '🏠' },
+  { label: 'Prenota', to: '/area-personale', icon: '🔮', scrollTo: 'scegli-consulto' },
+  { label: 'I miei Consulti', to: '/area-personale/miei-consulti', icon: '📋' },
+  { label: 'Wallet', to: '/area-personale/wallet', icon: '👛' },
+  { label: 'Tema Astrale', to: '/area-personale/miei-temi', icon: '✨' },
 ]
 
 export default function ClientNavigation() {
@@ -16,12 +16,13 @@ export default function ClientNavigation() {
   }
 
   function handleClick(item: typeof navItems[number], e: React.MouseEvent) {
-    if (item.scrollTo && location.pathname === '/dashboard') {
+    if (item.scrollTo && location.pathname === '/area-personale') {
       e.preventDefault()
       const el = document.getElementById(item.scrollTo)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
+
 
   return (
     <nav

@@ -38,6 +38,8 @@ import MyConsultsPage from './pages/MyConsultsPage'
 import CurrentSkyPage from './pages/CurrentSkyPage'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
 import StaffGuard from './components/StaffGuard'
+import Breadcrumbs from './components/Breadcrumbs'
+
 
 import LiveSessionPage from './pages/LiveSessionPage'
 
@@ -79,8 +81,9 @@ function AppRoutes() {
             <Route path="/" element={<HomePage />} />
             <Route path="/accedi/*" element={<SignInPage />} />
             <Route path="/registrati/*" element={<SignUpPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/astrologia" element={<Dashboard />} />
+            <Route path="/area-personale" element={<Dashboard />} />
+            <Route path="/area-personale/astrologia" element={<Dashboard />} />
+
             <Route path="/control-room" element={<StaffGuard><ControlRoom /></StaffGuard>} />
             <Route path="/gestione-clienti" element={<StaffGuard><ClientManagementPage /></StaffGuard>} />
             <Route path="/gestione-clienti/:email" element={<StaffGuard><ClientDetailPage /></StaffGuard>} />
@@ -94,12 +97,13 @@ function AppRoutes() {
             <Route path="/termini" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/cookie" element={<CookiePolicy />} />
-            <Route path="/profilo" element={<ProfilePage />} />
-            <Route path="/wallet" element={<WalletPage />} />
-            <Route path="/tema-natale" element={<NatalChartPage />} />
-            <Route path="/i-miei-temi" element={<PaidNatalCharts />} />
-            <Route path="/i-miei-consulti" element={<MyConsultsPage />} />
+            <Route path="/area-personale/profilo" element={<ProfilePage />} />
+            <Route path="/area-personale/wallet" element={<WalletPage />} />
+            <Route path="/area-personale/tema-natale" element={<NatalChartPage />} />
+            <Route path="/area-personale/i-miei-temi" element={<PaidNatalCharts />} />
+            <Route path="/area-personale/i-miei-consulti" element={<MyConsultsPage />} />
             <Route path="/cielo" element={<CurrentSkyPage />} />
+
             <Route path="/sessione/:id" element={<LiveSessionPage />} />
       </Routes>
     </RouteErrorBoundary>
@@ -113,8 +117,12 @@ export default function App() {
       <CosmicBackground />
       <Navbar />
       <main className="relative z-0 pt-24 md:pt-28">
-        <AppRoutes />
+        <div className="max-w-7xl mx-auto px-4">
+          <Breadcrumbs />
+          <AppRoutes />
+        </div>
       </main>
+
       <Footer />
       <CookieConsent
         location="bottom"
