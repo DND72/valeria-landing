@@ -21,7 +21,6 @@ export default function WalletPage() {
   const { getToken } = useAuth()
   
   const [wallet, setWallet] = useState<WalletInfo | null>(null)
-  const [loading, setLoading] = useState(true)
   const [errorLine, setErrorLine] = useState<string | null>(null)
   const [procTx, setProcTx] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('paypal')
@@ -32,7 +31,6 @@ export default function WalletPage() {
   // Caricamento saldo wallet
   useEffect(() => {
     if (!isLoaded || !user) {
-      setLoading(false)
       return
     }
 
@@ -45,8 +43,6 @@ export default function WalletPage() {
         }
       } catch (err) {
         if (!cancelled) setErrorLine('Errore nel contattare il server per leggere il saldo.')
-      } finally {
-        if (!cancelled) setLoading(false)
       }
     })()
 
