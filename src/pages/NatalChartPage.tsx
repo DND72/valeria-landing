@@ -378,10 +378,7 @@ export default function NatalChartPage() {
     e.preventDefault()
     if (isFixed && result) return
 
-    if (!gender) {
-      setError("Seleziona il tuo sesso di nascita per completare il calcolo.")
-      return
-    }
+    // Il sesso non è più mandatory per il form pubblico (gestito da staff o genera responso impersonale)
 
     setLoading(true)
     setError(null)
@@ -432,7 +429,7 @@ export default function NatalChartPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-10 mb-16 shadow-2xl relative overflow-hidden">
             <form onSubmit={handleSubmit} className="relative z-10">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
                     Data {(isFixed || date) && <span className="text-[10px] text-gold-500/60">✦</span>}
@@ -450,23 +447,6 @@ export default function NatalChartPage() {
                     Città {(isFixed || (isLoggedIn && city)) && <span className="text-[10px] text-gold-500/60">✦</span>}
                   </label>
                   <input type="text" required disabled={isFixed && !!city} placeholder="Es. Roma" value={city} onChange={(e) => setCity(e.target.value)} className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white ${(isFixed && !!city) ? 'opacity-50 cursor-not-allowed' : ''}`} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-1.5">
-                    Sesso {(isFixed || gender) && <span className="text-[10px] text-gold-500/60">✦</span>}
-                  </label>
-                  <select 
-                    value={gender} 
-                    onChange={e => setGender(e.target.value as 'M'|'F')}
-                    disabled={isFixed && !!gender}
-                    className={`w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 ${(isFixed && !!gender) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    required
-                  >
-                    <option value="" disabled className="text-white/30">Seleziona</option>
-                    <option value="M">Maschile (Yang)</option>
-                    <option value="F">Femminile (Yin)</option>
-                  </select>
-                  <p className="text-[9px] text-white/20 mt-1 italic leading-tight">La polarità energetica è essenziale per il calcolo delle declinazioni.</p>
                 </div>
               </div>
 

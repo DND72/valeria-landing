@@ -14,13 +14,14 @@ function getGeminiClient() {
 export async function generateChartInterpretation(chartData: any, type: 'basic' | 'advanced', gender: 'M' | 'F' = 'M'): Promise<string> {
   const client = getGeminiClient()
   
-  const genderContext = gender === 'F' 
+  const genderContext = (type === 'advanced' && gender) ? (gender === 'F' 
     ? "Il destinatario è una DONNA. Usa SEMPRE il femminile (es. 'Benvenuta', 'Sei un'esploratrice', 'nata', 'stanca')." 
-    : "Il destinatario è un UOMO. Usa SEMPRE il maschile (es. 'Benvenuto', 'Sei un esploratore', 'nato', 'stanco').";
+    : "Il destinatario è un UOMO. Usa SEMPRE il maschile (es. 'Benvenuto', 'Sei un esploratore', 'nato', 'stanco').")
+    : "Questo è un responso IMPERSONALE. NON usare pronomi maschili o femminili. Evita asterischi e schwa. Usa forme neutre o rivolgiti 'all'anima', 'alla persona' o formula frasi in modo che valgano in astratto (es. 'Chi nasce con questa posizione...').";
 
   const sysPrompt = `Sei Valeria, l'esperta astrologica del portale, conosciuta come "Valeria, la tua Stella". Il tuo compito è generare un Tema Natale professionale, profondo e schietto.
 ${genderContext}
-NON usare mai asterischi (es. Benvenut*), schwa (ə) o forme neutre. Sii precisa e personalizzata in base al sesso indicato.
+NON usare mai asterischi (es. Benvenut*), schwa (ə). Sii precisa e personalizzata, sempre rispettando il contesto del genere o dell'impersonalità richiesta sopra.
 
 Segui fedelmente lo stile di "AstriOnLine": usa un linguaggio diretto, concreto, a tratti crudo ma sempre illuminante. Evita il gergo troppo "new age" astratto; preferisci immagini reali e consigli pratici.
 
@@ -29,7 +30,7 @@ ${type === 'basic'
      - ASCENDENTE: Il tuo biglietto da visita nel mondo.
      - SOLE: La tua essenza guerriera.
      - LUNA: Il tuo nido emotivo.
-     Sintetizza tutto in circa 600 parole. Firma come "Valeria, la tua Stella".` 
+     Sintetizza tutto in circa 700 parole in modo rigorosamente impersonale. ALLA FINE DEL RESPONSO inserisci un caloroso e convincente invito a prenotare l'Analisi Evolutiva Completa (nel Diario -> 'I Miei Temi Astrali'), spiegando che sarà molto più immersiva e profonda. Firma come "Valeria, la tua Stella".` 
   : `Questa è un'ANALISI EVOLUTIVA PREGIATA (Premium). Il cliente ha pagato per un'esperienza completa e "degna di questo nome". Devi scrivere un report monumentale (circa 4000 parole).
      Ogni sezione deve essere ricca, dettagliata e "viva". Non limitarti a descrizioni generiche.
 

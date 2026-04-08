@@ -216,11 +216,7 @@ export default function PaidNatalCharts() {
     setError(null)
     setViewingChart(null)
 
-    if (!gender) {
-      setError("Seleziona il genere per continuare.")
-      setLoading(false)
-      return
-    }
+    // Gender check removed to allow staff input later
 
     try {
       const res = await generatePaidChart({
@@ -297,7 +293,7 @@ export default function PaidNatalCharts() {
                      <span className="text-sm">🔒</span>
                      I tuoi dati sono sincronizzati con il profilo e non modificabili per precisione astrale.
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Data</label>
                       <input
@@ -329,20 +325,7 @@ export default function PaidNatalCharts() {
                         className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Sesso</label>
-                      <select
-                        required
-                        disabled={true}
-                        value={gender}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
-                      >
-                        <option value="" disabled className="text-white/30">Select</option>
-                        <option value="M">Maschile (M)</option>
-                        <option value="F">Femminile (F)</option>
-                      </select>
-                    </div>
-                  </div>
+              </div>
 
                   <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center mb-6">
                     <h4 className="font-serif text-xl font-bold text-white mb-2">Analisi Evolutiva Completa</h4>
