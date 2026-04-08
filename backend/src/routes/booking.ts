@@ -5,6 +5,8 @@ import crypto from 'crypto'
 import { requireClerkAuth } from '../middleware/clerkAuth.js'
 import { CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
 import { sendTelegramNotification } from '../lib/telegram.js'
+import { getDiscountFactor } from '../lib/status.js'
+import { clerkClient } from '../middleware/clerkAuth.js'
 
 
 export function createBookingRouter(pool: Pool): Router {
@@ -220,7 +222,32 @@ export function createBookingRouter(pool: Pool): Router {
     }
 
     const meta = CONSULT_META[consultKind]
-    const cost = meta.costCredits
+    let cost = meta.costCredits
+
+    // 0. Calcolo eventuale sconto status
+    try {
+      const { rows: countRes } = await pool.query(
+        `SELECT COUNT(*)::int AS c FROM consults WHERE clerk_user_id = $1 AND status = 'done' AND is_free_consult = false`,
+        [userId]
+      )
+      const donePaid = countRes[0]?.c ?? 0
+      
+      let forcedStatus: string | undefined
+      if (clerkClient) {
+        try {
+          const u = await clerkClient.users.getUser(userId)
+          forcedStatus = (u.publicMetadata?.astralStatus as string) || undefined
+        } catch {}
+      }
+
+      const factor = getDiscountFactor(donePaid, forcedStatus)
+      if (factor < 1 && cost > 0) {
+        cost = Math.max(0, Math.round(cost * factor))
+      }
+    } catch (e) {
+      console.error('[booking status discount error]', e)
+    }
+
     const duration = meta.durationMinutes
     const totalNeeded = duration + BUFFER_MINS
 

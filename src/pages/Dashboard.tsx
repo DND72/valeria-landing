@@ -24,6 +24,7 @@ import { getApiBaseUrl } from '../constants/api'
 import { apiJson, ApiError } from '../lib/api'
 import { useAstrologyApi } from '../api/astrology'
 import { useMeApi } from '../api/me'
+import { ASTRAL_STATUSES, getAstralStatus } from '../constants/status'
 
 /** Evita .split su null / tipi non stringa (Clerk a volte restituisce valori limite). */
 function displayFirstName(user: {
@@ -410,81 +411,150 @@ export default function Dashboard() {
       <div className="relative z-10 max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12"
-        >
-          <div>
-            <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">
-              Il tuo Diario d&apos;Evoluzione
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
-                Ciao, <span className="gold-text">{firstName}</span> ✨
-              </h1>
-              
-              {!privileged && wallet && (
-                <div className="flex items-center gap-2 mt-1 sm:mt-0">
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
-                    <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest font-medium mb-0.5">Disponibile</p>
-                    <p className="text-sm font-bold text-emerald-400 leading-none">{wallet.balanceAvailable} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
-                  </div>
-                  <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
-                    <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
-                    <p className="text-sm font-bold text-amber-400 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
-                  </div>
-                </div>
-              )}
-
-              {privileged && (
-                <span
-                  className="text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-gold-600/40 text-gold-400/90"
-                  title="Prenotazione senza pagamento sul sito"
-                >
-                  Staff
-                </span>
-              )}
-            </div>
-            {!privileged && (
-              <div className="mt-5 flex flex-wrap gap-3">
-                <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 text-center">
-                  Prenota un consulto
-                </a>
-                <Link to="/profilo" className="btn-outline text-sm px-5 py-2">
-                  Il mio profilo
-                </Link>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-3 justify-end">
-            {privileged && (
-              <>
-                <Link to="/gestione-clienti" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
-                  Gestione clienti
-                </Link>
-                <Link to="/gestione-recensioni" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
-                  Recensioni
-                </Link>
-                <Link to="/gestione-commenti-blog" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
-                  Commenti blog
-                </Link>
-                <Link to="/control-room" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
-                  Control Room
-                </Link>
-              </>
-            )}
-          <button
-            onClick={() => signOut(() => navigate('/'))}
-            className="text-white/30 text-sm hover:text-white/60 transition-colors flex items-center gap-1.5"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Esci
-          </button>
-          </div>
-        </motion.div>
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.6 }}
+           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12"
+         >
+           <div>
+             <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">
+               Il tuo Diario d&apos;Evoluzione
+             </p>
+             <div className="flex flex-wrap items-center gap-3">
+               <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
+                 Ciao, <span className="gold-text">{firstName}</span> ✨
+               </h1>
+               
+               {!privileged && wallet && (
+                 <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                   <div className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                     <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest font-medium mb-0.5">Disponibile</p>
+                     <p className="text-sm font-bold text-emerald-400 leading-none">{wallet.balanceAvailable} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                   </div>
+                   <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                     <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
+                     <p className="text-sm font-bold text-amber-400 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                   </div>
+                 </div>
+               )}
+ 
+               {user && !privileged && (
+                 <div className="flex items-center gap-1.5 ml-1">
+                   <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border ${ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].color.replace('text-', 'border-').replace('400', '400/20').replace('500', '500/20')} bg-white/[0.02] backdrop-blur-md`}>
+                     <span className="text-sm">{ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].discountEmoji}</span>
+                     <span className={`text-[11px] font-bold uppercase tracking-wider ${ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].color}`}>
+                       {ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].label}
+                     </span>
+                   </div>
+                 </div>
+               )}
+ 
+               {privileged && (
+                 <span
+                   className="text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-gold-600/40 text-gold-400/90"
+                   title="Prenotazione senza pagamento sul sito"
+                 >
+                   Staff
+                 </span>
+               )}
+             </div>
+             {!privileged && (
+               <div className="mt-5 flex flex-wrap gap-3">
+                 <a href="#scegli-consulto" className="btn-gold text-sm px-5 py-2 text-center">
+                   Prenota un consulto
+                 </a>
+                 <Link to="/profilo" className="btn-outline text-sm px-5 py-2">
+                   Il mio profilo
+                 </Link>
+               </div>
+             )}
+           </div>
+           <div className="flex flex-wrap items-center gap-3 justify-end">
+             {privileged && (
+               <>
+                 <Link to="/gestione-clienti" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                   Gestione clienti
+                 </Link>
+                 <Link to="/gestione-recensioni" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                   Recensioni
+                 </Link>
+                 <Link to="/gestione-commenti-blog" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                   Commenti blog
+                 </Link>
+                 <Link to="/control-room" className="btn-outline text-sm px-4 py-2 whitespace-nowrap">
+                   Control Room
+                 </Link>
+               </>
+             )}
+           <button
+             onClick={() => signOut(() => navigate('/'))}
+             className="text-white/30 text-sm hover:text-white/60 transition-colors flex items-center gap-1.5"
+           >
+             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+             </svg>
+             Esci
+           </button>
+           </div>
+         </motion.div>
+ 
+         {/* Astral Status Insight Card */}
+         {user && !privileged && (
+           <motion.div
+             initial={{ opacity: 0, y: 10 }}
+             animate={{ opacity: 1, y: 0 }}
+             className="mb-10 mystical-card border border-white/5 bg-gradient-to-r from-dark-900 to-black/40 p-5 overflow-hidden relative shadow-2xl"
+           >
+             <div className="absolute top-0 right-0 w-32 h-32 bg-gold-600/5 blur-[60px] rounded-full -mr-10 -mt-10 pointer-events-none" />
+             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+               <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 flex items-center justify-center text-3xl bg-white/5 rounded-2xl border border-white/10 shadow-xl">
+                   {ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].discountEmoji}
+                 </div>
+                 <div>
+                   <div className="flex items-center gap-2">
+                     <h2 className="text-white font-serif text-lg leading-none">Il tuo Rango Astrale: <span className={ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].color}>{ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].label}</span></h2>
+                     {ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].discountFactor < 1 && (
+                       <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 whitespace-nowrap">
+                         Sconto -{Math.round((1 - ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].discountFactor) * 100)}% ATTIVO
+                       </span>
+                     )}
+                   </div>
+                   <p className="text-white/50 text-xs leading-relaxed max-w-lg mt-1 italic">
+                     {ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].description}
+                   </p>
+                 </div>
+               </div>
+               
+               <div className="flex flex-col items-end gap-2 shrink-0">
+                 <p className="text-[10px] uppercase tracking-widest text-white/30 font-medium">Progressione Anima: {taxInfo?.donePaidConsults || 0} consulti</p>
+                 {getAstralStatus(user, taxInfo?.donePaidConsults || 0) !== 'sole_centrale' && (
+                   <div className="w-40 sm:w-48">
+                     <div className="flex justify-between text-[9px] text-white/40 mb-1 uppercase tracking-tighter">
+                       <span>Prossimo Grado</span>
+                       <span>
+                         {taxInfo?.donePaidConsults || 0} / {
+                           getAstralStatus(user, taxInfo?.donePaidConsults || 0) === 'nebula' ? 3 :
+                           getAstralStatus(user, taxInfo?.donePaidConsults || 0) === 'stella_fissa' ? 8 : 15
+                         }
+                       </span>
+                     </div>
+                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                       <motion.div 
+                         initial={{ width: 0 }}
+                         animate={{ width: `${Math.min(100, ((taxInfo?.donePaidConsults || 0) / (
+                           getAstralStatus(user, taxInfo?.donePaidConsults || 0) === 'nebula' ? 3 :
+                           getAstralStatus(user, taxInfo?.donePaidConsults || 0) === 'stella_fissa' ? 8 : 15
+                         )) * 100)}%` }}
+                         className={`h-full ${ASTRAL_STATUSES[getAstralStatus(user, taxInfo?.donePaidConsults || 0)].color.replace('text-', 'bg-')}`}
+                       />
+                     </div>
+                   </div>
+                 )}
+               </div>
+             </div>
+           </motion.div>
+         )}
 
         {/* Diario degli Acquisti & Crediti (Spostato in alto per visibilità) */}
         <motion.section
@@ -944,34 +1014,50 @@ export default function Dashboard() {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {consultChoicesInSector.map((c) => {
                   const selected = selectedConsult === c.kind
+                  const status = getAstralStatus(user, taxInfo?.donePaidConsults || 0)
+                  const discountFactor = status ? ASTRAL_STATUSES[status].discountFactor : 1
+                  const finalCredits = Math.max(0, Math.round(c.costCredits * discountFactor))
+                  const isDiscounted = discountFactor < 1 && c.costCredits > 0
+
                   return (
                     <div
                       key={c.kind}
-                      className={`mystical-card text-center flex flex-col transition-shadow ${
+                      className={`mystical-card text-center flex flex-col transition-shadow relative ${
                         selected ? 'ring-2 ring-gold-500/50 shadow-[0_0_24px_rgba(212,160,23,0.15)]' : ''
                       }`}
                     >
+                      {isDiscounted && (
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-emerald-500 text-dark-500 text-[9px] font-bold px-3 py-1 rounded-full shadow-lg z-10 whitespace-nowrap">
+                          {ASTRAL_STATUSES[status].label} -{Math.round((1 - discountFactor) * 100)}%
+                        </div>
+                      )}
+
                       <div className="text-3xl mb-2">{c.icon}</div>
                       <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
                       <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
                       <div className="mb-4">
-                        <p
-                          className="font-serif text-2xl font-bold leading-tight"
-                          style={{
-                            background:
-                              c.kind === 'free'
-                                ? 'linear-gradient(135deg, #86efac, #22c55e)'
-                                : 'linear-gradient(180deg, #fffde0 0%, #fff5a0 55%, #ffdd00 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            textShadow: 'none',
-                          }}
-                        >
-                          {c.priceLabel}
-                        </p>
+                        <div className="flex items-center justify-center gap-2">
+                          {isDiscounted && (
+                            <span className="text-white/20 text-sm line-through decoration-white/30">{c.costCredits}</span>
+                          )}
+                          <p
+                            className="font-serif text-2xl font-bold leading-tight"
+                            style={{
+                              background:
+                                c.kind === 'free'
+                                  ? 'linear-gradient(135deg, #86efac, #22c55e)'
+                                  : 'linear-gradient(180deg, #fffde0 0%, #fff5a0 55%, #ffdd00 100%)',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              textShadow: 'none',
+                            }}
+                          >
+                            {c.kind === 'free' ? c.priceLabel : `${finalCredits} CR`}
+                          </p>
+                        </div>
                         {c.costCredits > 0 && (
                           <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">
-                            {c.costCredits} CR totali
+                            {isDiscounted ? 'Prezzo per Te' : `${c.costCredits} CR totali`}
                           </p>
                         )}
                       </div>
