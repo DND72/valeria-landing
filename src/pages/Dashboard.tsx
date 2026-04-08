@@ -7,6 +7,7 @@ import LegalDeclarationModal from '../components/LegalDeclarationModal'
 import PrivacySealNote from '../components/PrivacySealNote'
 import SiteReviewComposer from '../components/SiteReviewComposer'
 import StaffPersonalSpace from '../components/StaffPersonalSpace'
+import ClientNavigation from '../components/ClientNavigation'
 import ComboLightBox from '../components/ComboLightBox'
 import ComboFullBox from '../components/ComboFullBox'
 import BigFiveWidget from '../components/BigFiveWidget'
@@ -498,6 +499,9 @@ export default function Dashboard() {
            </div>
          </motion.div>
  
+         {/* Menu Navigazione Cliente */}
+         {!privileged && <ClientNavigation />}
+
          {/* Astral Status Insight Card */}
          {user && !privileged && (
            <motion.div

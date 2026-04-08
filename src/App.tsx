@@ -79,6 +79,7 @@ function AppRoutes() {
             <Route path="/accedi/*" element={<SignInPage />} />
             <Route path="/registrati/*" element={<SignUpPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/astrologia" element={<Dashboard />} />
             <Route path="/control-room" element={<StaffGuard><ControlRoom /></StaffGuard>} />
             <Route path="/gestione-clienti" element={<StaffGuard><ClientManagementPage /></StaffGuard>} />
             <Route path="/gestione-clienti/:email" element={<StaffGuard><ClientDetailPage /></StaffGuard>} />
