@@ -1,16 +1,15 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useUser, useClerk, useAuth } from '@clerk/clerk-react'
+import { useUser, useAuth } from '@clerk/clerk-react'
 import LegalDeclarationModal from '../../components/LegalDeclarationModal'
 import SiteReviewComposer from '../../components/SiteReviewComposer'
-import ClientNavigation from '../../components/ClientNavigation'
 import BigFiveWidget from '../../components/BigFiveWidget'
 import AstralRankCard from '../../components/dashboard/AstralRankCard'
 import AstralBadge from '../../components/dashboard/AstralBadge'
 import TransactionHistory from '../../components/dashboard/TransactionHistory'
 import TaxInfoForm from '../../components/dashboard/TaxInfoForm'
 import BookingFlow from '../../components/dashboard/BookingFlow'
+import ClientLayout from '../../components/dashboard/ClientLayout'
 import { type SavedNatalChart } from '../../api/astrology'
 import { type OfferCategory } from '../../constants/consultations'
 import { useValeriaPresence } from '../../hooks/useValeriaPresence'
@@ -37,10 +36,8 @@ function displayFirstName(user: {
 export default function ClientDashboard() {
   const { user } = useUser()
   const { getToken } = useAuth()
-  const { signOut } = useClerk()
   const { syncNatalData, getMyCharts } = useAstrologyApi()
   const meApi = useMeApi()
-  const navigate = useNavigate()
 
   const [freeHidden, setFreeHidden] = useState(false)
   const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
@@ -212,7 +209,6 @@ export default function ClientDashboard() {
   if (!user) return null
 
   const firstName = displayFirstName(user)
-  const coachingAccent = offerCategory === 'crescita'
 
   function formatConsultWhen(iso: string | null): string {
     if (!iso) return '—'
@@ -221,68 +217,31 @@ export default function ClientDashboard() {
   }
 
   return (
-    <div className="relative min-h-screen px-6 py-24">
-      {/* Sfondo contestuale coaching */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-[background] duration-500"
-        style={{
-          background: coachingAccent
-            ? [
-                'radial-gradient(ellipse 72% 38% at 50% 18%, rgba(212,160,23,0.045) 0%, transparent 68%)',
-                'radial-gradient(ellipse 95% 58% at 50% 100%, rgba(45, 212, 191, 0.09) 0%, rgba(6, 78, 59, 0.14) 42%, transparent 72%)',
-                'linear-gradient(to bottom, transparent 0%, rgba(4, 30, 24, 0.2) 100%)',
-              ].join(', ')
-            : 'radial-gradient(ellipse 70% 40% at 50% 20%, rgba(212,160,23,0.05) 0%, transparent 70%)',
-        }}
-        aria-hidden
-      />
-
-      <div className="relative z-10 max-w-4xl mx-auto">
-        {/* ── Nav sticky cliente ── */}
-        <div className="sticky top-20 z-30 mb-8">
-          <ClientNavigation />
-        </div>
-
-        {/* ── Header ── */}
+    <ClientLayout title="Il tuo Diario" subtitle="Evoluzione Astrale">
+      <div className="space-y-12">
+        {/* ── Status Header ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-6"
         >
-          <div>
-            <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-1">
-              Il tuo Diario d&apos;Evoluzione
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-serif text-3xl md:text-4xl font-bold text-white">
-                Ciao, <span className="gold-text">{firstName}</span> ✨
-              </h1>
-              {wallet && (
-                <div className="flex items-center gap-2 mt-1 sm:mt-0">
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
-                    <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest font-medium mb-0.5">Disponibile</p>
-                    <p className="text-sm font-bold text-emerald-400 leading-none">{wallet.balanceAvailable} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
-                  </div>
-                  <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
-                    <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
-                    <p className="text-sm font-bold text-amber-400 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
-                  </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <h2 className="font-serif text-2xl font-bold text-white">
+              Ciao, <span className="gold-text">{firstName}</span> ✨
+            </h2>
+            {wallet && (
+              <div className="flex items-center gap-2">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                  <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest font-medium mb-0.5">Disponibile</p>
+                  <p className="text-sm font-bold text-emerald-400 leading-none">{wallet.balanceAvailable} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
                 </div>
-              )}
-              <AstralBadge user={user} donePaidConsults={taxInfo?.donePaidConsults || 0} />
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 justify-end">
-            <button
-              onClick={() => signOut(() => navigate('/'))}
-              className="text-white/30 text-sm hover:text-white/60 transition-colors flex items-center gap-1.5"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Esci
-            </button>
+                <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                  <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
+                  <p className="text-sm font-bold text-amber-400 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                </div>
+              </div>
+            )}
+            <AstralBadge user={user} donePaidConsults={taxInfo?.donePaidConsults || 0} />
           </div>
         </motion.div>
 
@@ -390,9 +349,9 @@ export default function ClientDashboard() {
                       </div>
                       <div className="flex flex-wrap gap-3 p-3 bg-white/[0.03] border-t border-white/5 items-center justify-between">
                         {c.status === 'scheduled' && !isPast && (
-                          <Link to={`/sessione/${c.id}`} className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 ${isSoon ? 'bg-gold-500 text-dark-500 hover:bg-gold-400' : 'bg-white/10 text-gold-400 hover:bg-white/20 border border-gold-500/30'}`}>
+                          <a href={`/sessione/${c.id}`} className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 ${isSoon ? 'bg-gold-500 text-dark-500 hover:bg-gold-400' : 'bg-white/10 text-gold-400 hover:bg-white/20 border border-gold-500/30'}`}>
                             {isSoon ? 'Entra nel Consulto Live' : 'Apri la ChatRoom'} <span>→</span>
-                          </Link>
+                          </a>
                         )}
                         {!isPast && c.status === 'scheduled' && (
                           <div className="flex gap-2 ml-auto">
@@ -462,12 +421,12 @@ export default function ClientDashboard() {
             onSuccess={() => setTaxInfo(prev => prev ? { ...prev, showReminder: false, hasCodiceFiscale: true } : prev)}
           />
         )}
-      </div>
 
-      {/* ── Modale Legale ── */}
-      {!ageStatusLoading && ageStatus && !ageStatus.hasLegalDeclaration && (
-        <LegalDeclarationModal onAccepted={() => setAgeStatus((prev) => prev ? { ...prev, hasLegalDeclaration: true } : prev)} />
-      )}
-    </div>
+        {/* ── Modale Legale ── */}
+        {!ageStatusLoading && ageStatus && !ageStatus.hasLegalDeclaration && (
+          <LegalDeclarationModal onAccepted={() => setAgeStatus((prev) => prev ? { ...prev, hasLegalDeclaration: true } : prev)} />
+        )}
+      </div>
+    </ClientLayout>
   )
 }

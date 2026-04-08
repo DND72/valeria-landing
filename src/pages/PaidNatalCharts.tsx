@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import ZodiacWheel from '../components/ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
 import { HOUSE_MEANINGS } from '../constants/astrologyMeanings'
+import ClientLayout from '../components/dashboard/ClientLayout'
 
 const PLANET_COLOR: Record<string, string> = {
   'Sole': 'text-amber-400',
@@ -216,8 +217,6 @@ export default function PaidNatalCharts() {
     setError(null)
     setViewingChart(null)
 
-    // Gender check removed to allow staff input later
-
     try {
       const res = await generatePaidChart({
         birthDate: date,
@@ -248,211 +247,194 @@ export default function PaidNatalCharts() {
   }
 
   return (
-    <div className="min-h-screen py-24 px-6 relative max-w-7xl mx-auto">
+    <ClientLayout title="Mappe Astrali" subtitle="Interpretazione Evolutiva">
       <SignedOut>
-        <RedirectToSignIn afterSignInUrl="/i-miei-temi" />
+        <RedirectToSignIn afterSignInUrl="/area-personale/i-miei-temi" />
       </SignedOut>
       
       <SignedIn>
-        <div className="mb-4">
-          <Link to="/dashboard" className="text-white/40 hover:text-white transition-colors text-sm flex items-center gap-2">
-            ← Torna al Diario
-          </Link>
-        </div>
+        <div className="space-y-12">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <p className="text-white/50 text-base max-w-2xl mx-auto mb-6">
+              Mentre il calcolo della mappa è gratuito, qui puoi richiedere l'analisi profonda di Valeria: un viaggio spirituale tra i tuoi pianeti e le tue sfide d'anima.
+            </p>
+            <div className="flex items-center justify-center gap-6">
+               <Link to="/area-personale/tema-natale" className="text-sm underline text-emerald-400/80 hover:text-emerald-400">
+                 Mappa Gratuita
+               </Link>
+               <Link to="/area-personale/wallet" className="text-sm border border-gold-500/30 px-3 py-1 rounded-full text-gold-400 hover:bg-gold-500/10">
+                 Ricarica Crediti
+               </Link>
+            </div>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10 text-center"
-        >
-          <p className="text-gold-500 text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase mb-3">
-            Analisi Evolutiva
-          </p>
-          <h1 className="font-serif text-3xl md:text-5xl font-bold mb-4">
-            Interpretazione <span className="gold-text italic">Evolutiva</span>
-          </h1>
-          <p className="text-white/50 text-base max-w-2xl mx-auto mb-4">
-            Mentre il calcolo della mappa è gratuito, qui puoi richiedere l'analisi profonda di Valeria: un viaggio spirituale tra i tuoi pianeti e le tue sfide d'anima.
-          </p>
-          <div className="flex items-center justify-center gap-6">
-             <Link to="/tema-natale" className="text-sm underline text-emerald-400/80 hover:text-emerald-400">
-               Versione gratuita (Solo Ascendente)
-             </Link>
-             <Link to="/wallet" className="text-sm border border-gold-500/30 px-3 py-1 rounded-full text-gold-400 hover:bg-gold-500/10">
-               Ricarica Crediti
-             </Link>
-          </div>
-        </motion.div>
-
-        <div className="grid md:grid-cols-[1fr,300px] gap-8">
-          <div className="space-y-8">
-            {!hasAdvanced && (
-              <div className="bg-[#141418] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-                <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
-                  <div className="flex items-center gap-2 text-gold-500/80 text-[10px] uppercase tracking-widest mb-2 bg-gold-400/5 p-3 rounded-xl border border-gold-400/10">
-                     <span className="text-sm">🔒</span>
-                     I tuoi dati sono sincronizzati con il profilo e non modificabili per precisione astrale.
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Data</label>
-                      <input
-                        type="date"
-                        required
-                        disabled={true}
-                        value={date}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
-                      />
+          <div className="grid md:grid-cols-[1fr,300px] gap-8">
+            <div className="space-y-8">
+              {!hasAdvanced && (
+                <div className="bg-[#141418] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                  <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
+                    <div className="flex items-center gap-2 text-gold-500/80 text-[10px] uppercase tracking-widest mb-2 bg-gold-400/5 p-3 rounded-xl border border-gold-400/10">
+                       <span className="text-sm">🔒</span>
+                       I tuoi dati sono sincronizzati con il profilo e non modificabili per precisione astrale.
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Ora Esatta</label>
-                      <input
-                        type="time"
-                        required
-                        disabled={true}
-                        value={time}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-white/50 font-medium ml-1">Data</label>
+                        <input
+                          type="date"
+                          required
+                          disabled={true}
+                          value={date}
+                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-white/50 font-medium ml-1">Ora Esatta</label>
+                        <input
+                          type="time"
+                          required
+                          disabled={true}
+                          value={time}
+                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-white/50 font-medium ml-1">Città</label>
+                        <input
+                          type="text"
+                          required
+                          disabled={true}
+                          placeholder="Es. Roma"
+                          value={city}
+                          className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-_xs uppercase tracking-widest text-white/50 font-medium ml-1">Città</label>
-                      <input
-                        type="text"
-                        required
-                        disabled={true}
-                        placeholder="Es. Roma"
-                        value={city}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-3 text-sm text-white opacity-50 cursor-not-allowed"
-                      />
+
+                    <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center mb-6">
+                      <h4 className="font-serif text-xl font-bold text-white mb-2">Analisi Evolutiva Completa</h4>
+                      <p className="text-white/60 text-sm mb-4 leading-relaxed">
+                        Interpretazione di tutti i Pianeti, Case Astrologiche e principali Aspetti nel tuo Tema Natale. 
+                        Un'analisi olistica focalizzata sul tuo potenziale e sulle sfide evolutive.
+                      </p>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-emerald-400 font-bold text-2xl">30 CR</span>
+                        <span className="text-white/20 text-xs uppercase tracking-widest">(Crediti)</span>
+                      </div>
                     </div>
-              </div>
 
-                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center mb-6">
-                    <h4 className="font-serif text-xl font-bold text-white mb-2">Analisi Evolutiva Completa</h4>
-                    <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                      Interpretazione di tutti i Pianeti, Case Astrologiche e principali Aspetti nel tuo Tema Natale. 
-                      Un'analisi olistica focalizzata sul tuo potenziale e sulle sfide evolutive.
-                    </p>
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-emerald-400 font-bold text-2xl">30 CR</span>
-                      <span className="text-white/20 text-xs uppercase tracking-widest">(Crediti)</span>
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full sm:w-auto px-8 py-3 rounded-lg bg-gradient-to-r from-gold-600 to-gold-400 text-dark-500 font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
+                      >
+                        {loading ? 'Lettura in corso...' : `Richiedi Analisi Evolutiva (30 CR)`}
+                      </button>
                     </div>
-                  </div>
+                  </form>
+                </div>
+              )}
 
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full sm:w-auto px-8 py-3 rounded-lg bg-gradient-to-r from-gold-600 to-gold-400 text-dark-500 font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
-                    >
-                      {loading ? 'Lettura in corso...' : `Richiedi Analisi Evolutiva (30 CR)`}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
+              {hasAdvanced && (
+                <div className="mb-10">
+                   <div className="p-6 mystical-card border-emerald-500/30 bg-emerald-500/5 text-center">
+                      <h3 className="text-emerald-400 font-serif text-xl mb-2">✦ La tua Analisi Evolutiva è pronta</h3>
+                      <p className="text-white/60 text-sm mb-4">I tuoi dati di nascita sono cristallizzati. Se hai bisogno di modificarli, contatta l'assistenza di Valeria.</p>
+                      <button 
+                        onClick={() => {
+                          const adv = myCharts.find(c => c.type === 'advanced')
+                          if (adv) {
+                            setViewingChart(adv)
+                            window.scrollTo({ top: 1000, behavior: 'smooth' })
+                          }
+                        }}
+                        className="btn-gold px-8 py-2.5 text-sm"
+                      >
+                        Leggi la mia Analisi Completa
+                      </button>
+                   </div>
+                </div>
+              )}
+            </div>
 
-            {hasAdvanced && (
-              <div className="mb-10">
-                 <div className="p-6 mystical-card border-emerald-500/30 bg-emerald-500/5 text-center">
-                    <h3 className="text-emerald-400 font-serif text-xl mb-2">✦ La tua Analisi Evolutiva è pronta</h3>
-                    <p className="text-white/60 text-sm mb-4">I tuoi dati di nascita sono cristallizzati. Se hai bisogno di modificarli, contatta l'assistenza di Valeria.</p>
-                    <button 
-                      onClick={() => {
-                        const adv = myCharts.find(c => c.type === 'advanced')
-                        if (adv) {
-                          setViewingChart(adv)
-                          window.setTimeout(() => {
-                            document.getElementById('chart-display')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                          }, 100)
-                        }
-                      }}
-                      className="btn-gold px-8 py-2.5 text-sm"
-                    >
-                      Leggi la mia Analisi Completa
-                    </button>
+            <div className="space-y-4">
+              <h3 className="font-serif text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">I Miei Temi</h3>
+              
+              {fetchLoading ? (
+                 <div className="animate-pulse flex flex-col gap-3">
+                   <div className="h-16 bg-white/5 rounded-lg border border-white/10" />
                  </div>
-              </div>
-            )}
-
-            {/* ChartDisplay moved below grid */}
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-serif text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">I Miei Temi</h3>
-            
-            {fetchLoading ? (
-               <div className="animate-pulse flex flex-col gap-3">
-                 <div className="h-16 bg-white/5 rounded-lg border border-white/10" />
-               </div>
-            ) : myCharts.length === 0 ? (
-               <p className="text-sm text-white/40 italic">Nessun tema salvato.</p>
-            ) : (
-               <div className="flex flex-col gap-3">
-                 {myCharts.map(c => (
-                   <button
-                     key={c.id}
-                     onClick={() => {
-                        setViewingChart(c)
-                        window.setTimeout(() => {
-                           document.getElementById('chart-display')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }, 100)
-                     }}
-                     className={`text-left p-4 rounded-lg border transition-all ${
-                       viewingChart?.id === c.id ? 'bg-white/5 border-gold-500/50' : 'bg-[#141418] border-white/10'
-                     }`}
-                   >
-                     <p className="text-white font-medium text-sm capitalize">{c.city}</p>
-                     <p className="text-[10px] text-white/50">{c.birthDate}</p>
-                   </button>
-                 ))}
-               </div>
-            )}
-
-          </div>
-        </div>
-
-        {viewingChart && (
-          <div className="mt-12 w-full pt-8" id="chart-display">
-            <ChartDisplay chart={viewingChart.chartData} interpretation={viewingChart.interpretation} />
-          </div>
-        )}
-
-        {/* 🔥 Prossimamente Flag - Full Width Horizontal */}
-        <div className="mt-20 p-8 rounded-2xl border border-gold-500/20 bg-black/40 relative overflow-hidden group w-full">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-500"></span>
-            </span>
-            <p className="text-xs uppercase tracking-[0.3em] font-bold text-gold-500">Evoluzione in Arrivo</p>
-          </div>
-          <h4 className="font-serif text-2xl text-white mb-8">Oltre il Tema</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex gap-4">
-              <div className="text-3xl">🧬</div>
-              <div>
-                <p className="text-lg font-bold text-white/90">Bi-Wheel</p>
-                <p className="text-sm text-white/40 leading-relaxed mt-1">Il respiro del cielo sulla tua impronta natale.</p>
-              </div>
+              ) : myCharts.length === 0 ? (
+                 <p className="text-sm text-white/40 italic">Nessun tema salvato.</p>
+              ) : (
+                 <div className="flex flex-col gap-3">
+                   {myCharts.map(c => (
+                     <button
+                       key={c.id}
+                       onClick={() => {
+                          setViewingChart(c)
+                          window.scrollTo({ top: 1000, behavior: 'smooth' })
+                       }}
+                       className={`text-left p-4 rounded-lg border transition-all ${
+                         viewingChart?.id === c.id ? 'bg-white/5 border-gold-500/50' : 'bg-[#141418] border-white/10'
+                       }`}
+                     >
+                       <p className="text-white font-medium text-sm capitalize">{c.city}</p>
+                       <p className="text-[10px] text-white/50">{c.birthDate}</p>
+                     </button>
+                   ))}
+                 </div>
+              )}
             </div>
-            <div className="flex gap-4">
-              <div className="text-3xl">✨</div>
-              <div>
-                <p className="text-lg font-bold text-white/90">La Mentore Silente</p>
-                <p className="text-sm text-white/40 leading-relaxed mt-1">Un dialogo profondo per navigare le sfide del presente.</p>
-              </div>
+          </div>
+
+          {viewingChart && (
+            <div className="mt-12 w-full pt-8" id="chart-display">
+              <ChartDisplay chart={viewingChart.chartData} interpretation={viewingChart.interpretation} />
             </div>
-            <div className="flex gap-4">
-              <div className="text-3xl">🗺️</div>
-              <div>
-                <p className="text-lg font-bold text-white/90">Astro-Cartografia</p>
-                <p className="text-sm text-white/40 leading-relaxed mt-1">Trova nel mondo il tuo luogo sacro.</p>
+          )}
+
+          {/* 🔥 Prossimamente Flag */}
+          <div className="mt-20 p-8 rounded-2xl border border-gold-500/20 bg-black/40 relative overflow-hidden group w-full">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-500"></span>
+              </span>
+              <p className="text-xs uppercase tracking-[0.3em] font-bold text-gold-500">Evoluzione in Arrivo</p>
+            </div>
+            <h4 className="font-serif text-2xl text-white mb-8">Oltre il Tema</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex gap-4">
+                <div className="text-3xl">🧬</div>
+                <div>
+                  <p className="text-lg font-bold text-white/90">Bi-Wheel</p>
+                  <p className="text-sm text-white/40 leading-relaxed mt-1">Il respiro del cielo sulla tua impronta natale.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="text-3xl">✨</div>
+                <div>
+                  <p className="text-lg font-bold text-white/90">La Mentore Silente</p>
+                  <p className="text-sm text-white/40 leading-relaxed mt-1">Un dialogo profondo per navigare le sfide del presente.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="text-3xl">🗺️</div>
+                <div>
+                  <p className="text-lg font-bold text-white/90">Astro-Cartografia</p>
+                  <p className="text-sm text-white/40 leading-relaxed mt-1">Trova nel mondo il tuo luogo sacro.</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </SignedIn>
-    </div>
+    </ClientLayout>
   )
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { apiJson } from '../lib/api'
 import { getApiBaseUrl } from '../constants/api'
+import ClientLayout from '../components/dashboard/ClientLayout'
 
 type ConsultRow = {
   id: string
@@ -67,20 +68,9 @@ export default function MyConsultsPage() {
   if (isLoaded && !user) return <Navigate to="/accedi" replace />
 
   return (
-    <div className="relative min-h-screen px-6 py-10">
-      <div className="max-w-4xl mx-auto">
-
-        {/* Back */}
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 text-xs uppercase tracking-widest font-bold mb-8 transition-colors"
-        >
-          ← Il mio Diario
-        </Link>
-
+    <ClientLayout title="I miei Consulti" subtitle="Cronologia Astrale">
+      <div className="space-y-12">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <p className="text-gold-500 text-xs font-bold uppercase tracking-widest mb-1">Area Personale</p>
-          <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-2">I miei Consulti</h1>
           <p className="text-white/40 text-sm mb-10">
             Storico completo delle tue sessioni con Valeria.
           </p>
@@ -113,7 +103,7 @@ export default function MyConsultsPage() {
               <p className="text-5xl mb-4">🔮</p>
               <p className="text-white/60 font-serif text-xl mb-2">Nessun consulto ancora</p>
               <p className="text-white/30 text-sm mb-8">Il tuo percorso inizia con il primo passo.</p>
-              <Link to="/dashboard" className="btn-gold text-sm px-6 py-2.5">
+              <Link to="/area-personale" className="btn-gold text-sm px-6 py-2.5">
                 Prenota il primo consulto →
               </Link>
             </div>
@@ -169,7 +159,7 @@ export default function MyConsultsPage() {
           {/* CTA Prenota */}
           {!loading && consults && consults.length > 0 && (
             <div className="mt-8 text-center">
-              <Link to="/dashboard" className="btn-gold text-sm px-6 py-2.5">
+              <Link to="/area-personale" className="btn-gold text-sm px-6 py-2.5">
                 + Prenota un nuovo consulto
               </Link>
             </div>
@@ -177,6 +167,6 @@ export default function MyConsultsPage() {
 
         </motion.div>
       </div>
-    </div>
+    </ClientLayout>
   )
 }

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Navigate } from 'react-router-dom'
 import { TOPUP_META, type TopUpKind } from '../constants/walletPrices'
 import { apiJson } from '../lib/api'
+import ClientLayout from '../components/dashboard/ClientLayout'
 
 declare global {
   interface Window {
@@ -59,7 +60,9 @@ export default function WalletPage() {
     document.body.appendChild(script)
 
     return () => {
-      document.body.removeChild(script)
+      if (document.body.contains(script)) {
+        document.body.removeChild(script)
+      }
     }
   }, [])
 
@@ -69,44 +72,46 @@ export default function WalletPage() {
       // Puliamo il contenitore prima di fare il render
       paypalContainerRef.current.innerHTML = ''
       
-      window.paypal.Buttons({
-        style: {
-          layout: 'vertical',
-          color: 'gold',
-          shape: 'pill',
-          label: 'pay'
-        },
-        createOrder: async () => {
-          try {
-            const res = await apiJson<any>(getToken, '/api/payments/paypal/create-order', {
-              method: 'POST',
-              body: JSON.stringify({ topUpKind: selectedKind })
-            })
-            return res.id
-          } catch (e) {
-            setErrorLine('Impossibile creare l\'ordine PayPal.')
-          }
-        },
-        onApprove: async (data: any) => {
-          setProcTx('processing')
-          try {
-            const res = await apiJson<any>(getToken, '/api/payments/paypal/capture-order', {
-              method: 'POST',
-              body: JSON.stringify({ orderID: data.orderID })
-            })
-            if (res.status === 'COMPLETED') {
-               // Ricarichiamo il wallet dopo successo
-               const w = await apiJson<WalletInfo>(getToken, '/api/wallet/me')
-               setWallet(w)
-               alert('Ricarica completata con successo! I tuoi crediti sono pronti.')
+      if (window.paypal) {
+        window.paypal.Buttons({
+          style: {
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'pill',
+            label: 'pay'
+          },
+          createOrder: async () => {
+            try {
+              const res = await apiJson<any>(getToken, '/api/payments/paypal/create-order', {
+                method: 'POST',
+                body: JSON.stringify({ topUpKind: selectedKind })
+              })
+              return res.id
+            } catch (e) {
+              setErrorLine('Impossibile creare l\'ordine PayPal.')
             }
-          } catch (e) {
-            setErrorLine('Errore durante la cattura del pagamento.')
-          } finally {
-            setProcTx(null)
+          },
+          onApprove: async (data: any) => {
+            setProcTx('processing')
+            try {
+              const res = await apiJson<any>(getToken, '/api/payments/paypal/capture-order', {
+                method: 'POST',
+                body: JSON.stringify({ orderID: data.orderID })
+              })
+              if (res.status === 'COMPLETED') {
+                 // Ricarichiamo il wallet dopo successo
+                 const w = await apiJson<WalletInfo>(getToken, '/api/wallet/me')
+                 setWallet(w)
+                 alert('Ricarica completata con successo! I tuoi crediti sono pronti.')
+              }
+            } catch (e) {
+              setErrorLine('Errore durante la cattura del pagamento.')
+            } finally {
+              setProcTx(null)
+            }
           }
-        }
-      }).render(paypalContainerRef.current)
+        }).render(paypalContainerRef.current)
+      }
     }
   }, [paypalLoaded, paymentMethod, selectedKind, getToken])
 
@@ -137,21 +142,12 @@ export default function WalletPage() {
   if (!user) return <Navigate to="/" replace />
 
   return (
-    <div className="min-h-screen px-4 py-20 relative isolate">
-      {/* Background Decor */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
-        <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-gold-500/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 right-[-5%] w-[30%] h-[30%] bg-purple-500/5 blur-[100px] rounded-full" />
-      </div>
-
-      <div className="max-w-5xl mx-auto relative z-10">
+    <ClientLayout title="Il Tuo Wallet" subtitle="Pacchetti Energetici">
+      <div className="space-y-12">
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <h1 className="font-serif text-3xl md:text-5xl font-bold text-white mb-3">
-                Il Tuo <span className="gold-text">Wallet</span>
-              </h1>
               <p className="text-white/45 text-sm max-w-xl leading-relaxed">
                 I crediti ti permettono di prenotare consulti istantaneamente. 
                 Puoi scegliere di pagare con <strong className="text-white/60">PayPal (anche in 3 rate)</strong> o via <strong className="text-white/60">Carta di Credito</strong>.
@@ -333,6 +329,6 @@ export default function WalletPage() {
 
         </motion.div>
       </div>
-    </div>
+    </ClientLayout>
   )
 }
