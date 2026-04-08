@@ -61,6 +61,9 @@ function mapKindToCalendlySlug(kind: ConsultKind): string {
     combo_light: 'combo-light',
     combo_full: 'combo-full',
     free: 'free',
+    chat_15: 'chat-15',
+    chat_30: 'chat-30',
+    chat_60: 'chat-60',
   }
   return map[kind]
 }
