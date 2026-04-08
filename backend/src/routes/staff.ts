@@ -273,6 +273,8 @@ export function createStaffRouter(pool: Pool): Router {
       if (meetingLink !== undefined) {
         sets.push(`meeting_link = $${i++}`)
         vals.push(meetingLink)
+        sets.push(`meeting_join_url = $${i++}`)
+        vals.push(meetingLink)
       }
       vals.push(id)
       await pool.query(`UPDATE consults SET ${sets.join(', ')} WHERE id = $${i}`, vals)

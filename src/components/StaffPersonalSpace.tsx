@@ -162,6 +162,28 @@ export default function StaffPersonalSpace() {
     }
   }
 
+  const handleClaim = async (id: string) => {
+    if (!window.confirm("Confermi di voler terminare e incassare i crediti per questo consulto?")) return
+    try {
+      await apiJson(getToken, `/api/staff/consults/${id}/claim`, { method: 'POST' })
+      void loadToday()
+      void loadClientsWeek()
+    } catch (e: any) {
+      alert(e.message || "Errore durante l'incasso")
+    }
+  }
+
+  const handleNoShow = async (id: string) => {
+    if (!window.confirm("Confermi che il cliente non si è presentato? Verrà applicata una penale e il resto rimborsato.")) return
+    try {
+      await apiJson(getToken, `/api/staff/consults/${id}/no-show`, { method: 'POST' })
+      void loadToday()
+      void loadClientsWeek()
+    } catch (e: any) {
+      alert(e.message || "Errore durante la segnalazione no-show")
+    }
+  }
+
   const setPresenceStatus = async (status: ValeriaPresenceStatus) => {
     if (!apiConfigured) return
     setPresenceSaving(true)
@@ -305,6 +327,7 @@ export default function StaffPersonalSpace() {
                         <th className="py-2.5 px-3">Cliente</th>
                         <th className="py-2.5 px-3">Tipo</th>
                         <th className="py-2.5 px-3">Link</th>
+                        <th className="py-2.5 px-3 text-right">Azioni</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -332,6 +355,24 @@ export default function StaffPersonalSpace() {
                                 className="text-[10px] uppercase font-bold text-white/50 hover:text-white px-2 py-1 bg-white/5 rounded transition-colors ml-auto shrink-0"
                               >
                                 {m.joinUrl ? '✎' : '+ Link'}
+                              </button>
+                            </div>
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => handleClaim(m.id)}
+                                className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded hover:bg-emerald-500/20 transition-colors uppercase font-bold"
+                                title="Concludi e Incassa"
+                              >
+                                Incassa
+                              </button>
+                              <button 
+                                onClick={() => handleNoShow(m.id)}
+                                className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition-colors uppercase font-bold"
+                                title="Segnala No-Show"
+                              >
+                                No-Show
                               </button>
                             </div>
                           </td>
@@ -411,6 +452,20 @@ export default function StaffPersonalSpace() {
                                 className="text-[10px] uppercase font-bold text-white/50 hover:text-white px-2 py-1 bg-white/5 rounded transition-colors shrink-0"
                               >
                                 {s.joinUrl ? '✎' : '+ Link'}
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2 border-l border-white/5 pl-2 ml-1">
+                              <button 
+                                onClick={() => handleClaim(s.id)}
+                                className="text-[9px] text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded hover:bg-emerald-500/10 uppercase font-bold"
+                              >
+                                Incassa
+                              </button>
+                              <button 
+                                onClick={() => handleNoShow(s.id)}
+                                className="text-[9px] text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded hover:bg-red-500/10 uppercase font-bold"
+                              >
+                                No-Show
                               </button>
                             </div>
                           </li>
