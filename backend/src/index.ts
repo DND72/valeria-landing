@@ -11,6 +11,24 @@ import { createWalletRouter } from './routes/wallet.js'
 import { createBookingRouter } from './routes/booking.js'
 import astrologyRouter from './routes/astrologyRoutes.js'
 import { startWalletTimeoutCron } from './cron/walletTimeout.js'
+import { rateLimit } from 'express-rate-limit'
+
+// 🛡️ SCUDO ANTI-BRUTEFORCE (Rate Limiting)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuti
+  max: 100, // Limite di 100 richieste per IP
+  message: { error: "Troppe richieste da questo indirizzo, riprova più tardi." },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+const sensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 10, // Più restrittivo per transazioni e prenotazioni
+  message: { error: "Troppi tentativi rilevati. Per sicurezza, l'accesso è temporaneamente limitato." },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
 
 const app = express()
 const port = Number(process.env.PORT) || 8787
@@ -115,7 +133,7 @@ app.get('/api/public/blog/:slug/comments', async (req, res) => {
   }
 })
 
-app.get('/api/public/valeria-presence', async (_req, res) => {
+app.get('/api/public/valeria-presence', generalLimiter, async (_req, res) => {
   try {
     const { rows } = await pool.query<{ status: string; updated_at: Date }>(
       `SELECT status, updated_at FROM staff_presence_singleton WHERE id = 1`
@@ -131,11 +149,11 @@ app.get('/api/public/valeria-presence', async (_req, res) => {
   }
 })
 
-app.use('/api/staff', createStaffRouter(pool))
-app.use('/api/me', createMeRouter(pool))
-app.use('/api/wallet', createWalletRouter(pool))
-app.use('/api/booking', createBookingRouter(pool))
-app.use('/api/astrology', astrologyRouter)
+app.use('/api/staff', sensitiveLimiter, createStaffRouter(pool))
+app.use('/api/me', generalLimiter, createMeRouter(pool))
+app.use('/api/wallet', sensitiveLimiter, createWalletRouter(pool))
+app.use('/api/booking', sensitiveLimiter, createBookingRouter(pool))
+app.use('/api/astrology', generalLimiter, astrologyRouter)
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Non trovato' })
