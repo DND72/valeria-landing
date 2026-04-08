@@ -54,6 +54,33 @@ export function calculateAspects(planets: PlanetData[]): AspectResult[] {
   return results
 }
 
+export function calculateTransits(natal: PlanetData[], current: PlanetData[]): AspectResult[] {
+  if (!natal || !current) return []
+  const results: AspectResult[] = []
+
+  for (const np of natal) {
+    for (const cp of current) {
+      let diff = Math.abs(np.lon_assoluta - cp.lon_assoluta)
+      if (diff > 180) diff = 360 - diff
+      
+      const asp = ASPECTS_DEF.find(a => Math.abs(diff - a.deg) <= (a.orb * 0.5)) // Orb più stretto per i transiti
+      if (asp) {
+        const dist = Math.abs(diff - asp.deg)
+        results.push({
+          p1: np.nome,
+          p2: cp.nome,
+          type: asp.label,
+          symbol: asp.symbol,
+          color: asp.color,
+          diff: dist,
+          precision: 1 - (dist / (asp.orb * 0.5))
+        })
+      }
+    }
+  }
+  return results
+}
+
 export const BODY_GLYPHS: Record<string, string> = {
   'Sole': '☉', 'Luna': '☽', 'Mercurio': '☿', 'Venere': '♀', 'Marte': '♂',
   'Giove': '♃', 'Saturno': '♄', 'Urano': '♅', 'Nettuno': '♆', 'Plutone': '♇',

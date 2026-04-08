@@ -107,3 +107,40 @@ export async function generateTransitInterpretation(natalData: any, currentSky: 
     return "Valeria sta ricalcolando le orbite... riprova tra un istante."
   }
 }
+
+export async function generateWeeklyForecast(natalData: any, weeklyTransits: any[], gender: 'M' | 'F' = 'M'): Promise<string> {
+  const client = getGeminiClient()
+  
+  const sysPrompt = `Sei Valeria, la tua Stella. Il tuo compito è scrivere l'OROSCOPO SETTIMANALE PERSONALIZZATO.
+  ${gender === 'F' ? 'Rivolgiti alla cliente al FEMMINILE.' : 'Rivolgiti al cliente al MASCHILE.'}
+  
+  Analizza i transiti della settimana e scrivi un report DIVISO per aree tematiche.
+  
+  STRUTTURA:
+  1. **IL MOOD DELLA SETTIMANA**: Un'introduzione sull'energia dominante.
+  2. **I TUOI GIORNI d'ORO**: Indica 1 o 2 giorni in cui i transiti sono particolarmente favorevoli.
+  3. **SFIDE CELESTI**: Avverti su eventuali quadrature o opposizioni difficili, spiegando come gestirle con saggezza.
+  4. **AMORE E RELAZIONI / LAVORO E SOLDI**: Un breve accenno a queste due aree basato sui transiti di Venere e Giove/Saturno.
+  5. **IL MANIPOLO DI LUCE**: Un consiglio finale per "diventare l'artefice del destino".
+
+  Tono: Saggio, poetico ma estremamente pratico. Firma: "Valeria, la tua Stella".`
+
+  const userPrompt = `
+  Pianeti Natali Cliente: ${JSON.stringify(natalData.pianeti || [])}
+  Sequenza Transiti della Settimana: ${JSON.stringify(weeklyTransits)}
+  
+  Scrivi l'oroscopo settimanale personalizzato.`
+
+  const model = client.getGenerativeModel({ 
+    model: 'gemini-2.0-flash',
+    systemInstruction: sysPrompt
+  })
+
+  try {
+    const result = await model.generateContent(userPrompt)
+    return result.response.text() || 'Valeria sta leggendo le maree della settimana...'
+  } catch (err: any) {
+    console.error('[weekly-gemini] Error:', err)
+    return "C'è una nebulosa che scherma il segnale... riprova tra un attimo."
+  }
+}
