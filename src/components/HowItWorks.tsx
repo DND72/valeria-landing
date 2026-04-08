@@ -38,11 +38,11 @@ const services = [
     icon: '🍃',
   },
   {
-    name: 'Combo Evolutiva',
-    duration: 'Valore massimo · Percorso misto',
-    price: '1,25 €/min',
-    ideal: 'Tarocchi + Coaching insieme per la massima chiarezza.',
-    icon: '✨',
+    name: 'Live ChatRoom',
+    duration: 'Tempo reale · Testo & Audio',
+    price: '1,40 €/min',
+    ideal: 'Sconto 50% mentre Valeria digita. Ideale per consulti flessibili.',
+    icon: '💬',
   },
 ]
 
