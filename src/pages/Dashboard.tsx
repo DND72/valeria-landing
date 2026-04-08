@@ -577,7 +577,7 @@ export default function Dashboard() {
           </p>
         )}
 
-        {liveWindows && liveWindows.length > 0 && !privileged && (
+        {liveWindows && (
           <div className="mb-6 mystical-card border-gold-500/30 bg-gold-900/10 shadow-[0_0_20px_rgba(212,160,23,0.05)]">
             <h3 className="text-gold-500 font-bold mb-2 flex items-center gap-2">
               <span className="relative flex h-3 w-3">
@@ -589,35 +589,39 @@ export default function Dashboard() {
             <p className="text-white/70 text-sm mb-4">
               I momenti di maggiore connessione in cui puoi trovare Valeria disponibile per un consulto testuale in tempo reale.
             </p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {liveWindows.map((w, idx) => {
-                const now = new Date()
-                const wStart = new Date(w.start)
-                const wEnd = new Date(w.end)
-                const isNow = now >= wStart && now <= wEnd
-                const itOpts = { timeZone: 'local' }
-                const startStr = wStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
-                const endStr = wEnd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
-                const dayStr = wStart.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
-                const isToday = dayStr === now.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
-                
-                return (
-                  <div key={idx} className={`p-3 rounded-lg border ${isNow ? 'border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-white/10 bg-black/40'}`}>
-                    <p className={`text-sm font-bold capitalize ${isNow ? 'text-emerald-400' : 'text-gold-400'}`}>
-                      {isToday ? 'Oggi' : dayStr}
-                      {isNow && <span className="ml-2 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded tracking-widest uppercase">In Corso</span>}
-                    </p>
-                    <p className="text-white/80 text-xs mt-1">{w.label}</p>
-                    <p className="font-mono text-white/50 text-[11px] mt-1">{startStr} — {endStr}</p>
-                    {isNow && (
-                      <Link to="/sessione/live" className="mt-3 block w-full text-center py-2 rounded-lg bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-emerald-500 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">
-                        Entra in Stanza
-                      </Link>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+            {liveWindows.length === 0 ? (
+               <p className="text-white/40 text-xs italic bg-black/40 p-3 rounded border border-white/5">Nessuna finestra Live attualmente in programma per i prossimi giorni. Controlla più tardi o prenota dal modulo sottostante.</p>
+            ) : (
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {liveWindows.map((w, idx) => {
+                  const now = new Date()
+                  const wStart = new Date(w.start)
+                  const wEnd = new Date(w.end)
+                  const isNow = now >= wStart && now <= wEnd
+                  const itOpts = { timeZone: 'local' }
+                  const startStr = wStart.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
+                  const endStr = wEnd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', ...itOpts })
+                  const dayStr = wStart.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
+                  const isToday = dayStr === now.toLocaleDateString('it-IT', { weekday: 'long', ...itOpts })
+                  
+                  return (
+                    <div key={idx} className={`p-3 rounded-lg border ${isNow ? 'border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-white/10 bg-black/40'}`}>
+                      <p className={`text-sm font-bold capitalize ${isNow ? 'text-emerald-400' : 'text-gold-400'}`}>
+                        {isToday ? 'Oggi' : dayStr}
+                        {isNow && <span className="ml-2 text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded tracking-widest uppercase">In Corso</span>}
+                      </p>
+                      <p className="text-white/80 text-xs mt-1">{w.label}</p>
+                      <p className="font-mono text-white/50 text-[11px] mt-1">{startStr} — {endStr}</p>
+                      {isNow && (
+                        <Link to="/sessione/live" className="mt-3 block w-full text-center py-2 rounded-lg bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider hover:bg-emerald-500 transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                          Entra in Stanza
+                        </Link>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
 
