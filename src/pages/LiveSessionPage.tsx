@@ -70,6 +70,8 @@ export default function LiveSessionPage() {
   // POLLING MESSAGGI E STATUS
   useEffect(() => {
     if (!id) return
+    
+    let isMounted = true
     const fetchMessages = async () => {
        try {
           const res = await apiJson<{ 
@@ -78,17 +80,26 @@ export default function LiveSessionPage() {
              sessionInfo?: any 
           }>(getToken, `/api/booking/session/${id}/messages`)
 
+          if (!isMounted) return
+
           if (res.messages) {
              const newMsgs = res.messages.map((m: any) => ({ 
                ...m, 
                timestamp: m.timestamp ? new Date(m.timestamp) : new Date() 
              }))
-             if (newMsgs.length > messages.length) {
-                if (newMsgs[newMsgs.length-1].role !== (isStaff ? 'valeria' : 'client')) {
-                    void audioRefs.current.receive.play().catch(() => {})
+             
+             // Aggiorniamo solo se ci sono nuovi messaggi
+             setMessages(prev => {
+                if (newMsgs.length > prev.length) {
+                   const last = newMsgs[newMsgs.length-1]
+                   const wasMe = last.role === (isStaff ? 'valeria' : 'client')
+                   if (!wasMe) {
+                      void audioRefs.current.receive.play().catch(() => {})
+                   }
+                   return newMsgs
                 }
-             }
-             setMessages(newMsgs)
+                return prev
+             })
           }
           if (res.typing) {
              setOtherIsTyping(isStaff ? res.typing.client : res.typing.staff)
@@ -106,12 +117,16 @@ export default function LiveSessionPage() {
           }
        } catch (err) { console.error('[chat poll]', err) }
     }
+    
     void fetchMessages()
     const poll = setInterval(fetchMessages, 3000)
-    return () => clearInterval(poll)
-  }, [id, messages.length, isStaff, getToken, navigate, isEnding])
+    return () => {
+       isMounted = false
+       clearInterval(poll)
+    }
+  }, [id, isStaff, getToken, navigate, isEnding])
 
-  // CountDown Attesa Cliente (Fix TS unused + NaN)
+  // CountDown Attesa Cliente
   useEffect(() => {
     if (isAccepted || !sessionInfo?.createdAt || isStaff) return
     const interval = setInterval(() => {
@@ -147,10 +162,10 @@ export default function LiveSessionPage() {
           method: 'POST',
           body: JSON.stringify({ text, role })
        })
-       // Ottimistico
-       setMessages(prev => [...prev, { id: 'temp-'+Date.now(), role, text, timestamp: new Date() }])
+       // Ottimistico rimosso per evitare glitch se il server non è allineato immediatamente
+       // setMessages(prev => [...prev, { id: 'temp-'+Date.now(), role, text, timestamp: new Date() }])
     } catch (err) {
-       alert("Errore nell'invio.")
+       alert("Errore nell'invio. Verifica la tua connessione.")
     }
   }
 
@@ -173,15 +188,12 @@ export default function LiveSessionPage() {
         body: JSON.stringify({ actualDurationMinutes: actualMinutes })
       })
       
-      // Suono monete
       const coinSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3')
       void coinSound.play().catch(() => {})
       
-      // Calcolo guadagno (assumiamo 1 Credit = 1 Euro per ora come richiesto)
       const creditsEarned = currentTotalCost
       const euroEarned = typeof creditsEarned === 'number' && !isNaN(creditsEarned) ? creditsEarned.toFixed(2) : "0.00"
       
-      // Mostriamo modal di successo invece di navigare subito
       setSuccessData({
         credits: creditsEarned,
         euro: euroEarned
@@ -214,13 +226,12 @@ export default function LiveSessionPage() {
     <div className={`fixed inset-0 h-screen w-screen flex flex-col z-[10000] overflow-hidden transition-colors duration-700 ${
       theme === 'dark' ? 'bg-[#050810] text-white font-sans' : 'bg-[#fcf8f0] text-dark-900 font-sans'
     } selection:bg-gold-500/30`}>
-      {/* BACKGROUND ELEMENTS */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden text-gold-500/10 dark:text-gold-500/5">
-         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-current rounded-full transition-opacity duration-1000 ${theme === 'dark' ? 'opacity-20' : 'opacity-10'}`}>
-            <div className="absolute inset-0 border border-current rotate-45 scale-90" />
-            <div className="absolute inset-0 border border-current -rotate-45 scale-75" />
-         </div>
-         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 animate-pulse" />
+      
+      {/* BACKGROUND ELEMENTS (GALAXY) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden surface-galaxy">
+         <div className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${theme === 'dark' ? 'opacity-40' : 'opacity-10'} bg-[url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=2113&auto=format&fit=crop')]`} />
+         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 animate-pulse" />
       </div>
 
       {/* HEADER */}
@@ -486,9 +497,7 @@ export default function LiveSessionPage() {
               className="success-modal-content max-w-md w-full text-center"
             >
               <div className="relative mb-8 w-48 h-48 mx-auto">
-                {/* Glow ring */}
                 <div className="absolute inset-0 bg-gold-500/20 blur-[60px] rounded-full animate-pulse" />
-                {/* GIF Salvadanaio */}
                 <img 
                   src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1eHByZzN6ZzA1eG15ZzZ2ZzN6ZzA1eG15ZzZ2ZzN6ZzA1eG15ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LdOyjZ7TC5K3LghXY8/giphy.gif" 
                   alt="Earnings" 
@@ -531,6 +540,12 @@ export default function LiveSessionPage() {
          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,160,23,0.3); }
          body { overscroll-behavior-y: contain; }
          
+         .surface-galaxy {
+            background-color: #020408;
+            background-image: radial-gradient(circle at 20% 30%, rgba(76, 29, 149, 0.15) 0%, transparent 40%),
+                              radial-gradient(circle at 80% 70%, rgba(212, 160, 23, 0.05) 0%, transparent 40%);
+         }
+
          @media (max-width: 768px) {
             header { padding-left: 1rem; padding-right: 1rem; height: 4.5rem; }
             h1 { font-size: 0.75rem; }
