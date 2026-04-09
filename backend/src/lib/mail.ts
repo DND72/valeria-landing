@@ -1,10 +1,31 @@
 
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Configurazione Transporter principale (Responsi)
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'gnldm1034.siteground.biz',
+  port: parseInt(process.env.SMTP_PORT || '465'),
+  secure: true, // true per porta 465, false per altre
+  auth: {
+    user: process.env.SMTP_USER_RESPONSI || 'responsi@nonsolotarocchi.it',
+    pass: process.env.SMTP_PASS || 'Tarocchi-2026',
+  },
+  tls: {
+    rejectUnauthorized: false // Spesso necessario su SiteGround
+  }
+});
 
+export const MAIL_SENDERS = {
+  INFO: 'Nonsolotarocchi <info@nonsolotarocchi.it>',
+  VALERIA: 'Valeria <valeria@nonsolotarocchi.it>',
+  RESPONSI: 'Valeria (Responsi) <responsi@nonsolotarocchi.it>'
+};
+
+/**
+ * Notifica il cliente che un elaborato (Tema Natale, Oroscopo, Sinastria) è pronto.
+ */
 export async function sendAnalysisReadyNotification(
   email: string,
   clientName: string,
@@ -45,26 +66,18 @@ export async function sendAnalysisReadyNotification(
   `;
 
   try {
-    if (!process.env.RESEND_API_KEY) {
-       console.log(`[MAIL SIMULATION] To: ${email}, Subject: ${subject}`);
-       return { success: true, simulated: true };
-    }
-
-    const { data, error } = await resend.emails.send({
-      from: 'Valeria <stelle@valeria-astrologia.it>',
-      to: [email],
+    // In produzione usiamo il transporter SMTP
+    const info = await transporter.sendMail({
+      from: MAIL_SENDERS.RESPONSI,
+      to: email,
       subject: subject,
       html: html,
     });
 
-    if (error) {
-      console.error('[MAIL ERROR]', error);
-      return { success: false, error };
-    }
-
-    return { success: true, data };
+    console.log('[MAIL SUCCESS]', info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (err) {
-    console.error('[MAIL CRASH]', err);
+    console.error('[MAIL ERROR]', err);
     return { success: false, error: err };
   }
 }
