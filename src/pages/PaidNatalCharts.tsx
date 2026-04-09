@@ -402,32 +402,32 @@ export default function PaidNatalCharts() {
             </div>
           )}
 
-          {/* 🔥 Prossimamente Flag */}
-          <div className="mt-20 p-8 rounded-2xl border border-gold-500/20 bg-black/40 relative overflow-hidden group w-full">
+          {/* 🔥 Funzioni Attive */}
+          <div className="mt-20 p-8 rounded-2xl border border-gold-500/20 bg-gold-900/5 relative overflow-hidden group w-full">
             <div className="flex items-center gap-2 mb-6">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <p className="text-xs uppercase tracking-[0.3em] font-bold text-gold-500">Evoluzione in Arrivo</p>
+              <p className="text-xs uppercase tracking-[0.3em] font-bold text-emerald-400">Strumenti Attivi</p>
             </div>
             <h4 className="font-serif text-2xl text-white mb-8">Oltre il Tema</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="flex gap-4">
-                <div className="text-3xl">🧬</div>
+              <Link to="/area-personale" className="flex gap-4 group/item cursor-pointer">
+                <div className="text-3xl filter grayscale group-hover/item:grayscale-0 transition-all">🧬</div>
                 <div>
-                  <p className="text-lg font-bold text-white/90">Bi-Wheel</p>
+                  <p className="text-lg font-bold text-gold-400 group-hover/item:text-gold-300">Bi-Wheel <span className="text-[9px] bg-gold-500/20 px-1 rounded ml-1">Live</span></p>
                   <p className="text-sm text-white/40 leading-relaxed mt-1">Il respiro del cielo sulla tua impronta natale.</p>
                 </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="text-3xl">✨</div>
+              </Link>
+              <Link to="/area-personale" className="flex gap-4 group/item cursor-pointer">
+                <div className="text-3xl filter grayscale group-hover/item:grayscale-0 transition-all">✨</div>
                 <div>
-                  <p className="text-lg font-bold text-white/90">La Mentore Silente</p>
+                  <p className="text-lg font-bold text-gold-400 group-hover/item:text-gold-300">La Mentore Silente</p>
                   <p className="text-sm text-white/40 leading-relaxed mt-1">Un dialogo profondo per navigare le sfide del presente.</p>
                 </div>
-              </div>
-              <div className="flex gap-4">
+              </Link>
+              <div className="flex gap-4 opacity-40">
                 <div className="text-3xl">🗺️</div>
                 <div>
                   <p className="text-lg font-bold text-white/90">Astro-Cartografia</p>

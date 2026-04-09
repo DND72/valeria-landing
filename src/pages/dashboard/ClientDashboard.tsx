@@ -266,38 +266,67 @@ export default function ClientDashboard() {
 
         {/* ── Immersive Hub: Bi-Wheel & Weekly Forecast ── */}
         {(myCharts && myCharts.length > 0 && currentSky) && (
-          <div className="grid lg:grid-cols-2 gap-8 mb-12">
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
-               className="mystical-card flex flex-col items-center justify-center py-10"
-             >
-                <h3 className="font-serif text-lg text-white mb-6 uppercase tracking-widest text-center">
-                  Il tuo Cielo Dinamico <br/>
-                  <span className="text-[10px] text-gold-400 font-sans font-normal opacity-70">(Transiti Attuali vs Tema Natale)</span>
-                </h3>
-                <BiWheel 
-                   natalPlanets={myCharts[0].chartData.pianeti || []}
-                   transitPlanets={currentSky.pianeti || []}
-                   transitAspects={calculateTransits(myCharts[0].chartData.pianeti || [], currentSky.pianeti || [])}
-                   ascLon={myCharts[0].chartData.ascendente_totale}
-                   theme={theme}
-                />
-             </motion.div>
-
-             {latestHoroscope && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
+          <div className="space-y-8 mb-12">
+             <div className="grid lg:grid-cols-3 gap-8 items-start">
+                {/* BI-WHEEL CINEMATOGRAFICA (2/3 della larghezza) */}
+                <motion.div 
+                  id="bi-wheel"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="lg:col-span-2 mystical-card flex flex-col items-center justify-center py-12 px-4 shadow-[0_0_50px_rgba(212,160,23,0.1)] relative overflow-hidden group"
                 >
-                  <WeeklyForecast 
-                    content={latestHoroscope.forecast_text}
-                    luckyDays={latestHoroscope.lucky_days}
-                    energyLevel={latestHoroscope.energy_level}
-                  />
+                   {/* Effetto bagliore di sfondo */}
+                   <div className="absolute inset-0 bg-gold-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                   
+                   <div className="flex items-center justify-between w-full mb-8 px-6">
+                      <div className="text-left">
+                        <h3 className="font-serif text-2xl text-white uppercase tracking-widest mb-1">Il Cielo Dinamico</h3>
+                        <p className="text-[10px] text-gold-400 font-sans font-bold uppercase tracking-widest opacity-70">Transiti Attuali vs Impronta Natale</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                         <span className="text-[10px] text-white/40 uppercase hidden sm:block">Dinamico & Interattivo</span>
+                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                      </div>
+                   </div>
+
+                   <div className="w-full max-w-3xl transform hover:scale-[1.02] transition-transform duration-500">
+                      <BiWheel 
+                        natalPlanets={myCharts[0].chartData.pianeti || []}
+                        transitPlanets={currentSky.pianeti || []}
+                        transitAspects={calculateTransits(myCharts[0].chartData.pianeti || [], currentSky.pianeti || [])}
+                        ascLon={myCharts[0].chartData.ascendente_totale}
+                        theme={theme}
+                      />
+                   </div>
+
+                   <div className="mt-8 text-center max-w-lg">
+                      <p className="text-xs text-white/50 leading-relaxed italic">
+                        "Come sopra, così sotto". Osserva come i pianeti di oggi stimolano i punti cardine della tua energia vitale. Le linee interne indicano le opportunità (blu/verde) e le sfide (rosso) del momento.
+                      </p>
+                   </div>
                 </motion.div>
-             )}
+   
+                {/* LA MENTORE SILENTE (1/3 della larghezza) */}
+                <div id="mentore" className="space-y-6">
+                   <div className="flex items-center gap-3 mb-2 px-2">
+                      <div className="text-2xl">✨</div>
+                      <h4 className="font-serif text-xl text-white font-bold">La Mentore Silente</h4>
+                   </div>
+                   {latestHoroscope && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        <WeeklyForecast 
+                          content={latestHoroscope.forecast_text}
+                          luckyDays={latestHoroscope.lucky_days}
+                          energyLevel={latestHoroscope.energy_level}
+                        />
+                      </motion.div>
+                   )}
+                </div>
+             </div>
           </div>
         )}
 
