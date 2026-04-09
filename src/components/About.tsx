@@ -119,7 +119,7 @@ export default function About() {
                 dalle cellule allo spirito.
               </p>
               <p>
-                Giornalista, attrice e esperta di simbolismo, Valeria applica ai Tarocchi di Marsiglia un protocollo strutturato 
+                Attrice e esperta di simbolismo, Valeria applica ai Tarocchi di Marsiglia un protocollo strutturato 
                 che non lascia spazio alla casualità. Diplomata in <strong>Naturopatia</strong> e formata all'uso dei Fiori di Bach, 
                 vede nelle carte non semplici disegni, ma una mappa dinamica della psiche e dell'energia.
               </p>

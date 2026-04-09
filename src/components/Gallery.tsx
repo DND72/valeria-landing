@@ -40,7 +40,7 @@ const galleryItems: GalleryItem[] = [
   },
   {
     src: '/valeria-giornalista.jpg',
-    caption: 'Dott.ssa Valeria Di Pace - Attrice Giornalista',
+    caption: 'Dott.ssa Valeria Di Pace - Attrice',
     category: 'onorificenze',
   },
   {

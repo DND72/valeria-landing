@@ -97,7 +97,7 @@ export default function Hero() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium mb-8"
           >
             <TarotCardIcon />
-            <span>Attrice · Giornalista · Tarologa · Naturopata</span>
+            <span>Attrice · Tarologa · Naturopata</span>
           </motion.div>
 
           {/* Main heading */}
