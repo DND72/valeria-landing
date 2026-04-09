@@ -1,0 +1,33 @@
+# 🪐 Walkthrough: Evolutione Planetario Astronomico
+
+Abbiamo trasformato il Planetario di Valeria in uno strumento di consultazione professionale di alto livello, integrando dati astronomici complessi con un'interfaccia elegante e intuitiva.
+
+## 🌙 Gestione Avanzata della Luna
+
+Abbiamo implementato un motore di calcolo dinamico per le fasi lunari che ora distingue chiaramente tra passato e futuro.
+
+- **Fase Corrente**: Mostra l'icona, il segno zodiacale e i gradi esatti (es. 14° Bilancia), oltre alla percentuale di illuminazione in tempo reale.
+- **Calendario Prossime Fasi**: Una lista cronologica delle 4 fasi principali (Nuova, Primo Quarto, Piena, Ultimo Quarto).
+  - Le fasi già avvenute nella settimana corrente sono contrassegnate come **"Recente"** con opacità ridotta per evitare confusione logica.
+  - Ogni fase include la data completa (es. "Lun 13 Apr"), l'orario GMT e l'elemento astrologico associato.
+
+## 🌒 Previsioni Eclissi e Eventi Speciali
+
+Al centro della dashboard, sotto la ruota zodiacale, abbiamo aggiunto un pannello dedicato agli eventi celesti rari.
+
+- **Dati Tecnici GMT**: Per ogni eclissi (Solare o Lunare), il sistema ora calcola l'orario esatto di inizio, fine e la durata totale in ore/minuti.
+- **Visibilità**: Sono indicate le zone geografiche di visibilità globale per ogni evento dei prossimi 24 mesi.
+
+## 💎 Esperienza Utente e Accessibilità
+
+- **Tooltip Informativi**: Passando il mouse sui glifi dei segni della ruota o sui pianeti della griglia, ora appare il nome completo (es. ♈ → Ariete).
+- **Leggibilità**: Abbiamo aumentato la dimensione dei font in tutta la sidebar per una consultazione più agevole.
+- **Colori Elementali**: Ogni corpo celeste e ogni fase lunare è associata al suo elemento (Fuoco, Terra, Aria, Acqua) con badge colorati coerenti.
+
+---
+
+> [!IMPORTANT]
+> Tutte le modifiche sono state caricate e sono pronte per il collaudo finale da parte di Valeria. Il sistema è ora estremamente robusto grazie alla bisection astronomica ad alta precisione.
+
+> [!TIP]
+> Nella prossima sessione ci concentreremo sul test delle **Mappe Natali** nel Diario Evolutivo.

@@ -1,0 +1,52 @@
+SEO on‑site: cosa sistemare subito
+Titolo homepage: ora è solo “Valeria Di Pace — Tarologa”, aggiungi qualcosa tipo “Tarologa Tarocchi di Marsiglia consulti telefonici e online” per includere chiavi di ricerca reali.
+
+Meta description: scrivi una frase di 140‑160 caratteri con benefici, località se ti interessa l’Italia o alcune città, e call‑to‑action (es. “prenota un consulto di tarocchi di Marsiglia con 7 minuti gratis”).
+
+H1/H2: l’H1 “Valeria Di Pace Tarologa · Tarocchi di Marsiglia” è ok, ma nei blocchi successivi usa H2/H3 con parole chiave (“Consulto tarocchi di Marsiglia online”, “Come funziona il consulto di tarocchi”, “Recensioni tarologa professionale”).
+
+Testi: ripeti in modo naturale “consulto tarocchi di Marsiglia”, “tarologa professionale”, “lettura tarocchi online/telefonica”, evitando keyword stuffing, magari con varianti tipo “lettura delle carte”, “consulenza tarologica”.
+
+URL e slug: per le pagine future usa slug descrittivi, es. /consulto-tarocchi-online, /tarologa-valeria-di-pace, ecc.
+
+Immagini: inserisci foto ottimizzate (peso ridotto) con alt descrittivo tipo “Valeria Di Pace tarologa durante un consulto di tarocchi di Marsiglia”.
+
+Dati strutturati: aggiungi schema.org tipo Person e Service (tarot reading), con nome, descrizione, rating aggregato, numero recensioni, area servita e contatti.
+
+Ti consiglierei anche una pagina dedicata “Consulto tarocchi: domande frequenti (FAQ)”, che intercetta ricerche informative (“quante domande posso fare”, “come si svolge il consulto”, ecc.).
+
+Contenuti e blog
+Sezione “Crescita personale” e blog sono perfetti per articoli ottimizzati SEO: guida ai tarocchi di Marsiglia, significato degli arcani, come prepararsi a un consulto, come distinguere tarologi seri, ecc.
+
+Ogni articolo: una keyword principale (es. “significato Matto tarocchi di Marsiglia”), titolo SEO chiaro, 1 H1, vari H2, link interni a “Prenota ora” e all’app gratuita.
+
+Inserisci esempi di casi (anonimizzati) che partono dai tarocchi e arrivano a una decisione pratica: Google ama contenuti utili, non solo descrittivi.
+
+Fiducia e conversione
+I numeri sono forti (“4,97/5”, “3.359 consulti”, “776 commenti positivi”): portali subito above‑the‑fold in modo leggibile (niente zeri placeholder che oggi vedo nella sezione “I numeri parlano chiaro”).
+
+Aggiungi screenshot reali delle recensioni dalle piattaforme (oscurando nomi), badge “Piattaforme certificate” e, se possibile, loghi.
+
+Evidenzia meglio il vantaggio “7 minuti gratis” in più punti della pagina con pulsante unico “Inizia con 7 minuti gratuiti”.
+
+SEO off‑site e presenza online
+Scheda Google Business Profile: crea “Valeria Di Pace – Tarologa” (anche se lavori online) con sito, descrizione ottimizzata, orari e foto.
+
+Citazioni locali e tematiche: inserisci il sito in directory serie (professionisti olistici, benessere, liste di tarologi), con stessa ragione sociale e P.IVA ovunque.
+
+Guest post e interviste: articoli o video su blog, canali YouTube e podcast di spiritualità/crescita personale con link a nonsolotarocchi.it.
+
+Social: scegli 1‑2 canali (es. Instagram + TikTok o YouTube Shorts) e pubblica pillole: una carta al giorno, mini letture generali, spiegazioni su come usare l’app gratuita, con link in bio al sito.
+
+Pubblicità: cosa fare in pratica
+Funnel principale:
+
+Annuncio → App gratuita o pagina “7 minuti gratis” → iscrizione → consulto gratuito → upsell ai consulti a pagamento.
+
+Google Ads: campagne “ricerca” su intenti forti tipo “consulto tarocchi telefonico”, “tarologa tarocchi di Marsiglia online”, limitando l’area geografica (es. Italia o regioni di interesse) e portando alla pagina “Come funziona + Prenota”.
+
+Meta Ads (Facebook/Instagram): creatività con volto di Valeria e messaggio chiaro sul dono/rigore + hook dei “7 minuti gratis” che porta alla registrazione.
+
+Remarketing: tag Google e pixel Meta sul sito per mostrare annunci soft (“Hai già esplorato le Carte di Stella? Prenota il tuo consulto con 7 minuti omaggio”) a chi ha visitato senza iscriversi.
+
+Newsletter: dopo l’iscrizione all’account puoi chiedere consenso per inviare una newsletter con letture generali mensili, promozioni (es. 10 minuti extra per chi prenota entro una data), nuovi articoli del blog.

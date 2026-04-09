@@ -672,7 +672,7 @@ export const approveChart = async (req: Request, res: Response): Promise<void> =
 async function notifyClient(clerkUserId: string, analysisType: 'tema_natale' | 'oroscopo' | 'sinastria') {
   try {
     const { createClerkClient } = await import('@clerk/backend')
-    const clerk = createClerkClient({ apiKey: process.env.CLERK_SECRET_KEY })
+    const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY })
     const user = await clerk.users.getUser(clerkUserId)
     const email = user.emailAddresses[0]?.emailAddress
     
