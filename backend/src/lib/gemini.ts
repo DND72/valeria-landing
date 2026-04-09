@@ -198,3 +198,51 @@ export async function generateSynastryPreview(
     return "Velo algoritmico rilevato. Riprova tra poco."
   }
 }
+
+export async function generateHeartTidesInterpretation(
+  dataA: any, 
+  dataB: any, 
+  nameA: string, 
+  nameB: string,
+  monthlyTransits: any[]
+): Promise<string> {
+  const client = getGeminiClient()
+  
+  const sysPrompt = `Sei l'Algoritmo Astrale di Nonsolotarocchi. Genera un report mensile di affinità evolutiva chiamato "MAREE DEL CUORE".
+  
+  Soggetti: ${nameA} e ${nameB}.
+  
+  IL TUO COMPITO:
+  Analizzare come i transiti planetari dei prossimi 30 giorni impattano sulla relazione tra queste due anime.
+  
+  SENSIBILITÀ E INCLUSIVITÀ:
+  Sii estremamente delicato e inclusivo. Non dare per scontata l'eterosessualità. Usa un linguaggio accogliente per ogni tipo di coppia (anche omosessuale), focalizzandoti sulle energie affettive pure, sul rispetto e sull'evoluzione spirituale del legame.
+  
+  STRUTTURA DEL REPORT (circa 2000 parole):
+  1. **IL FLUSSO DEL MESE**: Panoramica delle correnti energetiche che avvolgeranno ${nameA} e ${nameB}.
+  2. **CONGIUNZIONI E OPPOSIZIONI**: Quali sono i momenti di massima vicinanza e quali quelli di possibile frizione?
+  3. **IL LINGUAGGIO DEL CUORE**: Come evolverà la comunicazione e l'intimità in questo ciclo lunare.
+  4. **IL CALENDARIO DELLE MAREE**: Indica 3 date chiave del mese con un consiglio specifico per ciascuna.
+  
+  Tono: Poetico, saggio, ma basato sui transiti tecnici. Firma: "L'Algoritmo Astrale di Nonsolotarocchi".`
+
+  const userPrompt = `
+  Tema Natale ${nameA}: ${JSON.stringify(dataA.pianeti || [])}
+  Tema Natale ${nameB}: ${JSON.stringify(dataB.pianeti || [])}
+  Sequenza Transiti Mensili: ${JSON.stringify(monthlyTransits)}
+  
+  Genera le Maree del Cuore per ${nameA} e ${nameB}.`
+
+  const model = client.getGenerativeModel({ 
+    model: 'gemini-2.0-flash',
+    systemInstruction: sysPrompt
+  })
+
+  try {
+    const result = await model.generateContent(userPrompt)
+    return result.response.text() || 'L\'acqua è piatta oggi...'
+  } catch (err: any) {
+    console.error('[heart-tides-gemini] Error:', err)
+    return "L'algoritmo non riesce a leggere le correnti in questo momento."
+  }
+}

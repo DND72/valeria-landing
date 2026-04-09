@@ -3,7 +3,7 @@ import {
   calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal, 
   generateSummaryForExistingChart, getLatestChart, generateStaffChart,
   getPendingCharts, approveChart, getLatestHoroscope, generateFirstHoroscope, approveHoroscope,
-  calculateSynastry, rejectAndRefund
+  calculateSynastry, rejectAndRefund, calculateHeartTides, getHeartTidesHistory
 } from '../controllers/astrologyController.js'
 import { requireClerkAuth, optionalClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 
@@ -24,6 +24,8 @@ router.post('/generate-paid', requireClerkAuth, generatePaidChart)
 router.get('/my-charts', requireClerkAuth, getMyCharts)
 router.post('/generate-summary', requireClerkAuth, generateSummaryForExistingChart)
 router.post('/synastry', requireClerkAuth, calculateSynastry)
+router.post('/heart-tides', requireClerkAuth, calculateHeartTides)
+router.get('/heart-tides/list', requireClerkAuth, getHeartTidesHistory)
 
 // Staff Management
 router.post('/generate-staff', requireClerkAuth, requireStaff, generateStaffChart)

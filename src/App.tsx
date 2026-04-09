@@ -43,6 +43,7 @@ import LiveSessionPage from './pages/LiveSessionPage'
 import BiWheelPage from './pages/dashboard/BiWheelPage'
 import MentorePage from './pages/dashboard/MentorePage'
 import SynastryPage from './pages/SynastryPage'
+import HeartTidesPage from './pages/HeartTidesPage'
 
 function HomePage() {
   return (
@@ -111,6 +112,7 @@ function AppRoutes() {
 
             <Route path="/sessione/:id" element={<LiveSessionPage />} />
             <Route path="/affinita-di-coppia" element={<SynastryPage />} />
+            <Route path="/maree-del-cuore" element={<HeartTidesPage />} />
       </Routes>
     </RouteErrorBoundary>
   )
