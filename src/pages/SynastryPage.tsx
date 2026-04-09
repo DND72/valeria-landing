@@ -1,5 +1,4 @@
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import { useUser } from '@clerk/clerk-react'
@@ -8,7 +7,7 @@ import ClientLayout from '../components/dashboard/ClientLayout'
 
 export default function SynastryPage() {
   const { user } = useUser()
-  const { calculateSynastry } = useAstrologyApi()
+  const { calculateSynastry, getLatestChart, syncNatalData } = useAstrologyApi()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any | null>(null)
   const [showFullCTA, setShowFullCTA] = useState(false)
@@ -27,6 +26,40 @@ export default function SynastryPage() {
     gender: 'M' as 'M' | 'F'
   })
 
+  const [isPersonAFixed, setIsPersonAFixed] = useState({
+    birthDate: false,
+    birthTime: false,
+    city: false,
+    gender: false
+  })
+
+  // Caricamento dati profilo per Persona A
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const res = await getLatestChart()
+        if (res.chart) {
+          const bd = res.chart.birthDate ? new Date(res.chart.birthDate).toISOString().split('T')[0] : ''
+          setPersonA({
+             birthDate: bd,
+             birthTime: res.chart.birthTime || '',
+             city: res.chart.city || '',
+             gender: (res.chart as any).gender || 'F'
+          })
+          setIsPersonAFixed({
+             birthDate: !!bd,
+             birthTime: !!res.chart.birthTime,
+             city: !!res.chart.city,
+             gender: !!(res.chart as any).gender
+          })
+        }
+      } catch (err) {
+        console.error("Errore recupero dati profilo:", err)
+      }
+    }
+    loadProfile()
+  }, [getLatestChart])
+
   const handleCalculate = async (isPremium: boolean = false) => {
     if (!personA.birthDate || !personA.city || !personB.birthDate || !personB.city) {
       alert("Per favore, inserisci tutti i dati per entrambe le anime.")
@@ -35,6 +68,13 @@ export default function SynastryPage() {
 
     setLoading(true)
     try {
+      // Se i dati di persona A non erano fissi, li sincronizziamo ora per diffonderli nel portale
+      if (!isPersonAFixed.birthDate || !isPersonAFixed.city) {
+         try {
+            await syncNatalData(personA)
+         } catch (e) { console.error("Sync natal failed:", e) }
+      }
+
       // Passiamo un flag speciale per l'analisi base gratuita se non è premium
       const res = await calculateSynastry(personA, personB, !isPremium)
       setResult(res)
@@ -84,14 +124,18 @@ export default function SynastryPage() {
                       <span className="text-xl">🕯️</span>
                    </div>
                    <h3 className="font-serif text-xl text-white italic">La Tua Anima</h3>
+                   {Object.values(isPersonAFixed).some(v => v) && (
+                      <span className="text-[10px] text-amber-500/60 uppercase tracking-tighter absolute top-8 right-8 italic">Dati Cristallizzati</span>
+                   )}
                    <div className="space-y-4">
                       <div>
                          <label className="text-[10px] uppercase tracking-widest text-white/40 block mb-2">Data di Nascita</label>
                          <input
                             type="date"
                             value={personA.birthDate}
+                            readOnly={isPersonAFixed.birthDate}
                             onChange={(e) => setPersonA(prev => ({ ...prev, birthDate: e.target.value }))}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
+                            className={`w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all ${isPersonAFixed.birthDate ? 'opacity-50 cursor-not-allowed' : ''}`}
                          />
                       </div>
                       <div>
@@ -99,8 +143,9 @@ export default function SynastryPage() {
                          <input
                             type="time"
                             value={personA.birthTime}
+                            readOnly={isPersonAFixed.birthTime}
                             onChange={(e) => setPersonA(prev => ({ ...prev, birthTime: e.target.value }))}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
+                            className={`w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all ${isPersonAFixed.birthTime ? 'opacity-50 cursor-not-allowed' : ''}`}
                          />
                       </div>
                       <div>
@@ -109,16 +154,18 @@ export default function SynastryPage() {
                             type="text"
                             placeholder="Es: Roma"
                             value={personA.city}
+                            readOnly={isPersonAFixed.city}
                             onChange={(e) => setPersonA(prev => ({ ...prev, city: e.target.value }))}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
+                            className={`w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all ${isPersonAFixed.city ? 'opacity-50 cursor-not-allowed' : ''}`}
                          />
                       </div>
                       <div>
                          <label className="text-[10px] uppercase tracking-widest text-white/40 block mb-2">Energia Prevalente</label>
                          <select 
                             value={personA.gender}
+                            disabled={isPersonAFixed.gender}
                             onChange={(e) => setPersonA(prev => ({ ...prev, gender: e.target.value as any }))}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
+                            className={`w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all ${isPersonAFixed.gender ? 'opacity-50 cursor-not-allowed' : ''}`}
                          >
                             <option value="M">Maschile</option>
                             <option value="F">Femminile</option>
