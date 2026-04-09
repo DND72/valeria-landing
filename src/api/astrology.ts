@@ -147,10 +147,10 @@ export function useAstrologyApi() {
         body: JSON.stringify(data)
       })
     },
-    approveChart: async (chartId: string | number, type: 'chart' | 'horoscope' = 'chart'): Promise<{ success: boolean }> => {
+    approveChart: async (chartId: string | number, type: 'chart' | 'horoscope' = 'chart', interpretation?: string): Promise<{ success: boolean }> => {
       return authFetch('/api/astrology/staff/approve', {
         method: 'POST',
-        body: JSON.stringify({ chartId, type })
+        body: JSON.stringify({ chartId, type, interpretation })
       })
     },
     generateStaffChart: async (data: NatalChartRequest): Promise<NatalChartResponse & { interpretation: string }> => {

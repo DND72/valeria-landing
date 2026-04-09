@@ -221,11 +221,14 @@ export function createStaffRouter(pool: Pool): Router {
   r.get('/consults', async (_req, res) => {
     try {
       const { rows } = await pool.query(
-        `SELECT id, clerk_user_id, calendly_event_uri, status, is_free_consult,
-                meeting_join_url, meeting_provider, invitee_email, invitee_name,
-                start_at, end_at, paypal_order_id, calendly_event_name, created_at, updated_at
-         FROM consults
-         ORDER BY start_at DESC NULLS LAST, created_at DESC
+        `SELECT c.id, c.clerk_user_id, c.calendly_event_uri, c.status, c.is_free_consult,
+                c.meeting_join_url, c.meeting_provider, 
+                COALESCE(c.invitee_email, bp.email_normalized) as invitee_email, 
+                COALESCE(c.invitee_name, bp.first_name || ' ' || bp.last_name, bp.email_normalized) as invitee_name,
+                c.start_at, c.end_at, c.paypal_order_id, c.calendly_event_name, c.created_at, c.updated_at
+         FROM consults c
+         LEFT JOIN client_billing_profiles bp ON c.clerk_user_id = bp.clerk_user_id
+         ORDER BY c.start_at DESC NULLS LAST, c.created_at DESC
          LIMIT 200`
       )
       res.json({

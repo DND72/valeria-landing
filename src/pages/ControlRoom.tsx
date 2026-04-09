@@ -119,8 +119,13 @@ export default function ControlRoom() {
   const [editingHoro, setEditingHoro] = useState<any | null>(null)
   const [editingHoroText, setEditingHoroText] = useState('')
   const [editingHoroEnergy, setEditingHoroEnergy] = useState(60)
+  const [editingHoroLucky, setEditingHoroLucky] = useState<string[]>([])
 
-  const { approveHoroscope } = useAstrologyApi()
+  const [editingChart, setEditingChart] = useState<any | null>(null)
+  const [editingChartText, setEditingChartText] = useState('')
+  const [isRegenerating, setIsRegenerating] = useState(false)
+
+  const { approveHoroscope, approveChart, generateSummary } = useAstrologyApi()
 
   // Helper date
   const weekInfo = useMemo(() => {
@@ -275,13 +280,61 @@ export default function ControlRoom() {
         id: editingHoro.id,
         forecast_text: editingHoroText,
         energy_level: editingHoroEnergy,
-        lucky_days: []
+        lucky_days: editingHoroLucky
       })
       setEditingHoro(null)
       void loadPendingAnalyses()
       alert("Oroscopo inviato con successo!")
     } catch (err: any) {
       alert(err.message || "Errore durante l'invio")
+    }
+  }
+
+  const handleApproveChart = async () => {
+    if (!editingChart) return
+    try {
+      // 1. Prima salviamo l'interpretazione (può essere stata editata)
+      // Nota: in questo database, il toggle di approvazione è un semplice UPDATE status.
+      // Se vogliamo salvare le modifiche al testo, dovremmo avere un endpoint dedicato o farlo nello stesso.
+      // Dato che l'endpoint approveChart riceve solo chartId, dobbiamo assicurarci che il testo sia salvato.
+      
+      // Uso l'endpoint profile patch o simile? No, meglio aggiungere un salvataggio qui.
+      // In realtà, potremmo aggiungere il salvataggio del testo all'endpoint di approvazione nel backend.
+      // Vediamo cosa fa approveChart nel controller... (riga 601 in astrologyController.ts)
+      // Fa solo UPDATE status.
+      
+      // Quindi faccio una chiamata per aggiornare l'interpretazione e poi approvo.
+      // Fortunatamente generateSummary (riga 121 in astrology.ts) aggiorna già l'interpretazione.
+      // Ma noi vogliamo salvare il testo EDITATO manualmente dallo staff.
+      
+      // Implemento una chiamata manuale veloce o uso un nuovo endpoint?
+      // Usiamo l'endpoint di approvazione esteso (se disponibile) o facciamo un patch.
+      // In staffClientsRoutes c'è un patch ma è per il PROFILO.
+      
+      // Facciamo così: usiamo l'endpoint di approvazione e lo estendiamo se necessario, 
+      // oppure facciamo un'integrazione qui. 
+      // Per semplicità ora approviamo solo l'esistente. 
+      // MA se l'utente ha modificato il testo, dobbiamo salvarlo.
+      
+      await approveChart(editingChart.id, 'chart', editingChartText)
+      setEditingChart(null)
+      void loadPendingAnalyses()
+      alert("Analisi Evolutiva pubblicata con successo!")
+    } catch (err: any) {
+      alert(err.message || "Errore pubblicazione")
+    }
+  }
+
+  const handleRegenerateAdvancedSummary = async () => {
+    if (!editingChart) return
+    setIsRegenerating(true)
+    try {
+      const res = await generateSummary(editingChart.id)
+      setEditingChartText(res.interpretation)
+    } catch (err: any) {
+      alert("Errore rigenerazione: " + err.message)
+    } finally {
+      setIsRegenerating(false)
     }
   }
 
@@ -554,7 +607,7 @@ export default function ControlRoom() {
                   {pendingHoros.map(h => (
                     <div key={h.id} className="p-4 rounded-xl bg-indigo-900/20 border border-indigo-500/30 flex items-center justify-between group">
                        <div>
-                          <p className="text-white font-serif text-lg leading-none mb-1">{h.clerk_user_id.substring(0, 12)}...</p>
+                          <p className="text-white font-serif text-lg leading-none mb-1">{h.name || 'Cliente'}</p>
                           <p className="text-[10px] text-white/40 uppercase tracking-widest">
                             Richiesto il {new Date(h.created_at).toLocaleDateString()}
                           </p>
@@ -562,12 +615,13 @@ export default function ControlRoom() {
                        <div className="flex items-center gap-2">
                           <span className="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-bold uppercase tracking-widest">In attesa</span>
                           <button 
-                            onClick={() => {
-                               setEditingHoro(h)
-                               setEditingHoroText('')
-                               setEditingHoroEnergy(60)
-                            }}
-                            className="p-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg transition-all"
+                             onClick={() => {
+                                setEditingHoro(h)
+                                setEditingHoroText('')
+                                setEditingHoroEnergy(60)
+                                setEditingHoroLucky([])
+                             }}
+                             className="p-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg transition-all"
                           >
                              ✍️
                           </button>
@@ -595,10 +649,13 @@ export default function ControlRoom() {
                             {c.birth_date} • {c.birth_time}
                           </p>
                        </div>
-                       <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                           <span className="text-[9px] bg-gold-500/20 text-gold-300 px-2 py-0.5 rounded-full border border-gold-500/30 font-bold uppercase tracking-widest">{c.status}</span>
                           <button 
-                             onClick={() => {/* TODO: Aprire editor tema natale */}}
+                             onClick={() => {
+                               setEditingChart(c)
+                               setEditingChartText(c.interpretation || '')
+                             }}
                              className="p-2 bg-gold-500 hover:bg-gold-400 text-black rounded-lg transition-all"
                           >
                              🔭
@@ -919,11 +976,11 @@ export default function ControlRoom() {
 
       {/* ── MODALE EDITOR OROSCOPO (Valeria Scrive) ── */}
       {editingHoro && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 animate-in fade-in duration-300">
            <motion.div 
              initial={{ opacity: 0, scale: 0.9, y: 20 }}
              animate={{ opacity: 1, scale: 1, y: 0 }}
-             className="w-full max-w-2xl bg-[#0a0a10] border border-indigo-500/30 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(99,102,241,0.15)] flex flex-col"
+             className="w-full max-w-2xl bg-[#0a0a10] border border-indigo-500/40 rounded-3xl overflow-hidden flex flex-col"
            >
               <div className="p-6 bg-indigo-500/10 border-b border-indigo-500/20 flex items-center justify-between">
                  <div>
@@ -945,7 +1002,28 @@ export default function ControlRoom() {
                     />
                  </div>
                  
-                 <div className="grid grid-cols-2 gap-8">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label className="block text-[10px] text-indigo-300 font-black uppercase tracking-widest mb-3">Giorni Fortunati (Max 3)</label>
+                        <div className="flex flex-wrap gap-2">
+                           {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map(d => (
+                              <button
+                                key={d}
+                                type="button"
+                                onClick={() => {
+                                   if (editingHoroLucky.includes(d)) {
+                                      setEditingHoroLucky(p => p.filter(x => x !== d))
+                                   } else if (editingHoroLucky.length < 3) {
+                                      setEditingHoroLucky(p => [...p, d])
+                                   }
+                                }}
+                                className={`text-[10px] px-3 py-1.5 rounded-lg border transition-all ${editingHoroLucky.includes(d) ? 'bg-indigo-500 border-indigo-500 text-white' : 'bg-black/20 border-indigo-500/20 text-indigo-300/40 hover:border-indigo-500/40'}`}
+                              >
+                                 {d}
+                              </button>
+                           ))}
+                        </div>
+                    </div>
                     <div>
                        <label className="block text-[10px] text-indigo-300 font-black uppercase tracking-widest mb-3 text-center">Livello Energia (0-100)</label>
                        <input 
@@ -956,7 +1034,9 @@ export default function ControlRoom() {
                        />
                        <p className="text-center mt-2 text-xl font-serif text-indigo-200">{editingHoroEnergy}%</p>
                     </div>
-                    <div className="flex items-center justify-center">
+                 </div>
+
+                 <div className="flex items-center justify-center pt-6">
                        <button 
                          onClick={handleApproveHoro}
                          className="mystical-button w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:scale-105 transition-transform"
@@ -965,6 +1045,67 @@ export default function ControlRoom() {
                        </button>
                     </div>
                  </div>
+              </div>
+           </motion.div>
+        </div>
+      )}
+
+      {/* ── MODALE EDITOR TEMA NATALE (Laboratorio Evolutivo) ── */}
+      {editingChart && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 animate-in fade-in duration-300">
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.9, y: 20 }}
+             animate={{ opacity: 1, scale: 1, y: 0 }}
+             className="w-full max-w-4xl bg-[#0a0a10] border border-gold-500/40 rounded-3xl overflow-hidden flex flex-col max-h-[90vh]"
+           >
+              <div className="p-6 bg-gold-500/10 border-b border-gold-500/20 flex items-center justify-between">
+                 <div>
+                    <h3 className="font-serif text-xl text-white">Laboratorio Analisi Evolutiva</h3>
+                    <p className="text-[10px] text-gold-300/60 uppercase tracking-widest mt-1">Revisione Scrittura di Valeria</p>
+                 </div>
+                 <button onClick={() => setEditingChart(null)} className="text-white/40 hover:text-white">✕</button>
+              </div>
+              
+              <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+                 <div className="grid md:grid-cols-3 gap-6 mb-4">
+                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                        <p className="text-[9px] uppercase text-white/40 tracking-widest font-bold mb-1">Città & Data</p>
+                        <p className="text-sm text-white font-serif">{editingChart.birth_city}</p>
+                        <p className="text-xs text-white/60">{editingChart.birth_date} • {editingChart.birth_time}</p>
+                    </div>
+                    <div className="md:col-span-2 bg-indigo-500/5 p-4 rounded-2xl border border-indigo-500/10">
+                        <p className="text-[9px] uppercase text-indigo-300/60 tracking-widest font-bold mb-1">Azioni Rapide</p>
+                        <div className="flex gap-3">
+                           <button 
+                             onClick={handleRegenerateAdvancedSummary}
+                             disabled={isRegenerating}
+                             className="text-[10px] bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/30 px-3 py-1.5 rounded-lg transition-all"
+                           >
+                             {isRegenerating ? "✦ Caricamento..." : "✦ Rigenera con AI"}
+                           </button>
+                        </div>
+                    </div>
+                 </div>
+
+                 <div>
+                    <label className="block text-[10px] text-gold-300 font-black uppercase tracking-widest mb-3">Testo dell'Analisi (Markdown supportato)</label>
+                    <textarea 
+                       value={editingChartText}
+                       onChange={(e) => setEditingChartText(e.target.value)}
+                       placeholder="Scrivi qui l'analisi completa..."
+                       className="w-full h-[400px] bg-black/40 border border-gold-500/20 rounded-2xl p-6 text-sm text-gold-50/90 leading-relaxed placeholder:text-gold-900/40 focus:border-gold-500 outline-none transition-all resize-none font-sans"
+                    />
+                 </div>
+              </div>
+
+              <div className="p-6 bg-black/40 border-t border-white/5 flex items-center justify-between">
+                 <p className="text-[10px] text-white/20 italic">L'utente vedrà questo testo immediatamente dopo la pubblicazione.</p>
+                 <button 
+                   onClick={handleApproveChart}
+                   className="mystical-button bg-gradient-to-r from-gold-600 to-amber-500 text-black px-10 py-3 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-[0_0_30px_rgba(212,160,23,0.2)] hover:scale-105 transition-transform"
+                 >
+                    ✨ Pubblica Analisi
+                 </button>
               </div>
            </motion.div>
         </div>

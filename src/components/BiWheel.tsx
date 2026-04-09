@@ -111,22 +111,22 @@ export default function BiWheel({
 
           {/* ── Guide Visive Cerchi Interno/Esterno ── */}
           {/* Cerchio Transiti (Esterno) - Area bluastra */}
-          <circle 
-            cx={CX} cy={CY} r={R.TRANSIT_R + 50} 
-            fill="none" stroke="rgba(59, 130, 246, 0.1)" strokeWidth="100" 
-          />
-          <text x={CX} y={CY - R.TRANSIT_R - 70} textAnchor="middle" fontSize="30" fill="rgba(59, 130, 246, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
-            Corrente del Presente (Transiti)
-          </text>
+        <circle 
+          cx={CX} cy={CY} r={R.TRANSIT_R + 50} 
+          fill="none" stroke="rgba(59, 130, 246, 0.12)" strokeWidth="100" 
+        />
+        <text x={CX} y={CY - R.TRANSIT_R - 35} textAnchor="middle" fontSize="38" fill="rgba(100, 170, 255, 1)" fontWeight="black" className="uppercase tracking-[0.6em]">
+          CORRENTE DEL PRESENTE (TRANSITI)
+        </text>
 
-          {/* Cerchio Natale (Interno) - Area dorata */}
-          <circle 
-            cx={CX} cy={CY} r={R.NATAL_R + 40} 
-            fill="none" stroke="rgba(212, 160, 23, 0.08)" strokeWidth="90" 
-          />
-          <text x={CX} y={CY - R.NATAL_R - 55} textAnchor="middle" fontSize="30" fill="rgba(212, 160, 23, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
-            Radice Immutabile (Natale)
-          </text>
+        {/* Cerchio Natale (Interno) - Area dorata */}
+        <circle 
+          cx={CX} cy={CY} r={R.NATAL_R + 40} 
+          fill="none" stroke="rgba(212, 160, 23, 0.08)" strokeWidth="90" 
+        />
+        <text x={CX} y={CY - R.NATAL_R + 30} textAnchor="middle" fontSize="38" fill="rgba(212, 160, 23, 0.85)" fontWeight="black" className="uppercase tracking-[0.6em]">
+          RADICE IMMUTABILE (NATALE)
+        </text>
 
           {/* ── 12 Segni Zodiacali ── */}
           {ZODIAC.map((sign, i) => {
@@ -180,8 +180,7 @@ export default function BiWheel({
               <line
                 key={idx}
                 x1={posN.x} y1={posN.y} x2={posT.x} y2={posT.y}
-                stroke={color} strokeWidth="3" strokeOpacity={asp.precision * 0.6}
-                filter="url(#glow-p)"
+                stroke={color} strokeWidth="3" strokeOpacity={asp.precision * 0.8}
               />
             )
           })}
@@ -191,14 +190,13 @@ export default function BiWheel({
             const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
             const pos = toXY(R.NATAL_R, p.lon_assoluta, rotationOffset)
             const glyph = BODY_GLYPHS[p.nome] || '●'
-            const isHov = hovered?.name === p.nome && hovered?.type === 'natal'
 
             return (
               <g key={`natal-${p.nome}`} onMouseEnter={() => setHovered({name: p.nome, type: 'natal'})} onMouseLeave={() => setHovered(null)}>
                 <circle cx={pos.x} cy={pos.y} r="15" fill={info.color} fillOpacity="0.4" />
                 <text 
                   x={pos.x} y={pos.y + 2} textAnchor="middle" dominantBaseline="middle"
-                  fontSize="40" fill={info.color} filter={isHov ? 'url(#glow-p)' : ''}
+                  fontSize="40" fill={info.color}
                 >
                   {glyph}
                 </text>
@@ -218,7 +216,7 @@ export default function BiWheel({
                 <circle cx={pos.x} cy={pos.y} r="20" fill="none" stroke={info.color} strokeWidth="2" strokeDasharray="2 2" />
                 <text 
                   x={pos.x} y={pos.y + 2} textAnchor="middle" dominantBaseline="middle"
-                  fontSize="45" fill={info.color} filter={isHov ? 'url(#glow-p)' : ''}
+                  fontSize="45" fill={info.color}
                 >
                   {glyph}
                 </text>

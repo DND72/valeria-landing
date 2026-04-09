@@ -20,19 +20,17 @@
     color: #060608;
   }
 
-  /* 3D emboss on all serif headings */
+  /* 3D emboss rimosso per massima nitidezza richiesta dall'utente */
   h1, h2, h3 {
-    text-shadow:
-      0 1px 0 rgba(255, 200, 50, 0.4),
-      0 2px 0 rgba(180, 120, 0, 0.3),
-      0 3px 0 rgba(120, 80, 0, 0.2),
-      0 4px 8px rgba(0, 0, 0, 0.7),
-      0 8px 20px rgba(0, 0, 0, 0.5);
+    text-shadow: none;
+  }
+  h4, h5, h6 {
+    text-shadow: none;
   }
 
-  /* Body text — shadow scura per leggibilità su galassie */
+  /* Body text — Rimosse ombre per evitare effetto sfocato */
   p, span, li, a, label, blockquote {
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.6);
+    text-shadow: none;
   }
 
   /* Global Input Styles: Valeria Dark Theme */

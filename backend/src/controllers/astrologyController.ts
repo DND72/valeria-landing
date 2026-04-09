@@ -573,21 +573,26 @@ export const getPendingCharts = async (_req: Request, res: Response): Promise<vo
     const chartsRes = await pool.query(
       `SELECT nc.*, bp.declared_birthday, bp.birth_city 
        FROM natal_charts nc
-       LEFT JOIN billing_profiles bp ON nc.clerk_user_id = bp.clerk_user_id
+       LEFT JOIN client_billing_profiles bp ON nc.clerk_user_id = bp.clerk_user_id
        WHERE nc.status = 'pending_staff'
        ORDER BY nc.created_at ASC`
     )
 
-    // 2. Oroscopi in attesa
+    // 2. Oroscopi in attesa (con info utente)
     const horoRes = await pool.query(
-      `SELECT * FROM user_horoscopes 
-       WHERE status = 'pending_staff'
-       ORDER BY created_at ASC`
+      `SELECT h.*, bp.first_name || ' ' || bp.last_name as display_name, bp.email_normalized
+       FROM user_horoscopes h
+       LEFT JOIN client_billing_profiles bp ON h.clerk_user_id = bp.clerk_user_id
+       WHERE h.status = 'pending_staff'
+       ORDER BY h.created_at ASC`
     )
 
     res.json({ 
       pendingCharts: chartsRes.rows, 
-      pendingHoroscopes: horoRes.rows 
+      pendingHoroscopes: horoRes.rows.map(h => ({
+        ...h,
+        name: h.display_name || h.email_normalized || h.clerk_user_id
+      }))
     })
   } catch (err) {
     console.error('[staff getPending]', err)
@@ -599,7 +604,7 @@ export const getPendingCharts = async (_req: Request, res: Response): Promise<vo
  * STAFF ONLY: Approva un'analisi rendendola fruibile al cliente
  */
 export const approveChart = async (req: Request, res: Response): Promise<void> => {
-  const { chartId, type } = req.body
+  const { chartId, type, interpretation } = req.body
   if (!chartId) {
     res.status(400).json({ error: 'Missing chartId' })
     return
@@ -610,14 +615,21 @@ export const approveChart = async (req: Request, res: Response): Promise<void> =
     
     if (type === 'horoscope') {
       await pool.query(
-        `UPDATE user_horoscopes SET status = 'ready' WHERE id = $1`,
+        `UPDATE user_horoscopes SET status = 'ready', updated_at = now() WHERE id = $1`,
         [chartId]
       )
     } else {
-      await pool.query(
-        `UPDATE natal_charts SET status = 'ready' WHERE id = $1`,
-        [chartId]
-      )
+      if (interpretation) {
+        await pool.query(
+          `UPDATE natal_charts SET status = 'ready', interpretation = $1, created_at = now() WHERE id = $2`,
+          [interpretation, chartId]
+        )
+      } else {
+        await pool.query(
+          `UPDATE natal_charts SET status = 'ready', created_at = now() WHERE id = $1`,
+          [chartId]
+        )
+      }
     }
     
     res.json({ success: true, message: 'Analisi approvata e pubblicata' })
