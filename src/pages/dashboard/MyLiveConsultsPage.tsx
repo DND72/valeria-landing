@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuth, useUser } from '@clerk/clerk-react'
+import { useAuth } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
 import { apiJson } from '../../lib/api'
 import ClientLayout from '../../components/dashboard/ClientLayout'
@@ -15,7 +15,6 @@ interface MyConsult {
 
 export default function MyLiveConsultsPage() {
   const { getToken } = useAuth()
-  const { user } = useUser()
   const [liveConsults, setLiveConsults] = useState<MyConsult[]>([])
   const [loading, setLoading] = useState(true)
 

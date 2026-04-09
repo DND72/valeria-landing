@@ -8,7 +8,7 @@ import StaffAnalyticsWidget from './StaffAnalyticsWidget'
 import StaffCrmDrawer from './StaffCrmDrawer'
 import StaffLenormandMentor from './StaffLenormandMentor'
 import StaffAstrology from './StaffAstrology'
-import StaffLiveMonitor from './StaffLiveMonitor'
+import StaffLiveMonitor from './dashboard/StaffLiveMonitor'
 
 type MeetingsPayload =
   | {
