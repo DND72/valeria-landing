@@ -95,7 +95,9 @@ export default function BookingFlow({
   }
 
   const isChat = selectedConsult?.startsWith('chat_')
-  const showInstantCta = isChat && valeriaStatus === 'online'
+  const isTarot = ['rapido', 'breve', 'completo'].includes(selectedConsult || '')
+  const isInstantKind = isChat || isTarot
+  const showInstantCta = isInstantKind && valeriaStatus === 'online'
 
   const consultChoicesForClient = CONSULT_CHOICES.filter((c) => {
     if (c.kind === 'free' && (freeHidden || ageStatus?.hasUsedFree7)) return false
@@ -227,14 +229,18 @@ export default function BookingFlow({
                <span className="text-2xl animate-pulse">⚡</span>
             </div>
             <h3 className="text-emerald-400 font-bold text-lg mb-1">Valeria è Ora Online!</h3>
-            <p className="text-white/60 text-sm mb-5 max-w-sm">Puoi evitare il calendario e avviare la Chat Flash immediatamente.</p>
+            <p className="text-white/60 text-sm mb-5 max-w-sm">
+               {isChat 
+                 ? "Puoi evitare il calendario e avviare la Chat Flash immediatamente." 
+                 : "Puoi richiedere il consulto immediato. Valeria caricherà il link alla chiamata tra pochi istanti."}
+            </p>
             {instantError && <p className="text-red-400 text-xs mb-4">{instantError}</p>}
             <button
                onClick={handleInstantBooking}
                disabled={instantLoading}
                className="btn-gold px-12 py-3 text-sm font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.2)]"
             >
-               {instantLoading ? 'Sincronizzazione...' : 'AVVIA CHATTA ORA'}
+               {instantLoading ? 'Sincronizzazione...' : isChat ? 'AVVIA CHATTA ORA' : 'VEDIAMOCI ORA'}
             </button>
             <div className="mt-4 flex items-center gap-2">
                <span className="h-px w-8 bg-white/10" />

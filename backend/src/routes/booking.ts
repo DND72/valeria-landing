@@ -97,8 +97,8 @@ export function createBookingRouter(pool: Pool): Router {
 
           while (cursor < stop) {
             const slotEnd = new Date(cursor.getTime() + totalNeeded * 60 * 1000)
-            const isLiveChat = (kind && kind.startsWith('chat_'))
-            const leadTimeMs = isLiveChat ? 0 : (60 * 60 * 1000) // 1 ora per consulti standard, 0 per chat
+            const isInstantKind = kind && (kind.startsWith('chat_') || ['rapido', 'breve', 'completo'].includes(kind))
+            const leadTimeMs = isInstantKind ? 0 : (60 * 60 * 1000) 
             const minLeadTime = new Date(Date.now() + leadTimeMs)
             
             if (cursor > minLeadTime) {
