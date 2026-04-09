@@ -55,8 +55,8 @@ export default function SynastryPage() {
         const chart = res.chart
         setCurrentSky(sky)
         if (chart) {
-          setMyChartData(chart.chartData)
-          const bd = chart.birthDate ? new Date(chart.birthDate).toISOString().split('T')[0] : ''
+          setMyChartData(chart)
+          const bd = (chart as any).birthDate ? new Date((chart as any).birthDate).toISOString().split('T')[0] : ''
           setPersonA(prev => ({
              ...prev,
              birthDate: bd,

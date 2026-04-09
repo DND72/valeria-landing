@@ -8,6 +8,7 @@ import { useMeApi } from '../api/me'
 import ZodiacWheel from '../components/ZodiacWheel'
 import { useCircadianTheme } from '../hooks/useCircadianTheme'
 import { SIGN_MEANINGS } from '../constants/astrologyMeanings'
+import ClientLayout from '../components/dashboard/ClientLayout'
 
 const PLANET_COLOR: Record<string, string> = {
   'Sole': 'text-amber-400',
