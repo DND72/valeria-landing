@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
-import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useAstrologyApi } from '../api/astrology'
 import ClientLayout from '../components/dashboard/ClientLayout'
@@ -12,22 +11,23 @@ export default function SynastryPage() {
   const { calculateSynastry } = useAstrologyApi()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any | null>(null)
+  const [showFullCTA, setShowFullCTA] = useState(false)
 
   const [personA, setPersonA] = useState({
     birthDate: '',
     birthTime: '',
     city: '',
-    gender: 'female' as 'male' | 'female'
+    gender: 'F' as 'M' | 'F'
   })
 
   const [personB, setPersonB] = useState({
     birthDate: '',
     birthTime: '',
     city: '',
-    gender: 'male' as 'male' | 'female'
+    gender: 'M' as 'M' | 'F'
   })
 
-  const handleCalculate = async () => {
+  const handleCalculate = async (isPremium: boolean = false) => {
     if (!personA.birthDate || !personA.city || !personB.birthDate || !personB.city) {
       alert("Per favore, inserisci tutti i dati per entrambe le anime.")
       return
@@ -35,8 +35,14 @@ export default function SynastryPage() {
 
     setLoading(true)
     try {
-      const res = await calculateSynastry(personA, personB)
+      // Passiamo un flag speciale per l'analisi base gratuita se non è premium
+      const res = await calculateSynastry(personA, personB, !isPremium)
       setResult(res)
+      if (!isPremium) {
+        setShowFullCTA(true)
+      } else {
+        setShowFullCTA(false)
+      }
     } catch (err: any) {
       alert(err.message || "Errore durante il calcolo dell'affinità")
     } finally {
@@ -66,7 +72,7 @@ export default function SynastryPage() {
             animate={{ opacity: 1, scale: 1 }}
           >
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Persona A */}
+                {/* La Tua Anima */}
                 <div className="mystical-card p-8 bg-black/40 border-white/5 space-y-6 relative">
                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
                       <span className="text-xl">🕯️</span>
@@ -108,8 +114,8 @@ export default function SynastryPage() {
                             onChange={(e) => setPersonA(prev => ({ ...prev, gender: e.target.value as any }))}
                             className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
                          >
-                            <option value="male">Maschile</option>
-                            <option value="female">Femminile</option>
+                            <option value="M">Maschile</option>
+                            <option value="F">Femminile</option>
                          </select>
                       </div>
                    </div>
@@ -157,23 +163,31 @@ export default function SynastryPage() {
                             onChange={(e) => setPersonB(prev => ({ ...prev, gender: e.target.value as any }))}
                             className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
                          >
-                            <option value="male">Maschile</option>
-                            <option value="female">Femminile</option>
+                            <option value="M">Maschile</option>
+                            <option value="F">Femminile</option>
                          </select>
                       </div>
                    </div>
                 </div>
              </div>
 
-             <div className="mt-12 text-center">
+             <div className="mt-12 text-center flex flex-col items-center gap-6">
                 <button
-                  onClick={handleCalculate}
+                  onClick={() => handleCalculate(false)}
+                  disabled={loading}
+                  className="mystical-button bg-white/10 text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-xs border border-white/10 hover:bg-white/20 transition-all"
+                >
+                   {loading ? "In ascolto..." : "Calcola Alchimia Base (Gratis)"}
+                </button>
+                <div className="h-px w-20 bg-white/10" />
+                <button
+                  onClick={() => handleCalculate(true)}
                   disabled={loading}
                   className="mystical-button bg-gradient-to-r from-red-600 to-amber-600 text-white px-12 py-5 rounded-full font-black uppercase tracking-[0.3em] text-sm shadow-[0_0_50px_rgba(220,38,38,0.2)] hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                 >
-                   {loading ? "Intreccio Astrale..." : "Svela il Patto Segreto — 50 CR"}
+                   {loading ? "Intreccio Astrale..." : "Svela il Libro dell'Amore — 50 CR"}
                 </button>
-                <p className="text-[10px] text-white/30 uppercase tracking-widest mt-6 font-bold">Un'analisi magistrale da 6000 parole dedicata al vostro Amore</p>
+                <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Un'analisi magistrale da 6000 parole approvata da Valeria</p>
              </div>
           </motion.div>
         ) : (
@@ -215,9 +229,24 @@ export default function SynastryPage() {
                  </div>
                ) : (
                  <>
-                   <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm">
+                   <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm mb-12">
                       <ReactMarkdown>{result.interpretation}</ReactMarkdown>
                    </div>
+
+                   {showFullCTA && (
+                      <div className="mystical-card border-gold-500/30 bg-gold-500/5 p-10 text-center">
+                         <h3 className="font-serif text-2xl text-white mb-4">Vuoi sollevare il Velo completo?</h3>
+                         <p className="text-white/60 mb-8 max-w-lg mx-auto">
+                           Questa è solo l'alchimia di superficie. Il **Libro dell'Amore** svela i nodi karmici, le sfide evolutive e il futuro a lungo termine del vostro incontro.
+                         </p>
+                         <button 
+                           onClick={() => handleCalculate(true)}
+                           className="mystical-button bg-gold-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-gold-500/20"
+                         >
+                            Richiedi il Libro dell'Amore (50 CR)
+                         </button>
+                      </div>
+                   )}
 
                    <div className="mt-16 pt-10 border-t border-white/10 text-center no-print">
                       <button onClick={() => window.print()} className="btn-outline px-8 py-3 text-xs uppercase tracking-[0.2em]">

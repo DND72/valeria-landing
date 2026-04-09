@@ -198,3 +198,44 @@ export async function generateSynastryInterpretation(
     return "Valeria sta leggendo l'intreccio dei vostri destini... riprova tra un attimo."
   }
 }
+
+export async function generateSynastryPreview(
+  dataA: any, 
+  dataB: any, 
+  aspects: any[], 
+  genderA: string = 'M', 
+  genderB: string = 'F'
+): Promise<string> {
+  const client = getGeminiClient()
+  
+  const sysPrompt = `Sei Valeria, l'esperta di relazioni. Questa è un'ANALISI DI ALCHIMIA BASE (Preview gratuita). 
+  Il tuo compito è dare un assaggio potente della compatibilità tra queste due anime in circa 800 parole.
+  
+  FOCALIZZATI SU:
+  1. **ALCHIMIA DEL SOLE E DELLA LUNA**: La compatibilità emotiva e di scopo.
+  2. **VENERE E L'ATTRAZIONE**: Il primo sguardo delle anime.
+  3. **UN CONSIGLIO DI VALERIA**: Un suggerimento rapido per la coppia.
+  
+  Sii evocativa, poetica e schietta. ALLA FINE, invita caldamente a richiedere il "Libro dell'Amore" completo (6000 parole) per svelare i nodi karmici e il destino a lungo termine della relazione.
+  Firma: "Valeria, la tua Stella".`
+
+  const userPrompt = `
+  Persona A (Pianeti): ${JSON.stringify(dataA.pianeti || [])}
+  Persona B (Pianeti): ${JSON.stringify(dataB.pianeti || [])}
+  Aspetti di Sinastria (A vs B): ${JSON.stringify(aspects)}
+  
+  Genera l'Assaggio d'Alchimia di Coppia.`
+
+  const model = client.getGenerativeModel({ 
+    model: 'gemini-2.0-flash',
+    systemInstruction: sysPrompt
+  })
+
+  try {
+    const result = await model.generateContent(userPrompt)
+    return result.response.text() || 'Valeria sta meditando sulla vostra alchimia...'
+  } catch (err: any) {
+    console.error('[synastry-preview-gemini] Error:', err)
+    return "C'è un piccolo velo tra le vostre anime. Riprova tra poco per svelare l'alchimia."
+  }
+}
