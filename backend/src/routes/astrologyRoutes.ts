@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { 
   calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal, 
   generateSummaryForExistingChart, getLatestChart, generateStaffChart,
-  getPendingCharts, approveChart, getLatestHoroscope
+  getPendingCharts, approveChart, getLatestHoroscope, generateFirstHoroscope
 } from '../controllers/astrologyController.js'
 import { requireClerkAuth, optionalClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 
@@ -28,5 +28,6 @@ router.post('/generate-staff', requireClerkAuth, requireStaff, generateStaffChar
 router.get('/staff/pending', requireClerkAuth, requireStaff, getPendingCharts)
 router.post('/staff/approve', requireClerkAuth, requireStaff, approveChart)
 router.get('/latest-horoscope', requireClerkAuth, getLatestHoroscope)
+router.post('/generate-first-horoscope', requireClerkAuth, generateFirstHoroscope)
 
 export default router

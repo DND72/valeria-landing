@@ -132,8 +132,11 @@ export function useAstrologyApi() {
     getLatestChart: async (): Promise<{ chart: (NatalChartResponse & { chartId: string }) | null }> => {
       return authFetch('/api/astrology/latest')
     },
-    getLatestHoroscope: async (): Promise<{ forecast: { forecast_text: string; lucky_days: string[]; energy_level: number; start_date: string; end_date: string } | null }> => {
+    getLatestHoroscope: async (): Promise<{ forecast: { forecast_text: string; lucky_days: string[]; energy_level: number; start_date: string; end_date: string; status: string } | null }> => {
       return authFetch('/api/astrology/latest-horoscope')
+    },
+    generateFirstHoroscope: async (): Promise<{ success: boolean; message: string }> => {
+      return authFetch('/api/astrology/generate-first-horoscope', { method: 'POST' })
     },
     getPendingCharts: async (): Promise<{ pendingCharts: any[], pendingHoroscopes: any[] }> => {
       return authFetch('/api/astrology/staff/pending')

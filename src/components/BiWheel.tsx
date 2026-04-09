@@ -107,6 +107,25 @@ export default function BiWheel({
           className="transition-colors duration-1000"
         />
 
+        {/* ── Guide Visive Cerchi Interno/Esterno ── */}
+        {/* Cerchio Transiti (Esterno) - Area bluastra */}
+        <circle 
+          cx={CX} cy={CY} r={R.TRANSIT_R + 50} 
+          fill="none" stroke="rgba(59, 130, 246, 0.1)" strokeWidth="100" 
+        />
+        <text x={CX} y={CY - R.TRANSIT_R - 70} textAnchor="middle" fontSize="30" fill="rgba(59, 130, 246, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
+          Corrente del Presente (Transiti)
+        </text>
+
+        {/* Cerchio Natale (Interno) - Area dorata */}
+        <circle 
+          cx={CX} cy={CY} r={R.NATAL_R + 40} 
+          fill="none" stroke="rgba(212, 160, 23, 0.08)" strokeWidth="90" 
+        />
+        <text x={CX} y={CY - R.NATAL_R - 55} textAnchor="middle" fontSize="30" fill="rgba(212, 160, 23, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
+          Radice Immutabile (Natale)
+        </text>
+
         {/* ── 12 Segni Zodiacali ── */}
         {ZODIAC.map((sign, i) => {
           const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15

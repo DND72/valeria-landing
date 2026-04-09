@@ -658,3 +658,53 @@ export const getLatestHoroscope = async (req: Request, res: Response): Promise<v
     res.status(500).json({ error: 'Errore recupero oroscopo' })
   }
 }
+
+/**
+ * Inizializza il primo oroscopo per l'utente (Mentore Silente)
+ */
+export const generateFirstHoroscope = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.auth?.userId
+  if (!userId) {
+    res.status(401).json({ error: 'Non autorizzato' })
+    return
+  }
+
+  try {
+    const { pool } = await import('../db.js')
+    
+    // 1. Verifica se ha un tema natale (necessario per transiti)
+    const chartRes = await pool.query(
+      `SELECT id FROM natal_charts WHERE clerk_user_id = $1 LIMIT 1`,
+      [userId]
+    )
+    if (chartRes.rows.length === 0) {
+      res.status(400).json({ error: "Devi prima calcolare il tuo Tema Natale." })
+      return
+    }
+
+    // 2. Verifica se ne ha già uno pendente o recente
+    const existing = await pool.query(
+      `SELECT id FROM user_horoscopes WHERE clerk_user_id = $1 AND (status = 'pending_staff' OR created_at > now() - interval '3 days')`,
+      [userId]
+    )
+    if (existing.rows.length > 0) {
+      res.status(400).json({ error: "La Mentore sta già lavorando per te o ha appena parlato. Attendi il prossimo ciclo." })
+      return
+    }
+
+    // 3. Crea entry pendente
+    const start = new Date()
+    const end = new Date(); end.setDate(end.getDate() + 7)
+    
+    await pool.query(
+      `INSERT INTO user_horoscopes (clerk_user_id, status, start_date, end_date, forecast_text, energy_level, lucky_days)
+       VALUES ($1, 'pending_staff', $2, $3, '', 0, '{}')`,
+      [userId, start.toISOString(), end.toISOString()]
+    )
+
+    res.json({ success: true, message: "Valeria è stata avvisata. La tua Mentore si sveglierà presto." })
+  } catch (err) {
+    console.error('[generateFirstHoroscope]', err)
+    res.status(500).json({ error: 'Errore durante la richiesta.' })
+  }
+}

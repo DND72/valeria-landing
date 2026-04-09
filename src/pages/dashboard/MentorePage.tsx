@@ -1,32 +1,46 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useUser } from '@clerk/clerk-react'
+import { Link } from 'react-router-dom'
 import ClientLayout from '../../components/dashboard/ClientLayout'
 import WeeklyForecast from '../../components/WeeklyForecast'
 import { useAstrologyApi } from '../../api/astrology'
 
 export default function MentorePage() {
   const { user } = useUser()
-  const { getLatestHoroscope } = useAstrologyApi()
+  const { getLatestHoroscope, generateFirstHoroscope } = useAstrologyApi()
 
   const [latestHoroscope, setLatestHoroscope] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [wakingUp, setWakingUp] = useState(false)
+
+  const loadData = useCallback(async () => {
+    try {
+      const res = await getLatestHoroscope()
+      setLatestHoroscope(res?.forecast || null)
+    } catch (err) {
+      console.error("[Mentore Load]", err)
+    } finally {
+      setLoading(false)
+    }
+  }, [getLatestHoroscope])
 
   useEffect(() => {
     if (!user) return
-    const load = async () => {
-      try { 
-        const res = await getLatestHoroscope()
-        // Prioritizziamo l'oroscopo personalizzato se presente
-        setLatestHoroscope(res?.forecast || null)
-      } catch (err) { 
-        console.error("[Mentore Page Load]", err)
-      } finally { 
-        setLoading(false) 
-      }
+    void loadData()
+  }, [user, loadData])
+
+  const handleWakeUp = async () => {
+    setWakingUp(true)
+    try {
+      await generateFirstHoroscope()
+      await loadData() // Ricarica per vedere lo stato 'pending_staff'
+    } catch (err: any) {
+      alert(err.message || "Errore durante il risveglio")
+    } finally {
+      setWakingUp(false)
     }
-    void load()
-  }, [user, getLatestHoroscope])
+  }
 
   if (loading) {
     return (
@@ -43,13 +57,27 @@ export default function MentorePage() {
     <ClientLayout title="La Mentore Silente" subtitle="Il Dialogo tra il tuo Cielo e il Presente">
       <div className="max-w-5xl mx-auto">
         {!latestHoroscope ? (
-          <div className="mystical-card border-gold-500/20 bg-gold-900/5 p-12 text-center">
-            <h3 className="text-gold-400 font-serif text-2xl mb-4">La Mentore sta meditando</h3>
-            <p className="text-white/60 mb-8 max-w-md mx-auto">
-               Non abbiamo ancora un oroscopo attivo per te. Assicurati di aver generato il tuo Tema Natale o attendi il rilascio della prossima guida settimanale.
-            </p>
-            <a href="/area-personale/tema-natale" className="btn-gold px-8 py-3 uppercase tracking-widest text-xs">Torna al Tema Natale</a>
-          </div>
+             <div className="mystical-card border-indigo-500/30 bg-indigo-500/5 p-16 text-center animate-in fade-in zoom-in duration-700">
+                <div className="w-24 h-24 rounded-full border border-indigo-400/30 flex items-center justify-center mx-auto mb-8 shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+                   <span className="text-5xl">🧘‍♂️</span>
+                </div>
+                <h3 className="font-serif text-3xl text-white mb-4">La Mentore sta meditando</h3>
+                <p className="text-white/60 mb-10 max-w-lg mx-auto leading-relaxed">
+                   Non abbiamo ancora un oroscopo attivo per te. Se hai già generato il tuo Tema Natale, puoi invitare la Mentore a iniziare il suo dialogo con te.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button 
+                    onClick={handleWakeUp}
+                    disabled={wakingUp}
+                    className="mystical-button px-10 py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-full font-bold uppercase tracking-widest text-xs hover:scale-105 transition-transform disabled:opacity-50"
+                  >
+                    {wakingUp ? 'Risveglio in corso...' : 'Sveglia la Mentore'}
+                  </button>
+                  <Link to="/area-personale/tema-natale" className="text-xs uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+                    Vai al Tema Natale
+                  </Link>
+                </div>
+             </div>
         ) : (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

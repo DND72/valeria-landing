@@ -118,6 +118,31 @@ export default function BiWheelPage() {
                 in <span className="text-red-400">rosso</span> le forze che richiedono integrazione e lavoro interiore.
               </p>
             </div>
+
+            {/* ── Guida alla Lettura ── */}
+            <div className="mt-16 w-full p-8 rounded-3xl bg-white/[0.03] border border-white/10">
+               <h3 className="font-serif text-2xl text-white mb-6">Come leggere il tuo Cielo Dinamico</h3>
+               <div className="grid md:grid-cols-3 gap-8">
+                  <div className="space-y-3">
+                     <p className="text-gold-400 font-bold uppercase text-[10px] tracking-widest">1. La Radice (Interno)</p>
+                     <p className="text-sm text-white/70 leading-relaxed">
+                        Il cerchio più interno è il tuo <strong>Punto Zero</strong>. È la fotografia del cielo al momento della tua nascita. Non cambia mai: è il terreno su cui cammini, la tua natura profonda e i tuoi talenti innati.
+                     </p>
+                  </div>
+                  <div className="space-y-3">
+                     <p className="text-blue-400 font-bold uppercase text-[10px] tracking-widest">2. La Corrente (Esterno)</p>
+                     <p className="text-sm text-white/70 leading-relaxed">
+                        Il cerchio esterno sono i <strong>Transiti di oggi</strong>. Rappresentano le sfide e le opportunità che l'Universo ti sta inviando proprio ora. È il tempo atmosferico della tua anima in questo preciso istante.
+                     </p>
+                  </div>
+                  <div className="space-y-3">
+                     <p className="text-emerald-400 font-bold uppercase text-[10px] tracking-widest">3. Il Dialogo (Le Linee)</p>
+                     <p className="text-sm text-white/70 leading-relaxed">
+                        Le linee che connettono i due cerchi sono il <strong>Dialogo Astrale</strong>. Se un pianeta di oggi tocca un tuo pianeta natale, scatta una scintilla. Scopri se è un momento di azione, di riposo o di trasformazione radicale.
+                     </p>
+                  </div>
+               </div>
+            </div>
           </motion.div>
         )}
       </div>
