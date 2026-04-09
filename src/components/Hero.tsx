@@ -39,7 +39,7 @@ const ShiningStella = () => (
       }}
       transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
     >
-      Guida
+      Frammento di Cosmo
     </motion.span>
   </span>
 )

@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useClerk, useUser } from '@clerk/clerk-react'
-import { isPrivilegedClerkUser } from '../../lib/privilegedUser'
 
 type ClientSidebarProps = {
   theme?: 'dark' | 'light'
@@ -29,8 +27,6 @@ const EXPLORE_LINKS = [
 ]
 
 export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientSidebarProps) {
-  const { user } = useUser()
-  const { signOut } = useClerk()
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
@@ -39,8 +35,8 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
       initial={{ x: -260 }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-      className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col shadow-2xl transition-colors duration-500 backdrop-blur-md ${
-        theme === 'light' ? 'bg-staff-sidebar-bg border-r border-staff-gold/10' : 'bg-black/80 border-r border-white/10'
+      className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col shadow-2xl transition-colors duration-500 backdrop-blur-sm ${
+        theme === 'light' ? 'bg-staff-sidebar-bg border-r border-staff-gold/10' : 'bg-black/40 border-r border-white/5'
       }`}
     >
 
@@ -146,32 +142,6 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
             })}
           </div>
         </div>
-      </div>
-
-      {/* User Footer */}
-      <div className={`p-4 border-t ${theme === 'light' ? 'border-staff-gold/10 bg-staff-gold/5' : 'border-white/5 bg-white/[0.02]'}`}>
-        <div className="flex items-center gap-3 mb-4">
-          {user?.imageUrl && <img src={user.imageUrl} alt="" className={`w-8 h-8 rounded-full border ${theme === 'light' ? 'border-staff-gold/20' : 'border-white/10'}`} />}
-          <div className="min-w-0">
-            <p className={`text-xs font-bold truncate ${theme === 'light' ? 'text-dark-500' : 'text-white'}`}>{user?.firstName || 'Cara Cliente'}</p>
-            <p className={`text-[10px] truncate ${theme === 'light' ? 'text-dark-500/40' : 'text-white/40'}`}>
-              {isPrivilegedClerkUser(user) ? 'Master Admin' : 'Membro Evolutivo'}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => signOut(() => navigate('/'))}
-          className={`w-full py-2 rounded-lg border text-[10px] uppercase tracking-widest font-bold transition-all flex items-center justify-center gap-2 ${
-            theme === 'light'
-              ? 'border-staff-gold/20 text-dark-500/40 hover:text-red-600 hover:border-red-600/30'
-              : 'border-white/10 text-white/40 hover:text-red-400 hover:border-red-500/30'
-          }`}
-        >
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Esci dal Diario
-        </button>
       </div>
     </motion.aside>
   )

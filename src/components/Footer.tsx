@@ -64,7 +64,7 @@ export default function Footer() {
       />
 
       <div className="relative z-[2] max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-12 mb-12">
+        <div className="grid md:grid-cols-2 gap-12 mb-12">
           {/* Brand */}
           <div>
             <h3 className="font-serif text-2xl font-bold gold-text mb-3">Valeria Di Pace</h3>
@@ -77,44 +77,15 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Navigation */}
-          <div>
-            <h4 className="text-white/60 text-sm font-semibold uppercase tracking-wider mb-4">Navigazione</h4>
-            <ul className="space-y-2">
-              {footerLinksArr.map((link) => (
-
-                <li key={link.href}>
-                  {link.href.startsWith('#') || link.href.startsWith('http') ? (
-                    <a
-                      href={link.href.startsWith('#') ? (pathname === '/' ? link.href : `/${link.href}`) : link.href}
-                      target={link.href.startsWith('http') ? '_blank' : undefined}
-                      rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                      className="text-white/40 text-sm hover:text-gold-400 transition-colors"
-                    >
-                      {link.label}
-                    </a>
-                  ) : (
-                    <Link
-                      to={link.href}
-                      className="text-white/40 text-sm hover:text-gold-400 transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-
           {/* Trust */}
-          <div>
+          <div className="md:text-right">
             <h4 className="text-white/60 text-sm font-semibold uppercase tracking-wider mb-4">Perché fidarsi</h4>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-white/30 text-xs">
+              <div className="flex items-center md:justify-end gap-2 text-white/30 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-600" />
                 Piattaforma certificata · 4,97/5 · 261 recensioni
               </div>
-              <div className="flex items-center gap-2 text-white/30 text-xs">
+              <div className="flex items-center md:justify-end gap-2 text-white/30 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-600" />
                 Piattaforma certificata · 776 commenti positivi
               </div>
