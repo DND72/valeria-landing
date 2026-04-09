@@ -89,7 +89,7 @@ export function createStaffRouter(pool: Pool): Router {
 
       const meetings = rows.map(r => ({
         id: r.id,
-        startAt: new Date(r.start_at).toISOString(),
+        startAt: r.start_at ? new Date(r.start_at).toISOString() : '',
         endAt: r.end_at ? new Date(r.end_at).toISOString() : null,
         eventName: r.consult_kind,
         inviteeSummary: `${r.invitee_name || 'Senza nome'} (${r.invitee_email || 'No email'})`,
