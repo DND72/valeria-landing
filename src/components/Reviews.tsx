@@ -13,25 +13,25 @@ interface LegacyReview {
 
 const legacyReviews: LegacyReview[] = [
   {
-    name: 'Laura M.',
+    name: 'Eleonora G.',
     platform: 'Piattaforma certificata',
     rating: 5,
-    text: 'Valeria è straordinaria. Ha visto cose che non avevo detto a nessuno. La sua lettura mi ha dato una chiarezza incredibile sulla situazione lavorativa che stavo vivendo. Tornerò sicuramente.',
+    text: "Ho richiesto il 'Libro dell'Amore' per una situazione di coppia molto complessa. L'analisi di Valeria ha svelato nodi karmici che sospettavo ma che non riuscivo a focalizzare. Una chiarezza che mi ha cambiato prospettiva.",
+    date: 'Marzo 2025',
+  },
+  {
+    name: 'Marco B.',
+    platform: 'Piattaforma certificata',
+    rating: 5,
+    text: "La 'Mentore Silente' è diventata la mia guida settimanale. Non sono i soliti oroscopi generici; sento che Valeria legge davvero la mia energia e i transiti per consigliarmi quando osare e quando attendere.",
     date: 'Febbraio 2025',
   },
   {
-    name: 'Serena T.',
+    name: 'Sofia V.',
     platform: 'Piattaforma certificata',
     rating: 5,
-    text: 'Mai creduto molto nei tarocchi, ma una mia amica mi ha convinto a provare. Sono rimasta senza parole. Ha descritto la mia situazione sentimentale con una precisione che mi ha fatto venire i brividi.',
+    text: "Il Tema Natale Evolutivo è un'opera d'arte. Valeria non si limita a elencare pianeti, ma racconta una storia: la TUA storia. Vale ogni singolo credito speso per la profondità dell'analisi.",
     date: 'Gennaio 2025',
-  },
-  {
-    name: 'Claudia R.',
-    platform: 'Piattaforma certificata',
-    rating: 5,
-    text: "La prima volta che l'ho chiamata non sapevo cosa aspettarmi. La sua voce calma e il suo approccio professionale mi hanno messa subito a mio agio. Le carte hanno parlato e io ho ascoltato.",
-    date: 'Dicembre 2024',
   },
 ]
 
