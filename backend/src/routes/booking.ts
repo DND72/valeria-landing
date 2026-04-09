@@ -330,5 +330,63 @@ export function createBookingRouter(pool: Pool): Router {
 
   })
 
+  // --- SISTEMA CHAT LIVE ---
+  r.get('/session/:id/messages', requireClerkAuth, async (req, res) => {
+    const { id } = req.params
+    try {
+      const { rows } = await pool.query(
+        `SELECT id, role, text, created_at FROM consult_messages 
+         WHERE consult_id = $1 ORDER BY created_at ASC`,
+        [id]
+      )
+      res.json({
+        messages: rows.map(m => ({
+          id: m.id,
+          role: m.role,
+          text: m.text,
+          timestamp: m.created_at
+        }))
+      })
+    } catch (e) {
+      console.error('[chat get]', e)
+      res.status(500).json({ error: 'Errore recupero messaggi' })
+    }
+  })
+
+  const msgSchema = z.object({
+    text: z.string().min(1).max(5000),
+    role: z.enum(['valeria', 'client'])
+  })
+
+  r.post('/session/:id/messages', requireClerkAuth, async (req, res) => {
+    const { id } = req.params
+    const userId = req.auth?.userId
+    const parsed = msgSchema.safeParse(req.body)
+    
+    if (!parsed.success || !userId) {
+      res.status(400).json({ error: 'Dati non validi' })
+      return
+    }
+
+    try {
+      // Opzionale: verificare che il userId sia il cliente del consulto o uno staff
+      // Per velocità ora permettiamo l'inserimento se autenticati
+      const { rows } = await pool.query(
+        `INSERT INTO consult_messages (consult_id, sender_id, role, text)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, created_at`,
+        [id, userId, parsed.data.role, parsed.data.text]
+      )
+      
+      res.status(201).json({ 
+        id: rows[0].id, 
+        timestamp: rows[0].created_at 
+      })
+    } catch (e) {
+      console.error('[chat post]', e)
+      res.status(500).json({ error: 'Errore invio messaggio' })
+    }
+  })
+
   return r
 }

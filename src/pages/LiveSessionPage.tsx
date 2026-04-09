@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
+import { apiJson } from '../lib/api'
 
 interface Message {
   id: string
@@ -11,14 +12,13 @@ interface Message {
 }
 
 export default function LiveSessionPage() {
+  const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useUser()
   const isStaff = user?.publicMetadata?.role === 'staff'
   
   const [isAccepted, setIsAccepted] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'valeria', text: 'Benvenuta nella tua stanza di consulto. Respira profondamente, sono qui per te.', timestamp: new Date() }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
   const [seconds, setSeconds] = useState(0)
   const [isEnding, setIsEnding] = useState(false)
@@ -32,7 +32,7 @@ export default function LiveSessionPage() {
     receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3')
   })
 
-  // Timer e calcolo crediti dinamico
+  // Timer
   useEffect(() => {
     if (!isAccepted) return
     
@@ -40,47 +40,76 @@ export default function LiveSessionPage() {
       setSeconds(prev => prev + 1)
     }, 1000)
     return () => clearInterval(interval)
-  }, [isValeriaTyping, isAccepted])
+  }, [isAccepted])
 
   // Scroll automatico all'ultimo messaggio
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Simulazione indicatore di scrittura e suono ricezione (solo per demo)
+  // POLLING REALE MESSAGGI
   useEffect(() => {
-    if (!isAccepted) return
-    const timeout = setTimeout(() => {
-      setIsValeriaTyping(true)
-      setTimeout(() => {
-        setIsValeriaTyping(false)
-        audioRefs.current.receive.play().catch(() => {})
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          role: 'valeria',
-          text: 'Sto analizzando i transiti nel tuo cielo di oggi...',
-          timestamp: new Date()
-        }])
-      }, 4000)
-    }, 8000)
-    return () => clearTimeout(timeout)
-  }, [isAccepted])
+    if (!id) return
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!inputText.trim()) return
-    
-    audioRefs.current.send.play().catch(() => {})
-    
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role: 'client',
-      text: inputText,
-      timestamp: new Date()
+    const fetchMessages = async () => {
+       try {
+          const res = await apiJson(`/api/booking/session/${id}/messages`)
+          if (res.messages) {
+             const newMsgs = res.messages.map((m: any) => ({
+                ...m,
+                timestamp: new Date(m.timestamp)
+             }))
+             
+             // Se ci sono nuovi messaggi dall'altro, suoniamo
+             if (newMsgs.length > messages.length) {
+                const lastNew = newMsgs[newMsgs.length - 1]
+                const myRole = isStaff ? 'valeria' : 'client'
+                if (lastNew.role !== myRole) {
+                   audioRefs.current.receive.play().catch(() => {})
+                }
+             }
+             setMessages(newMsgs)
+          }
+       } catch (err) {
+          console.error('[chat poll]', err)
+       }
     }
+
+    // Prima esecuzione
+    void fetchMessages()
     
-    setMessages([...messages, newMessage])
+    // Polling ogni 3 secondi
+    const poll = setInterval(fetchMessages, 3000)
+    return () => clearInterval(poll)
+  }, [id, messages.length, isStaff])
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inputText.trim() || !id) return
+    
+    const text = inputText
     setInputText('')
+    
+    try {
+       audioRefs.current.send.play().catch(() => {})
+       
+       const role = isStaff ? 'valeria' : 'client'
+       await apiJson(`/api/booking/session/${id}/messages`, {
+          method: 'POST',
+          body: JSON.stringify({ text, role })
+       })
+       
+       // Aggiornamento immediato ottimistico
+       setMessages(prev => [...prev, {
+          id: 'temp-' + Date.now(),
+          role,
+          text,
+          timestamp: new Date()
+       }])
+    } catch (err) {
+       console.error('[send error]', err)
+       alert("Errore nell'invio del messaggio.")
+    }
   }
 
   const handleEndSession = async () => {
