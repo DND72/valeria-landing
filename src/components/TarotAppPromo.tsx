@@ -28,7 +28,7 @@ export default function TarotAppPromo() {
               Prova prima di chiamare
             </p>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-6">
-              Le carte di Stella,{' '}
+              Le carte di Valeria,{' '}
               <span className="gold-text italic">gratuite.</span>
             </h2>
             <p className="text-white/60 leading-relaxed mb-4">
@@ -89,7 +89,7 @@ export default function TarotAppPromo() {
 
               {/* Fake app content */}
               <div className="text-center">
-                <p className="text-gold-400 text-xs uppercase tracking-widest mb-4">Le Stese di Stella</p>
+                <p className="text-gold-400 text-xs uppercase tracking-widest mb-4">Le Stese di Valeria</p>
 
                 {/* Fake tarot cards */}
                 <div className="flex justify-center gap-3 mb-6">

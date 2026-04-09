@@ -1,4 +1,4 @@
-export type AstralStatus = 'nebula' | 'stella_fissa' | 'cometa' | 'sole_centrale'
+export type AstralStatus = 'nebula' | 'astro_guida' | 'cometa' | 'sole_centrale'
 
 export interface StatusMeta {
   label: string
@@ -16,8 +16,8 @@ export const ASTRAL_STATUSES: Record<AstralStatus, StatusMeta> = {
     color: 'text-white/40',
     description: 'Il tuo viaggio è appena iniziato. Esplora il cosmo.'
   },
-  stella_fissa: {
-    label: 'Stella Fissa',
+  astro_guida: {
+    label: 'Astro Guida',
     discountEmoji: '✨',
     discountFactor: 0.95,
     color: 'text-emerald-400',
@@ -45,6 +45,6 @@ export function getAstralStatus(user: any, doneCount: number = 0): AstralStatus 
 
   if (doneCount >= 15) return 'sole_centrale'
   if (doneCount >= 8) return 'cometa'
-  if (doneCount >= 3) return 'stella_fissa'
+  if (doneCount >= 3) return 'astro_guida'
   return 'nebula'
 }

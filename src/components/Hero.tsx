@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 
 const ShiningStella = () => (
   <span className="relative inline-block">
-    {/* Sparkle particles around "Stella" */}
+    {/* Sparkle particles around "Guida" */}
     {[
       { top: '-18px', left: '10%',  delay: 0,    size: 'w-1.5 h-1.5' },
       { top: '-14px', left: '75%',  delay: 0.4,  size: 'w-1 h-1' },
@@ -39,7 +39,7 @@ const ShiningStella = () => (
       }}
       transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
     >
-      Stella
+      Guida
     </motion.span>
   </span>
 )

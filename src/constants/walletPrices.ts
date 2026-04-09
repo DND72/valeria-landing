@@ -18,7 +18,7 @@ export const TOPUP_META: Record<TopUpKind, TopUpMeta> = {
   topup_50: {
     amountCents: 5000,
     credits: 55,
-    name: 'Ricarica Stella',
+    name: 'Ricarica Astro',
     description: '50 Crediti + 5 Omaggio',
     popular: true,
   },

@@ -51,7 +51,7 @@ export default function AstralRankCard({ user, donePaidConsults }: AstralRankCar
                 <span>
                   {donePaidConsults} / {
                     statusKey === 'nebula' ? 3 :
-                    statusKey === 'stella_fissa' ? 8 : 15
+                    statusKey === 'astro_guida' ? 8 : 15
                   }
                 </span>
               </div>
@@ -61,7 +61,7 @@ export default function AstralRankCard({ user, donePaidConsults }: AstralRankCar
                   animate={{
                     width: `${Math.min(100, (donePaidConsults / (
                       statusKey === 'nebula' ? 3 :
-                      statusKey === 'stella_fissa' ? 8 : 15
+                      statusKey === 'astro_guida' ? 8 : 15
                     )) * 100)}%`
                   }}
                   className={`h-full ${status.color.replace('text-', 'bg-')}`}
