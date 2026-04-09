@@ -369,6 +369,7 @@ export function createBookingRouter(pool: Pool): Router {
           kind: info.consult_kind,
           status: info.status,
           actualStartAt: info.actual_start_at,
+          createdAt: info.created_at,
           expectedDuration: (info.consult_kind && info.consult_kind in CONSULT_META) ? (CONSULT_META as any)[info.consult_kind].durationMinutes : 30
         }
       })

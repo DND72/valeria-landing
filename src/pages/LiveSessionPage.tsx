@@ -46,6 +46,8 @@ export default function LiveSessionPage() {
   useEffect(() => {
     if (!isAccepted || !sessionInfo?.actualStartAt) return
     const startAt = new Date(sessionInfo.actualStartAt).getTime()
+    if (isNaN(startAt)) return
+
     const interval = setInterval(() => {
       const now = Date.now()
       const diff = Math.floor((now - startAt) / 1000)
@@ -77,7 +79,10 @@ export default function LiveSessionPage() {
           }>(getToken, `/api/booking/session/${id}/messages`)
 
           if (res.messages) {
-             const newMsgs = res.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+             const newMsgs = res.messages.map((m: any) => ({ 
+               ...m, 
+               timestamp: m.timestamp ? new Date(m.timestamp) : new Date() 
+             }))
              if (newMsgs.length > messages.length) {
                 if (newMsgs[newMsgs.length-1].role !== (isStaff ? 'valeria' : 'client')) {
                     void audioRefs.current.receive.play().catch(() => {})
@@ -95,7 +100,6 @@ export default function LiveSessionPage() {
              }
              if (res.sessionInfo.status === 'done' || res.sessionInfo.status === 'cancelled') {
                 if (!isEnding) {
-                   alert("Il consulto è terminato.")
                    navigate(isStaff ? '/control-room' : '/area-personale')
                 }
              }
@@ -107,13 +111,12 @@ export default function LiveSessionPage() {
     return () => clearInterval(poll)
   }, [id, messages.length, isStaff, getToken, navigate, isEnding])
 
-  // Polling Messaggi, ecc. (prima del countdown)
-
-  // CountDown Attesa Cliente (Fix TS unused)
+  // CountDown Attesa Cliente (Fix TS unused + NaN)
   useEffect(() => {
-    if (isAccepted || !sessionInfo || isStaff) return
+    if (isAccepted || !sessionInfo?.createdAt || isStaff) return
     const interval = setInterval(() => {
-      const start = new Date(sessionInfo.created_at || Date.now()).getTime()
+      const start = new Date(sessionInfo.createdAt).getTime()
+      if (isNaN(start)) return
       const now = Date.now()
       const elapsed = Math.floor((now - start) / 1000)
       const remaining = Math.max(0, 300 - elapsed)
@@ -176,7 +179,7 @@ export default function LiveSessionPage() {
       
       // Calcolo guadagno (assumiamo 1 Credit = 1 Euro per ora come richiesto)
       const creditsEarned = currentTotalCost
-      const euroEarned = creditsEarned.toFixed(2)
+      const euroEarned = typeof creditsEarned === 'number' && !isNaN(creditsEarned) ? creditsEarned.toFixed(2) : "0.00"
       
       // Mostriamo modal di successo invece di navigare subito
       setSuccessData({
@@ -203,7 +206,9 @@ export default function LiveSessionPage() {
      setShowEmojiPicker(false)
   }
 
-  const currentTotalCost = sessionInfo ? Math.floor((seconds / 60) * (sessionInfo.costCredits / (sessionInfo.expectedDuration || 30))) : 0
+  const currentTotalCost = (sessionInfo && sessionInfo.costCredits && sessionInfo.expectedDuration) 
+    ? Math.floor((seconds / 60) * (sessionInfo.costCredits / sessionInfo.expectedDuration)) 
+    : 0
 
   return (
     <div className={`fixed inset-0 h-screen w-screen flex flex-col z-[10000] overflow-hidden transition-colors duration-700 ${
@@ -369,9 +374,11 @@ export default function LiveSessionPage() {
 
                            <div className="mt-4 flex items-center justify-between gap-4 border-t border-current opacity-10 pt-2">
                               <span className="text-[10px] font-mono tracking-tighter opacity-50">#ID-{msg.id.slice(-4).toUpperCase()}</span>
-                              <p className="text-[9px] flex items-center gap-2 opacity-50">
-                                 {msg.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
-                                 {msg.role !== 'valeria' && <span className="text-emerald-500 font-bold font-sans">✓✓</span>}
+                              <p className="text-[9px] flex items-center gap-2 opacity-50 font-sans">
+                                 {msg.timestamp instanceof Date && !isNaN(msg.timestamp.getTime()) 
+                                   ? msg.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) 
+                                   : '--:--'}
+                                 {msg.role !== 'valeria' && <span className="text-emerald-500 font-bold ml-1">✓✓</span>}
                               </p>
                            </div>
                         </div>
@@ -489,16 +496,16 @@ export default function LiveSessionPage() {
                 />
               </div>
 
-              <h2 className="text-4xl font-serif font-black text-white mb-2 uppercase tracking-tighter italic">Grande Lavoro!</h2>
-              <p className="text-gold-500 font-black text-[10px] tracking-[0.4em] uppercase mb-8">Consulto Incassato con Successo</p>
+              <h2 className="text-4xl font-serif font-black text-white mb-2 uppercase tracking-tighter italic font-sans">Grande Lavoro!</h2>
+              <p className="text-gold-500 font-black text-[10px] tracking-[0.4em] uppercase mb-8 font-sans">Consulto Incassato con Successo</p>
 
               <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-10 shadow-inner">
                 <div className="flex flex-col items-center">
-                  <span className="text-[10px] uppercase font-black opacity-40 mb-2">Hai Guadagnato</span>
+                  <span className="text-[10px] uppercase font-black opacity-40 mb-2 font-sans">Hai Guadagnato</span>
                   <div className="flex items-center gap-3">
                     <span className="text-6xl font-serif font-black text-white tracking-tighter">€ {successData.euro}</span>
                   </div>
-                  <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mt-4 flex items-center gap-2">
+                  <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mt-4 flex items-center gap-2 font-sans">
                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
                     Transazione Confermata
                   </span>
@@ -508,7 +515,7 @@ export default function LiveSessionPage() {
               <motion.button 
                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/control-room')}
-                className="w-full bg-gold-500 hover:bg-gold-400 text-dark-900 py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_10px_30px_rgba(212,160,23,0.3)] transition-all"
+                className="w-full bg-gold-500 hover:bg-gold-400 text-dark-900 py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_10px_30px_rgba(212,160,23,0.3)] transition-all font-sans"
               >
                 Torna in Control Room
               </motion.button>
