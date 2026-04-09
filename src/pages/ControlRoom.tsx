@@ -120,7 +120,7 @@ export default function ControlRoom() {
   const [editingHoroText, setEditingHoroText] = useState('')
   const [editingHoroEnergy, setEditingHoroEnergy] = useState(60)
 
-  const { getLatestHoroscope, approveHoroscope } = useAstrologyApi()
+  const { approveHoroscope } = useAstrologyApi()
 
   // Helper date
   const weekInfo = useMemo(() => {
