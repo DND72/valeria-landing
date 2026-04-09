@@ -334,22 +334,72 @@ export function createBookingRouter(pool: Pool): Router {
   r.get('/session/:id/messages', requireClerkAuth, async (req, res) => {
     const { id } = req.params
     try {
-      const { rows } = await pool.query(
+      const { rows: msgs } = await pool.query(
         `SELECT id, role, text, created_at FROM consult_messages 
          WHERE consult_id = $1 ORDER BY created_at ASC`,
         [id]
       )
+
+      // Recuperiamo anche i dettagli del consulto per tempo/costo e typing status
+      const { rows: consultInfo } = await pool.query(
+        `SELECT cost_credits, consult_kind, 
+                (staff_is_typing_until > now()) as staff_typing,
+                (client_is_typing_until > now()) as client_typing
+         FROM consults WHERE id = $1`,
+        [id]
+      )
+      
+      const info = consultInfo[0] || {}
+
       res.json({
-        messages: rows.map(m => ({
+        messages: msgs.map(m => ({
           id: m.id,
           role: m.role,
           text: m.text,
           timestamp: m.created_at
-        }))
+        })),
+        typing: {
+          staff: info.staff_typing || false,
+          client: info.client_typing || false
+        },
+        sessionInfo: {
+          costCredits: info.cost_credits,
+          kind: info.consult_kind
+        }
       })
     } catch (e) {
       console.error('[chat get]', e)
       res.status(500).json({ error: 'Errore recupero messaggi' })
+    }
+  })
+
+  r.post('/session/:id/enter', requireClerkAuth, async (req, res) => {
+    const { id } = req.params
+    try {
+       // Se è un cliente ad entrare, segnamo che è in attesa (se era solo scheduled)
+       await pool.query(
+         `UPDATE consults SET status = 'client_waiting', updated_at = now() 
+          WHERE id = $1 AND status = 'scheduled'`,
+         [id]
+       )
+       res.json({ ok: true })
+    } catch (e) {
+       res.status(500).json({ error: 'Errore entry signal' })
+    }
+  })
+
+  r.post('/session/:id/typing', requireClerkAuth, async (req, res) => {
+    const { id } = req.params
+    const { role } = req.body
+    const col = role === 'valeria' ? 'staff_is_typing_until' : 'client_is_typing_until'
+    try {
+       await pool.query(
+         `UPDATE consults SET ${col} = now() + INTERVAL '5 seconds' WHERE id = $1`,
+         [id]
+       )
+       res.json({ ok: true })
+    } catch (e) {
+       res.status(500).json({ error: 'Errore typing status' })
     }
   })
 

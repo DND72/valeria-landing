@@ -37,3 +37,5 @@ CREATE INDEX IF NOT EXISTS idx_booking_overrides_date ON booking_overrides(overr
 -- aggiungiamo link per la chiamata se vogliamo gestirli noi (es. Google Meet o Zoom link diretto)
 ALTER TABLE consults ADD COLUMN IF NOT EXISTS meeting_link TEXT;
 ALTER TABLE consults ADD COLUMN IF NOT EXISTS internal_notes TEXT;
+ALTER TABLE consults ADD COLUMN IF NOT EXISTS staff_is_typing_until TIMESTAMP;
+ALTER TABLE consults ADD COLUMN IF NOT EXISTS client_is_typing_until TIMESTAMP;

@@ -20,9 +20,10 @@ export default function LiveSessionPage() {
   const [isAccepted, setIsAccepted] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
+  const [sessionInfo, setSessionInfo] = useState<any>(null)
   const [seconds, setSeconds] = useState(0)
   const [isEnding, setIsEnding] = useState(false)
-  const [isValeriaTyping, setIsValeriaTyping] = useState(false)
+  const [otherIsTyping, setOtherIsTyping] = useState(false)
   
   const scrollRef = useRef<HTMLDivElement>(null)
   
@@ -47,41 +48,45 @@ export default function LiveSessionPage() {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // POLLING REALE MESSAGGI
+  // POLLING REALE MESSAGGI E STATUS
   useEffect(() => {
     if (!id) return
-
     const fetchMessages = async () => {
        try {
           const res = await apiJson(`/api/booking/session/${id}/messages`)
           if (res.messages) {
-             const newMsgs = res.messages.map((m: any) => ({
-                ...m,
-                timestamp: new Date(m.timestamp)
-             }))
-             
-             // Se ci sono nuovi messaggi dall'altro, suoniamo
+             const newMsgs = res.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
              if (newMsgs.length > messages.length) {
-                const lastNew = newMsgs[newMsgs.length - 1]
-                const myRole = isStaff ? 'valeria' : 'client'
-                if (lastNew.role !== myRole) {
-                   audioRefs.current.receive.play().catch(() => {})
+                if (newMsgs[newMsgs.length-1].role !== (isStaff ? 'valeria' : 'client')) {
+                    audioRefs.current.receive.play().catch(() => {})
                 }
              }
              setMessages(newMsgs)
           }
-       } catch (err) {
-          console.error('[chat poll]', err)
-       }
+          if (res.typing) {
+             setOtherIsTyping(isStaff ? res.typing.client : res.typing.staff)
+          }
+          if (res.sessionInfo) setSessionInfo(res.sessionInfo)
+       } catch (err) { console.error('[chat poll]', err) }
     }
-
-    // Prima esecuzione
-    void fetchMessages()
-    
-    // Polling ogni 3 secondi
+    fetchMessages()
     const poll = setInterval(fetchMessages, 3000)
     return () => clearInterval(poll)
   }, [id, messages.length, isStaff])
+
+  // SEGNALE DI TYPING
+  useEffect(() => {
+     if (!inputText.trim() || !id) return
+     const sendTyping = async () => {
+        try {
+           await apiJson(`/api/booking/session/${id}/typing`, {
+              method: 'POST',
+              body: JSON.stringify({ role: isStaff ? 'valeria' : 'client' })
+           })
+        } catch {}
+     }
+     sendTyping()
+  }, [inputText, id, isStaff])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,17 +118,12 @@ export default function LiveSessionPage() {
   }
 
   const handleEndSession = async () => {
-    if (!window.confirm("Sei sicuro di voler chiudere il consulto? Il tempo verrà fermato e i crediti saranno scalati definitivamente dal tuo Wallet.")) return
-    
+    if (!window.confirm("Sei sicuro di voler chiudere il consulto?")) return
     setIsEnding(true)
-    try {
-      alert(`Sessione terminata. Durata: ${Math.floor(seconds/60)}m ${seconds%60}s.`)
-      navigate('/dashboard')
-    } catch (e) {
-      console.error(e)
-      setIsEnding(false)
-    }
+    navigate(isStaff ? '/control-room' : '/area-personale')
   }
+
+  const currentTotalCost = sessionInfo ? Math.floor((seconds / 60) * (sessionInfo.costCredits / 60)) : 0
 
   return (
     <div className="fixed inset-0 bg-[#0a1128] overflow-hidden flex flex-col z-[9999]">
@@ -139,17 +139,23 @@ export default function LiveSessionPage() {
             <img src="/valeria-avatar.jpg" alt="Valeria" className="w-full h-full rounded-full object-cover" />
           </div>
           <div>
-            <h1 className="text-white font-serif text-sm">Consulto Live</h1>
+            <h1 className="text-white font-serif text-sm">Sessione Live</h1>
             <div className="flex items-center gap-2">
-              <span className={`w-1 h-1 rounded-full ${isValeriaTyping ? 'bg-gold-500 animate-ping' : isAccepted ? 'bg-emerald-500' : 'bg-white/20'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${otherIsTyping ? 'bg-gold-500 animate-ping' : isAccepted ? 'bg-emerald-500' : 'bg-white/20'}`} />
               <span className="text-[9px] uppercase tracking-widest text-white/40">
-                {isValeriaTyping ? 'Valeria scrive...' : isAccepted ? 'In corso' : 'In attesa di Valeria...'}
+                {otherIsTyping ? (isStaff ? 'Il Cliente scrive...' : 'Valeria scrive...') : isAccepted ? 'Connessione Protetta' : 'In attesa...'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
+           {isAccepted && sessionInfo && (
+              <div className="hidden sm:flex flex-col items-end border-r border-white/10 pr-4 mr-2">
+                 <p className="text-[8px] text-white/30 uppercase tracking-tighter">Consumo Stimato</p>
+                 <p className="text-xs text-gold-400 font-mono font-bold">{currentTotalCost} / {sessionInfo.costCredits} CR</p>
+              </div>
+           )}
           {isStaff && !isAccepted && (
             <button
               onClick={() => setIsAccepted(true)}
