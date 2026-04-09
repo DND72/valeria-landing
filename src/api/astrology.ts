@@ -124,8 +124,25 @@ export function useAstrologyApi() {
         body: JSON.stringify({ chartId }),
       })
     },
+    getCurrentSky: async (): Promise<any> => {
+      const res = await fetch(`${API_URL}/api/astrology/current-sky`)
+      if (!res.ok) throw new Error('Errore cielo attuale')
+      return res.json()
+    },
     getLatestChart: async (): Promise<{ chart: (NatalChartResponse & { chartId: string }) | null }> => {
       return authFetch('/api/astrology/latest')
+    },
+    getLatestHoroscope: async (): Promise<{ forecast: { forecast_text: string; lucky_days: string[]; energy_level: number; start_date: string; end_date: string } | null }> => {
+      return authFetch('/api/astrology/latest-horoscope')
+    },
+    getPendingCharts: async (): Promise<{ pendingCharts: any[], pendingHoroscopes: any[] }> => {
+      return authFetch('/api/astrology/staff/pending')
+    },
+    approveChart: async (chartId: string | number, type: 'chart' | 'horoscope' = 'chart'): Promise<{ success: boolean }> => {
+      return authFetch('/api/astrology/staff/approve', {
+        method: 'POST',
+        body: JSON.stringify({ chartId, type })
+      })
     },
     generateStaffChart: async (data: NatalChartRequest): Promise<NatalChartResponse & { interpretation: string }> => {
       return authFetch('/api/astrology/generate-staff', {

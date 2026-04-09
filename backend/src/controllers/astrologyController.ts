@@ -568,14 +568,27 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
 export const getPendingCharts = async (_req: Request, res: Response): Promise<void> => {
   try {
     const { pool } = await import('../db.js')
-    const { rows } = await pool.query(
-      `SELECT nc.id, nc.clerk_user_id, nc.chart_type, nc.created_at, bp.declared_birthday, bp.birth_city
+    
+    // 1. Temi Natali in attesa
+    const chartsRes = await pool.query(
+      `SELECT nc.*, bp.declared_birthday, bp.birth_city 
        FROM natal_charts nc
-       LEFT JOIN client_billing_profiles bp ON bp.clerk_user_id = nc.clerk_user_id
+       LEFT JOIN billing_profiles bp ON nc.clerk_user_id = bp.clerk_user_id
        WHERE nc.status = 'pending_staff'
        ORDER BY nc.created_at ASC`
     )
-    res.json({ pending: rows })
+
+    // 2. Oroscopi in attesa
+    const horoRes = await pool.query(
+      `SELECT * FROM user_horoscopes 
+       WHERE status = 'pending_staff'
+       ORDER BY created_at ASC`
+    )
+
+    res.json({ 
+      pendingCharts: chartsRes.rows, 
+      pendingHoroscopes: horoRes.rows 
+    })
   } catch (err) {
     console.error('[staff getPending]', err)
     res.status(500).json({ error: 'Errore durante il recupero delle analisi pendenti' })
@@ -586,27 +599,62 @@ export const getPendingCharts = async (_req: Request, res: Response): Promise<vo
  * STAFF ONLY: Approva un'analisi rendendola fruibile al cliente
  */
 export const approveChart = async (req: Request, res: Response): Promise<void> => {
-  const { chartId } = req.body
+  const { chartId, type } = req.body
   if (!chartId) {
-    res.status(400).json({ error: 'ID analisi mancante' })
+    res.status(400).json({ error: 'Missing chartId' })
     return
   }
 
   try {
     const { pool } = await import('../db.js')
-    const result = await pool.query(
-      `UPDATE natal_charts SET status = 'ready' WHERE id = $1 RETURNING id`,
-      [chartId]
-    )
-
-    if (result.rowCount === 0) {
-      res.status(404).json({ error: 'Analisi non trovata' })
-      return
+    
+    if (type === 'horoscope') {
+      await pool.query(
+        `UPDATE user_horoscopes SET status = 'ready' WHERE id = $1`,
+        [chartId]
+      )
+    } else {
+      await pool.query(
+        `UPDATE natal_charts SET status = 'ready' WHERE id = $1`,
+        [chartId]
+      )
     }
-
-    res.json({ ok: true, message: 'Analisi approvata e pubblicata' })
+    
+    res.json({ success: true, message: 'Analisi approvata e pubblicata' })
   } catch (err) {
     console.error('[staff approve]', err)
     res.status(500).json({ error: 'Errore durante l\'approvazione' })
+  }
+}
+
+/**
+ * Recupera l'ultimo oroscopo disponibile per l'utente
+ */
+export const getLatestHoroscope = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.auth?.userId
+  if (!userId) {
+    res.status(401).json({ error: 'Non autorizzato' })
+    return
+  }
+
+  try {
+    const { pool } = await import('../db.js')
+    const { rows } = await pool.query(
+      `SELECT forecast_text, lucky_days, energy_level, start_date, end_date, status
+       FROM user_horoscopes 
+       WHERE clerk_user_id = $1 AND status = 'ready'
+       ORDER BY created_at DESC LIMIT 1`,
+      [userId]
+    )
+
+    if (rows.length === 0) {
+      res.json({ forecast: null })
+      return
+    }
+
+    res.json({ forecast: rows[0] })
+  } catch (err) {
+    console.error('[getLatestHoroscope]', err)
+    res.status(500).json({ error: 'Errore recupero oroscopo' })
   }
 }

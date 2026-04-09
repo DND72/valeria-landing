@@ -26,11 +26,14 @@ const PLANET_SYMBOLS: Record<string, string> = {
 }
 
 export default function StaffAstrology() {
-  const { generateStaffChart, getMyCharts } = useAstrologyApi()
+  const { generateStaffChart, getMyCharts, getPendingCharts, approveChart } = useAstrologyApi()
   const theme = useCircadianTheme()
   const [loading, setLoading] = useState(false)
   const [myCharts, setMyCharts] = useState<SavedNatalChart[]>([])
   const [viewingChart, setViewingChart] = useState<SavedNatalChart | null>(null)
+  const [pendingCharts, setPendingCharts] = useState<any[]>([])
+  const [pendingHoroscopes, setPendingHoroscopes] = useState<any[]>([])
+  const [pendingLoading, setPendingLoading] = useState(false)
 
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -44,10 +47,28 @@ export default function StaffAstrology() {
 
   const fetchCharts = async () => {
     try {
-      const charts = await getMyCharts()
+      const [charts, pendingData] = await Promise.all([
+        getMyCharts(),
+        getPendingCharts()
+      ])
       setMyCharts(charts)
+      setPendingCharts(pendingData.pendingCharts || [])
+      setPendingHoroscopes(pendingData.pendingHoroscopes || [])
     } catch (e) {
       console.error(e)
+    }
+  }
+
+  const handleApprove = async (id: string | number, type: 'chart' | 'horoscope' = 'chart') => {
+    if (!window.confirm(`Vuoi sbloccare questo ${type === 'chart' ? 'Tema Natale' : 'Oroscopo'} per il cliente?`)) return
+    setPendingLoading(true)
+    try {
+      await approveChart(id, type)
+      await fetchCharts()
+    } catch (e: any) {
+      alert(e.message || "Errore approvazione")
+    } finally {
+      setPendingLoading(false)
     }
   }
 
@@ -82,6 +103,80 @@ export default function StaffAstrology() {
 
   return (
     <div className="space-y-8 pb-12">
+      {/* ── SALA D'ATTESA (PENDING REVIEW) ── */}
+      {(pendingCharts.length > 0 || pendingHoroscopes.length > 0) && (
+         <motion.section
+           initial={{ opacity: 0, scale: 0.98 }}
+           animate={{ opacity: 1, scale: 1 }}
+           className="mystical-card border-amber-500/30 bg-amber-500/5"
+         >
+            <div className="flex items-center gap-3 mb-6">
+               <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-xl animate-pulse">⏳</div>
+               <div>
+                  <h3 className="font-serif text-xl text-white">Sala d'Attesa (Review Required)</h3>
+                  <p className="text-amber-200/50 text-xs">Contenuti Premium in attesa di essere sbloccati per il cliente.</p>
+               </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-white/10">
+               <table className="w-full text-sm text-left">
+                  <thead className="bg-white/5 text-[10px] uppercase tracking-widest text-white/40">
+                     <tr>
+                        <th className="p-3">Data</th>
+                        <th className="p-3">Cliente (ID)</th>
+                        <th className="p-3">Tipo</th>
+                        <th className="p-3 text-right">Azione</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {/* Liste combinate */}
+                     {pendingCharts.map(pc => (
+                        <tr key={`chart-${pc.id}`} className="border-t border-white/5 hover:bg-white/5 transition-colors">
+                           <td className="p-3 text-white/60 font-mono text-xs">{new Date(pc.created_at).toLocaleString('it-IT')}</td>
+                           <td className="p-3 text-white font-medium">
+                              {pc.clerk_user_id.slice(0, 10)}... <br/>
+                              <span className="text-[10px] text-white/30 uppercase">{pc.birth_city || '—'}</span>
+                           </td>
+                           <td className="p-3">
+                              <span className="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded uppercase font-bold">Tema Natale Adv</span>
+                           </td>
+                           <td className="p-3 text-right">
+                              <button 
+                                onClick={() => handleApprove(pc.id, 'chart')}
+                                disabled={pendingLoading}
+                                className="btn-gold px-4 py-1.5 text-[10px] uppercase tracking-wider disabled:opacity-50"
+                              >
+                                {pendingLoading ? 'Wait...' : 'Sblocca ✦'}
+                              </button>
+                           </td>
+                        </tr>
+                     ))}
+                     {pendingHoroscopes.map(ph => (
+                        <tr key={`horo-${ph.id}`} className="border-t border-white/5 hover:bg-white/5 transition-colors">
+                           <td className="p-3 text-white/60 font-mono text-xs">{new Date(ph.created_at).toLocaleString('it-IT')}</td>
+                           <td className="p-3 text-white font-medium">
+                              {ph.clerk_user_id.slice(0, 10)}... <br/>
+                              <span className="text-[10px] text-white/30 uppercase">{ph.start_date} - {ph.end_date}</span>
+                           </td>
+                           <td className="p-3">
+                              <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded uppercase font-bold">Oroscopo Settim.</span>
+                           </td>
+                           <td className="p-3 text-right">
+                              <button 
+                                onClick={() => handleApprove(ph.id, 'horoscope')}
+                                disabled={pendingLoading}
+                                className="btn-gold px-4 py-1.5 text-[10px] uppercase tracking-wider disabled:opacity-50"
+                              >
+                                {pendingLoading ? 'Wait...' : 'Sblocca ✦'}
+                              </button>
+                           </td>
+                        </tr>
+                     ))}
+                  </tbody>
+               </table>
+            </div>
+         </motion.section>
+      )}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

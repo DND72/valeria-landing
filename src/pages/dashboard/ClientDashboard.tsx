@@ -10,13 +10,16 @@ import TransactionHistory from '../../components/dashboard/TransactionHistory'
 import TaxInfoForm from '../../components/dashboard/TaxInfoForm'
 import BookingFlow from '../../components/dashboard/BookingFlow'
 import ClientLayout from '../../components/dashboard/ClientLayout'
-import { type SavedNatalChart } from '../../api/astrology'
+import BiWheel from '../../components/BiWheel'
+import WeeklyForecast from '../../components/WeeklyForecast'
 import { useValeriaPresence } from '../../hooks/useValeriaPresence'
 import { labelForPresence } from '../../lib/valeriaPresence'
 import { getApiBaseUrl } from '../../constants/api'
 import { apiJson } from '../../lib/api'
-import { useAstrologyApi } from '../../api/astrology'
+import { useAstrologyApi, type SavedNatalChart } from '../../api/astrology'
 import { useMeApi } from '../../api/me'
+import { useCircadianTheme } from '../../hooks/useCircadianTheme'
+import { calculateTransits } from '../../utils/astrologyUtils'
 
 function displayFirstName(user: {
   firstName: string | null | undefined
@@ -35,8 +38,9 @@ function displayFirstName(user: {
 export default function ClientDashboard() {
   const { user } = useUser()
   const { getToken } = useAuth()
-  const { syncNatalData, getMyCharts } = useAstrologyApi()
+  const { syncNatalData, getMyCharts, getCurrentSky, getLatestHoroscope } = useAstrologyApi()
   const meApi = useMeApi()
+  const theme = useCircadianTheme()
 
   const [freeHidden, setFreeHidden] = useState(false)
 
@@ -79,6 +83,9 @@ export default function ClientDashboard() {
   const [userContactPref, setUserContactPref] = useState<'none' | 'phone' | 'meet' | 'zoom'>('none')
   const [userPhone, setUserPhone] = useState('')
   const [profileSuccessMsg, setProfileSuccessMsg] = useState(false)
+  
+  const [currentSky, setCurrentSky] = useState<any | null>(null)
+  const [latestHoroscope, setLatestHoroscope] = useState<any | null>(null)
 
   const { data: valeriaPresence } = useValeriaPresence(60_000)
   const presenceLabel = labelForPresence(valeriaPresence?.status)
@@ -109,8 +116,22 @@ export default function ClientDashboard() {
   const loadMyCharts = useCallback(async () => {
     if (!user) return
     setMyChartsLoading(true)
-    try { setMyCharts(await getMyCharts()) } catch { setMyCharts([]) } finally { setMyChartsLoading(false) }
-  }, [user, getMyCharts])
+    try { 
+      const [charts, sky, horoscope] = await Promise.all([
+        getMyCharts(),
+        getCurrentSky(),
+        getLatestHoroscope()
+      ])
+      setMyCharts(charts)
+      setCurrentSky(sky)
+      setLatestHoroscope(horoscope?.forecast || null)
+    } catch (err) { 
+      console.error("[Dashboard Load]", err)
+      setMyCharts([]) 
+    } finally { 
+      setMyChartsLoading(false) 
+    }
+  }, [user, getMyCharts, getCurrentSky, getLatestHoroscope])
 
   const loadTransactions = useCallback(async () => {
     if (!user) return
@@ -242,6 +263,43 @@ export default function ClientDashboard() {
             <AstralBadge user={user} donePaidConsults={taxInfo?.donePaidConsults || 0} />
           </div>
         </motion.div>
+
+        {/* ── Immersive Hub: Bi-Wheel & Weekly Forecast ── */}
+        {(myCharts && myCharts.length > 0 && currentSky) && (
+          <div className="grid lg:grid-cols-2 gap-8 mb-12">
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="mystical-card flex flex-col items-center justify-center py-10"
+             >
+                <h3 className="font-serif text-lg text-white mb-6 uppercase tracking-widest text-center">
+                  Il tuo Cielo Dinamico <br/>
+                  <span className="text-[10px] text-gold-400 font-sans font-normal opacity-70">(Transiti Attuali vs Tema Natale)</span>
+                </h3>
+                <BiWheel 
+                   natalPlanets={myCharts[0].chartData.pianeti || []}
+                   transitPlanets={currentSky.pianeti || []}
+                   transitAspects={calculateTransits(myCharts[0].chartData.pianeti || [], currentSky.pianeti || [])}
+                   ascLon={myCharts[0].chartData.ascendente_totale}
+                   theme={theme}
+                />
+             </motion.div>
+
+             {latestHoroscope && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <WeeklyForecast 
+                    content={latestHoroscope.forecast_text}
+                    luckyDays={latestHoroscope.lucky_days}
+                    energyLevel={latestHoroscope.energy_level}
+                  />
+                </motion.div>
+             )}
+          </div>
+        )}
 
         <AstralRankCard user={user} donePaidConsults={taxInfo?.donePaidConsults || 0} />
 

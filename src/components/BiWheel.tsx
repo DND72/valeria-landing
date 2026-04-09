@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BODY_GLYPHS, type PlanetData } from '../utils/astrologyUtils'
+import { BODY_GLYPHS, type PlanetData, type AspectResult } from '../utils/astrologyUtils'
 import { type CircadianTheme } from '../hooks/useCircadianTheme'
 
 // ─────────────────────────────────────────────
@@ -76,7 +76,7 @@ export interface TransitAspect {
 interface BiWheelProps {
   natalPlanets: PlanetData[]
   transitPlanets: PlanetData[]
-  transitAspects: TransitAspect[]
+  transitAspects: AspectResult[]
   ascLon?: number
   houses?: { numero: number; lon_assoluta: number }[]
   className?: string
@@ -143,23 +143,23 @@ export default function BiWheel({
 
         {/* ── Linee Transiti (Aspetti attivi tra esterno ed interno) ── */}
         {transitAspects.map((asp, idx) => {
-          const nP = natalPlanets.find(p => p.nome === asp.pianeta_natale)
-          const tP = transitPlanets.find(p => p.nome === asp.pianeta_attuale)
+          const nP = natalPlanets.find(p => p.nome === asp.p1)
+          const tP = transitPlanets.find(p => p.nome === asp.p2)
           if (!nP || !tP) return null
           
           const posN = toXY(R.NATAL_R, nP.lon_assoluta, rotationOffset)
           const posT = toXY(R.TRANSIT_R, tP.lon_assoluta, rotationOffset)
           
           let color = '#fff'
-          if (asp.tipo === 'Quadrato' || asp.tipo === 'Opposizione') color = '#ef4444'
-          if (asp.tipo === 'Trigono' || asp.tipo === 'Sestile') color = '#3b82f6'
-          if (asp.tipo === 'Congiunzione') color = '#fbbf24'
+          if (asp.type === 'Quadrato' || asp.type === 'Opposizione') color = '#ef4444'
+          if (asp.type === 'Trigono' || asp.type === 'Sestile') color = '#3b82f6'
+          if (asp.type === 'Congiunzione') color = '#fbbf24'
 
           return (
             <line
               key={idx}
               x1={posN.x} y1={posN.y} x2={posT.x} y2={posT.y}
-              stroke={color} strokeWidth="3" strokeOpacity={asp.intensita / 100 * 0.6}
+              stroke={color} strokeWidth="3" strokeOpacity={asp.precision * 0.6}
               filter="url(#glow-p)"
             />
           )
