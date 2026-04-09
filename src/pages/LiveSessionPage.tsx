@@ -165,7 +165,7 @@ export default function LiveSessionPage() {
     setIsEnding(true)
     try {
       const actualMinutes = Math.floor(seconds / 60)
-      const res = await apiJson<any>(getToken, `/api/staff/consults/${id}/claim`, { 
+      await apiJson<any>(getToken, `/api/staff/consults/${id}/claim`, { 
         method: 'POST',
         body: JSON.stringify({ actualDurationMinutes: actualMinutes })
       })
