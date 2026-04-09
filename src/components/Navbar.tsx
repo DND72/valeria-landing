@@ -15,7 +15,8 @@ const links = [
 ]
 
 const privateClientLinks = [
-  { label: 'Oracolo Astrale ✨', href: '/area-personale/mentore' },
+  { label: 'Il tuo Oroscopo Settimanale', href: '/area-personale/mentore' },
+  { label: 'Affinità di Coppia ✨', href: '/affinita-di-coppia' },
   { label: 'Wallet', href: '/area-personale/wallet' },
   { label: 'Consulti', href: '/area-personale/i-miei-consulti' },
   { label: 'Temi Natali', href: '/area-personale/i-miei-temi' },

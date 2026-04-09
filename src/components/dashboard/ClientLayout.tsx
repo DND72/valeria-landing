@@ -6,9 +6,10 @@ type ClientLayoutProps = {
   children: ReactNode
   title: string
   subtitle?: string
+  hideSidebar?: boolean
 }
 
-export default function ClientLayout({ children, title, subtitle }: ClientLayoutProps) {
+export default function ClientLayout({ children, title, subtitle, hideSidebar = false }: ClientLayoutProps) {
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('client-theme') as 'dark' | 'light') || 'dark'
@@ -23,13 +24,15 @@ export default function ClientLayout({ children, title, subtitle }: ClientLayout
   return (
     <div className={`flex min-h-screen transition-colors duration-500 ${theme === 'light' ? 'staff-light' : 'bg-gradient-to-br from-indigo-950/10 via-black/40 to-black/80 text-white'}`}>
       {/* Sidebar fissa */}
-      <ClientSidebar
-        theme={theme}
-        onToggleTheme={toggleTheme}
-      />
+      {!hideSidebar && (
+        <ClientSidebar
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
+      )}
 
       {/* Contenuto principale */}
-      <div className="flex-1 ml-64 p-8 relative">
+      <div className={`flex-1 ${hideSidebar ? 'ml-0' : 'ml-64'} p-8 relative`}>
         <div className="max-w-4xl mx-auto">
 
           <motion.div

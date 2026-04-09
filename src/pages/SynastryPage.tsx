@@ -4,13 +4,19 @@ import ReactMarkdown from 'react-markdown'
 import { useUser } from '@clerk/clerk-react'
 import { useAstrologyApi } from '../api/astrology'
 import ClientLayout from '../components/dashboard/ClientLayout'
+import BiWheel from '../components/BiWheel'
+import { useCircadianTheme } from '../hooks/useCircadianTheme'
+import { calculateTransits } from '../utils/astrologyUtils'
 
 export default function SynastryPage() {
   const { user } = useUser()
-  const { calculateSynastry, getLatestChart, syncNatalData } = useAstrologyApi()
+  const { calculateSynastry, getLatestChart, syncNatalData, getCurrentSky } = useAstrologyApi()
+  const theme = useCircadianTheme()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any | null>(null)
   const [showFullCTA, setShowFullCTA] = useState(false)
+  const [currentSky, setCurrentSky] = useState<any | null>(null)
+  const [myChartData, setMyChartData] = useState<any | null>(null)
 
   const [personA, setPersonA] = useState({
     name: '',
@@ -40,11 +46,16 @@ export default function SynastryPage() {
     if (user?.firstName) {
        setPersonA(prev => ({ ...prev, name: user.firstName || '' }))
     }
-    const loadProfile = async () => {
+    const loadData = async () => {
       try {
-        const res = await getLatestChart()
+        const [res, sky] = await Promise.all([
+           getLatestChart(),
+           getCurrentSky()
+        ])
         const chart = res.chart
+        setCurrentSky(sky)
         if (chart) {
+          setMyChartData(chart.chartData)
           const bd = chart.birthDate ? new Date(chart.birthDate).toISOString().split('T')[0] : ''
           setPersonA(prev => ({
              ...prev,
@@ -64,8 +75,8 @@ export default function SynastryPage() {
         console.error("Errore recupero dati profilo:", err)
       }
     }
-    loadProfile()
-  }, [getLatestChart, user])
+    loadData()
+  }, [getLatestChart, getCurrentSky, user])
 
   const handleCalculate = async (isPremium: boolean = false) => {
     if (!personA.birthDate || !personA.city || !personB.birthDate || !personB.city || !personA.name || !personB.name) {
@@ -106,18 +117,26 @@ export default function SynastryPage() {
   if (!user) return null
 
   return (
-    <ClientLayout title="Sinastria di Coppia" subtitle="Il Libro dell'Amore">
-      <div className="max-w-4xl mx-auto">
-        <div className="mystical-card border-red-500/20 bg-red-950/5 p-10 mb-12 relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-8 text-6xl opacity-5 pointer-events-none italic font-serif">Amore</div>
+    <ClientLayout title="Affinità di Coppia" subtitle="Sintonizzazione Astrale">
+      <div className="max-w-4xl mx-auto space-y-16">
+        
+        {/* Hub Relationships */}
+        <div className="mystical-card border-red-500/20 bg-red-950/5 p-10 relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-8 text-6xl opacity-5 pointer-events-none italic font-serif">Alchimia</div>
            <div className="relative z-10">
               <span className="text-gold-400 text-[10px] uppercase tracking-[0.4em] font-black mb-4 block">✦ IL PATTO DELLE STELLE</span>
-              <h1 className="text-4xl font-serif text-white mb-6">Affinità Astrale: Il vostro Destino</h1>
+              <h1 className="text-4xl font-serif text-white mb-6">Affinità Astrale ✨</h1>
               <p className="text-white/70 leading-relaxed italic text-lg max-w-2xl">
-                "Due anime non si incontrano mai per caso. Valeria leggerà per voi il Libro dell'Amore per svelare l'alchimia segreta che lega i vostri temi natali."
+                "In questa pagina puoi svelare l'alchimia segreta con un'altra anima o osservare come il tuo cielo interiore danza con il presente."
               </p>
            </div>
         </div>
+
+        {/* SECTION 1: SYNASTRY */}
+        <section className="space-y-8">
+          <h2 className="font-serif text-2xl text-white flex items-center gap-3">
+             <span className="text-red-500">❤️</span> Sinastria: Il Libro dell'Amore
+          </h2>
 
         {!result ? (
           <motion.div
@@ -339,6 +358,40 @@ export default function SynastryPage() {
             </motion.div>
           </div>
         )}
+        </section>
+
+        {/* SECTION 2: BI-WHEEL */}
+        <section className="space-y-8 pb-20">
+           <div className="h-px w-full bg-white/5" />
+           <h2 className="font-serif text-2xl text-white flex items-center gap-3">
+              <span className="text-gold-400">🧬</span> Il tuo Cielo Dinamico: Transiti
+           </h2>
+           
+           {!myChartData ? (
+             <div className="mystical-card p-8 border-gold-500/20 bg-gold-400/5 text-center">
+                <p className="text-white/40 text-sm">Caricamento della tua impronta natale...</p>
+             </div>
+           ) : !currentSky ? (
+             <div className="text-center text-white/30">Lettura effemeridi attuali in corso...</div>
+           ) : (
+             <div className="mystical-card p-8 flex flex-col items-center border-gold-500/20 bg-black/40">
+                <div className="w-full max-w-2xl">
+                   <BiWheel 
+                      natalPlanets={myChartData.pianeti || []}
+                      transitPlanets={currentSky.pianeti || []}
+                      transitAspects={calculateTransits(myChartData.pianeti || [], currentSky.pianeti || [])}
+                      ascLon={myChartData.ascendente_totale}
+                      theme={theme}
+                   />
+                </div>
+                <div className="mt-8 text-center max-w-lg">
+                   <p className="text-[11px] text-white/40 uppercase tracking-widest leading-relaxed">
+                      L'anello interno è la tua nascita, l'anello esterno è il cielo di oggi. Le linee indicano come il presente attiva il tuo potenziale.
+                   </p>
+                </div>
+             </div>
+           )}
+        </section>
       </div>
     </ClientLayout>
   )

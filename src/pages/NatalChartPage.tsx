@@ -428,19 +428,8 @@ export default function NatalChartPage() {
   }
 
   return (
-    <div className="min-h-screen relative">
-      {/* Sfondo Galattico */}
-      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(30,14,60,0.9) 0%, rgba(8,8,16,1) 70%)' }} />
-        <div className="absolute inset-0 opacity-60" style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-          backgroundPosition: '0 0, 20px 20px',
-          mask: 'radial-gradient(ellipse 100% 100% at 50% 50%, black 30%, transparent 100%)'
-        }} />
-      </div>
-
-      <div className="max-w-4xl mx-auto px-6 py-24">
+    <ClientLayout title="Tema Natale Free" subtitle="Il tuo Progetto Celeste" hideSidebar={true}>
+      <div className="max-w-4xl mx-auto px-6 py-12">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-14">
             <p className="text-gold-500 text-[10px] font-semibold tracking-[0.25em] uppercase mb-4">✦ Astrologia di Precisione</p>
             <h1 className="font-serif text-4xl md:text-6xl font-bold mb-5 leading-tight">Calcola il tuo <span className="gold-text italic">Ascendente</span></h1>
@@ -497,6 +486,6 @@ export default function NatalChartPage() {
 
           {result && <ResultPanel data={result} isLoggedIn={isLoggedIn} hasAdvanced={hasAdvanced} />}
       </div>
-    </div>
+    </ClientLayout>
   )
 }

@@ -61,7 +61,7 @@ export default function MentorePage() {
 
   if (loading) {
     return (
-      <ClientLayout title="L'Oracolo Astrale" subtitle="Nonsolotarocchi Algorithm">
+      <ClientLayout title="Il tuo Oroscopo" subtitle="Nonsolotarocchi Algorithm">
         <div className="flex flex-col items-center justify-center py-20">
           <div className="h-10 w-10 rounded-full border-2 border-gold-500/30 border-t-gold-400 animate-spin" />
           <p className="text-white/40 text-sm mt-4 uppercase tracking-widest">Consultando le effemeridi...</p>
@@ -71,21 +71,21 @@ export default function MentorePage() {
   }
 
   return (
-    <ClientLayout title="L'Oracolo Astrale" subtitle="Il Luna Park del tuo Destino">
+    <ClientLayout title="Oroscopo Settimanale" subtitle="Il tuo Destino in Tempo Reale">
       <div className="max-w-6xl mx-auto space-y-12">
         
         {/* Header Oracolo */}
         <div className="mystical-card p-8 md:p-12 bg-gradient-to-br from-purple-900/20 via-indigo-900/10 to-transparent border-purple-500/20 relative overflow-hidden group">
-           <div className="absolute top-0 right-0 p-8 text-7xl opacity-5 pointer-events-none font-serif group-hover:scale-110 transition-transform duration-1000">ORACULO</div>
+           <div className="absolute top-0 right-0 p-8 text-7xl opacity-5 pointer-events-none font-serif group-hover:scale-110 transition-transform duration-1000">OROSCOPO</div>
            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
               <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-purple-600 to-amber-400 p-1 shadow-[0_0_40px_rgba(147,51,234,0.3)] shrink-0">
-                 <div className="w-full h-full rounded-full bg-dark-500 flex items-center justify-center text-5xl">🔮</div>
+                 <div className="w-full h-full rounded-full bg-dark-500 flex items-center justify-center text-5xl">👁️</div>
               </div>
               <div className="text-center md:text-left">
-                <span className="text-gold-400 text-xs uppercase tracking-[0.4em] font-bold mb-2 block">Benvenuto al Luna Park Astrale</span>
-                <h2 className="text-4xl font-serif text-white mb-4">L'Algoritmo di Nonsolotarocchi</h2>
+                <span className="text-gold-400 text-xs uppercase tracking-[0.4em] font-bold mb-2 block">Il tuo Oroscopo Personalizzato</span>
+                <h2 className="text-4xl font-serif text-white mb-4">L'Algoritmo Astrale</h2>
                 <p className="text-white/60 leading-relaxed max-w-2xl">
-                  Qui la scienza delle effemeridi incontra la potenza del calcolo. L'Oracolo analizza istantaneamente i tuoi transiti per offrirti verità cristalline, senza interferenze umane.
+                  Qui la scienza analizza istantaneamente i tuoi transiti per offrirti verità cristalline, senza interferenze umane. Un verdetto puro basato sulla tua mappa natale.
                 </p>
               </div>
            </div>
