@@ -126,8 +126,34 @@ export default function ControlRoom() {
   const [editingChartText, setEditingChartText] = useState('')
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [showChartPreview, setShowChartPreview] = useState(false)
+  const [waitingConsult, setWaitingConsult] = useState<any | null>(null)
+  
+  const alertAudio = useRef<HTMLAudioElement | null>(null)
 
   const { approveHoroscope, approveChart, generateSummary } = useAstrologyApi()
+
+  // Polling per Segnali di Richiamo (Clienti in attesa Live)
+  useEffect(() => {
+     const checkWaiting = async () => {
+        try {
+           const res = await apiJson<{ meetings: any[] }>(getToken, '/api/staff/calendly-today')
+           // Cerchiamo consulti con status 'client_waiting'
+           const waiting = (res.meetings || []).find((m: any) => m.status === 'client_waiting')
+           if (waiting) {
+              if (!waitingConsult) {
+                 // Nuovo ingresso! Suoniamo la campanella
+                 alertAudio.current?.play().catch(() => {})
+              }
+              setWaitingConsult(waiting)
+           } else {
+              setWaitingConsult(null)
+           }
+        } catch {}
+     }
+     const itv = setInterval(checkWaiting, 10000) // Ogni 10 secondi
+     checkWaiting()
+     return () => clearInterval(itv)
+  }, [waitingConsult, getToken])
 
   // Helper date
   const weekInfo = useMemo(() => {
@@ -377,8 +403,42 @@ export default function ControlRoom() {
   }
 
   return (
-    <StaffLayout title="Control Room" subtitle="Gestione appuntamenti interni e disponibilità">
-      <div className="relative z-10 max-w-6xl mx-auto">
+    <StaffLayout title="Control Room" subtitle="Centro di Comando Valeria">
+        
+        {/* Audio per allerta (Campanella) */}
+        <audio ref={alertAudio} src="https://assets.mixkit.co/active_storage/sfx/1792/1792-preview.mp3" preload="auto" />
+
+        {/* --- ALLERTA CLIENTE IN ATTESA --- */}
+        <AnimatePresence>
+          {waitingConsult && (
+            <motion.div 
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 16 }}
+              exit={{ opacity: 0, y: -50 }}
+              className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] w-full max-w-md px-4"
+            >
+              <div className="bg-gold-500 text-black p-4 rounded-2xl shadow-[0_0_30px_rgba(212,160,23,0.4)] flex items-center justify-between border border-white/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center animate-bounce">
+                    <span className="text-xl">🔔</span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Cliente in Attesa Live!</p>
+                    <p className="font-serif text-sm font-bold">{waitingConsult.inviteeSummary || 'Sessione Aperta'}</p>
+                  </div>
+                </div>
+                <Link 
+                  to={`/sessione/${waitingConsult.id}`}
+                  className="bg-black text-gold-500 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black/80 transition-all font-bold"
+                >
+                  Entra Ora
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4">
         {/* Gestione Disponibilità Interna (Sostituisce Calendly) */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}

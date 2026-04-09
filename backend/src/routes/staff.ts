@@ -77,12 +77,13 @@ export function createStaffRouter(pool: Pool): Router {
         end_at: Date | null
         consult_kind: string
         meeting_link: string | null
+        status: string
       }>(`
-        SELECT id, invitee_name, invitee_email, start_at, end_at, consult_kind, meeting_link
+        SELECT id, invitee_name, invitee_email, start_at, end_at, consult_kind, meeting_link, status
         FROM consults
         WHERE start_at >= CURRENT_DATE 
           AND start_at < CURRENT_DATE + INTERVAL '1 day'
-          AND status = 'scheduled'
+          AND status IN ('scheduled', 'client_waiting')
         ORDER BY start_at ASC
       `)
 
@@ -92,7 +93,8 @@ export function createStaffRouter(pool: Pool): Router {
         endAt: r.end_at ? new Date(r.end_at).toISOString() : null,
         eventName: r.consult_kind,
         inviteeSummary: `${r.invitee_name || 'Senza nome'} (${r.invitee_email || 'No email'})`,
-        joinUrl: r.meeting_link
+        joinUrl: r.meeting_link,
+        status: r.status
       }))
 
       res.json({ configured: true, meetings })

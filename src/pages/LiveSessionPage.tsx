@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useUser } from '@clerk/clerk-react'
+import { useUser, useAuth } from '@clerk/clerk-react'
 import { apiJson } from '../lib/api'
 
 interface Message {
@@ -15,6 +15,7 @@ export default function LiveSessionPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useUser()
+  const { getToken } = useAuth()
   const isStaff = user?.publicMetadata?.role === 'staff'
   
   const [isAccepted, setIsAccepted] = useState(false)
@@ -48,12 +49,28 @@ export default function LiveSessionPage() {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Segnale di Entrata (Solo per Cliente)
+  useEffect(() => {
+     if (isStaff || !id) return
+     const enter = async () => {
+        try {
+           await apiJson(`/api/booking/session/${id}/enter`, { method: 'POST' })
+        } catch {}
+     }
+     enter()
+  }, [id, isStaff])
+
   // POLLING REALE MESSAGGI E STATUS
   useEffect(() => {
     if (!id) return
     const fetchMessages = async () => {
        try {
-          const res = await apiJson(`/api/booking/session/${id}/messages`)
+          const res = await apiJson<{ 
+             messages: any[], 
+             typing?: { staff: boolean, client: boolean },
+             sessionInfo?: any 
+          }>(getToken, `/api/booking/session/${id}/messages`)
+
           if (res.messages) {
              const newMsgs = res.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
              if (newMsgs.length > messages.length) {
@@ -72,21 +89,21 @@ export default function LiveSessionPage() {
     fetchMessages()
     const poll = setInterval(fetchMessages, 3000)
     return () => clearInterval(poll)
-  }, [id, messages.length, isStaff])
+  }, [id, messages.length, isStaff, getToken])
 
   // SEGNALE DI TYPING
   useEffect(() => {
      if (!inputText.trim() || !id) return
      const sendTyping = async () => {
         try {
-           await apiJson(`/api/booking/session/${id}/typing`, {
+           await apiJson(getToken, `/api/booking/session/${id}/typing`, {
               method: 'POST',
               body: JSON.stringify({ role: isStaff ? 'valeria' : 'client' })
            })
         } catch {}
      }
      sendTyping()
-  }, [inputText, id, isStaff])
+  }, [inputText, id, isStaff, getToken])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,7 +116,7 @@ export default function LiveSessionPage() {
        audioRefs.current.send.play().catch(() => {})
        
        const role = isStaff ? 'valeria' : 'client'
-       await apiJson(`/api/booking/session/${id}/messages`, {
+       await apiJson(getToken, `/api/booking/session/${id}/messages`, {
           method: 'POST',
           body: JSON.stringify({ text, role })
        })
@@ -211,12 +228,12 @@ export default function LiveSessionPage() {
               </motion.div>
             ))}
             
-            {isValeriaTyping && (
+            {otherIsTyping && (
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="flex justify-start"
+                className={`flex ${isStaff ? 'justify-end' : 'justify-start'}`}
               >
                 <div className="bg-gold-500/10 border border-gold-500/20 px-4 py-2 rounded-full flex items-center gap-2">
                    <div className="flex gap-1">
@@ -224,7 +241,9 @@ export default function LiveSessionPage() {
                       <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }} className="w-1.5 h-1.5 bg-gold-400 rounded-full" />
                       <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.4 }} className="w-1.5 h-1.5 bg-gold-400 rounded-full" />
                    </div>
-                   <span className="text-[10px] text-gold-500/70 font-bold uppercase tracking-widest">Valeria scrive...</span>
+                   <span className="text-[10px] text-gold-500/70 font-bold uppercase tracking-widest">
+                     {isStaff ? 'Il Cliente scrive...' : 'Valeria scrive...'}
+                   </span>
                 </div>
               </motion.div>
             )}
@@ -269,7 +288,7 @@ export default function LiveSessionPage() {
           </form>
         )}
         <p className="text-center text-[9px] text-white/20 uppercase tracking-[0.2em] mt-4">
-          Sessione crittografata · {isValeriaTyping ? 'Sconto attivo' : 'Tariffa standard'}
+          Sessione crittografata · {otherIsTyping ? 'Calcolo attivo' : 'Tariffa standard'}
         </p>
       </footer>
     </div>
