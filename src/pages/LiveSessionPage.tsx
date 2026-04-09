@@ -54,11 +54,11 @@ export default function LiveSessionPage() {
      if (isStaff || !id) return
      const enter = async () => {
         try {
-           await apiJson(`/api/booking/session/${id}/enter`, { method: 'POST' })
+           await apiJson(getToken, `/api/booking/session/${id}/enter`, { method: 'POST' })
         } catch {}
      }
      enter()
-  }, [id, isStaff])
+  }, [id, isStaff, getToken])
 
   // POLLING REALE MESSAGGI E STATUS
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useAuth, useUser } from '@clerk/clerk-react'
-import { motion } from 'framer-motion'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import {
