@@ -15,6 +15,7 @@ import {
 } from '../../constants/consultations'
 import { ASTRAL_STATUSES, getAstralStatus } from '../../constants/status'
 import { getApiBaseUrl } from '../../constants/api'
+import { ValeriaPresenceStatus } from '../../lib/valeriaPresence'
 
 interface BookingFlowProps {
   user: any
@@ -25,7 +26,7 @@ interface BookingFlowProps {
     hasUsedFree7: boolean
     hasUsedIntro10: boolean
   } | null
-  valeriaStatus?: 'online' | 'busy' | 'offline'
+  valeriaStatus?: ValeriaPresenceStatus
   onBookingConfirmed: () => void
   onCategoryChange?: (cat: OfferCategory | null) => void
 }

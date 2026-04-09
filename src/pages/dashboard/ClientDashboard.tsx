@@ -12,7 +12,7 @@ import TaxInfoForm from '../../components/dashboard/TaxInfoForm'
 import BookingFlow from '../../components/dashboard/BookingFlow'
 import ClientLayout from '../../components/dashboard/ClientLayout'
 import { useValeriaPresence } from '../../hooks/useValeriaPresence'
-import { labelForPresence } from '../../lib/valeriaPresence'
+import { labelForPresence, ValeriaPresenceStatus } from '../../lib/valeriaPresence'
 import { getApiBaseUrl } from '../../constants/api'
 import { apiJson } from '../../lib/api'
 import { useAstrologyApi, type SavedNatalChart } from '../../api/astrology'
@@ -366,7 +366,7 @@ export default function ClientDashboard() {
           user={user}
           donePaidConsults={taxInfo?.donePaidConsults || 0}
           presenceLabel={presenceLabel}
-          valeriaStatus={valeriaPresence?.status}
+          valeriaStatus={valeriaPresence?.status as ValeriaPresenceStatus}
           freeHidden={freeHidden}
           ageStatus={ageStatus}
           onBookingConfirmed={() => {
