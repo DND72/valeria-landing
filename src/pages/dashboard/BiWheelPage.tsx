@@ -56,7 +56,7 @@ export default function BiWheelPage() {
           <div className="mystical-card border-amber-500/30 bg-amber-500/5 text-center p-12">
             <h3 className="text-amber-400 font-serif text-2xl mb-4">Mappa Astrale mancante</h3>
             <p className="text-white/60 mb-8 max-w-md mx-auto">Per utilizzare la Bi-Wheel è necessario aver calcolato il proprio Tema Natale almeno una volta.</p>
-            <a href="/area-personale/tema-natale" className="btn-gold px-8 py-3 uppercase tracking-widest text-xs">Calcola ora</a>
+            <Link to="/area-personale/tema-natale" className="btn-gold px-8 py-3 uppercase tracking-widest text-xs">Calcola ora</Link>
           </div>
         ) : !currentSky ? (
           <div className="text-center text-red-400 p-8">Errore nel caricamento del cielo attuale.</div>

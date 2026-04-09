@@ -410,9 +410,9 @@ export default function ClientDashboard() {
                       </div>
                       <div className="flex flex-wrap gap-3 p-3 bg-white/[0.03] border-t border-white/5 items-center justify-between">
                         {c.status === 'scheduled' && !isPast && (
-                          <a href={`/sessione/${c.id}`} className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 ${isSoon ? 'bg-gold-500 text-dark-500 hover:bg-gold-400' : 'bg-white/10 text-gold-400 hover:bg-white/20 border border-gold-500/30'}`}>
+                          <Link to={`/sessione/${c.id}`} className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 ${isSoon ? 'bg-gold-500 text-dark-500 hover:bg-gold-400' : 'bg-white/10 text-gold-400 hover:bg-white/20 border border-gold-500/30'}`}>
                             {isSoon ? 'Entra nel Consulto Live' : 'Apri la ChatRoom'} <span>→</span>
-                          </a>
+                          </Link>
                         )}
                         {!isPast && c.status === 'scheduled' && (
                           <div className="flex gap-2 ml-auto">

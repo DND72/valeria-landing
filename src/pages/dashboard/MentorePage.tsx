@@ -119,9 +119,9 @@ export default function MentorePage() {
 
             <div className="mt-12 p-8 rounded-2xl border border-white/5 bg-black/40 text-center">
                <p className="text-xs text-white/30 uppercase tracking-widest mb-4">Vuoi approfondire un transito specifico?</p>
-               <a href="/area-personale/i-miei-consulti" className="text-sm text-gold-400 hover:text-gold-300 underline decoration-gold-500/30 underline-offset-8">
+               <Link to="/area-personale/i-miei-consulti" className="text-sm text-gold-400 hover:text-gold-300 underline decoration-gold-500/30 underline-offset-8">
                   Prenota una sessione privata con Valeria →
-               </a>
+               </Link>
             </div>
           </motion.div>
         )}
