@@ -384,7 +384,7 @@ export default function LiveSessionPage() {
                            )}
 
                            <div className="mt-4 flex items-center justify-between gap-4 border-t border-current opacity-10 pt-2">
-                              <span className="text-[10px] font-mono tracking-tighter opacity-50">#ID-{msg.id.slice(-4).toUpperCase()}</span>
+                              <span className="text-[10px] font-mono tracking-tighter opacity-50">#ID-{String(msg.id).slice(-4).toUpperCase()}</span>
                               <p className="text-[9px] flex items-center gap-2 opacity-50 font-sans">
                                  {msg.timestamp instanceof Date && !isNaN(msg.timestamp.getTime()) 
                                    ? msg.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) 
