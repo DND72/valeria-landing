@@ -26,6 +26,7 @@ export default function StaffLiveMonitor() {
       const today = now.toISOString().split('T')[0]
       
       const filtered = all.filter(c => {
+         if (c.status === 'cancelled' || c.status === 'done') return false
          // Se è in attesa o in corso, mostralo SEMPRE, a prescindere dalla data
          if (c.status === 'client_waiting' || c.status === 'in_progress') return true
          

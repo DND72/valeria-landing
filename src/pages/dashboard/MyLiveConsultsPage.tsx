@@ -26,11 +26,12 @@ export default function MyLiveConsultsPage() {
       const now = new Date()
       // Mostriamo consulti che iniziano tra 30 min o sono già waiting/in_progress
       const filtered = all.filter(c => {
+         if (c.status === 'cancelled' || c.status === 'done') return false
          if (c.status === 'client_waiting' || c.status === 'in_progress') return true
          if (!c.start_at) return false
          const start = new Date(c.start_at).getTime()
          const diffMin = (start - now.getTime()) / (1000 * 60)
-         return diffMin <= 30 && diffMin > -60 // Inizia tra 30 min o finito da max 1 ora
+         return diffMin <= 30 && diffMin > -60 // Inizia tra 30 min o iniziato da meno di 1 ora
       }).sort((a,b) => new Date(a.start_at || 0).getTime() - new Date(b.start_at || 0).getTime())
       
       setLiveConsults(filtered)
@@ -154,13 +155,13 @@ export default function MyLiveConsultsPage() {
                          )}
                       </div>
                     </div>
-                    {isNow && (
+                    {(isNow || c.status === 'scheduled') && (
                       <div className="mt-4 pt-4 border-t border-white/5 flex justify-end">
                          <button 
                            onClick={() => handleCancel(c.id)}
                            className="text-[9px] text-white/20 hover:text-red-400/60 uppercase tracking-widest font-bold transition-colors"
                          >
-                           Annulla Richiesta ✕
+                           {isNow ? 'Interrompi / Annulla ✕' : 'Annulla Prenotazione ✕'}
                          </button>
                       </div>
                     )}
