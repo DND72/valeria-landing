@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
 import { useState, useRef, useEffect } from 'react'
+import { useAuth } from '@clerk/clerk-react'
+import { apiJson } from '../../lib/api'
 import { useSearchParams } from 'react-router-dom'
 import { InternalBookingCalendar } from '../InternalBookingCalendar'
 import PrivacySealNote from '../PrivacySealNote'
@@ -23,6 +25,7 @@ interface BookingFlowProps {
     hasUsedFree7: boolean
     hasUsedIntro10: boolean
   } | null
+  valeriaStatus?: 'online' | 'busy' | 'offline'
   onBookingConfirmed: () => void
   onCategoryChange?: (cat: OfferCategory | null) => void
 }
@@ -33,14 +36,18 @@ export default function BookingFlow({
   presenceLabel,
   freeHidden,
   ageStatus,
+  valeriaStatus,
   onBookingConfirmed,
   onCategoryChange
 }: BookingFlowProps) {
+  const { getToken } = useAuth()
   const [searchParams] = useSearchParams()
   const calendarSectionRef = useRef<HTMLElement | null>(null)
   const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
   const [selectedConsult, setSelectedConsult] = useState<ConsultKind | null>(null)
   const [bookingConfirmed, setBookingConfirmed] = useState(false)
+  const [instantLoading, setInstantLoading] = useState(false)
+  const [instantError, setInstantError] = useState<string | null>(null)
 
   useEffect(() => {
     const raw = searchParams.get('consult')
@@ -60,6 +67,35 @@ export default function BookingFlow({
     onCategoryChange?.(cat)
     setSelectedConsult((prev) => (prev && consultOfferCategory(prev) === cat ? prev : null))
   }
+
+  const handleInstantBooking = async () => {
+    if (!selectedConsult || instantLoading) return
+    setInstantLoading(true)
+    setInstantError(null)
+    try {
+      const res = await apiJson<{ ok: boolean; error?: string }>(getToken, '/api/booking/start', {
+        method: 'POST',
+        body: JSON.stringify({
+          consultKind: selectedConsult,
+          slotIso: new Date().toISOString()
+        })
+      })
+      if (res.ok) {
+        setBookingConfirmed(true)
+        onBookingConfirmed()
+        setTimeout(() => document.getElementById('storico')?.scrollIntoView({ behavior: 'smooth' }), 600)
+      } else {
+        setInstantError(res.error || 'Errore nella prenotazione istantanea.')
+      }
+    } catch (err: any) {
+      setInstantError(err.message || 'Errore di connessione.')
+    } finally {
+      setInstantLoading(false)
+    }
+  }
+
+  const isChat = selectedConsult?.startsWith('chat_')
+  const showInstantCta = isChat && valeriaStatus === 'online'
 
   const consultChoicesForClient = CONSULT_CHOICES.filter((c) => {
     if (c.kind === 'free' && (freeHidden || ageStatus?.hasUsedFree7)) return false
@@ -184,6 +220,30 @@ export default function BookingFlow({
       >
         <h2 className="font-serif text-xl font-bold text-white mb-1">3) Scegli data e ora</h2>
         <p className="text-white/40 text-sm mb-4 max-w-2xl">I crediti vengono momentaneamente bloccati dal Wallet e si trasformano nel tuo appuntamento fisso.</p>
+        
+        {showInstantCta && !bookingConfirmed && (
+          <div className="mb-6 p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-2">
+            <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mb-4 ring-4 ring-emerald-500/10">
+               <span className="text-2xl animate-pulse">⚡</span>
+            </div>
+            <h3 className="text-emerald-400 font-bold text-lg mb-1">Valeria è Ora Online!</h3>
+            <p className="text-white/60 text-sm mb-5 max-w-sm">Puoi evitare il calendario e avviare la Chat Flash immediatamente.</p>
+            {instantError && <p className="text-red-400 text-xs mb-4">{instantError}</p>}
+            <button
+               onClick={handleInstantBooking}
+               disabled={instantLoading}
+               className="btn-gold px-12 py-3 text-sm font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+            >
+               {instantLoading ? 'Sincronizzazione...' : 'AVVIA CHATTA ORA'}
+            </button>
+            <div className="mt-4 flex items-center gap-2">
+               <span className="h-px w-8 bg-white/10" />
+               <span className="text-[10px] text-white/30 uppercase tracking-widest">Oppure prenota per dopo</span>
+               <span className="h-px w-8 bg-white/10" />
+            </div>
+          </div>
+        )}
+
         <PrivacySealNote className="mb-4 max-w-2xl" />
         <div className="mystical-card p-0 overflow-hidden rounded-lg relative z-0 isolate min-h-[400px]">
           {bookingConfirmed ? (

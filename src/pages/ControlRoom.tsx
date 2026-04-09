@@ -1,6 +1,6 @@
 import { useAuth, useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import {
@@ -114,6 +114,10 @@ export default function ControlRoom() {
   const [internalLoading, setInternalLoading] = useState(false)
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1)
   
+  // Audio Notification
+  const [audioEnabled, setAudioEnabled] = useState(true)
+  const notifyAudio = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'))
+  const previousIdsRef = useRef<Set<string>>(new Set())
   const [pendingCharts, setPendingCharts] = useState<any[]>([])
   const [pendingHoros, setPendingHoros] = useState<any[]>([])
   const [editingHoro, setEditingHoro] = useState<any | null>(null)
@@ -189,7 +193,23 @@ export default function ControlRoom() {
     setLoading(true)
     try {
       const data = await apiJson<{ consults: ConsultRow[] }>(getToken, '/api/staff/consults')
-      setList(data.consults ?? [])
+      const newList = data.consults ?? []
+      
+      // Detect new items
+      if (previousIdsRef.current.size > 0) {
+        const newSessions = newList.filter(c => !previousIdsRef.current.has(c.id))
+        const importantNew = newSessions.filter(c => c.status === 'client_waiting' || (c.status === 'scheduled' && c.start_at && new Date(c.start_at).getTime() - Date.now() < 30 * 60 * 1000))
+        
+        if (importantNew.length > 0 && audioEnabled) {
+           notifyAudio.current.play().catch(() => {})
+        }
+      }
+      
+      // Update IDs ref
+      const currentIds = new Set(newList.map(c => c.id))
+      previousIdsRef.current = currentIds
+      
+      setList(newList)
     } catch (e) {
       setListError(e instanceof ApiError ? String(e.message) : 'Impossibile caricare i consulti')
       setList([])
@@ -227,6 +247,7 @@ export default function ControlRoom() {
     }
     void loadInternalAvailability()
     void loadPendingAnalyses()
+    void loadList()
   }, [isLoaded, user, navigate, loadList, loadInternalAvailability, loadPendingAnalyses])
 
   useEffect(() => {
@@ -246,7 +267,7 @@ export default function ControlRoom() {
     if (!isPrivilegedClerkUser(user)) return
     const t = window.setInterval(() => {
       void loadList()
-    }, 60_000)
+    }, 10_000)
     return () => clearInterval(t)
   }, [user, isLoaded, loadList])
 
@@ -675,23 +696,43 @@ export default function ControlRoom() {
           transition={{ delay: 0.04 }}
           className="mystical-card mb-8"
         >
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-            <div>
-              <h2 className="font-serif text-lg text-white">{AGEND_TITLE} (Prossimi Appuntamenti)</h2>
-              <p className="text-white/45 text-sm mt-1 max-w-2xl">
-                Visualizzazione bisettimanale degi appuntamenti prenotati sul sito.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
-               <button
-                  type="button"
-                  onClick={() => void loadList()}
-                  className="btn-gold text-sm px-4 py-2"
-                >
-                  Aggiorna Agenda
-                </button>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 pt-2">
+          <div className="flex items-center gap-3">
+             <div className="p-2 bg-gold-500/10 rounded-lg border border-gold-500/20">
+               <svg className="w-5 h-5 text-gold-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+               </svg>
+             </div>
+             <div>
+               <h2 className="font-serif text-2xl font-bold text-white tracking-tight">{AGEND_TITLE}</h2>
+               <p className="text-white/40 text-[10px] tracking-[0.2em] uppercase">Monitoraggio Consulti</p>
+             </div>
           </div>
+          
+          <div className="flex items-center gap-2">
+             <button 
+               onClick={() => setAudioEnabled(!audioEnabled)}
+               className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${audioEnabled ? 'bg-gold-500/10 border-gold-500/30 text-gold-400' : 'bg-white/5 border-white/10 text-white/30'}`}
+               title={audioEnabled ? "Disattiva avvisi acustici" : "Attiva avvisi acustici"}
+             >
+                {audioEnabled ? (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+                )}
+                <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">{audioEnabled ? 'Avvisi On' : 'Silenziato'}</span>
+             </button>
+             
+             <button 
+               onClick={() => void loadList()}
+               className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 rounded-xl transition-all"
+             >
+                <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+             </button>
+          </div>
+        </div>
 
           <div className="grid md:grid-cols-2 gap-6">
              {[1, 2].map(wNum => {

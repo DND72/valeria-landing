@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
+import { useValeriaPresence } from '../hooks/useValeriaPresence'
+import { labelForPresence } from '../lib/valeriaPresence'
 
 const links = [
   { label: 'Chi sono', href: '#chi-sono' },
@@ -40,6 +42,7 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const privileged = isLoaded && user ? isPrivilegedClerkUser(user) : false
+  const { data: valeriaPresence } = useValeriaPresence()
 
   const isCoachingPage = pathname === '/crescita-personale'
   const isDashboardArea = pathname.startsWith('/area-personale')
@@ -86,6 +89,12 @@ export default function Navbar() {
                 <span className="text-[10px] md:text-xs text-white/40 font-light tracking-widest uppercase">
                   by Valeria Di Pace
                 </span>
+                <div className="flex items-center gap-1.5 ml-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${valeriaPresence?.status === 'online' ? 'bg-emerald-500 animate-pulse' : valeriaPresence?.status === 'busy' ? 'bg-amber-500' : 'bg-white/20'}`} />
+                  <span className="text-[9px] uppercase tracking-tighter text-white/30 font-bold">
+                    {labelForPresence(valeriaPresence?.status)}
+                  </span>
+                </div>
               </div>
               <span
                 className="text-[9px] uppercase font-bold tracking-[0.2em] w-fit"

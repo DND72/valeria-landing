@@ -1,4 +1,23 @@
 import { motion } from 'framer-motion'
+import { useValeriaPresence } from '../hooks/useValeriaPresence'
+import { labelForPresence } from '../lib/valeriaPresence'
+
+const ValeriaPresenceBadge = () => {
+  const { data } = useValeriaPresence()
+  const status = data?.status || 'offline'
+  const label = labelForPresence(status)
+  const color = status === 'online' ? 'bg-emerald-500' : status === 'busy' ? 'bg-amber-500' : 'bg-white/20'
+
+  return (
+    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
+      <span className={`relative flex h-2 w-2`}>
+        {status === 'online' && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
+        <span className={`relative inline-flex rounded-full h-2 w-2 ${color}`}></span>
+      </span>
+      <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Valeria è {label}</span>
+    </div>
+  )
+}
 
 const ShiningStella = () => (
   <span className="relative inline-block">
@@ -94,10 +113,14 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium mb-8"
+            className="flex flex-wrap items-center gap-3 mb-8"
           >
-            <TarotCardIcon />
-            <span>Attrice · Tarologa · Naturopata</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold-600/30 bg-gold-600/10 text-gold-400 text-sm font-medium">
+              <TarotCardIcon />
+              <span>Attrice · Tarologa · Naturopata</span>
+            </div>
+            
+            <ValeriaPresenceBadge />
           </motion.div>
 
           {/* Main heading */}

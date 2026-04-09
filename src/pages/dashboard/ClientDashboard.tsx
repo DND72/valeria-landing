@@ -366,6 +366,7 @@ export default function ClientDashboard() {
           user={user}
           donePaidConsults={taxInfo?.donePaidConsults || 0}
           presenceLabel={presenceLabel}
+          valeriaStatus={valeriaPresence?.status}
           freeHidden={freeHidden}
           ageStatus={ageStatus}
           onBookingConfirmed={() => {
