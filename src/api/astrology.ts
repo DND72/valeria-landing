@@ -41,6 +41,7 @@ export interface NatalChartResponse {
   birthDate?: string
   birthTime?: string
   city?: string
+  status?: string
   created_at?: string
 }
 
@@ -52,6 +53,7 @@ export interface SavedNatalChart {
   city: string
   chartData: NatalChartResponse
   interpretation: string
+  status?: string
   createdAt: string
 }
 

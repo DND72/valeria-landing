@@ -35,10 +35,7 @@ function ResultPanel({ data, isLoggedIn, hasAdvanced }: { data: NatalChartRespon
   const [genLoading, setGenLoading] = useState(false)
   const [genError, setGenError] = useState<string | null>(null)
 
-  const createdAt = data.created_at ? new Date(data.created_at) : new Date()
-  const now = new Date()
-  const diffHours = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)
-  const isPending = diffHours < 12 && data.chart_type === 'basic' && !localInterpretation
+  const isPending = data.status === 'pending_staff'
 
   const handleGenerateSummary = async () => {
     if (!data.id) {
@@ -119,9 +116,24 @@ function ResultPanel({ data, isLoggedIn, hasAdvanced }: { data: NatalChartRespon
               <span className="text-gold-400">✨</span> {localInterpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
             </h3>
             
-            {localInterpretation ? (
+            {localInterpretation && !isPending ? (
               <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm">
                 <ReactMarkdown>{localInterpretation}</ReactMarkdown>
+              </div>
+            ) : isPending ? (
+              <div className="text-center py-10 px-4 border-t border-white/10 mt-6 bg-gold-400/5 rounded-2xl">
+                 <div className="w-16 h-16 rounded-full border border-gold-400/30 flex items-center justify-center mx-auto mb-6">
+                    <span className="text-2xl animate-spin-slow">✨</span>
+                 </div>
+                 <h4 className="font-serif text-2xl text-white mb-4 italic">Valeria sta scrivendo per te...</h4>
+                 <p className="text-white/60 text-sm max-w-md mx-auto leading-relaxed mb-6">
+                   La tua **Analisi Evolutiva Completa** è entrata nella Sala di Luce. Valeria sta interpretando personalmente ogni transito e ogni nodo per offrirti una guida che trascende il tempo.
+                 </p>
+                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-black/40 rounded-full border border-white/10">
+                    <div className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
+                    <span className="text-[10px] uppercase tracking-widest text-gold-200">Tempo stimato: ~24 Ore</span>
+                 </div>
+                 <p className="text-[10px] text-white/30 mt-8 italic"> Riceverai una notifica non appena il tuo Cammino Astrale sarà pronto per essere rivelato.</p>
               </div>
             ) : (
               <div className="relative">
