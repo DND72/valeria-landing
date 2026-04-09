@@ -101,43 +101,44 @@ export default function About() {
             transition={{ duration: 0.8 }}
           >
             <p className="text-gold-500 text-sm font-medium tracking-widest uppercase mb-4">Chi è Valeria</p>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight mb-6">
-              Arena International Master.
+            <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight mb-8">
+              Cultura, Metodo.
               <br />
-              Red Carpet a Roma.
-              <br />
-              <span className="gold-text italic">Un dono antico.</span>
+              <span className="gold-text italic">Un Antico Dono.</span>
             </h2>
-            <div className="space-y-4 text-white/60 leading-relaxed">
+            <div className="space-y-4 text-white/60 leading-relaxed text-sm md:text-base">
               <p>
-                Valeria Di Pace non è la solita tarologa. Il suo metodo nasce dall&apos;unione tra tre diversi percorsi
-                accademici, una carriera nel <strong>giornalismo</strong> e nel <strong>cinema</strong> (presente al Rome Film Fest),
-                e una mente strategica riconosciuta a livello mondiale con il titolo di <strong>Arena International Master (FIDE)</strong> negli scacchi.
+                Valeria Di Pace è una figura poliedrica in cui la <strong>profondità esoterica</strong> si fonde con una 
+                formazione culturale di eccezionale rigore. Laureata in <strong>Psicologia</strong> e <strong>Giurisprudenza</strong>,
+                porta nell'analisi dell'anima la precisione del diritto e l'empatia clinica necessaria per decodificare il vissuto umano.
               </p>
               <p>
-                La sua analisi dei Tarocchi di Marsiglia integra il rigore del pensiero con una straordinaria capacità
-                di visione d&apos;insieme. Diplomata in <strong>Naturopatia</strong>, con vari Master e insignita dell&apos;onorificenza
-                per l&apos;utilizzo del prestigioso <em>Vademecum Heel Guna</em>, Valeria non legge simboli isolati. 
-                Applica le stesse competenze maturate nel suo studio e nella parafarmacia che gestiva in Liguria:
-                individua i fili invisibili che collegano gli eventi, decodificando la realtà con chirurgica precisione.
+                Il suo percorso accademico non si ferma qui: gli studi in <strong>Farmacia</strong> hanno forgiato una mente capace 
+                di comprendere le interazioni molecolari e biochimiche più complesse. Questa disciplina, tra le più ardue del panorama
+                scientifico, le ha conferito una capacità di analisi chirurgica e un rispetto profondo per l'equilibrio della vita, 
+                dalle cellule allo spirito.
               </p>
               <p>
-                Mente, corpo, spirito. Valeria conosce l&apos;interazione tra questi livelli e nelle carte li vede agire
-                simultaneamente. Non offre scorciatoie magiche o false &quot;guarigioni&quot;. Chi si rivolge a lei avverte subito 
-                la differenza: riceve una mappa chiara del proprio equilibrio energetico e una direzione precisa per l&apos;azione.
+                Giornalista, attrice e esperta di simbolismo, Valeria applica ai Tarocchi di Marsiglia un protocollo strutturato 
+                che non lascia spazio alla casualità. Diplomata in <strong>Naturopatia</strong> e formata all'uso dei Fiori di Bach, 
+                vede nelle carte non semplici disegni, ma una mappa dinamica della psiche e dell'energia.
+              </p>
+              <p>
+                Non troverai in lei facili promesse o misticismi vaghi. Riceverai invece il frutto di una vita dedicata allo 
+                studio dell'uomo in ogni sua declinazione: legale, biologica, psicologica e spirituale. Un approccio unico per chi
+                cerca risposte autentiche e una guida che possiede gli strumenti per svelare l'invisibile.
               </p>
             </div>
 
-            <div className="mt-6 p-4 rounded-lg border border-gold-600/20 bg-gold-600/5">
-              <p className="font-serif text-lg font-bold text-gold-400 mb-1">Dallo Studio all&apos;Analisi Simbolica</p>
-              <p className="text-gold-500/85 text-xs font-medium tracking-wide mb-3">
-                Una solida competenza al servizio della persona
+            <div className="mt-8 p-6 rounded-2xl border border-gold-600/20 bg-gold-600/5 backdrop-blur-sm">
+              <p className="font-serif text-xl font-bold text-gold-400 mb-2">Scienza e Simbolo</p>
+              <p className="text-gold-500/85 text-xs font-medium tracking-wide mb-4">
+                La fusione tra studio accademico e sapienza esoterica
               </p>
               <p className="text-white/50 text-sm leading-relaxed italic">
-                &ldquo;Che si tratti di consigliare i Fiori di Bach in studio o di decodificare un tiraggio dei Tarocchi, 
-                l&apos;approccio è il medesimo: ascolto strutturato, totale rispetto per l&apos;individuo e rifiuto di ogni
-                semplificazione da \&apos;guru\&apos;. Valeria porta nella lettura delle carte la stessa serietà accademica che 
-                le è valsa alti riconoscimenti in ambito naturopatico.&rdquo;
+                &ldquo;Dalla chimica farmaceutica alla psicologia del profondo, ogni tappa del mio percorso è stata un gradino verso 
+                una comprensione integrale dell'individuo. Nei Tarocchi porto lo stesso rigore che si applica in un laboratorio o in 
+                un'aula di tribunale: le stelle sono precise come molecole, basta saperle leggere.&rdquo;
               </p>
             </div>
 

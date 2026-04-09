@@ -39,7 +39,7 @@ const ShiningStella = () => (
       }}
       transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
     >
-      Frammento di Cosmo
+      Luce nel Buio
     </motion.span>
   </span>
 )
@@ -107,9 +107,9 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="font-serif text-5xl md:text-7xl font-bold leading-tight mb-6"
           >
-            Le carte non mentono.
+            Oltre il Velo del Tempo.
             <br />
-            Valeria è la tua <ShiningStella />
+            Valeria: la tua <ShiningStella />
           </motion.h1>
 
           {/* Subtitle */}

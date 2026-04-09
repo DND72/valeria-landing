@@ -94,7 +94,7 @@ export default function Stats() {
           </span>
           <span className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-gold-500 inline-block" />
-            FIDE Arena International Master · ID 373110313
+            Laureata in Psicologia e Giurisprudenza · Consulente Olistica
           </span>
         </motion.div>
       </div>
