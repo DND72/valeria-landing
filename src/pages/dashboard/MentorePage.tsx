@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { useEffect, useState, useCallback } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
