@@ -4,13 +4,10 @@ import { useUser } from '@clerk/clerk-react'
 import ClientLayout from '../components/dashboard/ClientLayout'
 import ReactMarkdown from 'react-markdown'
 import { useAstrologyApi } from '../api/astrology'
-import { useMeApi } from '../api/me'
-import { toast } from 'react-hot-toast'
 
 export default function HeartTidesPage() {
   const { user } = useUser()
-  const { calculateHeartTides, getHeartTidesHistory } = useAstrologyApi()
-  const { getWalletBalance } = useMeApi()
+  const { calculateHeartTides, getHeartTidesHistory, getWalletBalance } = useAstrologyApi()
   const [balance, setBalance] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
@@ -38,7 +35,7 @@ export default function HeartTidesPage() {
   const fetchBalance = async () => {
     try {
       const res = await getWalletBalance()
-      setBalance(res.balance)
+      setBalance(res.balanceAvailable)
     } catch (e) {}
   }
 
@@ -51,7 +48,7 @@ export default function HeartTidesPage() {
 
   const handleCalculate = async () => {
     if (!personA.birthDate || !personB.birthDate || !personA.name || !personB.name) {
-      toast.error("Inserisci almeno i nomi e le date di nascita")
+      alert("Inserisci almeno i nomi e le date di nascita")
       return
     }
     
@@ -61,12 +58,11 @@ export default function HeartTidesPage() {
       setResult(res)
       fetchBalance()
       fetchHistory()
-      toast.success("Maree del Cuore rivelate!")
     } catch (e: any) {
       if (e.message === 'insufficient_funds') {
-        toast.error("Saldo insufficiente. Ricarica il tuo wallet.")
+        alert("Saldo insufficiente. Ricarica il tuo wallet.")
       } else {
-        toast.error(e.message || "Errore nel calcolo delle maree")
+        alert(e.message || "Errore nel calcolo delle maree")
       }
     } finally {
       setLoading(false)

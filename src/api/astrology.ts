@@ -179,6 +179,9 @@ export function useAstrologyApi() {
     },
     getHeartTidesHistory: async (): Promise<{ list: any[] }> => {
       return authFetch('/api/astrology/heart-tides/list')
+    },
+    getWalletBalance: async (): Promise<{ balanceAvailable: number; balanceLocked: number }> => {
+      return authFetch('/api/wallet/me')
     }
   }), [getToken, API_URL, authFetch])
 }
