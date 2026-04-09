@@ -35,15 +35,19 @@ export default function LiveSessionPage() {
     receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3')
   })
 
-  // Timer
+  // Timer Sincronizzato
   useEffect(() => {
-    if (!isAccepted) return
+    if (!isAccepted || !sessionInfo?.actualStartAt) return
+    
+    const startAt = new Date(sessionInfo.actualStartAt).getTime()
     
     const interval = setInterval(() => {
-      setSeconds(prev => prev + 1)
+      const now = Date.now()
+      const diff = Math.floor((now - startAt) / 1000)
+      setSeconds(diff > 0 ? diff : 0)
     }, 1000)
     return () => clearInterval(interval)
-  }, [isAccepted])
+  }, [isAccepted, sessionInfo?.actualStartAt])
 
   // Scroll automatico all'ultimo messaggio
   useEffect(() => {
@@ -84,13 +88,24 @@ export default function LiveSessionPage() {
           if (res.typing) {
              setOtherIsTyping(isStaff ? res.typing.client : res.typing.staff)
           }
-          if (res.sessionInfo) setSessionInfo(res.sessionInfo)
+          if (res.sessionInfo) {
+             setSessionInfo(res.sessionInfo)
+             if (res.sessionInfo.status === 'in_progress') {
+                setIsAccepted(true)
+             }
+             if (res.sessionInfo.status === 'done' || res.sessionInfo.status === 'cancelled') {
+                if (!isEnding) {
+                   alert("Il consulto è terminato.")
+                   navigate(isStaff ? '/control-room' : '/area-personale')
+                }
+             }
+          }
        } catch (err) { console.error('[chat poll]', err) }
     }
     fetchMessages()
     const poll = setInterval(fetchMessages, 3000)
     return () => clearInterval(poll)
-  }, [id, messages.length, isStaff, getToken])
+  }, [id, messages.length, isStaff, getToken, navigate, isEnding])
 
   // Waiting Countdown
   useEffect(() => {
@@ -152,13 +167,40 @@ export default function LiveSessionPage() {
     }
   }
 
-  const handleEndSession = async () => {
-    if (!window.confirm("Sei sicuro di voler chiudere il consulto?")) return
+  const handleAcceptSession = async () => {
+    try {
+      await apiJson(getToken, `/api/booking/session/${id}/accept`, { method: 'POST' })
+      setIsAccepted(true)
+    } catch {
+      alert("Errore nell'accettazione della sessione.")
+    }
+  }
+
+  const handleClaimSession = async () => {
+    if (!window.confirm("Confermi di voler terminare il consulto e incassare i crediti?")) return
     setIsEnding(true)
+    try {
+      // Calcoliamo i minuti effettivi per il claim
+      const actualMinutes = Math.floor(seconds / 60)
+      await apiJson(getToken, `/api/staff/consults/${id}/claim`, { 
+        method: 'POST',
+        body: JSON.stringify({ actualDurationMinutes: actualMinutes })
+      })
+      navigate('/control-room')
+    } catch (e: any) {
+      alert(e.message || "Errore durante l'incasso.")
+      setIsEnding(false)
+    }
+  }
+
+  const handleEndSession = () => {
+    if (isAccepted && !isEnding) {
+       if (!window.confirm("La sessione è ancora attiva. Vuoi davvero uscire? NOTA: Questo NON interrompe il tempo o il consulto.")) return
+    }
     navigate(isStaff ? '/control-room' : '/area-personale')
   }
 
-  const currentTotalCost = sessionInfo ? Math.floor((seconds / 60) * (sessionInfo.costCredits / 60)) : 0
+  const currentTotalCost = sessionInfo ? Math.floor((seconds / 60) * (sessionInfo.costCredits / (sessionInfo.expectedDuration || 30))) : 0
 
   return (
     <div className="fixed inset-0 bg-[#0a1128] overflow-hidden flex flex-col z-[9999]">
@@ -193,7 +235,7 @@ export default function LiveSessionPage() {
            )}
           {isStaff && !isAccepted && (
             <button
-              onClick={() => setIsAccepted(true)}
+              onClick={handleAcceptSession}
               className="bg-emerald-500 hover:bg-emerald-400 text-dark-500 text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
             >
               Accetta Consulto
@@ -201,11 +243,21 @@ export default function LiveSessionPage() {
           )}
 
           {isAccepted && (
-            <div className="text-right flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
-              <span className="text-white/30 text-[9px] uppercase tracking-tighter">Tempo</span>
-              <p className="text-gold-400 font-mono font-bold text-xs">
-                {Math.floor(seconds / 60)}:{(seconds % 60).toString().padStart(2, '0')}
-              </p>
+            <div className="flex items-center gap-2">
+              <div className="text-right flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                <span className="text-white/30 text-[9px] uppercase tracking-tighter">Tempo</span>
+                <p className="text-gold-400 font-mono font-bold text-xs">
+                  {Math.floor(seconds / 60)}:{(seconds % 60).toString().padStart(2, '0')}
+                </p>
+              </div>
+              {isStaff && (
+                <button
+                  onClick={handleClaimSession}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-dark-500 text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                >
+                  Termina e Incassa
+                </button>
+              )}
             </div>
           )}
 

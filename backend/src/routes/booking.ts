@@ -344,7 +344,7 @@ export function createBookingRouter(pool: Pool): Router {
 
       // Recuperiamo anche i dettagli del consulto per tempo/costo e typing status
       const { rows: consultInfo } = await pool.query(
-        `SELECT cost_credits, consult_kind, 
+        `SELECT cost_credits, consult_kind, status, actual_start_at,
                 (staff_is_typing_until > now()) as staff_typing,
                 (client_is_typing_until > now()) as client_typing
          FROM consults WHERE id = $1`,
@@ -366,12 +366,34 @@ export function createBookingRouter(pool: Pool): Router {
         },
         sessionInfo: {
           costCredits: info.cost_credits,
-          kind: info.consult_kind
+          kind: info.consult_kind,
+          status: info.status,
+          actualStartAt: info.actual_start_at,
+          expectedDuration: (info.consult_kind && info.consult_kind in CONSULT_META) ? (CONSULT_META as any)[info.consult_kind].durationMinutes : 30
         }
       })
     } catch (e) {
       console.error('[chat get]', e)
       res.status(500).json({ error: 'Errore recupero messaggi' })
+    }
+  })
+
+  r.post('/session/:id/accept', requireClerkAuth, async (req, res) => {
+    const { id } = req.params
+    // Opzionale: verificare ruolo staff se vogliamo super sicurezza
+    try {
+       await pool.query(
+         `UPDATE consults SET 
+            status = 'in_progress', 
+            actual_start_at = COALESCE(actual_start_at, now()), 
+            updated_at = now() 
+          WHERE id = $1 AND (status = 'scheduled' OR status = 'client_waiting')`,
+         [id]
+       )
+       res.json({ ok: true })
+    } catch (e) {
+       console.error('[accept error]', e)
+       res.status(500).json({ error: 'Errore accettazione sessione' })
     }
   })
 
