@@ -1,6 +1,6 @@
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
@@ -121,7 +121,7 @@ export default function SynastryPage() {
                
                <div className="flex flex-wrap items-center justify-between gap-6 mb-12 border-b border-white/10 pb-10">
                  <div className="text-center md:text-left">
-                    <p className="text-[10px] uppercase tracking-widest text-red-400 mb-1">Dati Maschili / Femminili</p>
+                    <p className="text-[10px] uppercase tracking-widest text-red-400 mb-1">Dati Analizzati</p>
                     <p className="text-white font-serif text-2xl">{pA.city} ✦ {pB.city}</p>
                  </div>
                  <div className="flex items-center gap-4 bg-red-950/20 border border-red-500/20 px-6 py-3 rounded-full">
@@ -132,15 +132,35 @@ export default function SynastryPage() {
                  </div>
                </div>
 
-               <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm">
-                  <ReactMarkdown>{result.interpretation}</ReactMarkdown>
-               </div>
+               {result.status === 'pending_staff' ? (
+                 <div className="text-center py-20">
+                    <div className="w-24 h-24 rounded-full border border-red-500/30 flex items-center justify-center mx-auto mb-8 relative">
+                       <span className="text-4xl animate-pulse">🕯️</span>
+                       <div className="absolute inset-0 border-2 border-gold-500/20 rounded-full animate-spin-slow" />
+                    </div>
+                    <h2 className="font-serif text-3xl text-white mb-6 italic">Valeria sta intrecciando i vostri destini...</h2>
+                    <p className="text-white/60 text-base max-w-xl mx-auto leading-relaxed mb-8">
+                      Le vostre anime sono entrate nel Laboratorio Astrale. Valeria sta analizzando personalmente ogni aspetto del vostro legame per creare il vostro **Libro dell'Amore** da 6000 parole.
+                    </p>
+                    <div className="inline-flex items-center gap-3 px-6 py-3 bg-red-900/20 rounded-full border border-red-500/30">
+                       <div className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
+                       <span className="text-xs uppercase tracking-[0.2em] text-gold-200 font-bold">Responso pronto in circa 24 ore</span>
+                    </div>
+                    <p className="text-[10px] text-white/30 mt-10 italic">Riceverai una notifica sul tuo Diario non appena il patto segreto delle stelle sarà rivelato.</p>
+                 </div>
+               ) : (
+                 <>
+                   <div className="prose prose-invert max-w-none text-white/80 leading-relaxed text-sm">
+                      <ReactMarkdown>{result.interpretation}</ReactMarkdown>
+                   </div>
 
-               <div className="mt-16 pt-10 border-t border-white/10 text-center no-print">
-                  <button onClick={() => window.print()} className="btn-outline px-8 py-3 text-xs uppercase tracking-[0.2em]">
-                    Scarica Report di Coppia (PDF)
-                  </button>
-               </div>
+                   <div className="mt-16 pt-10 border-t border-white/10 text-center no-print">
+                      <button onClick={() => window.print()} className="btn-outline px-8 py-3 text-xs uppercase tracking-[0.2em]">
+                        Scarica Report di Coppia (PDF)
+                      </button>
+                   </div>
+                 </>
+               )}
             </motion.div>
 
             {/* Aspetti Chiave */}

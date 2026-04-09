@@ -587,12 +587,23 @@ export const getPendingCharts = async (_req: Request, res: Response): Promise<vo
        ORDER BY h.created_at ASC`
     )
 
+    // 3. Sinastrie in attesa
+    const synRes = await pool.query(
+      `SELECT sr.*, bp.declared_birthday as birth_a, bp2.declared_birthday as birth_b
+       FROM synastry_reports sr
+       LEFT JOIN client_billing_profiles bp ON sr.clerk_user_id = bp.clerk_user_id
+       LEFT JOIN client_billing_profiles bp2 ON sr.clerk_user_id = bp2.clerk_user_id
+       WHERE sr.status = 'pending_staff'
+       ORDER BY sr.created_at ASC`
+    )
+
     res.json({ 
       pendingCharts: chartsRes.rows, 
       pendingHoroscopes: horoRes.rows.map(h => ({
         ...h,
         name: h.display_name || h.email_normalized || h.clerk_user_id
-      }))
+      })),
+      pendingSynastries: synRes.rows
     })
   } catch (err) {
     console.error('[staff getPending]', err)
@@ -618,6 +629,23 @@ export const approveChart = async (req: Request, res: Response): Promise<void> =
         `UPDATE user_horoscopes SET status = 'ready', updated_at = now() WHERE id = $1`,
         [chartId]
       )
+      // Get user email and notify
+      const hRes = await pool.query(`SELECT clerk_user_id FROM user_horoscopes WHERE id = $1`, [chartId])
+      if (hRes.rows[0]) void notifyClient(hRes.rows[0].clerk_user_id, 'oroscopo')
+    } else if (type === 'synastry') {
+      if (interpretation) {
+        await pool.query(
+          `UPDATE synastry_reports SET status = 'ready', interpretation = $1, created_at = now() WHERE id = $2`,
+          [interpretation, chartId]
+        )
+      } else {
+        await pool.query(
+          `UPDATE synastry_reports SET status = 'ready', created_at = now() WHERE id = $1`,
+          [chartId]
+        )
+      }
+      const sRes = await pool.query(`SELECT clerk_user_id FROM synastry_reports WHERE id = $1`, [chartId])
+      if (sRes.rows[0]) void notifyClient(sRes.rows[0].clerk_user_id, 'sinastria')
     } else {
       if (interpretation) {
         await pool.query(
@@ -630,12 +658,30 @@ export const approveChart = async (req: Request, res: Response): Promise<void> =
           [chartId]
         )
       }
+      const nRes = await pool.query(`SELECT clerk_user_id FROM natal_charts WHERE id = $1`, [chartId])
+      if (nRes.rows[0]) void notifyClient(nRes.rows[0].clerk_user_id, 'tema_natale')
     }
     
     res.json({ success: true, message: 'Analisi approvata e pubblicata' })
   } catch (err) {
     console.error('[staff approve]', err)
     res.status(500).json({ error: 'Errore durante l\'approvazione' })
+  }
+}
+
+async function notifyClient(clerkUserId: string, analysisType: 'tema_natale' | 'oroscopo' | 'sinastria') {
+  try {
+    const { createClerkClient } = await import('@clerk/backend')
+    const clerk = createClerkClient({ apiKey: process.env.CLERK_SECRET_KEY })
+    const user = await clerk.users.getUser(clerkUserId)
+    const email = user.emailAddresses[0]?.emailAddress
+    
+    if (email) {
+      const { sendAnalysisReadyNotification } = await import('../lib/mail.js')
+      await sendAnalysisReadyNotification(email, user.firstName || 'Cara Anima', analysisType)
+    }
+  } catch (err) {
+    console.error('[notification-trigger-error]', err)
   }
 }
 
@@ -776,7 +822,7 @@ export const calculateSynastry = async (req: Request, res: Response): Promise<vo
      const chartB = await runNatalCalculation(personB.birthDate, personB.birthTime, personB.city)
  
      // 3. Inter-aspects calculation
-     const { calculateTransits } = await import('../../../src/utils/astrologyUtils.js')
+     const { calculateTransits } = await import('../utils/astrologyUtils.js')
      const interAspects = calculateTransits(chartA.pianeti, chartB.pianeti)
  
      // 4. Gemini Interpretation
@@ -800,19 +846,21 @@ export const calculateSynastry = async (req: Request, res: Response): Promise<vo
        )
        
        const insertRes = await dbClient.query(
-         `INSERT INTO synastry_reports (clerk_user_id, person_a_data, person_b_data, chart_a, chart_b, inter_aspects, interpretation)
-          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-         [userId, personA, personB, chartA, chartB, interAspects, interpretation]
+         `INSERT INTO synastry_reports (clerk_user_id, person_a_data, person_b_data, chart_a, chart_b, inter_aspects, interpretation, status)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, status`,
+         [userId, personA, personB, chartA, chartB, interAspects, interpretation, 'pending_staff']
        )
  
        await dbClient.query('COMMIT')
        
        res.json({
          id: insertRes.rows[0].id,
+         status: insertRes.rows[0].status,
          chartA,
          chartB,
          interAspects,
-         interpretation,
+         // Non inviamo l'interpretazione al client se è ancora pending!
+         interpretation: null, 
          personA,
          personB
        })
