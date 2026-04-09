@@ -16,7 +16,7 @@ import { rateLimit } from 'express-rate-limit'
 // 🛡️ SCUDO ANTI-BRUTEFORCE (Rate Limiting)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minuti
-  max: 100, // Limite di 100 richieste per IP
+  max: 500, // Limite di 500 richieste per IP (più generoso per dashboard in polling)
   message: { error: "Troppe richieste da questo indirizzo, riprova più tardi." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -24,7 +24,7 @@ const generalLimiter = rateLimit({
 
 const sensitiveLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 10, // Più restrittivo per transazioni e prenotazioni
+  max: 120, // Aumentato a 120 (1 richiesta ogni 7.5 secondi) per non bloccare lo staff in dashboard
   message: { error: "Troppi tentativi rilevati. Per sicurezza, l'accesso è temporaneamente limitato." },
   standardHeaders: true,
   legacyHeaders: false,

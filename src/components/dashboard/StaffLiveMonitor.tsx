@@ -10,7 +10,7 @@ interface Consult {
   start_at: string
   invitee_name: string | null
   invitee_email: string | null
-  service_kind: string
+  consult_kind: string
   meeting_join_url: string | null
 }
 
@@ -101,7 +101,7 @@ export default function StaffLiveMonitor() {
         <div className="grid gap-6">
           {liveConsults.map((c) => {
             const isWaiting = c.status === 'client_waiting'
-            const isChat = c.service_kind?.startsWith('chat_') || c.service_kind === 'flash'
+            const isChat = c.consult_kind?.includes('chat') || c.consult_kind === 'flash'
             
             return (
               <motion.div 
@@ -125,7 +125,7 @@ export default function StaffLiveMonitor() {
                       <p className="text-white/40 text-sm mb-2">{c.invitee_email || 'Richiesta immediata'}</p>
                       <div className="flex items-center gap-4 text-[10px] uppercase font-bold tracking-widest text-gold-500/60">
                          <span>🕒 {new Date(c.start_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
-                         <span>✨ {(c.service_kind || 'consulto').toUpperCase()}</span>
+                         <span>✨ {(c.consult_kind || 'consulto').toUpperCase()}</span>
                       </div>
                     </div>
                   </div>

@@ -9,7 +9,7 @@ interface MyConsult {
   id: string
   status: string
   start_at: string
-  service_kind: string
+  consult_kind: string
   meeting_join_url: string | null
 }
 
@@ -95,7 +95,7 @@ export default function MyLiveConsultsPage() {
             <AnimatePresence>
               {liveConsults.map((c) => {
                 const isWaiting = c.status === 'client_waiting'
-                const isChat = c.service_kind?.startsWith('chat_') || c.service_kind === 'flash'
+                const isChat = c.consult_kind?.includes('chat') || c.consult_kind === 'flash'
                 const isNow = isWaiting || c.status === 'in_progress'
 
                 return (
@@ -117,7 +117,7 @@ export default function MyLiveConsultsPage() {
                                {isNow && <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />}
                             </div>
                             <p className="text-white/40 text-sm mb-2 uppercase tracking-widest text-[10px] font-bold">
-                               { (c.service_kind || 'consulto').replace('_', ' ') }
+                               { (c.consult_kind || 'consulto').replace('_', ' ') }
                             </p>
                             <div className="flex items-center gap-3 text-xs font-mono text-gold-500/70">
                                <span>🕒 {new Date(c.start_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>

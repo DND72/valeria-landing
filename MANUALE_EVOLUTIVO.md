@@ -47,4 +47,14 @@ Abbiamo reso tutto più chiaro e onesto:
 - **Sempre Agile**: Se un giorno decidi di non lavorare, puoi spegnere quel turno con un solo clic nella Control Room: il calendario pubblico si aggiornerà in meno di un secondo.
 - **Le Date nel Futuro**: Il sistema visualizza automaticamente le date esatte dei prossimi 14 giorni, togliendoti il disturbo di dover calcolare i giorni del mese.
 
+---
+
+## 🚀 Sviluppi Futuri (Orizzonti Prossimi)
+
+### 1. Gestione Contestazioni (Disputed Consultations) 🚩
+Implementeremo un sistema dedicato per gestire i consulti "in contestazione":
+- **Lato Valeria (CRM)**: Una vista specifica nel CRM per esaminare le richieste di rimborso o le segnalazioni di problemi tecnici, con possibilità di risoluzione manuale.
+- **Lato Cliente**: Uno stato dedicato nell'area personale per segnalare anomalie in una sessione e monitorare lo stato della pratica.
+- **Transazioni**: Integrazione automatica con il Wallet per lo sblocco dei fondi in caso di risoluzione a favore del cliente.
+
 *Che questo strumento possa servire al meglio la tua crescita e quella dei tuoi clienti.* 🌌✨🧘‍♀️🕺🌟

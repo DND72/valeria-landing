@@ -42,7 +42,7 @@ export function createMeRouter(pool: Pool): Router {
       const { rows } = await pool.query(
         `SELECT id, status, is_free_consult, meeting_join_url, meeting_provider,
                 invitee_email, invitee_name, start_at, end_at, created_at, updated_at,
-                cost_credits, reschedule_count
+                cost_credits, reschedule_count, consult_kind
          FROM consults
          WHERE clerk_user_id = $1
             OR ($2::text IS NOT NULL AND invitee_email IS NOT NULL
