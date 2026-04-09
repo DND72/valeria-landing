@@ -298,7 +298,7 @@ export default function ClientDashboard() {
                   <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest font-medium mb-0.5">Disponibile</p>
                   <p className="text-sm font-bold text-emerald-400 leading-none">{wallet.balanceAvailable} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
                 </div>
-                <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+            <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
                   <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
                   <p className="text-sm font-bold text-amber-400 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
                 </div>
@@ -308,17 +308,36 @@ export default function ClientDashboard() {
           </div>
         </motion.div>
 
+        {/* ── Presenza Valeria (Massima Visibilità) ── */}
+        {getApiBaseUrl() && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded-2xl bg-gold-400/5 border border-gold-400/10 flex items-center justify-between gap-4 group hover:bg-gold-400/10 transition-all duration-500"
+          >
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border border-gold-500/30 p-1 bg-dark-500 overflow-hidden">
+                   <img src="/valeria-avatar.jpg" alt="Valeria" className="w-full h-full rounded-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                </div>
+                <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-[#030712] ${valeriaPresence?.status === 'online' ? 'bg-emerald-500 animate-pulse' : valeriaPresence?.status === 'busy' ? 'bg-amber-500' : 'bg-white/20'}`} />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gold-500/60 font-black mb-0.5">Stato Valeria Di Pace</p>
+                <p className="text-white font-serif text-lg leading-none">Valeria è <span className="text-gold-400">{presenceLabel}</span></p>
+              </div>
+            </div>
+            {valeriaPresence?.status === 'online' && (
+              <div className="hidden sm:block">
+                 <p className="text-[9px] uppercase tracking-widest text-emerald-500/60 font-bold bg-emerald-500/5 px-2 py-1 rounded border border-emerald-500/20">Pronta al Consulto immediato</p>
+              </div>
+            )}
+          </motion.div>
+        )}
         <AstralRankCard user={user} donePaidConsults={taxInfo?.donePaidConsults || 0} />
 
         <TransactionHistory transactions={transactions} loading={transactionsLoading} />
 
-        {/* ── Presenza Valeria ── */}
-        {getApiBaseUrl() && (
-          <p className="text-sm text-white/55 mb-6 flex flex-wrap items-center gap-2">
-            <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${valeriaPresence?.status === 'online' ? 'bg-emerald-500/90' : valeriaPresence?.status === 'busy' ? 'bg-amber-500/90' : 'bg-white/30'}`} aria-hidden />
-            <span>Valeria in questo momento: <strong className="text-gold-400/95">{presenceLabel}</strong> <span className="text-white/35 text-xs ml-2">(utile per capire se può rispondere subito)</span></span>
-          </p>
-        )}
 
         {/* ── Finestre Live ── */}
         {liveWindows && (

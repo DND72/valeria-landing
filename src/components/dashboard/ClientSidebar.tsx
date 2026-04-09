@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useClerk, useUser } from '@clerk/clerk-react'
 import { isPrivilegedClerkUser } from '../../lib/privilegedUser'
+import { useValeriaPresence } from '../../hooks/useValeriaPresence'
+import { labelForPresence } from '../../lib/valeriaPresence'
 
 type ClientSidebarProps = {
   theme?: 'dark' | 'light'
@@ -32,6 +34,8 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
   const { signOut } = useClerk()
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { data: valeriaPresence } = useValeriaPresence()
+  const presenceLabel = labelForPresence(valeriaPresence?.status)
 
   return (
     <motion.aside 
@@ -49,7 +53,10 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
           <img src="/logo-small.png" alt="Logo" className="w-8 h-8 object-contain cursor-pointer" onClick={() => navigate('/')} />
           <div className="min-w-0">
             <p className={`font-serif text-lg font-bold leading-none truncate ${theme === 'light' ? 'text-dark-500' : 'text-white'}`}>Il mio Diario</p>
-            <p className="text-[9px] uppercase tracking-widest text-gold-500 font-bold mt-1">Nonsolotarocchi</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${valeriaPresence?.status === 'online' ? 'bg-emerald-500 animate-pulse' : valeriaPresence?.status === 'busy' ? 'bg-amber-500' : 'bg-white/20'}`} />
+              <p className="text-[8px] uppercase tracking-widest text-gold-500/80 font-bold">Valeria {presenceLabel}</p>
+            </div>
           </div>
         </div>
         

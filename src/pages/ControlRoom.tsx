@@ -398,6 +398,21 @@ export default function ControlRoom() {
   return (
     <StaffLayout title="Control Room" subtitle="Gestione appuntamenti interni e disponibilità">
       <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="flex justify-end mb-6">
+          <button 
+            onClick={() => {
+              void loadList()
+              void loadInternalAvailability()
+              void loadPendingAnalyses()
+            }}
+            className="btn-gold flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(212,160,23,0.2)]"
+          >
+            <svg className={`w-5 h-5 ${loading || internalLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Sincronizza Pagina
+          </button>
+        </div>
         {/* Gestione Disponibilità Interna (Sostituisce Calendly) */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
