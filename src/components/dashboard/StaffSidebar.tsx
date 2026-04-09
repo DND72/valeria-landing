@@ -36,30 +36,50 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
   const { pathname } = useLocation()
   const navigate = useNavigate()
   
-  const [presence, setPresence] = useState<ValeriaPresenceStatus>('offline')
+  // Utilizziamo una cache locale nel window per evitare il salto all'offline durante il cambio tab
+  const [presence, setPresence] = useState<ValeriaPresenceStatus>(() => {
+     if (typeof window !== 'undefined' && (window as any).__VALERIA_PRESENCE) {
+        return (window as any).__VALERIA_PRESENCE
+     }
+     return 'offline'
+  })
   const [presenceSaving, setPresenceSaving] = useState(false)
 
   const loadPresence = useCallback(async () => {
     if (!getApiBaseUrl()) return
+    // Se stiamo salvando, non sovrascrivere lo stato locale con quello (potenzialmente vecchio) del server
+    if (presenceSaving) return
+
     try {
       const r = await apiJson<{ status: ValeriaPresenceStatus }>(getToken, '/api/staff/presence')
-      setPresence(r.status)
+      if (r.status) {
+        setPresence(r.status)
+        if (typeof window !== 'undefined') (window as any).__VALERIA_PRESENCE = r.status
+      }
     } catch { /* ignore */ }
-  }, [getToken])
+  }, [getToken, presenceSaving])
 
   useEffect(() => {
     void loadPresence()
+    const timer = setInterval(loadPresence, 5000)
+    return () => clearInterval(timer)
   }, [loadPresence])
 
   const setStatus = async (status: ValeriaPresenceStatus) => {
+    // Ottimismo: aggiorniamo subito l'interfaccia e la cache globale della finestra
+    setPresence(status)
+    if (typeof window !== 'undefined') (window as any).__VALERIA_PRESENCE = status
+    
     setPresenceSaving(true)
     try {
       await apiJson(getToken, '/api/staff/presence', {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       })
-      setPresence(status)
-    } catch { /* ignore */ } finally {
+    } catch { 
+       // Se fallisce, ricarichiamo lo stato reale
+       void loadPresence()
+    } finally {
       setPresenceSaving(false)
     }
   }
@@ -101,7 +121,10 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
         
         {/* Status Selector */}
         <div className="space-y-3">
-          <p className="text-[10px] uppercase tracking-widest text-white/30 font-bold px-2">Il tuo Stato</p>
+          <div className="flex items-center justify-between px-2">
+             <p className="text-[10px] uppercase tracking-widest text-white/30 font-bold">Il tuo Stato</p>
+             {presenceSaving && <span className="w-1.5 h-1.5 bg-gold-500 rounded-full animate-ping" />}
+          </div>
           <div className="grid grid-cols-3 gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
             {(['online', 'busy', 'offline'] as ValeriaPresenceStatus[]).map((s) => {
               const active = presence === s
@@ -110,12 +133,11 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
                 <button
                   key={s}
                   onClick={() => setStatus(s)}
-                  disabled={presenceSaving}
                   className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
-                    active ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'
+                    active ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5 opacity-40 hover:opacity-100'
                   }`}
                 >
-                  <span className={`w-2 h-2 rounded-full ${color} mb-1 ${active ? 'animate-pulse' : ''}`} />
+                  <span className={`w-2 h-2 rounded-full ${color} mb-1 ${active ? 'animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.3)]' : ''}`} />
                   <span className={`text-[9px] uppercase font-bold ${active ? 'text-white' : 'text-white/40'}`}>{s}</span>
                 </button>
               )
@@ -134,7 +156,6 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
                   key={link.id}
                   onClick={() => {
                     if (!isHome) {
-                      // Se non siamo in area-personale, ci andiamo prima
                       navigate(`/area-personale?tab=${link.id}`)
                     } else {
                       onTabChange(link.id)
@@ -201,4 +222,3 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
     </motion.aside>
   )
 }
-

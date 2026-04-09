@@ -70,20 +70,20 @@ export function createStaffRouter(pool: Pool): Router {
   r.get('/calendly-today', async (_req, res) => {
     try {
       const { rows } = await pool.query<{
-        id: string
-        invitee_name: string | null
-        invitee_email: string | null
-        start_at: Date
-        end_at: Date | null
-        consult_kind: string
-        meeting_link: string | null
-        status: string
+        id: string;
+        invitee_name: string | null;
+        invitee_email: string | null;
+        start_at: string | null;
+        end_at: string | null;
+        consult_kind: string;
+        meeting_link: string | null;
+        status: string;
       }>(`
         SELECT id, invitee_name, invitee_email, start_at, end_at, consult_kind, meeting_link, status
         FROM consults
-        WHERE start_at >= CURRENT_DATE 
-          AND start_at < CURRENT_DATE + INTERVAL '1 day'
-          AND status IN ('scheduled', 'client_waiting')
+        WHERE start_at >= CURRENT_DATE - INTERVAL '1 day' 
+          AND start_at < CURRENT_DATE + INTERVAL '2 days'
+          AND status IN ('scheduled', 'client_waiting', 'in_progress')
         ORDER BY start_at ASC
       `)
 
