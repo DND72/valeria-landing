@@ -348,7 +348,7 @@ export default function LiveSessionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className={`flex ${msg.role === 'valeria' ? 'justify-start' : 'justify-end'}`}
                      >
-                        <div className={`group relative max-w-[85%] md:max-w-[75%] p-6 rounded-3xl shadow-2xl transition-all ${
+                        <div className={`chat-bubble group relative max-w-[85%] md:max-w-[75%] p-6 rounded-3xl shadow-2xl transition-all ${
                            msg.role === 'valeria' 
                               ? (theme === 'dark' ? 'bg-gradient-to-br from-violet-950/60 via-dark-900 to-black rounded-tl-none border border-violet-500/30 font-sans' : 'bg-gradient-to-br from-violet-100 to-white rounded-tl-none border border-violet-200 shadow-violet-200/20 font-sans')
                               : (theme === 'dark' ? 'bg-gradient-to-br from-gold-950/40 via-black to-black border border-gold-500/20 rounded-tr-none font-sans' : 'bg-gradient-to-br from-amber-50 to-white border border-amber-200 rounded-tr-none shadow-amber-200/20 font-sans')
@@ -476,7 +476,7 @@ export default function LiveSessionPage() {
           >
             <motion.div 
               initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }}
-              className="max-w-md w-full text-center"
+              className="success-modal-content max-w-md w-full text-center"
             >
               <div className="relative mb-8 w-48 h-48 mx-auto">
                 {/* Glow ring */}
@@ -523,6 +523,15 @@ export default function LiveSessionPage() {
          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,160,23,0.15); border-radius: 20px; transition: all 0.3s; }
          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,160,23,0.3); }
          body { overscroll-behavior-y: contain; }
+         
+         @media (max-width: 768px) {
+            header { padding-left: 1rem; padding-right: 1rem; height: 4.5rem; }
+            h1 { font-size: 0.75rem; }
+            .chat-bubble { max-width: 90% !important; padding: 1rem !important; }
+            footer { padding: 1rem !important; }
+            textarea { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+            .success-modal-content { scale: 0.9; }
+         }
       `}} />
     </div>
   )
