@@ -59,7 +59,7 @@ export default function WeeklyForecast({ content, energyLevel, luckyDays }: Week
               <span className="font-bold text-sm uppercase tracking-wider">Giorni d'Oro</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {luckyDays.map(day => (
+              {Array.isArray(luckyDays) && luckyDays.map(day => (
                 <span key={day} className="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-200 text-xs font-medium">
                   {day}
                 </span>

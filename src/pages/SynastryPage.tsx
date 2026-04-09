@@ -13,6 +13,7 @@ export default function SynastryPage() {
   const [showFullCTA, setShowFullCTA] = useState(false)
 
   const [personA, setPersonA] = useState({
+    name: '',
     birthDate: '',
     birthTime: '',
     city: '',
@@ -20,6 +21,7 @@ export default function SynastryPage() {
   })
 
   const [personB, setPersonB] = useState({
+    name: '',
     birthDate: '',
     birthTime: '',
     city: '',
@@ -35,17 +37,21 @@ export default function SynastryPage() {
 
   // Caricamento dati profilo per Persona A
   useEffect(() => {
+    if (user?.firstName) {
+       setPersonA(prev => ({ ...prev, name: user.firstName }))
+    }
     const loadProfile = async () => {
       try {
         const res = await getLatestChart()
         if (res.chart) {
           const bd = res.chart.birthDate ? new Date(res.chart.birthDate).toISOString().split('T')[0] : ''
-          setPersonA({
+          setPersonA(prev => ({
+             ...prev,
              birthDate: bd,
              birthTime: res.chart.birthTime || '',
              city: res.chart.city || '',
              gender: (res.chart as any).gender || 'F'
-          })
+          }))
           setIsPersonAFixed({
              birthDate: !!bd,
              birthTime: !!res.chart.birthTime,
@@ -58,11 +64,11 @@ export default function SynastryPage() {
       }
     }
     loadProfile()
-  }, [getLatestChart])
+  }, [getLatestChart, user])
 
   const handleCalculate = async (isPremium: boolean = false) => {
-    if (!personA.birthDate || !personA.city || !personB.birthDate || !personB.city) {
-      alert("Per favore, inserisci tutti i dati per entrambe le anime.")
+    if (!personA.birthDate || !personA.city || !personB.birthDate || !personB.city || !personA.name || !personB.name) {
+      alert("Per favore, inserisci tutti i dati (compresi i nomi) per entrambe le anime.")
       return
     }
 
@@ -129,6 +135,16 @@ export default function SynastryPage() {
                    )}
                    <div className="space-y-4">
                       <div>
+                         <label className="text-[10px] uppercase tracking-widest text-white/40 block mb-2">Nome</label>
+                         <input
+                            type="text"
+                            placeholder="Il tuo nome"
+                            value={personA.name}
+                            onChange={(e) => setPersonA(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
+                         />
+                      </div>
+                      <div>
                          <label className="text-[10px] uppercase tracking-widest text-white/40 block mb-2">Data di Nascita</label>
                          <input
                             type="date"
@@ -181,6 +197,16 @@ export default function SynastryPage() {
                    </div>
                    <h3 className="font-serif text-xl text-white italic">L'Anima del Partner</h3>
                    <div className="space-y-4">
+                      <div>
+                         <label className="text-[10px] uppercase tracking-widest text-white/40 block mb-2">Nome</label>
+                         <input
+                            type="text"
+                            placeholder="Nome del partner"
+                            value={personB.name}
+                            onChange={(e) => setPersonB(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none transition-all"
+                         />
+                      </div>
                       <div>
                          <label className="text-[10px] uppercase tracking-widest text-white/40 block mb-2">Data di Nascita</label>
                          <input
@@ -238,11 +264,12 @@ export default function SynastryPage() {
                   disabled={loading}
                   className="mystical-button bg-gradient-to-r from-red-600 to-amber-600 text-white px-12 py-5 rounded-full font-black uppercase tracking-[0.3em] text-sm shadow-[0_0_50px_rgba(220,38,38,0.2)] hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                 >
-                   {loading ? "Intreccio Astrale..." : "Svela il Libro dell'Amore — 50 CR"}
+                   {loading ? "Intreccio Astrale..." : "Svela il Libro dell'Amore — 30 CR"}
                 </button>
                 <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Un'analisi magistrale da 6000 parole approvata da Valeria</p>
              </div>
           </motion.div>
+
         ) : (
           <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-1000">
             <motion.div
@@ -296,7 +323,7 @@ export default function SynastryPage() {
                            onClick={() => handleCalculate(true)}
                            className="mystical-button bg-gold-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-gold-500/20"
                          >
-                            Richiedi il Libro dell'Amore (50 CR)
+                            Richiedi il Libro dell'Amore (30 CR)
                          </button>
                       </div>
                    )}

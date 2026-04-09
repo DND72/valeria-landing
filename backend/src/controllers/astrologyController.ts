@@ -88,7 +88,7 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
       res.json({ ...existing.rows[0].chart_data, id: existing.rows[0].id, interpretation: existing.rows[0].interpretation, status: existing.rows[0].status, isExisting: true })
       return
     }
-    const cost = 30; const auth = (req as any).auth
+    const cost = 20; const auth = (req as any).auth
     const isStaff = auth?.sessionClaims?.publicMetadata?.role === 'staff' || auth?.sessionClaims?.publicMetadata?.privileged === true
     if (!isStaff) {
       const bal = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
@@ -138,6 +138,8 @@ export const calculateSynastry = async (req: Request, res: Response): Promise<vo
      const chartB = await runNatalCalculation(personB.birthDate, personB.birthTime, personB.city)
      const { calculateTransits } = await import('../utils/astrologyUtils.js')
      const interAspects = calculateTransits(chartA.pianeti, chartB.pianeti)
+     const nameA = personA.name || 'A'
+     const nameB = personB.name || 'B'
      if (isPreview) {
         const wallet = await pool.query(`SELECT free_synastry_used FROM wallets WHERE clerk_user_id = $1`, [userId])
         if (wallet.rows[0]?.free_synastry_used) {
@@ -145,7 +147,7 @@ export const calculateSynastry = async (req: Request, res: Response): Promise<vo
            return
         }
         const { generateSynastryPreview } = await import('../lib/gemini.js')
-        const interp = await generateSynastryPreview(chartA, chartB, interAspects)
+        const interp = await generateSynastryPreview(chartA, chartB, interAspects, nameA, nameB)
         await pool.query(`UPDATE wallets SET free_synastry_used = true WHERE clerk_user_id = $1`, [userId])
         res.json({ status: 'ready', chartA, chartB, interAspects, interpretation: interp, is_preview: true })
         return
@@ -155,10 +157,11 @@ export const calculateSynastry = async (req: Request, res: Response): Promise<vo
         res.json({ id: exist.rows[0].id, status: exist.rows[0].status, interpretation: exist.rows[0].status === 'ready' ? exist.rows[0].interpretation : null, isExisting: true })
         return
      }
-     const cost = 50; const bal = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
+     const cost = 30; const bal = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
      if (!bal.rows[0] || bal.rows[0].balance_available < cost) { res.status(400).json({ error: 'insufficient_funds' }); return; }
      const { generateSynastryInterpretation } = await import('../lib/gemini.js')
-     const interp = await generateSynastryInterpretation(chartA, chartB, interAspects, personA.gender, personB.gender)
+     const interp = await generateSynastryInterpretation(chartA, chartB, interAspects, personA.gender, personB.gender, nameA, nameB)
+
      const dbClient = await pool.connect()
      try {
        await dbClient.query('BEGIN'); await dbClient.query(`UPDATE wallets SET balance_available = balance_available - $1 WHERE clerk_user_id = $2`, [cost, userId])

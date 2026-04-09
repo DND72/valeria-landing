@@ -283,7 +283,7 @@ function ResultPanel({ data, isLoggedIn, hasAdvanced }: { data: NatalChartRespon
                   to="/area-personale/i-miei-temi"
                   className="inline-block btn-gold px-12 py-4 text-sm uppercase tracking-[0.2em] font-black shadow-[0_0_40px_rgba(212,160,23,0.3)] hover:scale-105 transition-transform"
                 >
-                  {hasAdvanced ? "ACCEDI AL TUO TEMA COMPLETO →" : "RICHIEDI ANALISI EVOLUTIVA (30 CR) →"}
+                  {hasAdvanced ? "ACCEDI AL TUO TEMA COMPLETO →" : "RICHIEDI ANALISI EVOLUTIVA (20 CR) →"}
                 </Link>
                 {!hasAdvanced && (
                    <p className="text-[10px] text-white/30 uppercase tracking-widest">Strumenti inclusi: Bi-Wheel Transiti e Oroscopo Settimanale</p>

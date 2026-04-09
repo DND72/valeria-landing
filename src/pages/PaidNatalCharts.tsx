@@ -325,7 +325,7 @@ export default function PaidNatalCharts() {
                         Un'analisi olistica focalizzata sul tuo potenziale e sulle sfide evolutive.
                       </p>
                       <div className="flex items-center justify-center gap-2">
-                        <span className="text-emerald-400 font-bold text-2xl">30 CR</span>
+                        <span className="text-emerald-400 font-bold text-2xl">20 CR</span>
                         <span className="text-white/20 text-xs uppercase tracking-widest">(Crediti)</span>
                       </div>
                     </div>
@@ -336,7 +336,7 @@ export default function PaidNatalCharts() {
                         disabled={loading}
                         className="w-full sm:w-auto px-8 py-3 rounded-lg bg-gradient-to-r from-gold-600 to-gold-400 text-dark-500 font-semibold transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
                       >
-                        {loading ? 'Lettura in corso...' : `Richiedi Analisi Evolutiva (30 CR)`}
+                        {loading ? 'Lettura in corso...' : `Richiedi Analisi Evolutiva (20 CR)`}
                       </button>
                     </div>
                   </form>
