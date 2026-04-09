@@ -107,6 +107,21 @@ export default function LiveSessionPage() {
     return () => clearInterval(poll)
   }, [id, messages.length, isStaff, getToken, navigate, isEnding])
 
+  // Polling Messaggi, ecc. (prima del countdown)
+
+  // CountDown Attesa Cliente (Fix TS unused)
+  useEffect(() => {
+    if (isAccepted || !sessionInfo || isStaff) return
+    const interval = setInterval(() => {
+      const start = new Date(sessionInfo.created_at || Date.now()).getTime()
+      const now = Date.now()
+      const elapsed = Math.floor((now - start) / 1000)
+      const remaining = Math.max(0, 300 - elapsed)
+      setWaitSeconds(remaining)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [isAccepted, sessionInfo, isStaff])
+
   // Typing signal
   useEffect(() => {
      if (!inputText.trim() || !id) return
