@@ -26,9 +26,11 @@ export default function StaffLiveMonitor() {
       const today = now.toISOString().split('T')[0]
       
       const filtered = all.filter(c => {
-         const isWaiting = c.status === 'client_waiting' || c.status === 'in_progress'
+         // Se è in attesa o in corso, mostralo SEMPRE, a prescindere dalla data
+         if (c.status === 'client_waiting' || c.status === 'in_progress') return true
+         
          const isToday = c.start_at?.startsWith(today)
-         return isWaiting || isToday
+         return isToday
       }).sort((a,b) => {
          if (a.status === 'client_waiting') return -1
          if (b.status === 'client_waiting') return 1
