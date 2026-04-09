@@ -6,44 +6,8 @@ export default function Footer() {
   const year = new Date().getFullYear()
   const { pathname } = useLocation()
   const coachingFooter = pathname === '/crescita-personale'
-  const isDashboardArea = pathname.startsWith('/area-personale')
-  const isStaffArea = pathname.startsWith('/control-room') || pathname.startsWith('/gestione-')
 
 
-  const standardLinks = [
-    { label: 'Chi sono', href: '#chi-sono' },
-    { label: 'I numeri', href: '#numeri' },
-    { label: 'Come funziona', href: '#come-funziona' },
-    { label: 'Crescita personale', href: '/crescita-personale' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Recensioni', href: '#recensioni' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Termini di servizio', href: '/termini' },
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Cookie Policy', href: '/cookie' },
-    { label: 'App tarocchi gratuita', href: 'https://stese.nonsolotarocchi.it' },
-  ]
-
-  const privateClientLinks = [
-    { label: 'Il mio Diario', href: '/area-personale' },
-    { label: 'Wallet & Crediti', href: '/area-personale/wallet' },
-    { label: 'I miei Consulti', href: '/area-personale/miei-consulti' },
-    { label: 'Temi Natali', href: '/area-personale/i-miei-temi' },
-    { label: 'Il mio Profilo', href: '/area-personale/profilo' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'FAQ', href: '/faq' },
-  ]
-
-  const staffLinks = [
-    { label: 'Staff Hub', href: '/area-personale' },
-    { label: 'Control Room', href: '/control-room' },
-    { label: 'Gestione Clienti', href: '/gestione-clienti' },
-    { label: 'Recensioni', href: '/gestione-recensioni' },
-    { label: 'Blog', href: '/blog' },
-  ]
-
-
-  const footerLinksArr = isStaffArea ? staffLinks : (isDashboardArea ? privateClientLinks : standardLinks)
 
 
   return (
