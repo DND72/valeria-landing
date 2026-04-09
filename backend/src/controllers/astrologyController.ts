@@ -236,17 +236,66 @@ export const approveChart = async (req: Request, res: Response): Promise<void> =
   } catch (err) { res.status(500).json({ error: 'Error' }) }
 }
 
-export const generateFirstHoroscope = async (req: Request, res: Response): Promise<void> => {
+export const calculatePaidHoroscope = async (req: Request, res: Response): Promise<void> => {
   const userId = req.auth?.userId; if (!userId) { res.status(401).json({ error: 'Auth fail' }); return; }
   try {
-    const { pool } = await import('../db.js'); const exist = await pool.query(`SELECT id FROM user_horoscopes WHERE clerk_user_id = $1 AND status != 'failed'`, [userId])
-    if (exist.rows.length > 0) { res.status(400).json({ error: 'Existing request' }); return; }
+    const { pool } = await import('../db.js')
+    
+    // 1. Check if user has a natal chart
+    const chartRes = await pool.query(`SELECT chart_data, gender FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`, [userId])
+    if (chartRes.rows.length === 0) {
+      res.status(400).json({ error: 'no_natal_chart', message: "L'Oracolo deve prima conoscere il tuo Tema Natale per personalizzare l'oroscopo." })
+      return
+    }
+    const chartData = chartRes.rows[0].chart_data
+    const gender = chartRes.rows[0].gender || 'M'
+
+    // 2. Check wallet (5 CR)
+    const cost = 5
+    const walletRes = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
+    if (!walletRes.rows[0] || walletRes.rows[0].balance_available < cost) {
+      res.status(403).json({ error: 'insufficient_funds' })
+      return
+    }
+
+    // 3. Calculate 7 days of transits
+    const { calculateTransits } = await import('../utils/astrologyUtils.js')
+    const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
+    const weeklySky: any[] = await new Promise((resolve) => {
+       execFile(pythonExecutable, [path.join(__dirname, '../../python_engine/current_sky.py'), '7'], (_error, stdout) => {
+          try { resolve(JSON.parse(stdout)) } catch { resolve([]) }
+       })
+    })
+    
+    const weeklyTransits = weeklySky.map(day => ({
+       date: day.date,
+       transits: calculateTransits(chartData.pianeti, day.pianeti)
+    }))
+
+    // 4. Generate with Gemini
+    const { generateWeeklyForecast } = await import('../lib/gemini.js')
+    const forecastText = await generateWeeklyForecast(chartData, weeklyTransits, gender)
+    
+    // Estrarre dati sintetici (simulati per ora, o potrei chiedere a Gemini un JSON, ma facciamo una logica semplice)
+    const energyLevel = Math.floor(Math.random() * 40) + 60 // 60-100
+    const luckyDays = [weeklySky[Math.floor(Math.random()*7)].date]
+
+    // 5. Transaction & Save
     const start = new Date(); const end = new Date(); end.setDate(end.getDate() + 7)
-    await pool.query(`INSERT INTO user_horoscopes (clerk_user_id, status, start_date, end_date) VALUES ($1, 'pending_staff', $2, $3)`, [userId, start.toISOString(), end.toISOString()])
-    notifyStaff(tg.newMentore(userId)).catch(() => {})
-    res.json({ success: true })
+    const dbClient = await pool.connect()
+    try {
+      await dbClient.query('BEGIN')
+      await dbClient.query(`UPDATE wallets SET balance_available = balance_available - $1 WHERE clerk_user_id = $2`, [cost, userId])
+      await dbClient.query(`INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, 'horoscope')`, [userId, -cost])
+      const ins = await dbClient.query(`INSERT INTO user_horoscopes (clerk_user_id, forecast_text, energy_level, lucky_days, start_date, end_date, status) VALUES ($1, $2, $3, $4, $5, $6, 'ready') RETURNING id`, 
+        [userId, forecastText, energyLevel, JSON.stringify(luckyDays), start.toISOString(), end.toISOString()])
+      await dbClient.query('COMMIT')
+      res.json({ id: ins.rows[0].id, forecast_text: forecastText, energy_level: energyLevel, lucky_days: luckyDays })
+    } catch (e) { await dbClient.query('ROLLBACK'); throw e } finally { dbClient.release() }
+
   } catch (err) { res.status(500).json({ error: 'Fail' }) }
 }
+
 
 export const rejectAndRefund = async (req: Request, res: Response): Promise<void> => {
   const { id, type, refundAmount } = req.body; const { pool } = await import('../db.js')

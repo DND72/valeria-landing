@@ -16,7 +16,7 @@ export default function WeeklyForecast({ content, energyLevel, luckyDays }: Week
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-serif font-bold text-white mb-1">Il Tuo Cammino Settimanale</h2>
-            <p className="text-white/40 text-sm">Analisi personalizzata by Valeria</p>
+            <p className="text-white/40 text-sm">Analisi personalizzata by Nonsolotarocchi</p>
           </div>
           <div className="text-right">
             <div className="text-3xl font-mono font-bold text-blue-400">{energyLevel}%</div>

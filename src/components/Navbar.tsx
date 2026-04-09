@@ -15,7 +15,7 @@ const links = [
 ]
 
 const privateClientLinks = [
-  { label: 'Diario', href: '/area-personale' },
+  { label: 'Oracolo Astrale ✨', href: '/area-personale/mentore' },
   { label: 'Wallet', href: '/area-personale/wallet' },
   { label: 'Consulti', href: '/area-personale/i-miei-consulti' },
   { label: 'Temi Natali', href: '/area-personale/i-miei-temi' },
