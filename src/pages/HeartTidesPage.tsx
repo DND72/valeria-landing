@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useUser } from '@clerk/clerk-react'
-import ClientLayout from '../components/ClientLayout'
-import { Link } from 'react-router-dom'
+import ClientLayout from '../components/dashboard/ClientLayout'
 import ReactMarkdown from 'react-markdown'
-import axios from 'axios'
+import { useAstrologyApi } from '../api/astrology'
+import { useMeApi } from '../api/me'
 import { toast } from 'react-hot-toast'
 
 export default function HeartTidesPage() {
   const { user } = useUser()
+  const { calculateHeartTides, getHeartTidesHistory } = useAstrologyApi()
+  const { getWalletBalance } = useMeApi()
   const [balance, setBalance] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
@@ -35,15 +37,15 @@ export default function HeartTidesPage() {
 
   const fetchBalance = async () => {
     try {
-      const res = await axios.get('/api/wallet/balance')
-      setBalance(res.data.balance)
+      const res = await getWalletBalance()
+      setBalance(res.balance)
     } catch (e) {}
   }
 
   const fetchHistory = async () => {
     try {
-      const res = await axios.get('/api/astrology/heart-tides/list')
-      setHistory(res.data.list)
+      const res = await getHeartTidesHistory()
+      setHistory(res.list)
     } catch (e) {}
   }
 
@@ -55,17 +57,16 @@ export default function HeartTidesPage() {
     
     setLoading(true)
     try {
-      const res = await axios.post('/api/astrology/heart-tides', { personA, personB })
-      setResult(res.data)
+      const res = await calculateHeartTides(personA, personB)
+      setResult(res)
       fetchBalance()
       fetchHistory()
       toast.success("Maree del Cuore rivelate!")
     } catch (e: any) {
-      const err = e.response?.data?.error
-      if (err === 'insufficient_funds') {
+      if (e.message === 'insufficient_funds') {
         toast.error("Saldo insufficiente. Ricarica il tuo wallet.")
       } else {
-        toast.error("Errore nel calcolo delle maree")
+        toast.error(e.message || "Errore nel calcolo delle maree")
       }
     } finally {
       setLoading(false)

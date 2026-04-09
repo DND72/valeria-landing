@@ -290,3 +290,55 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
     res.json({ ...chartData, id: item.rows[0].id, interpretation, chart_type: 'advanced' })
   } catch (error: any) { res.status(500).json({ error: error.message || 'Internal error' }) }
 }
+
+export const calculateHeartTides = async (req: Request, res: Response): Promise<void> => {
+   const userId = req.auth?.userId; if (!userId) { res.status(401).json({ error: "Non autorizzato" }); return; }
+   const { personA, personB } = req.body; try {
+     const { pool } = await import('../db.js')
+     const cost = 10; const bal = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
+     if (!bal.rows[0] || bal.rows[0].balance_available < cost) { res.status(400).json({ error: 'insufficient_funds' }); return; }
+
+     const chartA = await runNatalCalculation(personA.birthDate, personA.birthTime || '12:00', personA.city || 'Roma')
+     const chartB = await runNatalCalculation(personB.birthDate, personB.birthTime || '12:00', personB.city || 'Roma')
+     
+     // Calcolo transiti mensili (30 giorni)
+     const { calculateTransits } = await import('../utils/astrologyUtils.js')
+     const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
+     
+     // Lanciamo uno script per avere i pianeti dei prossimi 30 giorni
+     const monthlySky: any[] = await new Promise((resolve) => {
+        execFile(pythonExecutable, [path.join(__dirname, '../../python_engine/current_sky.py'), '30'], (_error, stdout) => {
+           try { resolve(JSON.parse(stdout)) } catch { resolve([]) }
+        })
+     })
+
+     const monthlyTransits = monthlySky.map(day => ({
+        date: day.date,
+        transitsA: calculateTransits(chartA.pianeti, day.pianeti),
+        transitsB: calculateTransits(chartB.pianeti, day.pianeti)
+     }))
+
+     const { generateHeartTidesInterpretation } = await import('../lib/gemini.js')
+     const interp = await generateHeartTidesInterpretation(chartA, chartB, personA.name, personB.name, monthlyTransits)
+
+     const dbClient = await pool.connect()
+     try {
+       await dbClient.query('BEGIN')
+       await dbClient.query(`UPDATE wallets SET balance_available = balance_available - $1 WHERE clerk_user_id = $2`, [cost, userId])
+       await dbClient.query(`INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, 'heart_tides')`, [userId, -cost])
+       const ins = await dbClient.query(`INSERT INTO heart_tides_reports (clerk_user_id, person_a_data, person_b_data, interpretation) VALUES ($1, $2, $3, $4) RETURNING id`, [userId, personA, personB, interp])
+       await dbClient.query('COMMIT')
+       res.json({ id: ins.rows[0].id, status: 'ready', interpretation: interp })
+     } catch (e) { await dbClient.query('ROLLBACK'); throw e } finally { dbClient.release() }
+   } catch (_error) { res.status(500).json({ error: 'Internal error' }) }
+}
+
+export const getHeartTidesHistory = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.auth?.userId; if (!userId) { res.status(401).json({ error: 'Non autorizzato' }); return; }
+  try {
+    const { pool } = await import('../db.js')
+    const result = await pool.query(`SELECT * FROM heart_tides_reports WHERE clerk_user_id = $1 ORDER BY created_at DESC`, [userId])
+    res.json({ list: result.rows })
+  } catch (e) { res.status(500).json({ error: 'Fail' }) }
+}
+

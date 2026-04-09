@@ -170,6 +170,15 @@ export function useAstrologyApi() {
         method: 'POST',
         body: JSON.stringify({ id, type, refundAmount })
       })
+    },
+    calculateHeartTides: async (personA: any, personB: any): Promise<any> => {
+      return authFetch('/api/astrology/heart-tides', {
+        method: 'POST',
+        body: JSON.stringify({ personA, personB }),
+      })
+    },
+    getHeartTidesHistory: async (): Promise<{ list: any[] }> => {
+      return authFetch('/api/astrology/heart-tides/list')
     }
   }), [getToken, API_URL, authFetch])
 }
