@@ -84,7 +84,7 @@ export default function ControlRoom() {
   
   const alertAudio = useRef<HTMLAudioElement | null>(null)
 
-  const { approveHoroscope, approveChart, generateSummary } = useAstrologyApi()
+  const { approveHoroscope, approveChart, generateSummary, rejectAndRefund } = useAstrologyApi()
 
   useEffect(() => {
      const checkWaiting = async () => {
@@ -123,6 +123,17 @@ export default function ControlRoom() {
     setEditingHoroText(h.forecast_text || '')
     setEditingHoroEnergy(h.energy_level || 60)
     setEditingHoroLucky(h.lucky_days || [])
+  }
+
+  const handleReject = async (id: string, type: 'chart' | 'synastry', amount: number) => {
+    if (!confirm(`Vuoi davvero rifiutare questa richiesta e rimborsare ${amount} CR all'utente?`)) return
+    try {
+      await rejectAndRefund(id, type, amount)
+      void loadPendingAnalyses()
+      alert("Richiesta rifiutata e rimborsata.")
+    } catch (err: any) {
+      alert("Errore durante il rifiuto: " + err.message)
+    }
   }
 
   const loadList = useCallback(async () => {
@@ -293,7 +304,10 @@ export default function ControlRoom() {
                       <h4 className="text-white font-serif text-lg mb-1">{item.display_name}</h4>
                       <p className="text-white/40 text-[11px] truncate">{item.birth_city} ✦ {item.declared_birthday}</p>
                    </div>
-                   <button onClick={() => { setEditingChart(item); setEditingChartText(item.interpretation || ""); }} className="mt-6 w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-white/80">Revisiona Analisi</button>
+                   <div className="flex gap-2 mt-6">
+                      <button onClick={() => { setEditingChart(item); setEditingChartText(item.interpretation || ""); }} className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-white/80">Revisiona</button>
+                      <button onClick={() => handleReject(item.id, 'chart', 30)} className="px-3 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-xs transition-all text-red-400">🗑️</button>
+                   </div>
                 </div>
              ))}
 
@@ -321,7 +335,10 @@ export default function ControlRoom() {
                       <h4 className="text-white font-serif text-lg mb-1">{item.display_name}</h4>
                       <p className="text-red-300/40 text-[10px] uppercase tracking-wider">Libro dell'Amore</p>
                    </div>
-                   <button onClick={() => { setEditingChart(item); setEditingChartText(item.interpretation || ""); }} className="mt-6 w-full py-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-red-200">Revisiona Libro</button>
+                   <div className="flex gap-2 mt-6">
+                      <button onClick={() => { setEditingChart(item); setEditingChartText(item.interpretation || ""); }} className="flex-1 py-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-red-200">Revisiona</button>
+                      <button onClick={() => handleReject(item.id, 'synastry', 50)} className="px-3 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-xs transition-all text-red-400">🗑️</button>
+                   </div>
                 </div>
              ))}
 

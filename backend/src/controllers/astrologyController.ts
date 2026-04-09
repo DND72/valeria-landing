@@ -204,11 +204,30 @@ export const approveChart = async (req: Request, res: Response): Promise<void> =
   } catch (err) { res.status(500).json({ error: 'Error' }) }
 }
 
-export const generateFirstHoroscope = async (req: Request, res: Response): Promise<void> => {
-  const userId = req.auth?.userId; if (!userId) return res.status(401).json({ error: 'Auth fail' })
+export const rejectAndRefund = async (req: Request, res: Response): Promise<void> => {
+  const { id, type, refundAmount } = req.body; const { pool } = await import('../db.js')
+  const dbClient = await pool.connect()
   try {
-    const { pool } = await import('../db.js'); const exist = await pool.query(`SELECT id FROM user_horoscopes WHERE clerk_user_id = $1 AND status != 'failed'`, [userId])
-    if (exist.rows.length > 0) return res.status(400).json({ error: 'Existing request' })
+    await dbClient.query('BEGIN')
+    const tbl = type === 'chart' ? 'natal_charts' : 'synastry_reports'
+    const ownerRes = await dbClient.query(`SELECT clerk_user_id FROM ${tbl} WHERE id = $1`, [id])
+    if (ownerRes.rows.length === 0) throw new Error('Not found')
+    const userId = ownerRes.rows[0].clerk_user_id
+    if (refundAmount > 0) {
+      await dbClient.query(`UPDATE wallets SET balance_available = balance_available + $1 WHERE clerk_user_id = $2`, [refundAmount, userId])
+      await dbClient.query(`INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, 'refund_error')`, [userId, refundAmount])
+    }
+    await dbClient.query(`DELETE FROM ${tbl} WHERE id = $1`, [id])
+    await dbClient.query('COMMIT'); res.json({ success: true })
+  } catch (e) { await dbClient.query('ROLLBACK'); res.status(500).json({ error: 'Refund fail' }) } finally { dbClient.release() }
+}
+
+export const generateFirstHoroscope = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.auth?.userId; if (!userId) { res.status(401).json({ error: 'Auth fail' }); return; }
+  try {
+    const { pool } = await import('../db.js')
+    const exist = await pool.query(`SELECT id FROM user_horoscopes WHERE clerk_user_id = $1 AND status != 'failed'`, [userId])
+    if (exist.rows.length > 0) { res.status(400).json({ error: 'Existing request' }); return; }
     const start = new Date(); const end = new Date(); end.setDate(end.getDate() + 7)
     await pool.query(`INSERT INTO user_horoscopes (clerk_user_id, status, start_date, end_date) VALUES ($1, 'pending_staff', $2, $3)`, [userId, start.toISOString(), end.toISOString()])
     res.json({ success: true })

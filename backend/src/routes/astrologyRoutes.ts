@@ -3,7 +3,7 @@ import {
   calculateNatalChart, generatePaidChart, getMyCharts, getCurrentSky, syncNatal, 
   generateSummaryForExistingChart, getLatestChart, generateStaffChart,
   getPendingCharts, approveChart, getLatestHoroscope, generateFirstHoroscope, approveHoroscope,
-  calculateSynastry
+  calculateSynastry, rejectAndRefund
 } from '../controllers/astrologyController.js'
 import { requireClerkAuth, optionalClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 
@@ -32,5 +32,6 @@ router.post('/staff/approve', requireClerkAuth, requireStaff, approveChart)
 router.get('/latest-horoscope', requireClerkAuth, getLatestHoroscope)
 router.post('/generate-first-horoscope', requireClerkAuth, generateFirstHoroscope)
 router.post('/staff/horoscope/approve', requireClerkAuth, requireStaff, approveHoroscope)
+router.post('/staff/reject-refund', requireClerkAuth, requireStaff, rejectAndRefund)
 
 export default router

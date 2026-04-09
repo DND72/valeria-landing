@@ -164,6 +164,12 @@ export function useAstrologyApi() {
         method: 'POST',
         body: JSON.stringify({ personA, personB, isPreview }),
       })
+    },
+    rejectAndRefund: async (id: string, type: 'chart' | 'synastry', refundAmount: number): Promise<{ success: boolean }> => {
+      return authFetch('/api/astrology/staff/reject-refund', {
+        method: 'POST',
+        body: JSON.stringify({ id, type, refundAmount })
+      })
     }
   }), [getToken, API_URL, authFetch])
 }
