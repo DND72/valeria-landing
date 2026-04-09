@@ -25,6 +25,7 @@ export default function LiveSessionPage() {
   const [seconds, setSeconds] = useState(0)
   const [isEnding, setIsEnding] = useState(false)
   const [otherIsTyping, setOtherIsTyping] = useState(false)
+  const [waitSeconds, setWaitSeconds] = useState(120)
   
   const scrollRef = useRef<HTMLDivElement>(null)
   
@@ -90,6 +91,23 @@ export default function LiveSessionPage() {
     const poll = setInterval(fetchMessages, 3000)
     return () => clearInterval(poll)
   }, [id, messages.length, isStaff, getToken])
+
+  // Waiting Countdown
+  useEffect(() => {
+    if (isAccepted || !sessionInfo || isStaff) return
+    const interval = setInterval(() => {
+      const start = new Date(sessionInfo.createdAt).getTime()
+      const now = Date.now()
+      const elapsed = Math.floor((now - start) / 1000)
+      const remaining = Math.max(0, 120 - elapsed)
+      setWaitSeconds(remaining)
+      
+      if (remaining <= 0 && !isAccepted) {
+         // Optionally auto-cancel or just show expired
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [isAccepted, sessionInfo, isStaff])
 
   // SEGNALE DI TYPING
   useEffect(() => {
@@ -255,9 +273,24 @@ export default function LiveSessionPage() {
       {/* Input Chat */}
       <footer className="relative z-20 bg-black/60 backdrop-blur-xl border-t border-white/10 p-6">
         {!isAccepted && !isStaff ? (
-          <div className="max-w-3xl mx-auto text-center py-4 bg-white/5 rounded-xl border border-white/10">
-            <p className="text-gold-400 text-sm font-serif">In attesa che Valeria accetti la sessione...</p>
-            <p className="text-white/30 text-[10px] mt-1">Il tempo e il costo partiranno solo dopo l'accettazione.</p>
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-6 py-5 px-8 bg-gold-500/5 rounded-2xl border border-gold-500/20 backdrop-blur-md">
+            <div className="flex-1">
+               <p className="text-gold-400 text-lg font-serif font-bold mb-1">In attesa dell'ingresso di Valeria...</p>
+               <p className="text-white/40 text-xs font-light">
+                  {waitSeconds > 0 
+                    ? "In arrivo entro pochi istanti. Il cronometro partirà solo all'inizio effettivo." 
+                    : "Purtroppo Valeria non è riuscita a collegarsi in tempo. Riprova tra poco."}
+               </p>
+            </div>
+            {waitSeconds > 0 && (
+              <div className="relative flex items-center justify-center shrink-0">
+                 <svg className="w-16 h-16 -rotate-90">
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="3" fill="transparent" className="text-white/5" />
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="3" fill="transparent" strokeDasharray={2 * Math.PI * 28} strokeDashoffset={2 * Math.PI * 28 * (1 - waitSeconds / 120)} className="text-gold-500 transition-all duration-1000" />
+                 </svg>
+                 <span className="absolute text-sm font-mono font-bold text-white">{waitSeconds}s</span>
+              </div>
+            )}
           </div>
         ) : (
           <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex gap-4">

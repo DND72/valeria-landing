@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from 'react'
 import StaffSidebar from './StaffSidebar'
 import { motion } from 'framer-motion'
+import StaffIncomingCallMonitor from './StaffIncomingCallMonitor'
 
 type StaffLayoutProps = {
   children: ReactNode
@@ -23,6 +24,7 @@ export default function StaffLayout({ children, activeTab = '', onTabChange = ()
 
   return (
     <div className={`flex min-h-screen ${theme === 'light' ? 'staff-light' : 'bg-[#050505] text-white'}`}>
+      <StaffIncomingCallMonitor />
       {/* Sidebar fissa */}
       <StaffSidebar 
         activeTab={activeTab} 
