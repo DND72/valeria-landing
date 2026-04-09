@@ -3,7 +3,7 @@ import { useAuth, useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { apiJson, ApiError } from '../lib/api'
+import { apiJson } from '../lib/api'
 import {
   type ServiceKind,
 } from '../lib/consultServiceLabel'

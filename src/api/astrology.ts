@@ -147,7 +147,7 @@ export function useAstrologyApi() {
         body: JSON.stringify(data)
       })
     },
-    approveChart: async (chartId: string | number, type: 'chart' | 'horoscope' = 'chart', interpretation?: string): Promise<{ success: boolean }> => {
+    approveChart: async (chartId: string | number, type: 'chart' | 'horoscope' | 'synastry' = 'chart', interpretation?: string): Promise<{ success: boolean }> => {
       return authFetch('/api/astrology/staff/approve', {
         method: 'POST',
         body: JSON.stringify({ chartId, type, interpretation })
