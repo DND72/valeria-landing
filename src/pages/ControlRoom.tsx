@@ -800,8 +800,22 @@ export default function ControlRoom() {
                                   <p className="text-white font-bold text-sm">{app.invitee_name || 'Cliente senza nome'}</p>
                                   <p className="text-white/60 text-xs truncate">{app.invitee_email || 'No email'}</p>
                                 </div>
-                                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-white/5">
-                                  <span className="text-[9px] text-gold-500/80 uppercase font-black tracking-widest">{app.status}</span>
+                                <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-white/5">
+                                   <div className="flex items-center gap-1.5">
+                                      <span className={`w-2 h-2 rounded-full ${app.status === 'client_waiting' ? 'bg-emerald-500 animate-pulse' : 'bg-gold-500/50'}`} />
+                                      <span className={`text-[10px] uppercase font-black tracking-widest ${app.status === 'client_waiting' ? 'text-emerald-400' : 'text-gold-500/80'}`}>
+                                        {app.status === 'client_waiting' ? 'CLIENTE IN ATTESA' : app.status}
+                                      </span>
+                                   </div>
+                                   {app.status === 'client_waiting' && (
+                                      <Link
+                                        to={`/sessione/${app.id}`}
+                                        className="bg-emerald-500 hover:bg-emerald-400 text-dark-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        ENTRA ORA
+                                      </Link>
+                                   )}
                                 </div>
                              </button>
                            )
@@ -855,9 +869,18 @@ export default function ControlRoom() {
                     <p className="text-white text-sm font-medium truncate">{c.invitee_name || c.invitee_email || 'Senza nome'}</p>
                     <p className="text-white/40 text-xs truncate">{c.invitee_email}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                      <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-white/10 text-white/70">
-                        {c.status}
+                      <span className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border ${c.status === 'client_waiting' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 animate-pulse' : 'bg-white/10 text-white/70'}`}>
+                        {c.status === 'client_waiting' ? 'IN ATTESA' : c.status}
                       </span>
+                      {c.status === 'client_waiting' && (
+                         <Link
+                           to={`/sessione/${c.id}`}
+                           className="bg-emerald-500 text-dark-500 px-2 py-0.5 rounded text-[10px] font-bold"
+                           onClick={(e) => e.stopPropagation()}
+                         >
+                           APRI
+                         </Link>
+                      )}
                       <span
                         className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border ${badgeClassService(c.service_kind ?? 'unknown')}`}
                       >
