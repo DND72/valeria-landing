@@ -165,16 +165,31 @@ export default function LiveSessionPage() {
     setIsEnding(true)
     try {
       const actualMinutes = Math.floor(seconds / 60)
-      await apiJson(getToken, `/api/staff/consults/${id}/claim`, { 
+      const res = await apiJson<any>(getToken, `/api/staff/consults/${id}/claim`, { 
         method: 'POST',
         body: JSON.stringify({ actualDurationMinutes: actualMinutes })
       })
-      navigate('/control-room')
+      
+      // Suono monete
+      const coinSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3')
+      void coinSound.play().catch(() => {})
+      
+      // Calcolo guadagno (assumiamo 1 Credit = 1 Euro per ora come richiesto)
+      const creditsEarned = currentTotalCost
+      const euroEarned = creditsEarned.toFixed(2)
+      
+      // Mostriamo modal di successo invece di navigare subito
+      setSuccessData({
+        credits: creditsEarned,
+        euro: euroEarned
+      })
     } catch (e: any) {
       alert(e.message || "Errore incasso.")
       setIsEnding(false)
     }
   }
+
+  const [successData, setSuccessData] = useState<{ credits: number, euro: string } | null>(null)
 
   const handleManualExit = () => {
     if (isAccepted) {
@@ -451,6 +466,56 @@ export default function LiveSessionPage() {
             </p>
          </div>
       </footer>
+
+      {/* SUCCESS MODAL (Valeria Celebration) */}
+      <AnimatePresence>
+        {successData && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[20000] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.8, y: 50 }} animate={{ scale: 1, y: 0 }}
+              className="max-w-md w-full text-center"
+            >
+              <div className="relative mb-8 w-48 h-48 mx-auto">
+                {/* Glow ring */}
+                <div className="absolute inset-0 bg-gold-500/20 blur-[60px] rounded-full animate-pulse" />
+                {/* GIF Salvadanaio */}
+                <img 
+                  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1eHByZzN6ZzA1eG15ZzZ2ZzN6ZzA1eG15ZzZ2ZzN6ZzA1eG15ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LdOyjZ7TC5K3LghXY8/giphy.gif" 
+                  alt="Earnings" 
+                  className="w-full h-full object-contain relative z-10 rounded-2xl border-4 border-gold-500 shadow-[0_0_40px_rgba(212,160,23,0.4)]"
+                />
+              </div>
+
+              <h2 className="text-4xl font-serif font-black text-white mb-2 uppercase tracking-tighter italic">Grande Lavoro!</h2>
+              <p className="text-gold-500 font-black text-[10px] tracking-[0.4em] uppercase mb-8">Consulto Incassato con Successo</p>
+
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-10 shadow-inner">
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] uppercase font-black opacity-40 mb-2">Hai Guadagnato</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-6xl font-serif font-black text-white tracking-tighter">€ {successData.euro}</span>
+                  </div>
+                  <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mt-4 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                    Transazione Confermata
+                  </span>
+                </div>
+              </div>
+
+              <motion.button 
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/control-room')}
+                className="w-full bg-gold-500 hover:bg-gold-400 text-dark-900 py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_10px_30px_rgba(212,160,23,0.3)] transition-all"
+              >
+                Torna in Control Room
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style dangerouslySetInnerHTML={{ __html: `
          .custom-scrollbar::-webkit-scrollbar { width: 5px; }
