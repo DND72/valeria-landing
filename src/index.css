@@ -5,6 +5,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
@@ -13,6 +14,60 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+
+  /* --- PRINT OPTIMIZATION (FOGLIO BIANCO) --- */
+  @media print {
+    @page {
+      margin: 2cm;
+    }
+    
+    body {
+      background: white !important;
+      color: black !important;
+      font-size: 11pt !important;
+    }
+
+    /* Rimuovi tutto ciò che non serve in stampa */
+    nav, footer, .no-print, button, .btn-gold {
+      display: none !important;
+    }
+
+    /* Resetta gli stili mistici per la stampa pulita */
+    .mystical-card, .printable-content {
+      background: white !important;
+      color: black !important;
+      border: 1px solid #eee !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+    }
+
+    h1, h2, h3, h4, .gold-text, .gold-number {
+      color: black !important;
+      background: none !important;
+      -webkit-text-fill-color: initial !important;
+      text-shadow: none !important;
+      margin-top: 1.5em !important;
+      page-break-after: avoid;
+    }
+
+    p {
+      line-height: 1.6 !important;
+      color: #333 !important;
+      page-break-inside: avoid;
+    }
+
+    .printable-chart {
+      width: 100% !important;
+      max-width: 12cm !important;
+      margin: 2cm auto !important;
+      filter: grayscale(100%) brightness(0.5); /* Rende il diagramma stampabile */
+    }
   }
 
   ::selection {

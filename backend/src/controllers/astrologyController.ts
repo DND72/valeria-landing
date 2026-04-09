@@ -742,3 +742,93 @@ export const approveHoroscope = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ error: 'Errore durante l\'approvazione' })
   }
 }
+
+export const calculateSynastry = async (req: Request, res: Response): Promise<void> => {
+   const userId = req.auth?.userId
+   if (!userId) {
+     res.status(401).json({ error: "Non autorizzato" })
+     return
+   }
+ 
+   const synastrySchema = z.object({
+     personA: calcSchema,
+     personB: calcSchema
+   })
+ 
+   try {
+     const { personA, personB } = synastrySchema.parse(req.body)
+     const cost = 50 // Price for Synastry
+ 
+     const { pool } = await import('../db.js')
+     
+     // 1. Balance Check
+     const balanceRes = await pool.query(
+       `SELECT balance_available FROM wallets WHERE clerk_user_id = $1`,
+       [userId]
+     )
+     if (!balanceRes.rows[0] || balanceRes.rows[0].balance_available < cost) {
+       res.status(400).json({ error: 'insufficient_funds' })
+       return
+     }
+ 
+     // 2. Double calculation
+     const chartA = await runNatalCalculation(personA.birthDate, personA.birthTime, personA.city)
+     const chartB = await runNatalCalculation(personB.birthDate, personB.birthTime, personB.city)
+ 
+     // 3. Inter-aspects calculation
+     const { calculateTransits } = await import('../../../src/utils/astrologyUtils.js')
+     const interAspects = calculateTransits(chartA.pianeti, chartB.pianeti)
+ 
+     // 4. Gemini Interpretation
+     const { generateSynastryInterpretation } = await import('../lib/gemini.js')
+     const interpretation = await generateSynastryInterpretation(chartA, chartB, interAspects, personA.gender, personB.gender)
+ 
+     // 5. Atomic save & deduct
+     const dbClient = await pool.connect()
+     try {
+       await dbClient.query('BEGIN')
+       
+       await dbClient.query(
+         `UPDATE wallets SET balance_available = balance_available - $1, updated_at = now() 
+          WHERE clerk_user_id = $2`,
+         [cost, userId]
+       )
+       
+       await dbClient.query(
+         `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, $3)`,
+         [userId, -cost, `synastry_report`]
+       )
+       
+       const insertRes = await dbClient.query(
+         `INSERT INTO synastry_reports (clerk_user_id, person_a_data, person_b_data, chart_a, chart_b, inter_aspects, interpretation)
+          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+         [userId, personA, personB, chartA, chartB, interAspects, interpretation]
+       )
+ 
+       await dbClient.query('COMMIT')
+       
+       res.json({
+         id: insertRes.rows[0].id,
+         chartA,
+         chartB,
+         interAspects,
+         interpretation,
+         personA,
+         personB
+       })
+     } catch (dbErr) {
+       await dbClient.query('ROLLBACK')
+       throw dbErr
+     } finally {
+       dbClient.release()
+     }
+ 
+   } catch (error: any) {
+     if (error instanceof z.ZodError) {
+       res.status(400).json({ error: error.errors[0].message })
+       return
+     }
+     console.error("Synastry API Error:", error)
+     res.status(500).json({ error: error.message || 'Internal server error' })
+   }
+ }

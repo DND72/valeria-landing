@@ -112,8 +112,18 @@ function ResultPanel({ data, isLoggedIn, hasAdvanced }: { data: NatalChartRespon
             <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
               <span className="text-6xl italic font-serif">Valeria</span>
             </div>
-            <h3 className="font-serif text-2xl text-white mb-6 flex items-center gap-3">
-              <span className="text-gold-400">✨</span> {localInterpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
+            <h3 className="font-serif text-2xl text-white mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-gold-400">✨</span> {localInterpretation ? "La Sintesi di Valeria" : "Analisi Dinamica"}
+              </div>
+              {localInterpretation && !isPending && (
+                <button 
+                  onClick={() => window.print()} 
+                  className="no-print text-xs uppercase tracking-widest text-gold-400 border border-gold-400/30 px-3 py-1 rounded-full hover:bg-gold-400/10 transition-all flex items-center gap-2"
+                >
+                  <span>🖨️</span> Stampa PDF
+                </button>
+              )}
             </h3>
             
             {localInterpretation && !isPending ? (

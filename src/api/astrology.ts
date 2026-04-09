@@ -158,6 +158,12 @@ export function useAstrologyApi() {
         method: 'POST',
         body: JSON.stringify({ ...data, type: 'advanced' }),
       })
+    },
+    calculateSynastry: async (personA: NatalChartRequest, personB: NatalChartRequest): Promise<any> => {
+      return authFetch('/api/astrology/synastry', {
+        method: 'POST',
+        body: JSON.stringify({ personA, personB }),
+      })
     }
   }), [getToken, API_URL, authFetch])
 }
