@@ -48,7 +48,7 @@ export const getLatestChart = async (req: Request, res: Response): Promise<void>
     const { pool } = await import('../db.js')
     const result = await pool.query(
       `SELECT 
-         nc.id, nc.chart_data, nc.interpretation, nc.chart_type, nc.created_at,
+         nc.id, nc.chart_data, nc.interpretation, nc.chart_type, nc.created_at, nc.status,
          bp.declared_birthday, bp.birth_time, bp.birth_city
        FROM natal_charts nc
        LEFT JOIN client_billing_profiles bp ON bp.clerk_user_id = nc.clerk_user_id
@@ -70,6 +70,7 @@ export const getLatestChart = async (req: Request, res: Response): Promise<void>
         id: row.id,
         interpretation: row.interpretation,
         chart_type: row.chart_type,
+        status: row.status,
         created_at: row.created_at,
         birthDate: row.declared_birthday ? new Date(row.declared_birthday).toISOString().split('T')[0] : null,
         birthTime: row.birth_time,
@@ -248,12 +249,12 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
       }
       
       const insertRes = await dbClient.query(
-        `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (clerk_user_id, birth_date, birth_time, city) 
-         DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, gender = EXCLUDED.gender, created_at = now()
+         DO UPDATE SET chart_type = EXCLUDED.chart_type, interpretation = EXCLUDED.interpretation, gender = EXCLUDED.gender, status = EXCLUDED.status, created_at = now()
          RETURNING id`,
-        [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation]
+        [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation, isStaff ? 'ready' : 'pending_staff']
       )
       chartId = insertRes.rows[0].id
 
@@ -270,6 +271,7 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
       id: chartId,
       interpretation,
       chart_type: 'advanced',
+      status: isStaff ? 'ready' : 'pending_staff',
       created_at: new Date().toISOString(),
       birthDate,
       birthTime,
@@ -405,7 +407,7 @@ export const getMyCharts = async (req: Request, res: Response): Promise<void> =>
   try {
     const { pool } = await import('../db.js')
     const { rows } = await pool.query(
-      `SELECT id, chart_type, birth_date, birth_time, city, chart_data, interpretation, created_at
+      `SELECT id, chart_type, birth_date, birth_time, city, chart_data, interpretation, status, created_at
        FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC`,
       [userId]
     )
@@ -418,6 +420,7 @@ export const getMyCharts = async (req: Request, res: Response): Promise<void> =>
       city: r.city,
       chartData: r.chart_data,
       interpretation: r.interpretation,
+      status: r.status,
       createdAt: r.created_at
     })) })
   } catch (err) {
@@ -556,5 +559,54 @@ export const generateStaffChart = async (req: Request, res: Response): Promise<v
     }
     console.error("Generate Staff API Error:", error)
     res.status(500).json({ error: error.message || 'Internal server error' })
+  }
+}
+
+/** 
+ * STAFF ONLY: Recupera tutte le analisi in attesa di approvazione
+ */
+export const getPendingCharts = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const { pool } = await import('../db.js')
+    const { rows } = await pool.query(
+      `SELECT nc.id, nc.clerk_user_id, nc.chart_type, nc.created_at, bp.declared_birthday, bp.birth_city
+       FROM natal_charts nc
+       LEFT JOIN client_billing_profiles bp ON bp.clerk_user_id = nc.clerk_user_id
+       WHERE nc.status = 'pending_staff'
+       ORDER BY nc.created_at ASC`
+    )
+    res.json({ pending: rows })
+  } catch (err) {
+    console.error('[staff getPending]', err)
+    res.status(500).json({ error: 'Errore durante il recupero delle analisi pendenti' })
+  }
+}
+
+/**
+ * STAFF ONLY: Approva un'analisi rendendola fruibile al cliente
+ */
+export const approveChart = async (req: Request, res: Response): Promise<void> => {
+  const { chartId } = req.body
+  if (!chartId) {
+    res.status(400).json({ error: 'ID analisi mancante' })
+    return
+  }
+
+  try {
+    const { pool } = await import('../db.js')
+    const result = await pool.query(
+      `UPDATE natal_charts SET status = 'ready' WHERE id = $1 RETURNING id`,
+      [chartId]
+    )
+
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: 'Analisi non trovata' })
+      return
+    }
+
+    res.json({ ok: true, message: 'Analisi approvata e pubblicata' })
+  } catch (err) {
+    console.error('[staff approve]', err)
+    res.status(500).json({ error: 'Errore durante l\'approvazione' })
   }
 }

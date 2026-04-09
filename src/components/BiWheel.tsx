@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { BODY_GLYPHS, type PlanetData } from '../utils/astrologyUtils'
 import { type CircadianTheme } from '../hooks/useCircadianTheme'
 
