@@ -87,15 +87,21 @@ export async function generateTransitInterpretation(natalData: any, currentSky: 
   }
 }
 
-export async function generateWeeklyForecast(natalData: any, weeklyTransits: any[], gender: 'M' | 'F' = 'M'): Promise<string> {
+export async function generateWeeklyForecast(natalData: any, weeklyTransits: any[], gender: 'M' | 'F' = 'M', chartType: 'basic' | 'advanced' = 'basic'): Promise<string> {
   const client = getGeminiClient()
   
   const sysPrompt = `Sei l'Algoritmo Astrale di Nonsolotarocchi. Scrivi la PROIEZIONE SETTIMANALE DEI TRANSITI.
   ${gender === 'F' ? 'Usa il femminile.' : 'Usa il maschile.'}
   
+  ${chartType === 'advanced' 
+    ? `ANALISI PREMIUM: Hai a disposizione i dati profondi del Tema Natale Avanzato dell'utente. Scrivi un'analisi DETTAGLIATA (circa 1500 parole). 
+       Esplora ogni transito importante della settimana, citando gli aspetti specifici sui pianeti natali.` 
+    : `ANALISI STANDARD: L'utente possiede un Tema Natale base. Scrivi un'analisi CONCISA e incisiva (circa 500 parole).
+       Firma come sempre. ALLA FINE, aggiungi una nota professionale suggerendo che per proiezioni molto più profonde e precise è necessario possedere un "Tema Natale Evolutivo" completo.`
+  }
+
   Analizza la sequenza dei transiti in 5 aree: Mood, Giorni d'oro, Sfide, Amore/Lavoro, Azione consigliata.
-  Firma: "L'Algoritmo Astrale di Nonsolotarocchi".
-  NOTA: Specifica che è un'analisi AI e che Valeria può integrarla con una lettura dei Tarocchi.`
+  Firma: "L'Algoritmo Astrale di Nonsolotarocchi".`
 
   const userPrompt = `
   Pianeti Natali: ${JSON.stringify(natalData.pianeti || [])}
@@ -104,7 +110,7 @@ export async function generateWeeklyForecast(natalData: any, weeklyTransits: any
   Scrivi la proiezione settimanale.`
 
   const model = client.getGenerativeModel({ 
-    model: 'gemini-2.0-flash',
+    model: chartType === 'advanced' ? 'gemini-1.5-pro' : 'gemini-2.0-flash',
     systemInstruction: sysPrompt
   })
 

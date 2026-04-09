@@ -13,11 +13,17 @@ export default function MentorePage() {
   const [loading, setLoading] = useState(true)
   const [wakingUp, setWakingUp] = useState(false)
   const [hasNatalChart, setHasNatalChart] = useState<boolean | null>(null)
+  const [chartType, setChartType] = useState<'basic' | 'advanced'>('basic')
 
   const loadData = useCallback(async () => {
     try {
       const charts = await getMyCharts()
-      setHasNatalChart(charts && charts.length > 0)
+      if (charts && charts.length > 0) {
+        setHasNatalChart(true)
+        setChartType(charts[0].type as any)
+      } else {
+        setHasNatalChart(false)
+      }
       
       const res = await getLatestHoroscope()
       setLatestHoroscope(res?.forecast || null)
@@ -44,7 +50,7 @@ export default function MentorePage() {
       await loadData()
     } catch (err: any) {
       if (err.message === 'insufficient_funds') {
-        alert("Saldo insufficiente. L'Oroscopo Personalizzato costa 5 CR.")
+        alert(`Saldo insufficiente. L'Oroscopo per te costa ${chartType === 'advanced' ? '8' : '5'} CR.`)
       } else {
         alert(err.message || "Errore durante l'interrogazione dell'Oracolo")
       }
@@ -117,7 +123,7 @@ export default function MentorePage() {
                       disabled={wakingUp}
                       className="mystical-button px-12 py-3 bg-gold-500 text-dark-500 rounded-full font-bold uppercase tracking-widest text-xs hover:scale-105 transition-transform disabled:opacity-50"
                     >
-                      {wakingUp ? 'Calcolo Astrale...' : 'Attiva Previsione (5 CR)'}
+                      {wakingUp ? 'Calcolo Astrale...' : `Attiva Oroscopo (${chartType === 'advanced' ? '8' : '5'} CR)`}
                     </button>
                     <p className="text-[10px] text-white/30 uppercase tracking-widest">Risultato istantaneo by Algorithm</p>
                   </div>

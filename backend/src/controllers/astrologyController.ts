@@ -242,16 +242,17 @@ export const calculatePaidHoroscope = async (req: Request, res: Response): Promi
     const { pool } = await import('../db.js')
     
     // 1. Check if user has a natal chart
-    const chartRes = await pool.query(`SELECT chart_data, gender FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`, [userId])
+    const chartRes = await pool.query(`SELECT chart_data, gender, chart_type FROM natal_charts WHERE clerk_user_id = $1 ORDER BY created_at DESC LIMIT 1`, [userId])
     if (chartRes.rows.length === 0) {
       res.status(400).json({ error: 'no_natal_chart', message: "L'Oracolo deve prima conoscere il tuo Tema Natale per personalizzare l'oroscopo." })
       return
     }
     const chartData = chartRes.rows[0].chart_data
     const gender = chartRes.rows[0].gender || 'M'
+    const chartType = chartRes.rows[0].chart_type
 
-    // 2. Check wallet (5 CR)
-    const cost = 5
+    // 2. Check wallet (Tiered: 5 CR basic, 8 CR advanced)
+    const cost = chartType === 'advanced' ? 8 : 5
     const walletRes = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
     if (!walletRes.rows[0] || walletRes.rows[0].balance_available < cost) {
       res.status(403).json({ error: 'insufficient_funds' })
@@ -274,7 +275,7 @@ export const calculatePaidHoroscope = async (req: Request, res: Response): Promi
 
     // 4. Generate with Gemini
     const { generateWeeklyForecast } = await import('../lib/gemini.js')
-    const forecastText = await generateWeeklyForecast(chartData, weeklyTransits, gender)
+    const forecastText = await generateWeeklyForecast(chartData, weeklyTransits, gender, chartType)
     
     // Estrarre dati sintetici (simulati per ora, o potrei chiedere a Gemini un JSON, ma facciamo una logica semplice)
     const energyLevel = Math.floor(Math.random() * 40) + 60 // 60-100
