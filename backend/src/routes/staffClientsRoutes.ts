@@ -680,16 +680,30 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
     const norm = normalizeEmail(email)
 
     try {
+      // 1. Cerchiamo il clerk_user_id nel DB locale (billing profiles)
       const bpLookup = await pool.query(`SELECT clerk_user_id FROM client_billing_profiles WHERE email_normalized = $1 LIMIT 1`, [norm])
       let cid = bpLookup.rows[0]?.clerk_user_id
       
+      // 2. Fallback sui consulti
       if (!cid || cid.startsWith('staff-manual-')) {
           const consultLookup = await pool.query(`SELECT clerk_user_id FROM consults WHERE LOWER(TRIM(invitee_email)) = $1 AND clerk_user_id IS NOT NULL LIMIT 1`, [norm])
           cid = consultLookup.rows[0]?.clerk_user_id
       }
 
+      // 3. ✦ ULTIMA CHANCE: Cerchiamo direttamente in Clerk via API
+      if ((!cid || cid.startsWith('staff-manual-')) && clerkClient) {
+          try {
+            const clerkUsers = await clerkClient.users.getUserList({ emailAddress: [norm], limit: 1 })
+            if (clerkUsers.data.length > 0) {
+              cid = clerkUsers.data[0].id
+            }
+          } catch (ce) {
+            console.error('[staff bonus clerk lookup error]', ce)
+          }
+      }
+
       if (!cid || cid.startsWith('staff-manual-')) {
-          res.status(404).json({ error: 'Utente non registrato, impossibile accreditare un bonus su un conto inesistente.' })
+          res.status(404).json({ error: 'Utente non trovato nel sistema. Assicurati che il cliente si sia già registrato (anche via Google o Email).' })
           return
       }
 

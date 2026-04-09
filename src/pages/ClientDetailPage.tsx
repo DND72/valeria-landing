@@ -490,11 +490,9 @@ export default function ClientDetailPage() {
                 <h2 className="font-serif text-lg text-gold-400 flex items-center gap-2">
                   <span className="text-xl">💳</span> Portafoglio Virtuale (Wallet)
                 </h2>
-                {data.wallet ? (
-                  <button onClick={grantBonus} className="btn-gold text-xs px-3 py-1.5 whitespace-nowrap">
-                    🎁 Regala Bonus
-                  </button>
-                ) : null}
+                <button onClick={grantBonus} className="btn-gold text-xs px-3 py-1.5 whitespace-nowrap">
+                  🎁 Regala Bonus
+                </button>
               </div>
 
               {data.wallet ? (
