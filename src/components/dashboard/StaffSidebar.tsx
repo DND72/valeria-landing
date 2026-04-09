@@ -14,6 +14,7 @@ type StaffSidebarProps = {
 }
 
 const WORKSPACE_LINKS = [
+  { id: 'live', label: 'Monitor Live', emoji: '📡' },
   { id: 'oggi', label: 'Oggi', emoji: '📅' },
   { id: 'crm', label: 'CRM Rapido', emoji: '👥' },
   { id: 'analytics', label: 'Analytics', emoji: '📊' },

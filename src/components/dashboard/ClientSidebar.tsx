@@ -12,6 +12,7 @@ type ClientSidebarProps = {
 
 const CORE_LINKS = [
   { to: '/area-personale', label: 'Il mio Diario', emoji: '📒' },
+  { to: '/area-personale/live', label: 'Consulti Live ⚡', emoji: '📡' },
   { to: '/area-personale/wallet', label: 'Il mio Wallet', emoji: '💰' },
   { to: '/area-personale/i-miei-consulti', label: 'I miei Consulti', emoji: '🔮' },
 ]

@@ -8,6 +8,7 @@ import StaffAnalyticsWidget from './StaffAnalyticsWidget'
 import StaffCrmDrawer from './StaffCrmDrawer'
 import StaffLenormandMentor from './StaffLenormandMentor'
 import StaffAstrology from './StaffAstrology'
+import StaffLiveMonitor from './StaffLiveMonitor'
 
 type MeetingsPayload =
   | {
@@ -50,7 +51,7 @@ type ClientRow = {
   lastScheduledAt: string | null
 }
 
-type Tab = 'oggi' | 'crm' | 'analytics' | 'lenormand' | 'astrologia'
+type Tab = 'live' | 'oggi' | 'crm' | 'analytics' | 'lenormand' | 'astrologia'
 
 function formatWhen(iso: string): string {
   try {
@@ -178,6 +179,13 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
   return (
     <>
       <div className="space-y-6">
+        {/* ===== TAB: LIVE MONITOR ===== */}
+        {tab === 'live' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <StaffLiveMonitor />
+          </motion.div>
+        )}
+
         {/* ===== TAB: OGGI ===== */}
         {tab === 'oggi' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
