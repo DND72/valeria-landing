@@ -1,4 +1,4 @@
-import { useAuth, useUser } from '@clerk/clerk-react'
+﻿import { useAuth, useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -32,7 +32,7 @@ type InternalOverride = {
   reason: string | null
 }
 
-const DAYS_LABELS = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
+const DAYS_LABELS = ['Domenica', 'Luned├¼', 'Marted├¼', 'Mercoled├¼', 'Gioved├¼', 'Venerd├¼', 'Sabato']
 
 type ConsultRow = {
   id: string
@@ -77,7 +77,7 @@ type NoteRow = {
 }
 
 function formatWhen(iso: string | null): string {
-  if (!iso) return '—'
+  if (!iso) return 'ÔÇö'
   try {
     return new Intl.DateTimeFormat('it-IT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(iso))
   } catch {
@@ -293,27 +293,27 @@ export default function ControlRoom() {
   const handleApproveChart = async () => {
     if (!editingChart) return
     try {
-      // 1. Prima salviamo l'interpretazione (può essere stata editata)
-      // Nota: in questo database, il toggle di approvazione è un semplice UPDATE status.
+      // 1. Prima salviamo l'interpretazione (pu├▓ essere stata editata)
+      // Nota: in questo database, il toggle di approvazione ├¿ un semplice UPDATE status.
       // Se vogliamo salvare le modifiche al testo, dovremmo avere un endpoint dedicato o farlo nello stesso.
       // Dato che l'endpoint approveChart riceve solo chartId, dobbiamo assicurarci che il testo sia salvato.
       
       // Uso l'endpoint profile patch o simile? No, meglio aggiungere un salvataggio qui.
-      // In realtà, potremmo aggiungere il salvataggio del testo all'endpoint di approvazione nel backend.
+      // In realt├á, potremmo aggiungere il salvataggio del testo all'endpoint di approvazione nel backend.
       // Vediamo cosa fa approveChart nel controller... (riga 601 in astrologyController.ts)
       // Fa solo UPDATE status.
       
       // Quindi faccio una chiamata per aggiornare l'interpretazione e poi approvo.
-      // Fortunatamente generateSummary (riga 121 in astrology.ts) aggiorna già l'interpretazione.
+      // Fortunatamente generateSummary (riga 121 in astrology.ts) aggiorna gi├á l'interpretazione.
       // Ma noi vogliamo salvare il testo EDITATO manualmente dallo staff.
       
       // Implemento una chiamata manuale veloce o uso un nuovo endpoint?
       // Usiamo l'endpoint di approvazione esteso (se disponibile) o facciamo un patch.
-      // In staffClientsRoutes c'è un patch ma è per il PROFILO.
+      // In staffClientsRoutes c'├¿ un patch ma ├¿ per il PROFILO.
       
-      // Facciamo così: usiamo l'endpoint di approvazione e lo estendiamo se necessario, 
+      // Facciamo cos├¼: usiamo l'endpoint di approvazione e lo estendiamo se necessario, 
       // oppure facciamo un'integrazione qui. 
-      // Per semplicità ora approviamo solo l'esistente. 
+      // Per semplicit├á ora approviamo solo l'esistente. 
       // MA se l'utente ha modificato il testo, dobbiamo salvarlo.
       
       await approveChart(editingChart.id, 'chart', editingChartText)
@@ -375,9 +375,9 @@ export default function ControlRoom() {
   }
 
   return (
-    <StaffLayout title="Control Room" subtitle="Gestione appuntamenti interni e disponibilità">
+    <StaffLayout title="Control Room" subtitle="Gestione appuntamenti interni e disponibilit├á">
       <div className="relative z-10 max-w-6xl mx-auto">
-        {/* Gestione Disponibilità Interna (Sostituisce Calendly) */}
+        {/* Gestione Disponibilit├á Interna (Sostituisce Calendly) */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -386,7 +386,7 @@ export default function ControlRoom() {
         >
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="font-serif text-lg text-white">Disponibilità Professionale (Booking Interno)</h2>
+              <h2 className="font-serif text-lg text-white">Disponibilit├á Professionale (Booking Interno)</h2>
               <p className="text-white/45 text-sm mt-1 max-w-2xl">
                 Imposta i tuoi orari bisettimanali. Scegli la settimana e definisci le fasce per mattina, pomeriggio e sera.
               </p>
@@ -437,7 +437,7 @@ export default function ControlRoom() {
                   {['morning', 'afternoon', 'evening'].map(type => {
                     const slot = getSlot(type)
                     const labelIT = type === 'morning' ? 'Mattina' : type === 'afternoon' ? 'Pomeriggio' : 'Sera';
-                    const icon = type === 'morning' ? '☀️' : type === 'afternoon' ? '🌗' : '🌙';
+                    const icon = type === 'morning' ? 'ÔÿÇ´©Å' : type === 'afternoon' ? '­ƒîù' : '­ƒîÖ';
 
                     return (
                       <div key={type} className={`p-3 rounded-xl border transition-all ${slot.is_active ? 'bg-gold-500/5 border-gold-500/20' : 'bg-black/20 border-white/5 opacity-50'}`}>
@@ -573,7 +573,7 @@ export default function ControlRoom() {
           </div>
         </motion.section>
 
-        {/* ── NUOVO: Laboratorio Astrale (Pianeti e Mentore) ── */}
+        {/* ÔöÇÔöÇ NUOVO: Laboratorio Astrale (Pianeti e Mentore) ÔöÇÔöÇ */}
         <motion.section
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -582,7 +582,7 @@ export default function ControlRoom() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="font-serif text-2xl text-white flex items-center gap-3">
-                <span className="text-3xl">🔭</span> Laboratorio Astrale
+                <span className="text-3xl">­ƒö¡</span> Laboratorio Astrale
               </h2>
               <p className="text-white/45 text-sm mt-1">Gestione Temi Natali e Mentore Silente in attesa di responso</p>
             </div>
@@ -623,7 +623,7 @@ export default function ControlRoom() {
                              }}
                              className="p-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg transition-all"
                           >
-                             ✍️
+                             Ô£ì´©Å
                           </button>
                        </div>
                     </div>
@@ -646,7 +646,7 @@ export default function ControlRoom() {
                        <div>
                           <p className="text-white font-serif text-lg leading-none mb-1">{c.birth_city}</p>
                           <p className="text-[10px] text-white/40 uppercase tracking-widest">
-                            {c.birth_date} • {c.birth_time}
+                            {c.birth_date} ÔÇó {c.birth_time}
                           </p>
                        </div>
                         <div className="flex items-center gap-2">
@@ -658,7 +658,7 @@ export default function ControlRoom() {
                              }}
                              className="p-2 bg-gold-500 hover:bg-gold-400 text-black rounded-lg transition-all"
                           >
-                             🔭
+                             ­ƒö¡
                           </button>
                        </div>
                     </div>
@@ -711,7 +711,7 @@ export default function ControlRoom() {
                       <div>
                         <h3 className="font-serif text-white font-bold">Settimana {wNum}</h3>
                         <p className="text-[10px] text-white/30 uppercase tracking-widest">
-                          {weekStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {weekEnd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                          {weekStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} ÔÇö {weekEnd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
                         </p>
                       </div>
                       {wNum === weekInfo.currentWeekNum && (
@@ -734,7 +734,7 @@ export default function ControlRoom() {
                              >
                                 <div className="flex items-center justify-between mb-2">
                                    <span className="text-gold-400 font-serif text-sm font-bold tracking-tight">
-                                     {sd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {sd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                                     {sd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} ÔÇö {sd.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
                                    </span>
                                    <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded border ${badgeClassService(sk)}`}>
                                       {labelService(sk)}
@@ -761,7 +761,7 @@ export default function ControlRoom() {
         {!apiConfigured && (
           <div className="mystical-card border border-amber-600/30 text-amber-200/90 text-sm mb-8">
             <strong className="text-white">Backend non collegato.</strong> Aggiungi{' '}
-            <code className="text-amber-300/90">VITE_API_URL</code> nel build del sito (stesso valore dell’URL pubblico
+            <code className="text-amber-300/90">VITE_API_URL</code> nel build del sito (stesso valore dellÔÇÖURL pubblico
             del servizio API su Railway) e ridistribuisci.
           </div>
         )}
@@ -781,7 +781,7 @@ export default function ControlRoom() {
           >
             <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
               <h2 className="font-semibold text-white text-sm">Consulti recenti</h2>
-              {loading && <span className="text-white/35 text-xs">Caricamento…</span>}
+              {loading && <span className="text-white/35 text-xs">CaricamentoÔÇª</span>}
             </div>
             <ul className="max-h-[min(70vh,560px)] overflow-y-auto divide-y divide-white/5">
               {list.length === 0 && !loading && (
@@ -827,10 +827,10 @@ export default function ControlRoom() {
             className="lg:col-span-3 mystical-card"
           >
             {!selectedId && (
-              <p className="text-white/45 text-sm">Seleziona un consulto dall’elenco per vedere dettagli e note.</p>
+              <p className="text-white/45 text-sm">Seleziona un consulto dallÔÇÖelenco per vedere dettagli e note.</p>
             )}
             {selectedId && detailLoading && !detailConsult && (
-              <p className="text-white/45 text-sm">Caricamento dettaglio…</p>
+              <p className="text-white/45 text-sm">Caricamento dettaglioÔÇª</p>
             )}
             {detailError && (
               <p className="text-red-400/90 text-sm mb-4" role="alert">
@@ -844,11 +844,11 @@ export default function ControlRoom() {
                   <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                     <div>
                       <dt className="text-white/40">Invitato</dt>
-                      <dd className="text-white/90">{detailConsult.invitee_name || '—'}</dd>
+                      <dd className="text-white/90">{detailConsult.invitee_name || 'ÔÇö'}</dd>
                     </div>
                     <div>
                       <dt className="text-white/40">Email</dt>
-                      <dd className="text-white/90 break-all">{detailConsult.invitee_email || '—'}</dd>
+                      <dd className="text-white/90 break-all">{detailConsult.invitee_email || 'ÔÇö'}</dd>
                     </div>
                     <div>
                       <dt className="text-white/40">Inizio</dt>
@@ -856,11 +856,11 @@ export default function ControlRoom() {
                     </div>
                     <div>
                       <dt className="text-white/40">Clerk cliente</dt>
-                      <dd className="text-white/90 font-mono text-xs break-all">{detailConsult.clerk_user_id || '—'}</dd>
+                      <dd className="text-white/90 font-mono text-xs break-all">{detailConsult.clerk_user_id || 'ÔÇö'}</dd>
                     </div>
                     <div>
                       <dt className="text-white/40">Tipo consulto (Interno)</dt>
-                      <dd className="text-white/90">{detailConsult.calendly_event_name?.trim() || '—'}</dd>
+                      <dd className="text-white/90">{detailConsult.calendly_event_name?.trim() || 'ÔÇö'}</dd>
                     </div>
                     <div>
                       <dt className="text-white/40">Indicativo</dt>
@@ -880,7 +880,7 @@ export default function ControlRoom() {
                            className="inline-flex items-center gap-2 bg-gold-500 text-dark-500 hover:bg-gold-400 px-8 py-3 rounded-xl text-sm font-bold transition-all border border-gold-400/20"
                          >
                            Entra nella Live Chat
-                           <span className="text-lg leading-none">→</span>
+                           <span className="text-lg leading-none">ÔåÆ</span>
                          </Link>
                        </dd>
                     </div>
@@ -954,7 +954,7 @@ export default function ControlRoom() {
                     <textarea
                       value={noteDraft}
                       onChange={(e) => setNoteDraft(e.target.value)}
-                      placeholder="Aggiungi una nota privata su questa cliente…"
+                      placeholder="Aggiungi una nota privata su questa clienteÔÇª"
                       className="flex-1 bg-dark-400 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-gold-500/50 outline-none resize-none"
                       rows={2}
                     />
@@ -964,7 +964,7 @@ export default function ControlRoom() {
                       disabled={noteSaving || !noteDraft}
                       className="btn-outline text-xs px-4"
                     >
-                      {noteSaving ? '…' : 'Invia'}
+                      {noteSaving ? 'ÔÇª' : 'Invia'}
                     </button>
                   </div>
                 </div>
@@ -974,7 +974,7 @@ export default function ControlRoom() {
         </div>
       </div>
 
-      {/* ── MODALE EDITOR OROSCOPO (Valeria Scrive) ── */}
+      {/* ÔöÇÔöÇ MODALE EDITOR OROSCOPO (Valeria Scrive) ÔöÇÔöÇ */}
       {editingHoro && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 animate-in fade-in duration-300">
            <motion.div 
@@ -987,7 +987,7 @@ export default function ControlRoom() {
                     <h3 className="font-serif text-xl text-white">Laboratorio Oroscopo</h3>
                     <p className="text-[10px] text-indigo-300/60 uppercase tracking-widest mt-1">Risveglio della Mentore Silente</p>
                  </div>
-                 <button onClick={() => setEditingHoro(null)} className="text-white/40 hover:text-white">✕</button>
+                 <button onClick={() => setEditingHoro(null)} className="text-white/40 hover:text-white">Ô£ò</button>
               </div>
               
               <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar max-h-[70vh]">
@@ -1041,15 +1041,16 @@ export default function ControlRoom() {
                          onClick={handleApproveHoro}
                          className="mystical-button w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:scale-105 transition-transform"
                        >
-                          ✨ Pubblica Responso
+                          Ô£¿ Pubblica Responso
                        </button>
                     </div>
                  </div>
-              </motion.div>
+              </div>
+           </motion.div>
         </div>
       )}
 
-      {/* ── MODALE EDITOR TEMA NATALE (Laboratorio Evolutivo) ── */}
+      {/* ÔöÇÔöÇ MODALE EDITOR TEMA NATALE (Laboratorio Evolutivo) ÔöÇÔöÇ */}
       {editingChart && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/95 animate-in fade-in duration-300">
            <motion.div 
@@ -1062,15 +1063,15 @@ export default function ControlRoom() {
                     <h3 className="font-serif text-xl text-white">Laboratorio Analisi Evolutiva</h3>
                     <p className="text-[10px] text-gold-300/60 uppercase tracking-widest mt-1">Revisione Scrittura di Valeria</p>
                  </div>
-                 <button onClick={() => setEditingChart(null)} className="text-white/40 hover:text-white">✕</button>
+                 <button onClick={() => setEditingChart(null)} className="text-white/40 hover:text-white">Ô£ò</button>
               </div>
               
               <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1">
                  <div className="grid md:grid-cols-3 gap-6 mb-4">
                     <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                        <p className="text-[9px] uppercase text-white/40 tracking-widest font-bold mb-1">Città & Data</p>
+                        <p className="text-[9px] uppercase text-white/40 tracking-widest font-bold mb-1">Citt├á & Data</p>
                         <p className="text-sm text-white font-serif">{editingChart.birth_city}</p>
-                        <p className="text-xs text-white/60">{editingChart.birth_date} • {editingChart.birth_time}</p>
+                        <p className="text-xs text-white/60">{editingChart.birth_date} ÔÇó {editingChart.birth_time}</p>
                     </div>
                     <div className="md:col-span-2 bg-indigo-500/5 p-4 rounded-2xl border border-indigo-500/10">
                         <p className="text-[9px] uppercase text-indigo-300/60 tracking-widest font-bold mb-1">Azioni Rapide</p>
@@ -1080,7 +1081,7 @@ export default function ControlRoom() {
                              disabled={isRegenerating}
                              className="text-[10px] bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/30 px-3 py-1.5 rounded-lg transition-all"
                            >
-                             {isRegenerating ? "✦ Caricamento..." : "✦ Rigenera con AI"}
+                             {isRegenerating ? "Ô£ª Caricamento..." : "Ô£ª Rigenera con AI"}
                            </button>
                         </div>
                     </div>
@@ -1098,12 +1099,12 @@ export default function ControlRoom() {
               </div>
 
               <div className="p-6 bg-black/40 border-t border-white/5 flex items-center justify-between">
-                 <p className="text-[10px] text-white/20 italic">L'utente vedrà questo testo immediatamente dopo la pubblicazione.</p>
+                 <p className="text-[10px] text-white/20 italic">L'utente vedr├á questo testo immediatamente dopo la pubblicazione.</p>
                  <button 
                    onClick={handleApproveChart}
                    className="mystical-button bg-gradient-to-r from-gold-600 to-amber-500 text-black px-10 py-3 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-[0_0_30px_rgba(212,160,23,0.2)] hover:scale-105 transition-transform"
                  >
-                    ✨ Pubblica Analisi
+                    Ô£¿ Pubblica Analisi
                  </button>
               </div>
            </motion.div>
