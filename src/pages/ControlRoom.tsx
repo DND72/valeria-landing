@@ -11,6 +11,7 @@ import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import StaffLayout from '../components/dashboard/StaffLayout'
 import { useAstrologyApi } from '../api/astrology'
+import ReactMarkdown from 'react-markdown'
 
 /** Portale azioni rapide: Meeting / appuntamenti programmati . */
 const AGEND_TITLE = 'Agenda Valeria'
@@ -124,6 +125,7 @@ export default function ControlRoom() {
   const [editingChart, setEditingChart] = useState<any | null>(null)
   const [editingChartText, setEditingChartText] = useState('')
   const [isRegenerating, setIsRegenerating] = useState(false)
+  const [showChartPreview, setShowChartPreview] = useState(false)
 
   const { approveHoroscope, approveChart, generateSummary } = useAstrologyApi()
 
@@ -607,7 +609,11 @@ export default function ControlRoom() {
                   {pendingHoros.map(h => (
                     <div key={h.id} className="p-4 rounded-xl bg-indigo-900/20 border border-indigo-500/30 flex items-center justify-between group">
                        <div>
-                          <p className="text-white font-serif text-lg leading-none mb-1">{h.name || 'Cliente'}</p>
+                          <p className="text-white font-serif text-lg leading-none mb-1">
+                             <Link to={`/admin/clienti/${h.clerk_user_id}`} className="hover:text-indigo-400 transition-colors">
+                                {h.name || 'Cliente'}
+                             </Link>
+                          </p>
                           <p className="text-[10px] text-white/40 uppercase tracking-widest">
                             Richiesto il {new Date(h.created_at).toLocaleDateString()}
                           </p>
@@ -644,7 +650,11 @@ export default function ControlRoom() {
                   {pendingCharts.map(c => (
                     <div key={c.id} className="p-4 rounded-xl bg-gold-900/20 border border-gold-500/30 flex items-center justify-between">
                        <div>
-                          <p className="text-white font-serif text-lg leading-none mb-1">{c.birth_city}</p>
+                          <p className="text-white font-serif text-lg leading-none mb-1">
+                             <Link to={`/admin/clienti/${c.clerk_user_id}`} className="hover:text-gold-400 transition-colors">
+                                {c.birth_city}
+                             </Link>
+                          </p>
                           <p className="text-[10px] text-white/40 uppercase tracking-widest">
                             {c.birth_date} • {c.birth_time}
                           </p>
@@ -1082,18 +1092,30 @@ export default function ControlRoom() {
                            >
                              {isRegenerating ? "✦ Caricamento..." : "✦ Rigenera con AI"}
                            </button>
+                           <button 
+                             onClick={() => setShowChartPreview(!showChartPreview)}
+                             className={`text-[10px] border px-3 py-1.5 rounded-lg transition-all ${showChartPreview ? 'bg-gold-500 border-gold-500 text-black' : 'bg-white/5 border-white/10 text-white/60 hover:text-white'}`}
+                           >
+                             {showChartPreview ? "👁️ Edita Testo" : "👁️ Anteprima"}
+                           </button>
                         </div>
                     </div>
                  </div>
 
                  <div>
                     <label className="block text-[10px] text-gold-300 font-black uppercase tracking-widest mb-3">Testo dell'Analisi (Markdown supportato)</label>
-                    <textarea 
-                       value={editingChartText}
-                       onChange={(e) => setEditingChartText(e.target.value)}
-                       placeholder="Scrivi qui l'analisi completa..."
-                       className="w-full h-[400px] bg-black/40 border border-gold-500/20 rounded-2xl p-6 text-sm text-gold-50/90 leading-relaxed placeholder:text-gold-900/40 focus:border-gold-500 outline-none transition-all resize-none font-sans"
-                    />
+                    {showChartPreview ? (
+                       <div className="w-full h-[400px] bg-white/[0.02] border border-gold-500/20 rounded-2xl p-6 overflow-y-auto prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown>{editingChartText}</ReactMarkdown>
+                       </div>
+                    ) : (
+                       <textarea 
+                          value={editingChartText}
+                          onChange={(e) => setEditingChartText(e.target.value)}
+                          placeholder="Scrivi qui l'analisi completa..."
+                          className="w-full h-[400px] bg-black/40 border border-gold-500/20 rounded-2xl p-6 text-sm text-gold-50/90 leading-relaxed placeholder:text-gold-900/40 focus:border-gold-500 outline-none transition-all resize-none font-sans"
+                       />
+                    )}
                  </div>
               </div>
 
