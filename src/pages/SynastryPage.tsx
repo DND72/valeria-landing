@@ -38,25 +38,26 @@ export default function SynastryPage() {
   // Caricamento dati profilo per Persona A
   useEffect(() => {
     if (user?.firstName) {
-       setPersonA(prev => ({ ...prev, name: user.firstName }))
+       setPersonA(prev => ({ ...prev, name: user.firstName || '' }))
     }
     const loadProfile = async () => {
       try {
         const res = await getLatestChart()
-        if (res.chart) {
-          const bd = res.chart.birthDate ? new Date(res.chart.birthDate).toISOString().split('T')[0] : ''
+        const chart = res.chart
+        if (chart) {
+          const bd = chart.birthDate ? new Date(chart.birthDate).toISOString().split('T')[0] : ''
           setPersonA(prev => ({
              ...prev,
              birthDate: bd,
-             birthTime: res.chart.birthTime || '',
-             city: res.chart.city || '',
-             gender: (res.chart as any).gender || 'F'
+             birthTime: chart.birthTime || '',
+             city: chart.city || '',
+             gender: (chart as any).gender || 'F'
           }))
           setIsPersonAFixed({
              birthDate: !!bd,
-             birthTime: !!res.chart.birthTime,
-             city: !!res.chart.city,
-             gender: !!(res.chart as any).gender
+             birthTime: !!chart.birthTime,
+             city: !!chart.city,
+             gender: !!(chart as any).gender
           })
         }
       } catch (err) {
