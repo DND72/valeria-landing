@@ -112,7 +112,7 @@ export default function StaffLiveMonitor() {
                       <p className="text-white/40 text-sm mb-2">{c.invitee_email || 'Richiesta immediata'}</p>
                       <div className="flex items-center gap-4 text-[10px] uppercase font-bold tracking-widest text-gold-500/60">
                          <span>🕒 {new Date(c.start_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
-                         <span>✨ {c.service_kind.toUpperCase()}</span>
+                         <span>✨ {(c.service_kind || 'consulto').toUpperCase()}</span>
                       </div>
                     </div>
                   </div>

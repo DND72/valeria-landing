@@ -103,7 +103,7 @@ export default function MyLiveConsultsPage() {
                                {isNow && <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />}
                             </div>
                             <p className="text-white/40 text-sm mb-2 uppercase tracking-widest text-[10px] font-bold">
-                               {c.service_kind.replace('_', ' ')}
+                               { (c.service_kind || 'consulto').replace('_', ' ') }
                             </p>
                             <div className="flex items-center gap-3 text-xs font-mono text-gold-500/70">
                                <span>🕒 {new Date(c.start_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
