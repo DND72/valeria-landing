@@ -198,25 +198,7 @@ function ResultPanel({ data, isLoggedIn, hasAdvanced }: { data: NatalChartRespon
               </div>
             )}
 
-            {/* CTA per sblocco completo */}
-            <div className="mt-10 pt-8 border-t border-white/5 text-center">
-                <div className="max-w-md mx-auto">
-                    <p className="text-white/40 text-[11px] mb-4 uppercase tracking-[0.2em]">
-                      {hasAdvanced ? "✦ Archivio Evolutivo" : "✦ Approfondimento Evolutivo"}
-                    </p>
-                    <Link 
-                      to="/i-miei-temi"
-                      className={`btn-gold w-full py-4 text-xs uppercase tracking-widest inline-block ${hasAdvanced ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'shadow-[0_0_40px_rgba(212,160,23,0.15)]'}`}
-                    >
-                      {hasAdvanced ? "✦ Leggi la tua Analisi Completa" : "✦ Vai all'Analisi Evolutiva Completa"}
-                    </Link>
-                    <p className="text-[10px] text-white/20 mt-4 italic">
-                      {hasAdvanced 
-                        ? "La tua interpretazione olistica è già pronta per essere consultata." 
-                        : "L'analisi completa esplora il destino della tua anima attraverso tutti i pianeti e le case."}
-                    </p>
-                </div>
-            </div>
+            {/* CTA per sblocco completo - Rimosso da qui perché ridondante */}
           </div>
 
            {/* Griglia Pianeti Essenziali */}
@@ -268,51 +250,62 @@ function ResultPanel({ data, isLoggedIn, hasAdvanced }: { data: NatalChartRespon
         </div>
       )}
 
-      {/* CTA Upgrade */}
-      <div className="rounded-2xl border border-gold-500/20 bg-gradient-to-br from-gold-500/[0.07] to-transparent p-8 text-center">
-        <span className="text-2xl mb-4 block">✦</span>
-        {isLoggedIn ? (
-          <>
-            <h3 className="font-serif text-2xl text-white mb-3">
-              {hasAdvanced ? "La tua Analisi è" : "Richiedi l'Analisi"} <span className="gold-text italic">{hasAdvanced ? "Pronta" : "Evolutiva Completa"}</span>
-            </h3>
-            <p className="text-white/50 text-sm mb-6 max-w-md mx-auto leading-relaxed">
-              {hasAdvanced 
-                ? "Hai già sbloccato l'interpretazione olistica completa. Torna a consultarla ogni volta che cerchi chiarezza e direzione."
-                : "Ricevi un'interpretazione olistica e profonda di tutti i tuoi pianeti, case e aspetti, curata personalmente dalla saggezza di Valeria."}
-            </p>
-            <Link
-              to="/i-miei-temi"
-              className="inline-block btn-gold px-10 py-3.5 text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(212,160,23,0.25)]"
-            >
-              {hasAdvanced ? "LEGGI ORA →" : "VAI ALL'ANALISI COMPLETA →"}
-            </Link>
-          </>
-        ) : (
-          <>
-            <h3 className="font-serif text-2xl text-white mb-3">
-              Sblocca il tuo <span className="gold-text italic">Piano Astrale</span> completo
-            </h3>
-            <p className="text-white/50 text-sm mb-6 max-w-md mx-auto leading-relaxed">
-              Iscriviti gratuitamente per salvare questo calcolo, vedere la posizione di tutti i tuoi pianeti 
-              e richiedere l'analisi evolutiva curata da Valeria.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                to="/registrati"
-                className="inline-block btn-gold px-8 py-3 text-sm uppercase tracking-wider"
-              >
-                Crea Account Gratis →
-              </Link>
-              <Link
-                to="/accedi"
-                className="inline-block border border-white/15 text-white/60 hover:text-white px-8 py-3 rounded-xl text-sm"
-              >
-                Accedi al tuo Diario
-              </Link>
-            </div>
-          </>
-        )}
+      {/* Area Evolutiva / CTA Upgrade */}
+      <div className="mt-20 pt-16 border-t border-white/5 relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 bg-black/80 backdrop-blur-md rounded-full border border-gold-500/30">
+           <span className="text-[10px] text-gold-400 uppercase tracking-[0.4em] font-bold">Oltre l'Ascendente</span>
+        </div>
+
+        <div className="mystical-card border-gold-500/20 bg-gradient-to-br from-gold-500/[0.07] to-transparent p-10 text-center shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+          <span className="text-3xl mb-4 block">🔮</span>
+          {isLoggedIn ? (
+            <>
+              <h3 className="font-serif text-3xl text-white mb-4">
+                {hasAdvanced ? "La tua Analisi è" : "Sblocca il tuo"} <span className="gold-text italic">{hasAdvanced ? "Pronta" : "Destino Evolutivo"}</span>
+              </h3>
+              <p className="text-white/60 text-base mb-8 max-w-2xl mx-auto leading-relaxed">
+                {hasAdvanced 
+                  ? "Hai già sbloccato l'interpretazione olistica completa. Nel tuo diario troverai il Tema Natale profondo, la Bi-Wheel dei transiti e l'Oroscopo settimanale personalizzato."
+                  : "Mentre l'Ascendente è la tua maschera, l'Analisi Evolutiva rivela il viaggio della tua anima. Sblocca ora lo studio completo di tutti i tuoi pianeti, le case e gli aspetti curati da Valeria."}
+              </p>
+              <div className="flex flex-col items-center gap-4">
+                <Link
+                  to="/area-personale/i-miei-temi"
+                  className="inline-block btn-gold px-12 py-4 text-sm uppercase tracking-[0.2em] font-black shadow-[0_0_40px_rgba(212,160,23,0.3)] hover:scale-105 transition-transform"
+                >
+                  {hasAdvanced ? "ACCEDI AL TUO TEMA COMPLETO →" : "RICHIEDI ANALISI EVOLUTIVA (30 CR) →"}
+                </Link>
+                {!hasAdvanced && (
+                   <p className="text-[10px] text-white/30 uppercase tracking-widest">Strumenti inclusi: Bi-Wheel Transiti e Oroscopo Settimanale</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className="font-serif text-3xl text-white mb-3">
+                Sblocca il tuo <span className="gold-text italic">Piano Astrale</span> completo
+              </h3>
+              <p className="text-white/60 text-base mb-8 max-w-2xl mx-auto leading-relaxed">
+                Iscriviti gratuitamente per salvare questo calcolo, vedere la posizione di tutti i tuoi pianeti 
+                e richiedere l'analisi evolutiva curata da Valeria.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/registrati"
+                  className="inline-block btn-gold px-10 py-3.5 text-sm uppercase tracking-wider font-black shadow-[0_0_30px_rgba(212,160,23,0.2)]"
+                >
+                  Crea Account Gratis →
+                </Link>
+                <Link
+                  to="/accedi"
+                  className="inline-block border border-white/10 text-white/40 hover:text-white px-10 py-3.5 rounded-xl text-sm transition-all"
+                >
+                  Accedi al tuo Diario
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </motion.div>
   )

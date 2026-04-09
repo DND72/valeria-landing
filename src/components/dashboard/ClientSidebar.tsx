@@ -8,11 +8,17 @@ type ClientSidebarProps = {
   onToggleTheme?: () => void
 }
 
-const CLIENT_LINKS = [
+const CORE_LINKS = [
   { to: '/area-personale', label: 'Il mio Diario', emoji: '📒' },
   { to: '/area-personale/wallet', label: 'Il mio Wallet', emoji: '💰' },
   { to: '/area-personale/i-miei-consulti', label: 'I miei Consulti', emoji: '🔮' },
-  { to: '/area-personale/i-miei-temi', label: 'Mappe Astrali', emoji: '🌌' },
+]
+
+const ASTRO_LINKS = [
+  { to: '/area-personale/tema-natale', label: 'Tema Natale Free', emoji: '✨' },
+  { to: '/area-personale/i-miei-temi', label: 'Mappe Astrali (Premium)', emoji: '🌌' },
+  { to: '/area-personale#bi-wheel', label: 'Bi-Wheel', emoji: '🧬' },
+  { to: '/area-personale#mentore', label: 'La Mentore Silente', emoji: '🧠' },
 ]
 
 const EXPLORE_LINKS = [
@@ -68,7 +74,7 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
         <div className="space-y-2">
           <p className={`text-[10px] uppercase tracking-widest font-bold px-2 ${theme === 'light' ? 'text-dark-500/40' : 'text-white/30'}`}>Il tuo Percorso</p>
           <div className="space-y-1">
-            {CLIENT_LINKS.map((link) => {
+            {CORE_LINKS.map((link) => {
               const active = pathname === link.to
               return (
                 <Link
@@ -77,6 +83,30 @@ export default function ClientSidebar({ theme = 'dark', onToggleTheme }: ClientS
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
                   active 
                     ? (theme === 'light' ? 'bg-staff-gold text-white font-bold' : 'bg-white/10 text-white font-bold ring-1 ring-white/20')
+                    : (theme === 'light' ? 'text-dark-500/60 hover:text-dark-500 hover:bg-staff-gold/5' : 'text-white/60 hover:text-white hover:bg-white/5')
+                }`}
+                >
+                  <span className="text-base">{link.emoji}</span>
+                  {link.label}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ASTRO Nav */}
+        <div className="space-y-2">
+          <p className={`text-[10px] uppercase tracking-widest font-bold px-2 ${theme === 'light' ? 'text-dark-500/40' : 'text-white/30'}`}>Le mie stelle</p>
+          <div className="space-y-1">
+            {ASTRO_LINKS.map((link) => {
+              const active = pathname === link.to
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+                  active 
+                    ? (theme === 'light' ? 'bg-staff-gold/10 text-staff-gold font-bold ring-1 ring-staff-gold/30' : 'bg-white/10 text-gold-400 font-bold ring-1 ring-gold-500/30')
                     : (theme === 'light' ? 'text-dark-500/60 hover:text-dark-500 hover:bg-staff-gold/5' : 'text-white/60 hover:text-white hover:bg-white/5')
                 }`}
                 >
