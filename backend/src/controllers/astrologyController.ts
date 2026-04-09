@@ -569,9 +569,9 @@ export const getPendingCharts = async (_req: Request, res: Response): Promise<vo
   try {
     const { pool } = await import('../db.js')
     
-    // 1. Temi Natali in attesa
+    // 1. Temi Natali in attesa (con info utente)
     const chartsRes = await pool.query(
-      `SELECT nc.*, bp.declared_birthday, bp.birth_city 
+      `SELECT nc.*, COALESCE(bp.first_name || ' ' || bp.last_name, bp.email_normalized, nc.clerk_user_id) as display_name, bp.declared_birthday, bp.birth_city 
        FROM natal_charts nc
        LEFT JOIN client_billing_profiles bp ON nc.clerk_user_id = bp.clerk_user_id
        WHERE nc.status = 'pending_staff'
@@ -580,16 +580,17 @@ export const getPendingCharts = async (_req: Request, res: Response): Promise<vo
 
     // 2. Oroscopi in attesa (con info utente)
     const horoRes = await pool.query(
-      `SELECT h.*, bp.first_name || ' ' || bp.last_name as display_name, bp.email_normalized
+      `SELECT h.*, COALESCE(bp.first_name || ' ' || bp.last_name, bp.email_normalized, h.clerk_user_id) as display_name, bp.email_normalized
        FROM user_horoscopes h
        LEFT JOIN client_billing_profiles bp ON h.clerk_user_id = bp.clerk_user_id
        WHERE h.status = 'pending_staff'
        ORDER BY h.created_at ASC`
     )
 
-    // 3. Sinastrie in attesa
+    // 3. Sinastrie in attesa (con info utente)
     const synRes = await pool.query(
-      `SELECT sr.*, bp.declared_birthday as birth_a, bp2.declared_birthday as birth_b
+      `SELECT sr.*, COALESCE(bp.first_name || ' ' || bp.last_name, bp.email_normalized, sr.clerk_user_id) as display_name, 
+              bp.declared_birthday as birth_a, bp2.declared_birthday as birth_b
        FROM synastry_reports sr
        LEFT JOIN client_billing_profiles bp ON sr.clerk_user_id = bp.clerk_user_id
        LEFT JOIN client_billing_profiles bp2 ON sr.clerk_user_id = bp2.clerk_user_id
@@ -601,7 +602,7 @@ export const getPendingCharts = async (_req: Request, res: Response): Promise<vo
       pendingCharts: chartsRes.rows, 
       pendingHoroscopes: horoRes.rows.map(h => ({
         ...h,
-        name: h.display_name || h.email_normalized || h.clerk_user_id
+        name: h.display_name
       })),
       pendingSynastries: synRes.rows
     })

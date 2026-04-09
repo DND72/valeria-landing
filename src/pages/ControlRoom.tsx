@@ -116,7 +116,8 @@ export default function ControlRoom() {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1)
   
   const [pendingCharts, setPendingCharts] = useState<any[]>([])
-  const [pendingHoros, setPendingHoros] = useState<any[]>([])
+  const [pendingHoroscopes, setPendingHoroscopes] = useState<any[]>([])
+  const [pendingSynastries, setPendingSynastries] = useState<any[]>([])
   const [editingHoro, setEditingHoro] = useState<any | null>(null)
   const [editingHoroText, setEditingHoroText] = useState('')
   const [editingHoroEnergy, setEditingHoroEnergy] = useState(60)
@@ -841,6 +842,102 @@ export default function ControlRoom() {
             {listError}
           </p>
         )}
+
+        {/* --- LABORATORIO ASTRALE: ANALISI IN ATTESA --- */}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.04 }}
+          className="mystical-card mb-12 border-indigo-500/20 bg-indigo-500/5"
+        >
+          <div className="flex items-center justify-between mb-8">
+             <div>
+                <h2 className="font-serif text-2xl text-white">Laboratorio Astrale</h2>
+                <p className="text-white/40 text-sm mt-1 uppercase tracking-widest">Analisi in attesa di revisione e pubblicazione</p>
+             </div>
+             <div className="flex gap-2">
+                <span className="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.3)] animate-pulse">
+                   {pendingCharts.length + pendingHoroscopes.length + pendingSynastries.length} Da Gestire
+                </span>
+             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             {/* TEMI NATALI */}
+             {pendingCharts.map(item => (
+                <div key={item.id} className="bg-black/40 border border-white/10 rounded-2xl p-6 hover:border-gold-500/40 transition-all flex flex-col justify-between">
+                   <div>
+                      <div className="flex justify-between items-start mb-4">
+                         <span className="text-[10px] uppercase font-bold text-gold-500 tracking-widest bg-gold-500/10 px-2 py-0.5 rounded">Tema Natale</span>
+                         <span className="text-[10px] text-white/30">{new Date(item.created_at).toLocaleDateString('it-IT')}</span>
+                      </div>
+                      <h4 className="text-white font-serif text-lg mb-1">{item.display_name}</h4>
+                      <p className="text-white/40 text-[11px] truncate">{item.birth_city} ✦ {item.declared_birthday}</p>
+                   </div>
+                   <button 
+                     onClick={() => {
+                        setEditingChart(item);
+                        setEditingChartText(item.interpretation || "");
+                     }}
+                     className="mt-6 w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-white/80"
+                   >
+                     Revisiona Analisi
+                   </button>
+                </div>
+             ))}
+
+             {/* MENTORE SILENTE (Oroscopi) */}
+             {pendingHoroscopes.map(item => (
+                <div key={item.id} className="bg-black/40 border border-indigo-500/20 rounded-2xl p-6 hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+                   <div>
+                      <div className="flex justify-between items-start mb-4">
+                         <span className="text-[10px] uppercase font-bold text-indigo-400 tracking-widest bg-indigo-500/10 px-2 py-0.5 rounded">Mentore Silente</span>
+                         <span className="text-[10px] text-white/30">{new Date(item.created_at).toLocaleDateString('it-IT')}</span>
+                      </div>
+                      <h4 className="text-white font-serif text-lg mb-1">{item.display_name}</h4>
+                      <p className="text-indigo-300/40 text-[10px] uppercase tracking-wider italic">Richiesta di Risveglio</p>
+                   </div>
+                   <button 
+                     onClick={() => openEditorHoro(item)}
+                     className="mt-6 w-full py-2.5 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-indigo-200"
+                   >
+                     Scrivi Responso
+                   </button>
+                </div>
+             ))}
+
+             {/* SINASTRIE */}
+             {pendingSynastries.map(item => (
+                <div key={item.id} className="bg-black/40 border border-red-500/20 rounded-2xl p-6 hover:border-red-500/40 transition-all flex flex-col justify-between">
+                   <div>
+                      <div className="flex justify-between items-start mb-4">
+                         <span className="text-[10px] uppercase font-bold text-red-400 tracking-widest bg-red-500/10 px-2 py-0.5 rounded">Sinastria</span>
+                         <span className="text-[10px] text-white/30">{new Date(item.created_at).toLocaleDateString('it-IT')}</span>
+                      </div>
+                      <h4 className="text-white font-serif text-lg mb-1">{item.display_name}</h4>
+                      <p className="text-red-300/40 text-[10px] uppercase tracking-wider">Libro dell'Amore</p>
+                   </div>
+                   <button 
+                     onClick={() => {
+                        setEditingChart(item);
+                        setEditingChartText(item.interpretation || "");
+                        // Nota: usiamo l'editor del Tema Natale per semplicità se il formato è markdown
+                     }}
+                     className="mt-6 w-full py-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-red-200"
+                   >
+                     Revisiona Libro
+                   </button>
+                </div>
+             ))}
+
+             {pendingCharts.length === 0 && pendingHoroscopes.length === 0 && pendingSynastries.length === 0 && (
+                <div className="lg:col-span-3 py-16 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                   <span className="text-4xl block mb-4 opacity-20">✨</span>
+                   <p className="text-white/20 text-sm uppercase tracking-widest">Tutte le stelle sono state ascoltate. Nessuna analisi pendente.</p>
+                </div>
+             )}
+          </div>
+        </motion.section>
 
         <div className="grid lg:grid-cols-5 gap-8">
           <motion.section
