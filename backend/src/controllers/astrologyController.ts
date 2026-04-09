@@ -181,7 +181,7 @@ export const getMyCharts = async (req: Request, res: Response): Promise<void> =>
 
 export const getCurrentSky = async (_req: Request, res: Response): Promise<void> => {
   const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3'
-  execFile(pythonExecutable, [path.join(__dirname, '../../python_engine/current_sky.py')], (error, stdout, _stderr) => {
+  execFile(pythonExecutable, [path.join(__dirname, '../../python_engine/current_sky.py')], (_error, stdout, _stderr) => {
     try { res.json(JSON.parse(stdout)) } catch { res.status(500).json({ error: 'Fail' }) }
   })
 }

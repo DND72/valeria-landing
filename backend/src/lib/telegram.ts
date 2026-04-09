@@ -34,6 +34,9 @@ export async function notifyStaff(message: string): Promise<void> {
   }
 }
 
+// Alias for backward compatibility with booking routes
+export const sendTelegramNotification = notifyStaff;
+
 // --- Pre-built message templates ---
 
 export const tg = {
