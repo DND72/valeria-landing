@@ -61,6 +61,16 @@ export default function StaffLiveMonitor() {
     }
   }
 
+  const handleReject = async (id: string) => {
+    if (!window.confirm("Confermi di voler rifiutare/annullare questo consulto? I crediti verranno rimborsati interamente al cliente.")) return
+    try {
+      await apiJson(getToken, `/api/staff/consults/${id}/reject`, { method: 'POST' })
+      void loadLive()
+    } catch {
+      alert('Errore durante l\'annullamento')
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -119,12 +129,20 @@ export default function StaffLiveMonitor() {
 
                   <div className="flex items-center gap-3">
                     {isChat ? (
-                      <Link 
-                        to={`/sessione/${c.id}`}
-                        className={`px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] transition-all text-sm ${isWaiting ? 'bg-emerald-500 text-dark-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-gold-500 text-dark-500'}`}
-                      >
-                        ENTRA IN CHAT
-                      </Link>
+                      <div className="flex flex-col gap-3">
+                        <Link 
+                          to={`/sessione/${c.id}`}
+                          className={`px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] transition-all text-sm ${isWaiting ? 'bg-emerald-500 text-dark-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'bg-gold-500 text-dark-500'}`}
+                        >
+                          ENTRA IN CHAT
+                        </Link>
+                        <button 
+                           onClick={() => handleReject(c.id)}
+                           className="text-[10px] text-center text-red-400/60 hover:text-red-400 font-bold uppercase tracking-widest"
+                         >
+                           Rifiuta Consulto ✕
+                         </button>
+                      </div>
                     ) : (
                       <div className="flex flex-col gap-2">
                          {c.meeting_join_url ? (
@@ -158,6 +176,12 @@ export default function StaffLiveMonitor() {
                               + AGGIUNGI LINK VIDEO
                            </button>
                          )}
+                         <button 
+                           onClick={() => handleReject(c.id)}
+                           className="text-[10px] text-red-400/60 hover:text-red-400 font-bold uppercase tracking-widest mt-2"
+                         >
+                           Rifiuta / Annulla ✕
+                         </button>
                       </div>
                     )}
                   </div>

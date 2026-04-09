@@ -535,6 +535,46 @@ export function createStaffRouter(pool: Pool): Router {
     }
   })
 
+  r.post('/consults/:id/reject', async (req, res) => {
+    const id = req.params.id
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
+      const { rows } = await client.query(
+         `SELECT clerk_user_id, cost_credits, status_billing FROM consults WHERE id = $1 FOR UPDATE`, 
+         [id]
+      )
+      if (rows.length === 0) {
+        await client.query('ROLLBACK')
+        res.status(404).json({ error: 'Non trovato' })
+        return
+      }
+      const c = rows[0]
+      if (c.status_billing === 'billed') {
+        await client.query('ROLLBACK')
+        res.status(400).json({ error: 'Già processato' })
+        return
+      }
+      if (c.cost_credits > 0 && c.clerk_user_id) {
+        await client.query(
+          `UPDATE wallets SET balance_locked = balance_locked - $1, balance_available = balance_available + $1, updated_at = now() WHERE clerk_user_id = $2`,
+          [c.cost_credits, c.clerk_user_id]
+        )
+        await client.query(
+          `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'unlock_refund', $3)`,
+          [c.clerk_user_id, c.cost_credits, id]
+        )
+      }
+      await client.query(`UPDATE consults SET status = 'cancelled', status_billing = 'billed', updated_at = now() WHERE id = $1`, [id])
+      await client.query('COMMIT')
+      res.json({ ok: true })
+    } catch (e) {
+      await client.query('ROLLBACK')
+      console.error('[staff reject]', e)
+      res.status(500).json({ error: 'Errore' })
+    } finally { client.release() }
+  })
+
   r.post('/lenormand-mentor', async (req, res) => {
     const { query } = req.body
     if (!query || typeof query !== 'string') {

@@ -47,6 +47,19 @@ export default function MyLiveConsultsPage() {
     return () => clearInterval(timer)
   }, [loadLive])
 
+  const handleCancel = async (id: string) => {
+    if (!window.confirm("Sei sicura di voler annullare questa richiesta? I crediti ti verranno rimborsati subito.")) return
+    try {
+      await apiJson(getToken, `/api/me/consults/${id}/action`, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'cancel' })
+      })
+      void loadLive()
+    } catch (err: any) {
+      alert(err.message || "Errore durante l'annullamento")
+    }
+  }
+
   return (
     <ClientLayout title="Consulti Live ⚡" subtitle="I tuoi appuntamenti in diretta">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -128,7 +141,7 @@ export default function MyLiveConsultsPage() {
                                rel="noopener noreferrer"
                                className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(14,165,233,0.3)]"
                              >
-                               APRI VIDEOCHIAMATA
+                                APRI VIDEOCHIAMATA
                              </a>
                            ) : (
                              <div className="flex flex-col items-end gap-1">
@@ -141,6 +154,16 @@ export default function MyLiveConsultsPage() {
                          )}
                       </div>
                     </div>
+                    {isNow && (
+                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-end">
+                         <button 
+                           onClick={() => handleCancel(c.id)}
+                           className="text-[9px] text-white/20 hover:text-red-400/60 uppercase tracking-widest font-bold transition-colors"
+                         >
+                           Annulla Richiesta ✕
+                         </button>
+                      </div>
+                    )}
                   </motion.div>
                 )
               })}

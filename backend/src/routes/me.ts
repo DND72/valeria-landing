@@ -451,7 +451,9 @@ export function createMeRouter(pool: Pool): Router {
       const startDates = new Date(c.start_at)
       const now = new Date()
       const diffMs = startDates.getTime() - now.getTime()
-      if (diffMs < 24 * 60 * 60 * 1000) {
+      
+      // Se è in attesa (es. Chat Flash), permettiamo l'annullamento immediato ignorando il limite 24h
+      if (c.status !== 'client_waiting' && diffMs < 24 * 60 * 60 * 1000) {
          throw new Error(`Mancano meno di 24 ore all'appuntamento: non è possibile modificarlo.`)
       }
 
