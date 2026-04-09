@@ -241,7 +241,7 @@ export default function BiWheel({
       </div>
 
       {/* ── Legenda Astrale ── */}
-      <div className="flex-1 w-full max-w-sm mystical-card bg-white/[0.02] border-white/5 p-6 h-fit self-start lg:mt-12">
+      <div className="flex-1 w-full max-w-md mystical-card bg-white/[0.02] border-white/5 p-6 h-fit self-start lg:mt-12">
          <h4 className="font-serif text-lg text-white mb-6 flex items-center gap-2">
             <span className="text-xl">📜</span> Simbolismo Celeste
          </h4>
@@ -267,6 +267,58 @@ export default function BiWheel({
                <p className="text-[10px] text-white/40 uppercase tracking-widest leading-none">Anello Esterno: Transiti Oggi</p>
             </div>
          </div>
+      </div>
+
+      {/* ── Matrice degli Aspetti (Matrice delle Correlazioni) ── */}
+      <div className="w-full mt-12 overflow-x-auto pb-6 border-t border-white/10 pt-10">
+         <div className="min-w-[700px]">
+            <h5 className="text-white font-serif text-sm mb-6 uppercase tracking-widest opacity-60">✦ Matrice dell'Alchimia Oggi (Transiti vs Natale)</h5>
+            <table className="w-full border-collapse">
+               <thead>
+                  <tr>
+                     <th className="p-2 border border-white/5 bg-white/5"></th>
+                     {natalPlanets.map(p => (
+                        <th key={p.nome} className="p-2 border border-white/5 text-[10px] lowercase font-serif text-gold-400/60">
+                           {p.nome}
+                        </th>
+                     ))}
+                  </tr>
+               </thead>
+               <tbody>
+                  {transitPlanets.map(tP => (
+                     <tr key={tP.nome}>
+                        <td className="p-2 border border-white/5 text-[10px] lowercase font-serif text-blue-400/60 bg-white/[0.02]">
+                           {tP.nome}
+                        </td>
+                        {natalPlanets.map(nP => {
+                           const aspect = transitAspects.find(a => (a.p1 === nP.nome && a.p2 === tP.nome) || (a.p1 === tP.nome && a.p2 === nP.nome))
+                           let symbol = ""
+                           let color = "transparent"
+                           
+                           if (aspect) {
+                              if (aspect.type === 'Congiunzione') { symbol = "○"; color = "#fbbf24" }
+                              if (aspect.type === 'Opposizione') { symbol = "☍"; color = "#ef4444" }
+                              if (aspect.type === 'Quadrato') { symbol = "□"; color = "#ef4444" }
+                              if (aspect.type === 'Trigono') { symbol = "△"; color = "#3b82f6" }
+                              if (aspect.type === 'Sestile') { symbol = "✱"; color = "#3b82f6" }
+                           }
+
+                           return (
+                              <td key={`${tP.nome}-${nP.nome}`} className="p-2 border border-white/5 text-center transition-all hover:bg-white/5 h-10 w-10">
+                                 {symbol && (
+                                    <span className="text-xl leading-none" style={{ color }} title={`${tP.nome} ${aspect?.type} ${nP.nome}`}>
+                                       {symbol}
+                                    </span>
+                                 )}
+                              </td>
+                           )
+                        })}
+                     </tr>
+                  ))}
+               </tbody>
+            </table>
+         </div>
+         <p className="text-[9px] text-white/20 mt-4 uppercase tracking-[0.2em] italic text-center">Legenda: □ Quadrato / △ Trigono / ○ Congiunzione / ☍ Opposizione / ✱ Sestile</p>
       </div>
     </div>
   )
