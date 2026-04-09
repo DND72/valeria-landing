@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@clerk/clerk-react'
 import { apiJson } from '../../lib/api'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { InternalBookingCalendar } from '../InternalBookingCalendar'
 import PrivacySealNote from '../PrivacySealNote'
 import ComboLightBox from '../ComboLightBox'
@@ -43,6 +43,7 @@ export default function BookingFlow({
 }: BookingFlowProps) {
   const { getToken } = useAuth()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const calendarSectionRef = useRef<HTMLElement | null>(null)
   const [offerCategory, setOfferCategory] = useState<OfferCategory | null>(null)
   const [selectedConsult, setSelectedConsult] = useState<ConsultKind | null>(null)
@@ -84,7 +85,7 @@ export default function BookingFlow({
       if (res.ok) {
         setBookingConfirmed(true)
         onBookingConfirmed()
-        setTimeout(() => document.getElementById('storico')?.scrollIntoView({ behavior: 'smooth' }), 600)
+        navigate('/area-personale/live')
       } else {
         setInstantError(res.error || 'Errore nella prenotazione istantanea.')
       }
