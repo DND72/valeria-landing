@@ -1,7 +1,7 @@
 
 import { useAuth, useUser } from '@clerk/clerk-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiJson, ApiError } from '../lib/api'
 import {
@@ -13,27 +13,6 @@ import { getApiBaseUrl } from '../constants/api'
 import StaffLayout from '../components/dashboard/StaffLayout'
 import { useAstrologyApi } from '../api/astrology'
 import ReactMarkdown from 'react-markdown'
-
-const AGEND_TITLE = 'Agenda Valeria'
-type InternalAvailability = {
-  day_of_week: number
-  week_number: number
-  slot_label: string
-  is_active: boolean
-  start_time: string
-  end_time: string
-}
-
-type InternalOverride = {
-  id: string
-  override_date: string
-  is_available: boolean
-  start_time: string | null
-  end_time: string | null
-  reason: string | null
-}
-
-const DAYS_LABELS = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
 
 type ConsultRow = {
   id: string
@@ -54,18 +33,6 @@ type ConsultRow = {
   service_kind?: ServiceKind
   cost_credits?: number
   status_billing?: string
-}
-
-function badgeClassService(kind: ServiceKind): string {
-  if (kind === 'tarocchi') return 'bg-violet-500/20 text-violet-200 border-violet-500/35'
-  if (kind === 'coaching') return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/35'
-  return 'bg-white/10 text-white/45 border-white/15'
-}
-
-function labelService(kind: ServiceKind): string {
-  if (kind === 'tarocchi') return 'Tarocchi'
-  if (kind === 'coaching') return 'Coaching'
-  return 'Non class.'
 }
 
 type NoteRow = {
@@ -93,28 +60,18 @@ export default function ControlRoom() {
 
   const [list, setList] = useState<ConsultRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [listError, setListError] = useState<string | null>(null)
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detailConsult, setDetailConsult] = useState<ConsultRow | null>(null)
   const [notes, setNotes] = useState<NoteRow[]>([])
-  const [detailLoading, setDetailLoading] = useState(false)
-  const [detailError, setDetailError] = useState<string | null>(null)
 
   const [noteDraft, setNoteDraft] = useState('')
   const [noteSaving, setNoteSaving] = useState(false)
 
-  const [statusDraft, setStatusDraft] = useState<string>('scheduled')
-  const [actualDurationDraft, setActualDurationDraft] = useState<string>('')
-
-  const [internalAvailability, setInternalAvailability] = useState<InternalAvailability[]>([])
-  const [internalOverrides, setInternalOverrides] = useState<InternalOverride[]>([])
-  const [internalLoading, setInternalLoading] = useState(false)
-  const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1)
-  
   const [pendingCharts, setPendingCharts] = useState<any[]>([])
   const [pendingHoroscopes, setPendingHoroscopes] = useState<any[]>([])
   const [pendingSynastries, setPendingSynastries] = useState<any[]>([])
+
   const [editingHoro, setEditingHoro] = useState<any | null>(null)
   const [editingHoroText, setEditingHoroText] = useState('')
   const [editingHoroEnergy, setEditingHoroEnergy] = useState(60)
@@ -123,7 +80,6 @@ export default function ControlRoom() {
   const [editingChart, setEditingChart] = useState<any | null>(null)
   const [editingChartText, setEditingChartText] = useState('')
   const [isRegenerating, setIsRegenerating] = useState(false)
-  const [showChartPreview, setShowChartPreview] = useState(false)
   const [waitingConsult, setWaitingConsult] = useState<any | null>(null)
   
   const alertAudio = useRef<HTMLAudioElement | null>(null)
@@ -150,27 +106,6 @@ export default function ControlRoom() {
      return () => clearInterval(itv)
   }, [waitingConsult, getToken])
 
-  const weekInfo = useMemo(() => {
-    const now = new Date()
-    const getWeekNum = (d: Date) => {
-      const ref = new Date('2024-01-01T00:00:00Z')
-      const msPerW = 7 * 24 * 60 * 60 * 1000
-      const weeks = Math.floor((d.getTime() - ref.getTime()) / msPerW)
-      return (Math.abs(weeks) % 2) + 1
-    }
-    const currentWeekNum = getWeekNum(now) as 1 | 2
-    const startOfThisWeek = new Date(now)
-    startOfThisWeek.setDate(now.getDate() - now.getDay())
-    startOfThisWeek.setHours(0,0,0,0)
-    const startOfNextWeek = new Date(startOfThisWeek)
-    startOfNextWeek.setDate(startOfThisWeek.getDate() + 7)
-    return {
-      currentWeekNum,
-      w1Start: currentWeekNum === 1 ? startOfThisWeek : startOfNextWeek,
-      w2Start: currentWeekNum === 2 ? startOfThisWeek : startOfNextWeek
-    }
-  }, [])
-
   const loadPendingAnalyses = useCallback(async () => {
     if (!apiConfigured) return
     try {
@@ -190,33 +125,16 @@ export default function ControlRoom() {
     setEditingHoroLucky(h.lucky_days || [])
   }
 
-  const loadInternalAvailability = useCallback(async () => {
-    if (!apiConfigured) return
-    setInternalLoading(true)
-    try {
-      const res = await apiJson<{ availability: InternalAvailability[] }>(getToken, '/api/staff/booking/availability')
-      setInternalAvailability(res.availability)
-      const res2 = await apiJson<{ overrides: InternalOverride[] }>(getToken, '/api/staff/booking/overrides')
-      setInternalOverrides(res2.overrides)
-    } catch (e) {
-      console.error('[loadInternalAvailability]', e)
-    } finally {
-      setInternalLoading(false)
-    }
-  }, [getToken, apiConfigured])
-
   const loadList = useCallback(async () => {
     if (!apiConfigured) {
       setLoading(false)
       return
     }
-    setListError(null)
     setLoading(true)
     try {
       const data = await apiJson<{ consults: ConsultRow[] }>(getToken, '/api/staff/consults')
       setList(data.consults ?? [])
     } catch (e) {
-      setListError(e instanceof ApiError ? String(e.message) : 'Impossibile caricare i consulti')
       setList([])
     } finally {
       setLoading(false)
@@ -226,19 +144,13 @@ export default function ControlRoom() {
   const loadDetail = useCallback(
     async (id: string) => {
       if (!apiConfigured) return
-      setDetailError(null)
-      setDetailLoading(true)
       try {
         const data = await apiJson<{ consult: ConsultRow; notes: NoteRow[] }>(getToken, `/api/staff/consults/${id}`)
         setDetailConsult(data.consult)
         setNotes(data.notes ?? [])
-        setStatusDraft(data.consult.status)
       } catch (e) {
-        setDetailError(e instanceof ApiError ? String(e.message) : 'Errore caricamento dettaglio')
         setDetailConsult(null)
         setNotes([])
-      } finally {
-        setDetailLoading(false)
       }
     },
     [getToken, apiConfigured]
@@ -250,10 +162,9 @@ export default function ControlRoom() {
       navigate('/area-personale', { replace: true })
       return
     }
-    void loadInternalAvailability()
     void loadPendingAnalyses()
     void loadList()
-  }, [isLoaded, user, navigate, loadList, loadInternalAvailability, loadPendingAnalyses])
+  }, [isLoaded, user, navigate, loadList, loadPendingAnalyses])
 
   useEffect(() => {
     if (!selectedId) {
@@ -278,7 +189,7 @@ export default function ControlRoom() {
       setNoteDraft('')
       await loadDetail(selectedId)
     } catch (e) {
-      setDetailError(e instanceof ApiError ? String(e.message) : 'Salvataggio nota fallito')
+      console.error('Save note error', e)
     } finally {
       setNoteSaving(false)
     }
@@ -301,10 +212,10 @@ export default function ControlRoom() {
     }
   }
 
-  const handleApproveChart = async () => {
+  const handleApproveChart = async (type: 'chart' | 'synastry' = 'chart') => {
     if (!editingChart) return
     try {
-      await approveChart(editingChart.id, 'chart', editingChartText)
+      await approveChart(editingChart.id, type, editingChartText)
       setEditingChart(null)
       void loadPendingAnalyses()
       alert("Analisi pubblicata con successo!")
@@ -323,41 +234,6 @@ export default function ControlRoom() {
       alert("Errore rigenerazione: " + err.message)
     } finally {
       setIsRegenerating(false)
-    }
-  }
-
-  const saveStatus = async () => {
-    if (!selectedId || !detailConsult || statusDraft === detailConsult.status) return
-    setDetailLoading(true)
-    try {
-      const data = await apiJson<{ consult: ConsultRow }>(getToken, `/api/staff/consults/${selectedId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status: statusDraft }),
-      })
-      setDetailConsult(data.consult)
-      await loadList()
-    } catch (e) {
-      setDetailError(e instanceof ApiError ? String(e.message) : 'Aggiornamento stato fallito')
-    } finally {
-      setDetailLoading(false)
-    }
-  }
-
-  const handleClaimCredits = async () => {
-    if (!selectedId || !apiConfigured) return
-    if (!window.confirm("Confermi l'incasso dei crediti?")) return
-    setDetailLoading(true)
-    try {
-      await apiJson(getToken, `/api/staff/consults/${selectedId}/claim`, {
-        method: 'POST',
-        body: JSON.stringify({ actual_duration_minutes: actualDurationDraft ? parseInt(actualDurationDraft) : null })
-      })
-      await loadDetail(selectedId)
-      await loadList()
-    } catch (e) {
-      setDetailError(e instanceof ApiError ? String(e.message) : 'Errore durante l\'incasso')
-    } finally {
-      setDetailLoading(false)
     }
   }
 
@@ -388,7 +264,6 @@ export default function ControlRoom() {
         </AnimatePresence>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4">
-        {/* LABORATORIO ASTRALE */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -459,12 +334,11 @@ export default function ControlRoom() {
           </div>
         </motion.section>
 
-        {/* AGENDA */}
         <div className="grid lg:grid-cols-5 gap-8">
            <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2 mystical-card p-0 overflow-hidden">
               <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
                  <h2 className="font-semibold text-white text-sm">Consulti recenti</h2>
-                 {loading && <span className="text-white/35 text-xs">Caricamento…</span>}
+                 {loading && <span className="text-white/35 text-xs animate-pulse">Caricamento…</span>}
               </div>
               <ul className="max-h-[500px] overflow-y-auto divide-y divide-white/5">
                  {list.map((c) => (
@@ -491,30 +365,31 @@ export default function ControlRoom() {
                     <div className="pt-4 border-t border-white/10">
                        <Link to={`/sessione/${detailConsult.id}`} className="bg-gold-500 text-black px-6 py-2 rounded-lg text-xs font-bold uppercase">Entra nella Live</Link>
                     </div>
-                    {/* Note */}
                     <div className="pt-6 border-t border-white/10">
                        <h4 className="text-white text-sm mb-4">Note</h4>
                        <div className="space-y-2 mb-4">
                           {notes.map(n => <div key={n.id} className="bg-white/5 p-2 rounded text-[11px] text-white/80">{n.body}</div>)}
                        </div>
-                       <textarea value={noteDraft} onChange={e => setNoteDraft(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded p-2 text-xs text-white" rows={2} />
-                       <button onClick={submitNote} disabled={noteSaving || !noteDraft} className="btn-outline text-[10px] px-3 py-1 mt-2">Salva Nota</button>
+                       <textarea value={noteDraft} onChange={e => setNoteDraft(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded p-4 text-sm text-white outline-none" rows={2} />
+                       <button onClick={submitNote} disabled={noteSaving || !noteDraft} className="bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase mt-2">Salva Nota</button>
                     </div>
                  </div>
-              ) : <p className="text-white/30 text-sm">Seleziona un consulto.</p>}
+              ) : <p className="text-white/30 text-sm uppercase tracking-widest">Seleziona un consulto per i dettagli</p>}
            </motion.section>
         </div>
       </div>
 
-      {/* MODALI EDITOR */}
       {editingHoro && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90">
            <div className="w-full max-w-2xl bg-[#0a0a10] border border-indigo-500/40 rounded-3xl p-8">
               <h3 className="font-serif text-2xl text-white mb-6">Editor Mentore Silente</h3>
-              <textarea value={editingHoroText} onChange={e => setEditingHoroText(e.target.value)} className="w-full h-64 bg-black/40 border border-indigo-500/20 rounded-2xl p-4 text-sm text-white outline-none" placeholder="Scrivi il responso..." />
+              <div className="prose prose-sm prose-invert max-h-64 overflow-y-auto mb-6 bg-white/5 p-4 rounded-xl">
+                 <ReactMarkdown>{editingHoroText}</ReactMarkdown>
+              </div>
+              <textarea value={editingHoroText} onChange={e => setEditingHoroText(e.target.value)} className="w-full h-48 bg-black/40 border border-indigo-500/20 rounded-2xl p-4 text-sm text-white outline-none" placeholder="Scrivi il responso..." />
               <div className="flex justify-end gap-3 mt-6">
                  <button onClick={() => setEditingHoro(null)} className="text-white/40 px-4">Annulla</button>
-                 <button onClick={handleApproveHoro} className="btn-gold px-6 py-2">Pubblica</button>
+                 <button onClick={handleApproveHoro} className="btn-gold px-6 py-2">Pubblica Responso</button>
               </div>
            </div>
         </div>
@@ -525,12 +400,15 @@ export default function ControlRoom() {
            <div className="w-full max-w-4xl bg-[#0a0a10] border border-gold-500/40 rounded-3xl p-8 flex flex-col max-h-[90vh]">
               <div className="flex items-center justify-between mb-6">
                  <h3 className="font-serif text-2xl text-white">Laboratorio Analisi</h3>
-                 <button onClick={handleRegenerateAdvancedSummary} disabled={isRegenerating} className="text-[10px] bg-indigo-500/20 px-3 py-1 rounded text-indigo-200">✦ Rigenera</button>
+                 <button onClick={handleRegenerateAdvancedSummary} disabled={isRegenerating} className="text-[10px] bg-indigo-500/20 px-3 py-1 rounded text-indigo-200 uppercase font-black tracking-widest">✦ Rigenera AI</button>
               </div>
-              <textarea value={editingChartText} onChange={e => setEditingChartText(e.target.value)} className="flex-1 bg-black/40 border border-gold-500/20 rounded-2xl p-6 text-sm text-white outline-none resize-none mb-6" />
+              <div className="prose prose-sm prose-invert flex-1 overflow-y-auto mb-6 bg-white/5 p-6 rounded-2xl">
+                 <ReactMarkdown>{editingChartText}</ReactMarkdown>
+              </div>
+              <textarea value={editingChartText} onChange={e => setEditingChartText(e.target.value)} className="h-48 bg-black/40 border border-gold-500/20 rounded-2xl p-6 text-sm text-white outline-none resize-none mb-6" />
               <div className="flex justify-end gap-3">
                  <button onClick={() => setEditingChart(null)} className="text-white/40 px-4">Annulla</button>
-                 <button onClick={handleApproveChart} className="btn-gold px-8 py-3">✨ Pubblica</button>
+                 <button onClick={() => handleApproveChart(editingChart.person_b_data ? 'synastry' : 'chart')} className="bg-gold-500 text-black px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs">✨ Pubblica Ora</button>
               </div>
            </div>
         </div>

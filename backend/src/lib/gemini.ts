@@ -202,9 +202,7 @@ export async function generateSynastryInterpretation(
 export async function generateSynastryPreview(
   dataA: any, 
   dataB: any, 
-  aspects: any[], 
-  genderA: string = 'M', 
-  genderB: string = 'F'
+  aspects: any[]
 ): Promise<string> {
   const client = getGeminiClient()
   

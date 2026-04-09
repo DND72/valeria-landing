@@ -44,7 +44,13 @@ export default function SynastryPage() {
         setShowFullCTA(false)
       }
     } catch (err: any) {
-      alert(err.message || "Errore durante il calcolo dell'affinità")
+      if (err.message === 'free_preview_exhausted') {
+        alert("Hai già utilizzato il tuo unico assaggio d'alchimia gratuito. Valeria ha già sollevato il velo per te una volta; per svelare i segreti di questa nuova unione, richiedi il Libro dell'Amore completo.")
+      } else if (err.message === 'insufficient_funds') {
+        alert("Crediti insufficienti. Ricarica il tuo wallet per richiedere il Libro dell'Amore.")
+      } else {
+        alert(err.message || "Errore durante il calcolo dell'affinità")
+      }
     } finally {
       setLoading(false)
     }
