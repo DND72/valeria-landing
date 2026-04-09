@@ -708,3 +708,25 @@ export const generateFirstHoroscope = async (req: Request, res: Response): Promi
     res.status(500).json({ error: 'Errore durante la richiesta.' })
   }
 }
+
+/**
+ * Approvazione e scrittura finale oroscopo (Staff)
+ */
+export const approveHoroscope = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id, forecast_text, energy_level, lucky_days } = req.body
+    const { pool } = await import('../db.js')
+    
+    await pool.query(
+      `UPDATE user_horoscopes 
+       SET forecast_text = $1, energy_level = $2, lucky_days = $3, status = 'ready', updated_at = now()
+       WHERE id = $4`,
+      [forecast_text, energy_level, lucky_days || '{}', id]
+    )
+    
+    res.json({ success: true })
+  } catch (err) {
+    console.error('[approveHoroscope]', err)
+    res.status(500).json({ error: 'Errore durante l\'approvazione' })
+  }
+}

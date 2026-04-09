@@ -92,152 +92,184 @@ export default function BiWheel({
   const rotationOffset = ascLon ?? 0
 
   return (
-    <div className={`relative flex items-center justify-center ${className}`} style={{ aspectRatio: '1/1' }}>
-      <svg viewBox="0 0 2000 2000" className="w-full h-full overflow-visible">
-        <defs>
-          <filter id="glow-p" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="15" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
+    <div className={`relative flex flex-col lg:flex-row items-center justify-center gap-12 ${className}`}>
+      {/* ── Ruota Astrale ── */}
+      <div className="relative w-full max-w-[800px] flex-shrink-0" style={{ aspectRatio: '1/1' }}>
+        <svg viewBox="0 0 2000 2000" className="w-full h-full overflow-visible">
+          <defs>
+            <filter id="glow-p" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="15" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
 
-        <circle 
-          cx={CX} cy={CY} r={R.OUTER} 
-          fill={theme.zodiacDiskColor} 
-          className="transition-colors duration-1000"
-        />
+          <circle 
+            cx={CX} cy={CY} r={R.OUTER} 
+            fill={theme.zodiacDiskColor} 
+            className="transition-colors duration-1000"
+          />
 
-        {/* ── Guide Visive Cerchi Interno/Esterno ── */}
-        {/* Cerchio Transiti (Esterno) - Area bluastra */}
-        <circle 
-          cx={CX} cy={CY} r={R.TRANSIT_R + 50} 
-          fill="none" stroke="rgba(59, 130, 246, 0.1)" strokeWidth="100" 
-        />
-        <text x={CX} y={CY - R.TRANSIT_R - 70} textAnchor="middle" fontSize="30" fill="rgba(59, 130, 246, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
-          Corrente del Presente (Transiti)
-        </text>
+          {/* ── Guide Visive Cerchi Interno/Esterno ── */}
+          {/* Cerchio Transiti (Esterno) - Area bluastra */}
+          <circle 
+            cx={CX} cy={CY} r={R.TRANSIT_R + 50} 
+            fill="none" stroke="rgba(59, 130, 246, 0.1)" strokeWidth="100" 
+          />
+          <text x={CX} y={CY - R.TRANSIT_R - 70} textAnchor="middle" fontSize="30" fill="rgba(59, 130, 246, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
+            Corrente del Presente (Transiti)
+          </text>
 
-        {/* Cerchio Natale (Interno) - Area dorata */}
-        <circle 
-          cx={CX} cy={CY} r={R.NATAL_R + 40} 
-          fill="none" stroke="rgba(212, 160, 23, 0.08)" strokeWidth="90" 
-        />
-        <text x={CX} y={CY - R.NATAL_R - 55} textAnchor="middle" fontSize="30" fill="rgba(212, 160, 23, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
-          Radice Immutabile (Natale)
-        </text>
+          {/* Cerchio Natale (Interno) - Area dorata */}
+          <circle 
+            cx={CX} cy={CY} r={R.NATAL_R + 40} 
+            fill="none" stroke="rgba(212, 160, 23, 0.08)" strokeWidth="90" 
+          />
+          <text x={CX} y={CY - R.NATAL_R - 55} textAnchor="middle" fontSize="30" fill="rgba(212, 160, 23, 0.6)" fontWeight="black" className="uppercase tracking-[0.5em]">
+            Radice Immutabile (Natale)
+          </text>
 
-        {/* ── 12 Segni Zodiacali ── */}
-        {ZODIAC.map((sign, i) => {
-          const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
-          const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, mid, rotationOffset)
-          return (
-            <g key={sign.name}>
-              <path 
-                d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1, rotationOffset)}
-                fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"
-              />
-              <text 
-                x={symPos.x} y={symPos.y + 5} 
-                textAnchor="middle" dominantBaseline="central"
-                fontSize="60" fill={sign.color} fillOpacity="0.6"
-              >
-                {sign.symbol}
-              </text>
-            </g>
-          )
-        })}
-
-        {/* ── Griglia Case Natali ── */}
-        {houses.map(h => {
-          const p1 = toXY(R.INNER, h.lon_assoluta, rotationOffset)
-          const p2 = toXY(R.SIGN_IN, h.lon_assoluta, rotationOffset)
-          return (
-            <line 
-              key={h.numero}
-              x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
-              stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="5 5"
-            />
-          )
-        })}
-
-        {/* ── Linee Transiti (Aspetti attivi tra esterno ed interno) ── */}
-        {transitAspects.map((asp, idx) => {
-          const nP = natalPlanets.find(p => p.nome === asp.p1)
-          const tP = transitPlanets.find(p => p.nome === asp.p2)
-          if (!nP || !tP) return null
-          
-          const posN = toXY(R.NATAL_R, nP.lon_assoluta, rotationOffset)
-          const posT = toXY(R.TRANSIT_R, tP.lon_assoluta, rotationOffset)
-          
-          let color = '#fff'
-          if (asp.type === 'Quadrato' || asp.type === 'Opposizione') color = '#ef4444'
-          if (asp.type === 'Trigono' || asp.type === 'Sestile') color = '#3b82f6'
-          if (asp.type === 'Congiunzione') color = '#fbbf24'
-
-          return (
-            <line
-              key={idx}
-              x1={posN.x} y1={posN.y} x2={posT.x} y2={posT.y}
-              stroke={color} strokeWidth="3" strokeOpacity={asp.precision * 0.6}
-              filter="url(#glow-p)"
-            />
-          )
-        })}
-
-        {/* ── Pianeti Natali (Anello Interno) ── */}
-        {natalPlanets.map(p => {
-          const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
-          const pos = toXY(R.NATAL_R, p.lon_assoluta, rotationOffset)
-          const glyph = BODY_GLYPHS[p.nome] || '●'
-          const isHov = hovered?.name === p.nome && hovered?.type === 'natal'
-
-          return (
-            <g key={`natal-${p.nome}`} onMouseEnter={() => setHovered({name: p.nome, type: 'natal'})} onMouseLeave={() => setHovered(null)}>
-              <circle cx={pos.x} cy={pos.y} r="15" fill={info.color} fillOpacity="0.4" />
-              <text 
-                x={pos.x} y={pos.y + 2} textAnchor="middle" dominantBaseline="middle"
-                fontSize="40" fill={info.color} filter={isHov ? 'url(#glow-p)' : ''}
-              >
-                {glyph}
-              </text>
-            </g>
-          )
-        })}
-
-        {/* ── Pianeti in Transito (Anello Esterno) ── */}
-        {transitPlanets.map(p => {
-          const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
-          const pos = toXY(R.TRANSIT_R, p.lon_assoluta, rotationOffset)
-          const glyph = BODY_GLYPHS[p.nome] || '●'
-          const isHov = hovered?.name === p.nome && hovered?.type === 'transit'
-
-          return (
-            <g key={`transit-${p.nome}`} onMouseEnter={() => setHovered({name: p.nome, type: 'transit'})} onMouseLeave={() => setHovered(null)}>
-              <circle cx={pos.x} cy={pos.y} r="20" fill="none" stroke={info.color} strokeWidth="2" strokeDasharray="2 2" />
-              <text 
-                x={pos.x} y={pos.y + 2} textAnchor="middle" dominantBaseline="middle"
-                fontSize="45" fill={info.color} filter={isHov ? 'url(#glow-p)' : ''}
-              >
-                {glyph}
-              </text>
-              {isHov && (
-                <text x={pos.x} y={pos.y - 35} textAnchor="middle" fontSize="24" fill="#fff" fontWeight="bold">
-                  {p.nome} OGGI
+          {/* ── 12 Segni Zodiacali ── */}
+          {ZODIAC.map((sign, i) => {
+            const lon0 = i * 30; const lon1 = lon0 + 30; const mid = lon0 + 15
+            const symPos = toXY((R.SIGN_OUT + R.SIGN_IN) / 2, mid, rotationOffset)
+            return (
+              <g key={sign.name}>
+                <path 
+                  d={arcPath(R.SIGN_OUT, R.SIGN_IN, lon0, lon1, rotationOffset)}
+                  fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"
+                />
+                <text 
+                  x={symPos.x} y={symPos.y + 5} 
+                  textAnchor="middle" dominantBaseline="central"
+                  fontSize="60" fill={sign.color} fillOpacity="0.6"
+                >
+                  {sign.symbol}
                 </text>
-              )}
-            </g>
-          )
-        })}
+              </g>
+            )
+          })}
 
-        {/* Centro Ruota */}
-        <circle cx={CX} cy={CY} r={R.INNER} fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-        <text 
-          x={CX} y={CY} textAnchor="middle" dominantBaseline="middle"
-          fontSize="40" fill="white" fillOpacity="0.2" fontWeight="bold"
-        >
-          TRANSITI
-        </text>
-      </svg>
+          {/* ── Griglia Case Natali ── */}
+          {houses.map(h => {
+            const p1 = toXY(R.INNER, h.lon_assoluta, rotationOffset)
+            const p2 = toXY(R.SIGN_IN, h.lon_assoluta, rotationOffset)
+            return (
+              <line 
+                key={h.numero}
+                x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+                stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="5 5"
+              />
+            )
+          })}
+
+          {/* ── Linee Transiti (Aspetti attivi tra esterno ed interno) ── */}
+          {transitAspects.map((asp, idx) => {
+            const nP = natalPlanets.find(p => p.nome === asp.p1)
+            const tP = transitPlanets.find(p => p.nome === asp.p2)
+            if (!nP || !tP) return null
+            
+            const posN = toXY(R.NATAL_R, nP.lon_assoluta, rotationOffset)
+            const posT = toXY(R.TRANSIT_R, tP.lon_assoluta, rotationOffset)
+            
+            let color = '#fff'
+            if (asp.type === 'Quadrato' || asp.type === 'Opposizione') color = '#ef4444'
+            if (asp.type === 'Trigono' || asp.type === 'Sestile') color = '#3b82f6'
+            if (asp.type === 'Congiunzione') color = '#fbbf24'
+
+            return (
+              <line
+                key={idx}
+                x1={posN.x} y1={posN.y} x2={posT.x} y2={posT.y}
+                stroke={color} strokeWidth="3" strokeOpacity={asp.precision * 0.6}
+                filter="url(#glow-p)"
+              />
+            )
+          })}
+
+          {/* ── Pianeti Natali (Anello Interno) ── */}
+          {natalPlanets.map(p => {
+            const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
+            const pos = toXY(R.NATAL_R, p.lon_assoluta, rotationOffset)
+            const glyph = BODY_GLYPHS[p.nome] || '●'
+            const isHov = hovered?.name === p.nome && hovered?.type === 'natal'
+
+            return (
+              <g key={`natal-${p.nome}`} onMouseEnter={() => setHovered({name: p.nome, type: 'natal'})} onMouseLeave={() => setHovered(null)}>
+                <circle cx={pos.x} cy={pos.y} r="15" fill={info.color} fillOpacity="0.4" />
+                <text 
+                  x={pos.x} y={pos.y + 2} textAnchor="middle" dominantBaseline="middle"
+                  fontSize="40" fill={info.color} filter={isHov ? 'url(#glow-p)' : ''}
+                >
+                  {glyph}
+                </text>
+              </g>
+            )
+          })}
+
+          {/* ── Pianeti in Transito (Anello Esterno) ── */}
+          {transitPlanets.map(p => {
+            const info = BODY_INFO_STATIC[p.nome]; if (!info) return null
+            const pos = toXY(R.TRANSIT_R, p.lon_assoluta, rotationOffset)
+            const glyph = BODY_GLYPHS[p.nome] || '●'
+            const isHov = hovered?.name === p.nome && hovered?.type === 'transit'
+
+            return (
+              <g key={`transit-${p.nome}`} onMouseEnter={() => setHovered({name: p.nome, type: 'transit'})} onMouseLeave={() => setHovered(null)}>
+                <circle cx={pos.x} cy={pos.y} r="20" fill="none" stroke={info.color} strokeWidth="2" strokeDasharray="2 2" />
+                <text 
+                  x={pos.x} y={pos.y + 2} textAnchor="middle" dominantBaseline="middle"
+                  fontSize="45" fill={info.color} filter={isHov ? 'url(#glow-p)' : ''}
+                >
+                  {glyph}
+                </text>
+                {isHov && (
+                  <text x={pos.x} y={pos.y - 35} textAnchor="middle" fontSize="24" fill="#fff" fontWeight="bold">
+                    {p.nome} OGGI
+                  </text>
+                )}
+              </g>
+            )
+          })}
+
+          {/* Centro Ruota */}
+          <circle cx={CX} cy={CY} r={R.INNER} fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+          <text 
+            x={CX} y={CY} textAnchor="middle" dominantBaseline="middle"
+            fontSize="40" fill="white" fillOpacity="0.2" fontWeight="bold"
+          >
+            TRANSITI
+          </text>
+        </svg>
+      </div>
+
+      {/* ── Legenda Astrale ── */}
+      <div className="flex-1 w-full max-w-sm mystical-card bg-white/[0.02] border-white/5 p-6 h-fit self-start lg:mt-12">
+         <h4 className="font-serif text-lg text-white mb-6 flex items-center gap-2">
+            <span className="text-xl">📜</span> Simbolismo Celeste
+         </h4>
+         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {Object.keys(BODY_GLYPHS).map(name => {
+               const glyph = BODY_GLYPHS[name]
+               const color = BODY_INFO_STATIC[name]?.color || '#fff'
+               return (
+                  <div key={name} className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.03] hover:bg-white/5 transition-colors group">
+                     <span className="text-2xl w-8 text-center" style={{ color }}>{glyph}</span>
+                     <span className="text-xs text-white/60 group-hover:text-white transition-colors">{name}</span>
+                  </div>
+               )
+            })}
+         </div>
+         <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
+            <div className="flex items-center gap-3">
+               <div className="w-3 h-3 rounded-full bg-gold-500/20 border border-gold-500/50" />
+               <p className="text-[10px] text-white/40 uppercase tracking-widest leading-none">Anello Interno: Radice Natale</p>
+            </div>
+            <div className="flex items-center gap-3">
+               <div className="w-3 h-3 rounded-full border border-blue-400 border-dashed" />
+               <p className="text-[10px] text-white/40 uppercase tracking-widest leading-none">Anello Esterno: Transiti Oggi</p>
+            </div>
+         </div>
+      </div>
     </div>
   )
 }

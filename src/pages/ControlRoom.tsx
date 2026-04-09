@@ -10,6 +10,7 @@ import {
 import { isPrivilegedClerkUser } from '../lib/privilegedUser'
 import { getApiBaseUrl } from '../constants/api'
 import StaffLayout from '../components/dashboard/StaffLayout'
+import { useAstrologyApi } from '../api/astrology'
 
 /** Portale azioni rapide: Meeting / appuntamenti programmati . */
 const AGEND_TITLE = 'Agenda Valeria'
@@ -112,6 +113,14 @@ export default function ControlRoom() {
   const [internalOverrides, setInternalOverrides] = useState<InternalOverride[]>([])
   const [internalLoading, setInternalLoading] = useState(false)
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1)
+  
+  const [pendingCharts, setPendingCharts] = useState<any[]>([])
+  const [pendingHoros, setPendingHoros] = useState<any[]>([])
+  const [editingHoro, setEditingHoro] = useState<any | null>(null)
+  const [editingHoroText, setEditingHoroText] = useState('')
+  const [editingHoroEnergy, setEditingHoroEnergy] = useState(60)
+
+  const { getLatestHoroscope, approveHoroscope } = useAstrologyApi()
 
   // Helper date
   const weekInfo = useMemo(() => {
@@ -139,6 +148,17 @@ export default function ControlRoom() {
       w2Start: currentWeekNum === 2 ? startOfThisWeek : startOfNextWeek
     }
   }, [])
+
+  const loadPendingAnalyses = useCallback(async () => {
+    if (!apiConfigured) return
+    try {
+      const res = await apiJson<{ pendingCharts: any[], pendingHoroscopes: any[] }>(getToken, '/api/astrology/staff/pending')
+      setPendingCharts(res.pendingCharts ?? [])
+      setPendingHoros(res.pendingHoroscopes ?? [])
+    } catch (e) {
+      console.error('[loadPendingAnalyses]', e)
+    }
+  }, [getToken, apiConfigured])
 
   const loadInternalAvailability = useCallback(async () => {
     if (!apiConfigured) return
@@ -200,9 +220,9 @@ export default function ControlRoom() {
       navigate('/area-personale', { replace: true })
       return
     }
-    void loadList()
     void loadInternalAvailability()
-  }, [isLoaded, user, navigate, loadList, loadInternalAvailability])
+    void loadPendingAnalyses()
+  }, [isLoaded, user, navigate, loadList, loadInternalAvailability, loadPendingAnalyses])
 
   useEffect(() => {
     if (!selectedId) {
@@ -244,7 +264,24 @@ export default function ControlRoom() {
     } catch (e) {
       setDetailError(e instanceof ApiError ? String(e.message) : 'Salvataggio nota fallito')
     } finally {
-      setNoteSaving(false)
+      setDetailLoading(false)
+    }
+  }
+
+  const handleApproveHoro = async () => {
+    if (!editingHoro) return
+    try {
+      await approveHoroscope({
+        id: editingHoro.id,
+        forecast_text: editingHoroText,
+        energy_level: editingHoroEnergy,
+        lucky_days: []
+      })
+      setEditingHoro(null)
+      void loadPendingAnalyses()
+      alert("Oroscopo inviato con successo!")
+    } catch (err: any) {
+      alert(err.message || "Errore durante l'invio")
     }
   }
 
@@ -479,6 +516,98 @@ export default function ControlRoom() {
                   <button type="submit" className="col-span-2 btn-gold text-[10px] py-2 mt-2">Aggiungi Regola</button>
                 </form>
               </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ── NUOVO: Laboratorio Astrale (Pianeti e Mentore) ── */}
+        <motion.section
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mystical-card border-indigo-500/20 bg-indigo-500/5 mb-8"
+        >
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="font-serif text-2xl text-white flex items-center gap-3">
+                <span className="text-3xl">🔭</span> Laboratorio Astrale
+              </h2>
+              <p className="text-white/45 text-sm mt-1">Gestione Temi Natali e Mentore Silente in attesa di responso</p>
+            </div>
+            <button 
+              onClick={loadPendingAnalyses}
+              className="text-[10px] uppercase tracking-widest text-indigo-400 hover:text-white transition-colors"
+            >
+              Aggiorna Richieste
+            </button>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Sezione Oroscopi (Mentore Silente) */}
+            <div className="space-y-4">
+              <h3 className="text-xs uppercase tracking-[0.2em] font-black text-indigo-300/60 mb-2">Mentore Silente (Oroscopi)</h3>
+              {pendingHoros.length === 0 ? (
+                <div className="p-8 text-center bg-white/[0.02] border border-white/5 rounded-2xl italic text-white/20 text-xs">
+                  Tutti i Mentori sono svegli e al lavoro.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pendingHoros.map(h => (
+                    <div key={h.id} className="p-4 rounded-xl bg-indigo-900/20 border border-indigo-500/30 flex items-center justify-between group">
+                       <div>
+                          <p className="text-white font-serif text-lg leading-none mb-1">{h.clerk_user_id.substring(0, 12)}...</p>
+                          <p className="text-[10px] text-white/40 uppercase tracking-widest">
+                            Richiesto il {new Date(h.created_at).toLocaleDateString()}
+                          </p>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <span className="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-bold uppercase tracking-widest">In attesa</span>
+                          <button 
+                            onClick={() => {
+                               setEditingHoro(h)
+                               setEditingHoroText('')
+                               setEditingHoroEnergy(60)
+                            }}
+                            className="p-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg transition-all"
+                          >
+                             ✍️
+                          </button>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sezione Temi Natali */}
+            <div className="space-y-4">
+               <h3 className="text-xs uppercase tracking-[0.2em] font-black text-gold-300/60 mb-2">Temi Natali Completi</h3>
+               {pendingCharts.length === 0 ? (
+                <div className="p-8 text-center bg-white/[0.02] border border-white/5 rounded-2xl italic text-white/20 text-xs">
+                  Nessuna mappa astrale da disegnare.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pendingCharts.map(c => (
+                    <div key={c.id} className="p-4 rounded-xl bg-gold-900/20 border border-gold-500/30 flex items-center justify-between">
+                       <div>
+                          <p className="text-white font-serif text-lg leading-none mb-1">{c.birth_city}</p>
+                          <p className="text-[10px] text-white/40 uppercase tracking-widest">
+                            {c.birth_date} • {c.birth_time}
+                          </p>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <span className="text-[9px] bg-gold-500/20 text-gold-300 px-2 py-0.5 rounded-full border border-gold-500/30 font-bold uppercase tracking-widest">{c.status}</span>
+                          <button 
+                             onClick={() => {/* TODO: Aprire editor tema natale */}}
+                             className="p-2 bg-gold-500 hover:bg-gold-400 text-black rounded-lg transition-all"
+                          >
+                             🔭
+                          </button>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </motion.section>
@@ -787,6 +916,59 @@ export default function ControlRoom() {
           </motion.section>
         </div>
       </div>
+
+      {/* ── MODALE EDITOR OROSCOPO (Valeria Scrive) ── */}
+      {editingHoro && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.9, y: 20 }}
+             animate={{ opacity: 1, scale: 1, y: 0 }}
+             className="w-full max-w-2xl bg-[#0a0a10] border border-indigo-500/30 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(99,102,241,0.15)] flex flex-col"
+           >
+              <div className="p-6 bg-indigo-500/10 border-b border-indigo-500/20 flex items-center justify-between">
+                 <div>
+                    <h3 className="font-serif text-xl text-white">Laboratorio Oroscopo</h3>
+                    <p className="text-[10px] text-indigo-300/60 uppercase tracking-widest mt-1">Risveglio della Mentore Silente</p>
+                 </div>
+                 <button onClick={() => setEditingHoro(null)} className="text-white/40 hover:text-white">✕</button>
+              </div>
+              
+              <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar max-h-[70vh]">
+                 <div>
+                    <label className="block text-[10px] text-indigo-300 font-black uppercase tracking-widest mb-3">Messaggio per l'Utente</label>
+                    <textarea 
+                       value={editingHoroText}
+                       onChange={(e) => setEditingHoroText(e.target.value)}
+                       placeholder="Scrivi qui la guida settimanale di Valeria..."
+                       rows={10}
+                       className="w-full bg-black/40 border border-indigo-500/20 rounded-2xl p-4 text-sm text-indigo-100 placeholder:text-indigo-900/40 focus:border-indigo-500 outline-none transition-all resize-none"
+                    />
+                 </div>
+                 
+                 <div className="grid grid-cols-2 gap-8">
+                    <div>
+                       <label className="block text-[10px] text-indigo-300 font-black uppercase tracking-widest mb-3 text-center">Livello Energia (0-100)</label>
+                       <input 
+                          type="range" min="0" max="100" 
+                          value={editingHoroEnergy}
+                          onChange={(e) => setEditingHoroEnergy(parseInt(e.target.value))}
+                          className="w-full accent-indigo-500 appearance-none bg-indigo-900/20 h-1.5 rounded-full"
+                       />
+                       <p className="text-center mt-2 text-xl font-serif text-indigo-200">{editingHoroEnergy}%</p>
+                    </div>
+                    <div className="flex items-center justify-center">
+                       <button 
+                         onClick={handleApproveHoro}
+                         className="mystical-button w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:scale-105 transition-transform"
+                       >
+                          ✨ Pubblica Responso
+                       </button>
+                    </div>
+                 </div>
+              </div>
+           </motion.div>
+        </div>
+      )}
     </StaffLayout>
   )
 }

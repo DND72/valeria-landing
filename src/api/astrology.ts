@@ -141,6 +141,12 @@ export function useAstrologyApi() {
     getPendingCharts: async (): Promise<{ pendingCharts: any[], pendingHoroscopes: any[] }> => {
       return authFetch('/api/astrology/staff/pending')
     },
+    approveHoroscope: async (data: { id: string; forecast_text: string; energy_level: number; lucky_days: string[] }): Promise<{ success: boolean }> => {
+      return authFetch('/api/astrology/staff/horoscope/approve', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+    },
     approveChart: async (chartId: string | number, type: 'chart' | 'horoscope' = 'chart'): Promise<{ success: boolean }> => {
       return authFetch('/api/astrology/staff/approve', {
         method: 'POST',
