@@ -17,8 +17,8 @@ const CORE_LINKS = [
 const ASTRO_LINKS = [
   { to: '/area-personale/tema-natale', label: 'Tema Natale Free', emoji: '✨' },
   { to: '/area-personale/i-miei-temi', label: 'Mappe Astrali (Premium)', emoji: '🌌' },
-  { to: '/area-personale#bi-wheel', label: 'Bi-Wheel', emoji: '🧬' },
-  { to: '/area-personale#mentore', label: 'La Mentore Silente', emoji: '🧠' },
+  { to: '/area-personale/bi-wheel', label: 'Bi-Wheel', emoji: '🧬' },
+  { to: '/area-personale/mentore', label: 'La Mentore Silente', emoji: '🧠' },
 ]
 
 const EXPLORE_LINKS = [

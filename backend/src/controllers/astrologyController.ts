@@ -640,9 +640,9 @@ export const getLatestHoroscope = async (req: Request, res: Response): Promise<v
   try {
     const { pool } = await import('../db.js')
     const { rows } = await pool.query(
-      `SELECT forecast_text, lucky_days, energy_level, start_date, end_date, status
+      `SELECT id, forecast_text, lucky_days, energy_level, start_date, end_date, status
        FROM user_horoscopes 
-       WHERE clerk_user_id = $1 AND status = 'ready'
+       WHERE clerk_user_id = $1
        ORDER BY created_at DESC LIMIT 1`,
       [userId]
     )

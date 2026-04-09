@@ -40,6 +40,8 @@ import RouteErrorBoundary from './components/RouteErrorBoundary'
 import StaffGuard from './components/StaffGuard'
 import Breadcrumbs from './components/Breadcrumbs'
 import LiveSessionPage from './pages/LiveSessionPage'
+import BiWheelPage from './pages/dashboard/BiWheelPage'
+import MentorePage from './pages/dashboard/MentorePage'
 
 function HomePage() {
   return (
@@ -102,6 +104,8 @@ function AppRoutes() {
             <Route path="/area-personale/tema-natale" element={<NatalChartPage />} />
             <Route path="/area-personale/i-miei-temi" element={<PaidNatalCharts />} />
             <Route path="/area-personale/i-miei-consulti" element={<MyConsultsPage />} />
+            <Route path="/area-personale/bi-wheel" element={<BiWheelPage />} />
+            <Route path="/area-personale/mentore" element={<MentorePage />} />
             <Route path="/cielo" element={<CurrentSkyPage />} />
 
             <Route path="/sessione/:id" element={<LiveSessionPage />} />
