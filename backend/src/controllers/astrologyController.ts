@@ -105,10 +105,11 @@ export const generatePaidChart = async (req: Request, res: Response): Promise<vo
         if (rows.length === 0) { await dbClient.query('ROLLBACK'); res.status(400).json({ error: 'insufficient_funds' }); return; }
         await dbClient.query(`INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, 'natal_chart_advanced')`, [userId, -cost])
       } else { await dbClient.query(`INSERT INTO wallets (clerk_user_id, balance_available, balance_locked, updated_at) VALUES ($1, 0, 0, now()) ON CONFLICT (clerk_user_id) DO NOTHING`, [userId]) }
-      const ins = await dbClient.query(`INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`, [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation, isStaff ? 'ready' : 'pending_staff'])
+      // Valeria non deve più validare: status passa subito a 'ready'
+      const ins = await dbClient.query(`INSERT INTO natal_charts (clerk_user_id, chart_type, birth_date, birth_time, city, gender, chart_data, interpretation, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`, [userId, 'advanced', birthDate, birthTime, city, gender, chartData, interpretation, 'ready'])
       await dbClient.query('COMMIT')
       if (!isStaff) notifyStaff(tg.newAdvancedChart(userId)).catch(() => {})
-      res.json({ ...chartData, id: ins.rows[0].id, interpretation, chart_type: 'advanced', status: isStaff ? 'ready' : 'pending_staff' })
+      res.json({ ...chartData, id: ins.rows[0].id, interpretation, chart_type: 'advanced', status: 'ready' })
     } catch (e) { await dbClient.query('ROLLBACK'); throw e } finally { dbClient.release() }
   } catch (error: any) { res.status(500).json({ error: error.message || 'Internal error' }) }
 }
@@ -140,6 +141,7 @@ export const calculateSynastry = async (req: Request, res: Response): Promise<vo
      const interAspects = calculateTransits(chartA.pianeti, chartB.pianeti)
      const nameA = personA.name || 'A'
      const nameB = personB.name || 'B'
+     
      if (isPreview) {
         const wallet = await pool.query(`SELECT free_synastry_used FROM wallets WHERE clerk_user_id = $1`, [userId])
         if (wallet.rows[0]?.free_synastry_used) {
@@ -152,24 +154,33 @@ export const calculateSynastry = async (req: Request, res: Response): Promise<vo
         res.json({ status: 'ready', chartA, chartB, interAspects, interpretation: interp, is_preview: true })
         return
      }
+
      const exist = await pool.query(`SELECT id, status, interpretation FROM synastry_reports WHERE clerk_user_id = $1 AND person_a_data->>'birthDate' = $2 AND person_b_data->>'birthDate' = $3`, [userId, personA.birthDate, personB.birthDate])
      if (exist.rows.length > 0) {
-        res.json({ id: exist.rows[0].id, status: exist.rows[0].status, interpretation: exist.rows[0].status === 'ready' ? exist.rows[0].interpretation : null, isExisting: true })
+        res.json({ id: exist.rows[0].id, status: exist.rows[0].status, interpretation: exist.rows[0].interpretation, isExisting: true })
         return
      }
-     const cost = 30; const bal = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
+
+     // Tiered Pricing: 30 CR per il primo, 15 CR per i successivi
+     const countRes = await pool.query(`SELECT count(*)::int as total FROM synastry_reports WHERE clerk_user_id = $1`, [userId])
+     const cost = countRes.rows[0].total === 0 ? 30 : 15
+     
+     const bal = await pool.query(`SELECT balance_available FROM wallets WHERE clerk_user_id = $1`, [userId])
      if (!bal.rows[0] || bal.rows[0].balance_available < cost) { res.status(400).json({ error: 'insufficient_funds' }); return; }
+     
      const { generateSynastryInterpretation } = await import('../lib/gemini.js')
      const interp = await generateSynastryInterpretation(chartA, chartB, interAspects, personA.gender, personB.gender, nameA, nameB)
 
      const dbClient = await pool.connect()
      try {
-       await dbClient.query('BEGIN'); await dbClient.query(`UPDATE wallets SET balance_available = balance_available - $1 WHERE clerk_user_id = $2`, [cost, userId])
+       await dbClient.query('BEGIN')
+       await dbClient.query(`UPDATE wallets SET balance_available = balance_available - $1 WHERE clerk_user_id = $2`, [cost, userId])
        await dbClient.query(`INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type) VALUES ($1, $2, 'synastry_report')`, [userId, -cost])
-       const ins = await dbClient.query(`INSERT INTO synastry_reports (clerk_user_id, person_a_data, person_b_data, chart_a, chart_b, inter_aspects, interpretation, status) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending_staff') RETURNING id`, [userId, personA, personB, chartA, chartB, interAspects, interp])
+       // Valeria non deve più validare: status passa subito a 'ready'
+       const ins = await dbClient.query(`INSERT INTO synastry_reports (clerk_user_id, person_a_data, person_b_data, chart_a, chart_b, inter_aspects, interpretation, status) VALUES ($1, $2, $3, $4, $5, $6, $7, 'ready') RETURNING id`, [userId, personA, personB, chartA, chartB, interAspects, interp])
        await dbClient.query('COMMIT')
        notifyStaff(tg.newSynastry(userId)).catch(() => {})
-       res.json({ id: ins.rows[0].id, status: 'pending_staff' })
+       res.json({ id: ins.rows[0].id, status: 'ready', interpretation: interp })
      } catch (e) { await dbClient.query('ROLLBACK'); throw e } finally { dbClient.release() }
    } catch (_error) { res.status(500).json({ error: 'Internal error' }) }
 }
