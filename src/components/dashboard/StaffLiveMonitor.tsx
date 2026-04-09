@@ -21,20 +21,23 @@ export default function StaffLiveMonitor() {
 
   const loadLive = useCallback(async () => {
     try {
-      const all = await apiJson<Consult[]>(getToken, '/api/staff/consults')
+      const res = await apiJson<{ consults: Consult[] }>(getToken, '/api/staff/consults')
+      const all = res.consults || []
+      
       const now = new Date()
-      const today = now.toISOString().split('T')[0]
+      // Definiamo "oggi" come la data locale YYYY-MM-DD
+      const localToday = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0]
       
       const filtered = all.filter(c => {
          if (c.status === 'cancelled' || c.status === 'done') return false
-         // Se è in attesa o in corso, mostralo SEMPRE, a prescindere dalla data
+         // Se è in attesa o in corso, mostralo SEMPRE
          if (c.status === 'client_waiting' || c.status === 'in_progress') return true
          
-         const isToday = c.start_at?.startsWith(today)
+         const isToday = c.start_at?.startsWith(localToday)
          return isToday
       }).sort((a,b) => {
-         if (a.status === 'client_waiting') return -1
-         if (b.status === 'client_waiting') return 1
+         if (a.status === 'client_waiting' && b.status !== 'client_waiting') return -1
+         if (b.status === 'client_waiting' && a.status !== 'client_waiting') return 1
          return new Date(a.start_at).getTime() - new Date(b.start_at).getTime()
       })
       

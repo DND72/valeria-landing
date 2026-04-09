@@ -227,7 +227,8 @@ export function createStaffRouter(pool: Pool): Router {
                 c.meeting_join_url, c.meeting_provider, 
                 COALESCE(c.invitee_email, bp.email_normalized) as invitee_email, 
                 COALESCE(c.invitee_name, bp.first_name || ' ' || bp.last_name, bp.email_normalized) as invitee_name,
-                c.start_at, c.end_at, c.paypal_order_id, c.calendly_event_name, c.created_at, c.updated_at
+                c.start_at, c.end_at, c.paypal_order_id, c.calendly_event_name, c.created_at, c.updated_at,
+                c.consult_kind
          FROM consults c
          LEFT JOIN client_billing_profiles bp ON c.clerk_user_id = bp.clerk_user_id
          ORDER BY c.start_at DESC NULLS LAST, c.created_at DESC
