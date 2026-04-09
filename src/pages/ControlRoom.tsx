@@ -1037,13 +1037,12 @@ export default function ControlRoom() {
                  </div>
 
                  <div className="flex items-center justify-center pt-6">
-                       <button 
-                         onClick={handleApproveHoro}
-                         className="mystical-button w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:scale-105 transition-transform"
-                       >
-                          ✨ Pubblica Responso
-                       </button>
-                    </div>
+                    <button 
+                      onClick={handleApproveHoro}
+                      className="mystical-button w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:scale-105 transition-transform"
+                    >
+                       ✨ Pubblica Responso
+                    </button>
                  </div>
               </div>
            </motion.div>
