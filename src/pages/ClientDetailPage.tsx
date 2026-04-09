@@ -240,22 +240,35 @@ export default function ClientDetailPage() {
     }
   }
 
-  const grantBonus = async () => {
+  const grantBonus = async (presetAmount?: number, presetLabel?: string, presetMessage?: string) => {
     if (!apiConfigured || !email) return
-    const amountStr = window.prompt("Quanti crediti vuoi regalare a questo cliente senza farli pagare? (Esibizione promozionale)")
-    if (!amountStr) return
-    const amount = parseInt(amountStr, 10)
-    if (isNaN(amount) || amount <= 0) {
+    
+    let amount = presetAmount
+    let label = presetLabel || 'Staff Bonus'
+
+    if (!amount) {
+      const amountStr = window.prompt("Quanti crediti vuoi regalare a questo cliente senza farli pagare? (Esibizione promozionale)")
+      if (!amountStr) return
+      amount = parseInt(amountStr, 10)
+    }
+
+    if (!amount || isNaN(amount) || amount <= 0) {
       alert("Importo non valido. Inserire un numero intero maggiore di zero.")
       return
     }
-    if (!window.confirm(`Stai per regalare ${amount} CR a ${data?.displayName || email}. Confermi?`)) return
+
+    const confirmMsg = presetMessage 
+      ? `Stai per accreditare "${presetLabel}" (${amount} CR) con il messaggio:\n\n"${presetMessage}"\n\nConfermi?`
+      : `Stai per regalare ${amount} CR a ${data?.displayName || email}. Confermi?`
+
+    if (!window.confirm(confirmMsg)) return
+    
     try {
       await apiJson(getToken, '/api/staff/clients/bonus', {
         method: 'POST',
-        body: JSON.stringify({ email, amount }),
+        body: JSON.stringify({ email, amount, label_override: label }),
       })
-      alert(`Bonus di ${amount} CR erogato con successo nel portafoglio di ${data?.displayName || email}!`)
+      alert(`🎉 Dono "${label}" di ${amount} CR erogato con successo!`)
       await load()
     } catch (e: any) {
       alert("Errore nell'erogazione del bonus: " + (e.message || "Riprovare."))
@@ -490,9 +503,29 @@ export default function ClientDetailPage() {
                 <h2 className="font-serif text-lg text-gold-400 flex items-center gap-2">
                   <span className="text-xl">💳</span> Portafoglio Virtuale (Wallet)
                 </h2>
-                <button onClick={grantBonus} className="btn-gold text-xs px-3 py-1.5 whitespace-nowrap">
-                  🎁 Regala Bonus
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button 
+                    onClick={() => grantBonus(30, "Dono: La Cometa", "La cometa è appena apparsa sul tuo cielo, ti porta un bonus di 30 crediti per il prossimo consulto.")} 
+                    className="bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] px-3 py-1.5 rounded-lg transition-all"
+                  >
+                    ☄️ Cometa (30)
+                  </button>
+                  <button 
+                    onClick={() => grantBonus(50, "Dono: Una Stella", "Una Stella brilla nel tuo Diario: il cosmo ti omaggia con 50 crediti per illuminare il tuo cammino.")} 
+                    className="bg-gold-500/10 hover:bg-gold-500/20 border border-gold-500/30 text-gold-300 text-[10px] px-3 py-1.5 rounded-lg transition-all"
+                  >
+                    ⭐ Stella (50)
+                  </button>
+                  <button 
+                    onClick={() => grantBonus(100, "Dono: Costellazione", "Una Costellazione di opportunità: 100 crediti bonus accreditati per le tue mappe astrali.")} 
+                    className="bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] px-3 py-1.5 rounded-lg transition-all"
+                  >
+                    🌌 Costellazione (100)
+                  </button>
+                  <button onClick={() => grantBonus()} className="text-[10px] text-white/30 hover:text-white/60 px-2 py-1.5 transition-all">
+                    Custom...
+                  </button>
+                </div>
               </div>
 
               {data.wallet ? (
