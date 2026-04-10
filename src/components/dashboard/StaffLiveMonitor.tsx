@@ -12,6 +12,7 @@ interface Consult {
   invitee_email: string | null
   consult_kind: string
   meeting_join_url: string | null
+  status_billing?: string
 }
 
 export default function StaffLiveMonitor() {
@@ -29,9 +30,11 @@ export default function StaffLiveMonitor() {
       const localToday = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0]
       
       const filtered = all.filter(c => {
-         if (c.status === 'cancelled' || c.status === 'done') return false
+         const s = (c.status || '').toLowerCase()
+         if (s === 'cancelled' || s === 'done' || c.status_billing === 'billed') return false
+         
          // Se è in attesa o in corso, mostralo SEMPRE
-         if (c.status === 'client_waiting' || c.status === 'in_progress') return true
+         if (s === 'client_waiting' || s === 'in_progress') return true
          
          const isToday = c.start_at?.startsWith(localToday)
          return isToday
@@ -146,8 +149,23 @@ export default function StaffLiveMonitor() {
                            onClick={() => handleReject(c.id)}
                            className="text-[10px] text-center text-red-400/60 hover:text-red-400 font-bold uppercase tracking-widest"
                          >
-                           Rifiuta Consulto ✕
+                           Annulla Consulto ✕
                          </button>
+                         {c.status === 'in_progress' && (
+                            <button 
+                               onClick={async () => {
+                                  if (window.confirm("Vuoi terminare e incassare ora?")) {
+                                     try {
+                                        await apiJson(getToken, `/api/staff/consults/${c.id}/claim`, { method: 'POST' })
+                                        void loadLive()
+                                     } catch (e: any) { alert(e.message || "Errore") }
+                                  }
+                               }}
+                               className="text-[10px] text-center bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition-all font-black uppercase tracking-widest mt-1"
+                            >
+                               Termina e Incassa 💰
+                            </button>
+                         )}
                       </div>
                     ) : (
                       <div className="flex flex-col gap-2">
@@ -170,6 +188,21 @@ export default function StaffLiveMonitor() {
                              >
                                 Modifica Link ✎
                              </button>
+                             {c.status === 'in_progress' && (
+                                <button 
+                                   onClick={async () => {
+                                      if (window.confirm("Vuoi terminare e incassare ora?")) {
+                                         try {
+                                            await apiJson(getToken, `/api/staff/consults/${c.id}/claim`, { method: 'POST' })
+                                            void loadLive()
+                                         } catch (e: any) { alert(e.message || "Errore") }
+                                      }
+                                   }}
+                                   className="text-[10px] text-center bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition-all font-black uppercase tracking-widest mt-1"
+                                >
+                                   Termina e Incassa 💰
+                                </button>
+                             )}
                            </div>
                          ) : (
                            <button 
