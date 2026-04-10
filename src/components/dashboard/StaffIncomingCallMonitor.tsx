@@ -27,9 +27,10 @@ export default function StaffIncomingCallMonitor() {
   useEffect(() => {
     if (!isStaff) return
 
-    // Sound initialization
-    audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2418/2418-preview.mp3')
+    // Professional digital chime, clear and non-human
+    audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3')
     audioRef.current.loop = true
+    audioRef.current.crossOrigin = "anonymous"
 
     const poll = async () => {
       if (waitingCall) return // Don't poll if we already have a call showing locally

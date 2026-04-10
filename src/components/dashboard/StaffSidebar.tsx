@@ -53,12 +53,17 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
     if (presenceSaving) return
 
     try {
-      const r = await apiJson<{ status: ValeriaPresenceStatus; has_waiting?: boolean }>(getToken, '/api/staff/presence')
+      // Per il segnale di "nuova richiesta", controlliamo l'elenco dei consulti in attesa
+      const consults = await apiJson<any[]>(getToken, '/api/staff/consults')
+      const waiting = consults?.some(c => c.status === 'client_waiting')
+      setHasNewRequest(!!waiting)
+
+      // Carichiamo anche la presenza
+      const r = await apiJson<{ status: ValeriaPresenceStatus }>(getToken, '/api/staff/presence')
       if (r.status) {
         setPresence(r.status)
         if (typeof window !== 'undefined') (window as any).__VALERIA_PRESENCE = r.status
       }
-      setHasNewRequest(!!r.has_waiting)
     } catch { /* ignore */ }
   }, [getToken, presenceSaving])
 

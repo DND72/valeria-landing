@@ -356,7 +356,7 @@ export default function LiveSessionPage() {
 
       {/* HEADER */}
       <header className={`relative z-50 h-20 shrink-0 px-6 flex items-center justify-between border-b backdrop-blur-3xl transition-all ${
-         theme === 'dark' ? 'border-white/5 bg-black/60' : 'border-dark-900/5 bg-white/70 shadow-sm'
+         theme === 'dark' ? 'border-white/10 bg-white/[0.03]' : 'border-dark-900/5 bg-white/70 shadow-sm'
       }`}>
          <div className="flex items-center gap-4">
             <div className="relative group cursor-pointer" onClick={() => isStaff && setShowEmojiPicker(!showEmojiPicker)}>
@@ -507,7 +507,7 @@ export default function LiveSessionPage() {
 
       {/* FOOTER INPUT */}
       <footer className={`relative z-50 p-6 shrink-0 backdrop-blur-3xl transition-all ${
-         theme === 'dark' ? 'bg-black/60 border-t border-white/10' : 'bg-white/95 border-t border-dark-900/5 shadow-inner'
+         theme === 'dark' ? 'bg-white/[0.02] border-t border-white/5' : 'bg-white/95 border-t border-dark-900/5 shadow-inner'
       }`}>
          <div className="max-w-4xl mx-auto flex flex-col gap-4">
             <AnimatePresence>
@@ -538,9 +538,9 @@ export default function LiveSessionPage() {
                         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSendMessage(e as any) }
                      }}
                      placeholder="Scrivi qui il tuo messaggio..."
-                     className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-xl ${
+                     className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-2xl ${
                         theme === 'dark' 
-                           ? 'bg-slate-800/90 border-white/20 text-white placeholder:text-white/80 focus:border-gold-500/80' 
+                           ? 'bg-white/[0.03] border-white/10 text-white placeholder:text-white/20 focus:border-gold-500/50' 
                            : 'bg-white border-dark-900/10 text-dark-900 placeholder:text-dark-900/40 focus:border-gold-600/60 shadow-inner'
                      }`}
                   />
