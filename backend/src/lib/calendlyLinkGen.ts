@@ -51,15 +51,12 @@ export async function getSingleUseCalendlyLink(token: string, kind: ConsultKind)
 function mapKindToCalendlySlug(kind: ConsultKind): string {
   // Valeria dovrà assicurarsi che i permalinks su Calendly abbiano esattamente queste estensioni
   const map: Record<ConsultKind, string> = {
-    rapido: 'rapido',
-    breve: 'breve',
-    completo: 'completo',
-    coaching_intro: 'coaching-intro',
-    coaching_30: 'coaching-30',
-    coaching_60: 'coaching-60',
-    coaching_pack5: 'coaching-pack5',
-    combo_light: 'combo-light',
-    combo_full: 'combo-full',
+    tarocchi_flash: 'tarocchi-flash',
+    tarocchi_prenotabile: 'tarocchi-prenotabile',
+    coaching_flash: 'coaching-flash',
+    coaching_prenotabile: 'coaching-prenotabile',
+    combo_flash: 'combo-flash',
+    combo_prenotabile: 'combo-prenotabile',
     free: 'free',
     chat_prenotabile: 'chat-prenotabile',
     chat_flash: 'chat-flash',

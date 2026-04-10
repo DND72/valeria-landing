@@ -13,7 +13,6 @@ import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
 import { registerStaffBookingRoutes } from './staffBooking.js'
 import { askLenormandMentor } from '../lib/lenormandRAG.js'
-import { CONSULT_META } from '../lib/consultPrices.js'
 
 const noteBody = z.object({
   body: z.string().min(1).max(20000),
