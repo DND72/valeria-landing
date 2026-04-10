@@ -59,8 +59,10 @@ export default function LiveSessionPage() {
   // ma mixkit 123 è solitamente una melodia corta. 
   // Proviamo un ambient loop più solido per il cliente.
   useEffect(() => {
-     audioRefs.current.waiting.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' // Melodia d'opera/mistica pulita
-     audioRefs.current.waiting.volume = 0.3
+     // Usiamo un brano ambient mistico di SoundHelix (Opera/Piano) - Molto più professionale del fruscio
+     audioRefs.current.waiting.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+     audioRefs.current.waiting.volume = 0.2
+     audioRefs.current.waiting.loop = true
   }, [])
 
   // Timer Sessione (sincronizzato con il backend)
@@ -148,30 +150,24 @@ export default function LiveSessionPage() {
 
           if (!isMounted) return
 
-          if (res.messages) {
-             const newMsgs = res.messages.map((m: any) => ({ 
-               ...m, 
-               timestamp: m.timestamp ? new Date(m.timestamp) : new Date() 
-             }))
-             setMessages(newMsgs)
-             // Se l'ultimo messaggio non è mio, suona
-             if (newMsgs.length > 0) {
-                const last = newMsgs[newMsgs.length-1]
-                const wasMe = last.role === (isStaff ? 'valeria' : 'client')
-                if (!wasMe && messages.length > 0 && newMsgs.length > messages.length) {
-                   void audioRefs.current.receive.play().catch(() => {})
-                }
-             }
-          }
+            const newMsgs = (res.messages || []).map((m: any) => ({ 
+              id: String(m.id || Date.now()),
+              role: m.role || 'client',
+              text: String(m.text || ''),
+              timestamp: m.timestamp ? new Date(m.timestamp) : new Date() 
+            }))
+            
+            // Suona se c'è un nuovo messaggio dall'altro
+            if (newMsgs.length > messages.length && messages.length > 0) {
+               const last = newMsgs[newMsgs.length - 1]
+               const wasMe = last.role === (isStaff ? 'valeria' : 'client')
+               if (!wasMe) {
+                  void audioRefs.current.receive.play().catch(() => {})
+               }
+            }
+            setMessages(newMsgs)
           if (res.typing) {
-             const oldTyping = otherIsTyping
-             const newTyping = isStaff ? res.typing.client : res.typing.staff
-             setOtherIsTyping(newTyping)
-             
-             // Se Valeria (staff) scrive al cliente, il cliente sente la magia
-             if (!isStaff && newTyping && !oldTyping) {
-                void audioRefs.current.magic.play().catch(() => {})
-             }
+             setOtherIsTyping(Boolean(isStaff ? res.typing.client : res.typing.staff))
           }
           if (res.sessionInfo) {
              setSessionInfo(res.sessionInfo)
@@ -335,6 +331,8 @@ export default function LiveSessionPage() {
     } selection:bg-gold-500/30`}>
       
       {/* BACKGROUND ELEMENTS (GALAXY) */}
+
+      {/* BACKGROUND ELEMENTS (GALAXY) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden surface-galaxy">
          <div className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${theme === 'dark' ? 'opacity-40' : 'opacity-10'} bg-[url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=2113&auto=format&fit=crop')]`} />
          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
@@ -359,12 +357,12 @@ export default function LiveSessionPage() {
                )}
             </div>
             <div>
-               <h1 className="text-sm font-serif font-black tracking-[0.2em] uppercase transition-colors">{displayName}</h1>
+               <h1 className="text-sm font-serif font-black tracking-[0.2em] uppercase transition-colors">{String(displayName)}</h1>
                <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${isAccepted ? 'bg-emerald-500 animate-pulse' : 'bg-gold-500'}`} />
-                  <span className="text-[10px] uppercase font-bold tracking-[0.1em] opacity-50 font-sans">
-                     {isAccepted ? 'In Sessione' : (isStaff ? 'Cliente in Attesa' : 'Frequenza in Connessione')}
-                  </span>
+                  <p className="text-[9px] uppercase font-black tracking-[0.3em] opacity-40">
+                  {String(isAccepted ? 'In Sessione' : (isStaff ? 'Cliente in Attesa' : 'Frequenza in Connessione'))}
+                </p>
                </div>
             </div>
          </div>
@@ -471,7 +469,7 @@ export default function LiveSessionPage() {
                                  <p className="text-[9px] uppercase font-black tracking-widest text-violet-500">Valeria Di Pace</p>
                               </div>
                            )}
-                           <p className="text-sm md:text-base leading-relaxed font-light whitespace-pre-wrap">{msg.text}</p>
+                           <p className="text-sm md:text-base leading-relaxed font-light whitespace-pre-wrap">{typeof msg.text === 'string' ? msg.text : ''}</p>
                            
                            <div className="mt-4 flex items-center justify-between gap-4 border-t border-current opacity-10 pt-2">
                               <span className="text-[10px] font-mono tracking-tighter opacity-50">#ID-{String(msg.id).slice(-4).toUpperCase()}</span>
