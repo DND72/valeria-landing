@@ -5,8 +5,6 @@ import { apiJson } from '../../lib/api'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { InternalBookingCalendar } from '../InternalBookingCalendar'
 import PrivacySealNote from '../PrivacySealNote'
-import ComboLightBox from '../ComboLightBox'
-import ComboFullBox from '../ComboFullBox'
 import {
   CONSULT_CHOICES,
   consultOfferCategory,
@@ -97,13 +95,12 @@ export default function BookingFlow({
   }
 
   const isChat = selectedConsult?.startsWith('chat_')
-  const isTarot = ['rapido', 'breve', 'completo'].includes(selectedConsult || '')
+  const isTarot = selectedConsult && !selectedConsult.startsWith('chat_')
   const isInstantKind = isChat || isTarot
   const showInstantCta = isInstantKind && valeriaStatus === 'online'
 
   const consultChoicesForClient = CONSULT_CHOICES.filter((c) => {
     if (c.kind === 'free' && (freeHidden || ageStatus?.hasUsedFree7)) return false
-    if (c.kind === 'coaching_intro' && ageStatus?.hasUsedIntro10) return false
     return true
   })
 
@@ -165,19 +162,7 @@ export default function BookingFlow({
           </div>
         )}
 
-        {offerCategory === 'combo' ? (
-          <div className="flex flex-col gap-6">
-            <ComboLightBox onSelect={() => {
-              setSelectedConsult('combo_light')
-              setTimeout(() => calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
-            }} />
-            <ComboFullBox onSelect={() => {
-              setSelectedConsult('combo_full')
-              setTimeout(() => calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
-            }} />
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {consultChoicesInSector.map((c) => {
               const selected = selectedConsult === c.kind
               const status = getAstralStatus(user, donePaidConsults)
@@ -211,7 +196,6 @@ export default function BookingFlow({
               )
             })}
           </div>
-        )}
       </motion.section>
 
       <motion.section

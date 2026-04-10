@@ -6,12 +6,10 @@ import { CONSULT_CHOICES } from '../constants/consultations'
 const COACHING_PACKAGES = CONSULT_CHOICES.filter((c) => c.kind.startsWith('coaching_'))
 
 const PACKAGE_BLURBS: Record<string, string> = {
-  coaching_intro:
-    'Per conoscervi, capire cosa vi serve e iniziare a definire obiettivi. Dieci minuti senza impegno: capite con chi avete a che fare e Valeria capisce voi.',
-  coaching_60:
-    'Una sessione da un’ora: lavoro su priorità, abitudini e direzione — in Sessione Digitale (Meet/Zoom).',
-  coaching_pack5:
-    'Percorso da cinque incontri da un’ora: ogni seduta è un appuntamento a sé — al momento della prenotazione il sistema impegna i crediti per quella seduta. Cinque prenotazioni = cinque sessioni nel tuo Diario.',
+  coaching_flash:
+    'Supporto immediato: superare l\'urgenza, ritrovare la lucidità sul momento e inquadrare l\'obiettivo sul posto.',
+  coaching_prenotabile:
+    'Percorso profondo: programmazione, continuità e scavo senza fretta con Valeria a cadenza concordata.',
 }
 
 /** Alba fotografica (public/crescita-alba.png) + overlay per leggibilità testi */
@@ -96,14 +94,11 @@ export default function PersonalGrowthPage() {
           >
             Pacchetti
           </h2>
-          <p className="text-slate-500 text-sm text-center max-w-2xl mx-auto mb-8">
-            Conoscenza gratuita (10 min), <strong className="text-slate-700">seduta singola 80€</strong>, oppure
-            percorso <strong className="text-slate-700">cinque sedute</strong> a{' '}
-            <strong className="text-slate-700">60€ a ogni prenotazione</strong> (totale indicativo 300€).
+          Conoscenza gratuita (7 min), oppure le opzioni standard: <strong className="text-slate-700">Immediato (Flash)</strong> o <strong className="text-slate-700">Programmato (Prenotabile)</strong>, con tariffazione semplice valutata per i soli minuti effettivi del consulto.
           </p>
           <div className="grid md:grid-cols-3 gap-5">
             {COACHING_PACKAGES.map((pkg, i) => {
-              const isFree = pkg.kind === 'coaching_intro'
+              const isFree = false
               return (
                 <motion.div
                   key={pkg.kind}
@@ -219,10 +214,10 @@ export default function PersonalGrowthPage() {
         >
           {isLoaded && user && (
             <Link
-              to="/dashboard?consult=coaching_intro"
+              to="/dashboard?consult=coaching_prenotabile"
               className="btn-gold text-center px-8 py-3 text-sm"
             >
-              Vai al tuo Diario (10 min conoscenza)
+              Vai al tuo Diario (Coaching)
             </Link>
           )}
           {isLoaded && !user && (

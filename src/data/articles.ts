@@ -85,7 +85,7 @@ export const articles: Article[] = [
     deepenCta: {
       question:
         'Vuoi approfondire questo pattern nella tua vita? Una lettura strutturata può mostrare dove la tua psiche sta già muovendosi.',
-      consultKind: 'completo',
+      consultKind: 'tarocchi_prenotabile',
       track: 'tarocchi',
     },
   },
@@ -151,7 +151,7 @@ export const articles: Article[] = [
     deepenCta: {
       question:
         'Vuoi vedere dove si annidano i momenti critici nelle tue scelte — e quale struttura emerge dalle carte?',
-      consultKind: 'breve',
+      consultKind: 'tarocchi_prenotabile',
       track: 'tarocchi',
     },
   },

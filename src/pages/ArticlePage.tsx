@@ -107,7 +107,7 @@ export default function ArticlePage() {
           config={
             article.deepenCta ?? {
               question: 'Vuoi approfondire questo tema con una sessione dedicata?',
-              consultKind: 'breve',
+              consultKind: 'tarocchi_prenotabile',
               track: 'tarocchi',
             }
           }
