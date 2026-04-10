@@ -180,6 +180,11 @@ export default function LiveSessionPage() {
                    navigate(isStaff ? '/control-room' : '/area-personale/i-miei-consulti')
                 }
              }
+             // AUTO-ACCEPTANCE FOR STAFF
+             if (isStaff && res.sessionInfo.status === 'client_waiting' && !isAccepted) {
+                console.log("[Auto-Accepting session]", id)
+                void handleAcceptSession()
+             }
           }
        } catch (err) { console.error('[chat poll]', err) }
     }
@@ -190,7 +195,7 @@ export default function LiveSessionPage() {
        isMounted = false
        clearInterval(poll)
     }
-  }, [id, isStaff, getToken, navigate, isEnding])
+  }, [id, isStaff, getToken, navigate, isEnding, isAccepted]) // Added isAccepted to deps
 
   // CountDown Attesa Cliente
   useEffect(() => {
@@ -407,14 +412,6 @@ export default function LiveSessionPage() {
                </div>
             )}
 
-            {!isAccepted && isStaff && (
-               <button 
-                  onClick={handleAcceptSession}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-dark-900 px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl font-sans"
-               >
-                  Accetta
-               </button>
-            )}
 
             {isStaff && isAccepted && (
                <button 

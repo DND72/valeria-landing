@@ -56,7 +56,7 @@ export default function StaffIncomingCallMonitor() {
       }
     }
 
-    const interval = setInterval(poll, 5000)
+    const interval = setInterval(poll, 2000)
     return () => {
       clearInterval(interval)
       audioRef.current?.pause()

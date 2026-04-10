@@ -45,23 +45,26 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
   })
   const [presenceSaving, setPresenceSaving] = useState(false)
 
+  const [hasNewRequest, setHasNewRequest] = useState(false)
+  
   const loadPresence = useCallback(async () => {
     if (!getApiBaseUrl()) return
     // Se stiamo salvando, non sovrascrivere lo stato locale con quello (potenzialmente vecchio) del server
     if (presenceSaving) return
 
     try {
-      const r = await apiJson<{ status: ValeriaPresenceStatus }>(getToken, '/api/staff/presence')
+      const r = await apiJson<{ status: ValeriaPresenceStatus; has_waiting?: boolean }>(getToken, '/api/staff/presence')
       if (r.status) {
         setPresence(r.status)
         if (typeof window !== 'undefined') (window as any).__VALERIA_PRESENCE = r.status
       }
+      setHasNewRequest(!!r.has_waiting)
     } catch { /* ignore */ }
   }, [getToken, presenceSaving])
 
   useEffect(() => {
     void loadPresence()
-    const timer = setInterval(loadPresence, 5000)
+    const timer = setInterval(loadPresence, 3000)
     return () => clearInterval(timer)
   }, [loadPresence])
 
@@ -151,6 +154,7 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
           <div className="space-y-1">
             {WORKSPACE_LINKS.map((link) => {
               const active = isHome && activeTab === link.id
+              const shouldGlow = link.id === 'live' && hasNewRequest
               return (
                 <button
                   key={link.id}
@@ -161,14 +165,17 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
                       onTabChange(link.id)
                     }
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all relative ${
                     active 
                       ? 'bg-gold-500 text-black font-bold shadow-lg shadow-gold-500/20' 
+                      : shouldGlow 
+                      ? 'bg-gold-500/20 text-gold-400 font-bold border border-gold-500/40 animate-pulse shadow-[0_0_15px_rgba(212,160,23,0.3)]'
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <span className="text-base">{link.emoji}</span>
                   {link.label}
+                  {shouldGlow && <span className="absolute right-3 w-2 h-2 bg-gold-400 rounded-full animate-ping" />}
                 </button>
               )
             })}
