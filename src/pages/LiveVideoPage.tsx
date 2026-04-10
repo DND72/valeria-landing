@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useUser, useAuth } from '@clerk/clerk-react'
-import { apiJson, ApiError } from '../lib/api'
+import { apiJson } from '../lib/api'
 
 export default function LiveVideoPage() {
   const { id } = useParams()
@@ -20,7 +20,6 @@ export default function LiveVideoPage() {
   const [sessionInfo, setSessionInfo] = useState<any>(null)
   const [seconds, setSeconds] = useState(0)
   const [isEnding, setIsEnding] = useState(false)
-  const [isVideoJoined, setIsVideoJoined] = useState(false) // Valeria/Cliente è entrato nella stanza Daily?
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [successData, setSuccessData] = useState<{ credits: number, euro: string } | null>(null)
 
@@ -80,14 +79,10 @@ export default function LiveVideoPage() {
         if (e.origin !== "https://nonsolotarocchi.daily.co") return
         
         if (e.data?.action === 'joined-meeting') {
-            setIsVideoJoined(true)
             // Se entriamo noi e siamo staff, magari mandiamo un ping di 'actual_start_at'
             if (isStaff && sessionInfo?.status === 'scheduled') {
                 void handleAcceptSession()
             }
-        }
-        if (e.data?.action === 'left-meeting') {
-            setIsVideoJoined(false)
         }
     }
     window.addEventListener('message', handleDailyMessage)
