@@ -416,6 +416,24 @@ export function createBookingRouter(pool: Pool): Router {
     }
   })
 
+  r.post('/session/:id/abandon', requireClerkAuth, async (req, res) => {
+    const { id } = req.params
+    try {
+       // Se il cliente abbandona prima che valeria accetti, cancelliamo.
+       // Se è già in progress, potremmo voler gestire un rimborso parziale o simili, 
+       // ma per ora lo settiamo a 'done' o 'cancelled' per fermare la sessione.
+       await pool.query(
+         `UPDATE consults SET status = 'cancelled', updated_at = now() 
+          WHERE id = $1 AND (status = 'scheduled' OR status = 'client_waiting')`,
+         [id]
+       )
+       res.json({ ok: true })
+    } catch (e) {
+       console.error('[abandon error]', e)
+       res.status(500).json({ error: 'Errore abbandono sessione' })
+    }
+  })
+
   r.post('/session/:id/typing', requireClerkAuth, async (req, res) => {
     const { id } = req.params
     const { role } = req.body

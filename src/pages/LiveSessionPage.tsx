@@ -12,7 +12,11 @@ interface Message {
   timestamp: Date
 }
 
-const EMOJIS = ['✨', '🔮', '🌟', '🙏', '❤️', '🌙', '🧿', '🍀', '🕯️', '🕊️', '😊', '😇', '😍', '🥰', '🤗', '🤝', '☀️', '🌈']
+const EMOJIS = [
+  '✨', '🔮', '🌟', '🙏', '❤️', '🌙', '🧿', '🍀', '🕯️', '🕊️', '😊', '😇', '😍', '🥰', '🤗', '🤝', '☀️', '🌈',
+  '😀', '😃', '😄', '😁', '😅', '😂', '🤣', '☺️', '🙂', '🙃', '😉', '😌', '😋', '😛', '😝', '😜', '🧐', '🤓',
+  '😎', '🤩', '🥳', '😏', '😔', '😟', '😕', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😭', '🤯', '🥱', '😴'
+]
 
 export default function LiveSessionPage() {
   const { id } = useParams()
@@ -253,14 +257,21 @@ export default function LiveSessionPage() {
   const handleManualExit = async () => {
     if (isAccepted) {
       if (window.confirm("Vuoi chiudere definitivamente la sessione per entrambi?")) {
-         if (isStaff) {
-            await handleClaimSession()
-         } else {
-            // Per il cliente, usiamo un endpoint di chiusura generico se esiste, o semplicemente lo segnaliamo
-            // Qui simuliamo la chiusura impostando il consulto come cancelled se mai iniziato o done se in corso.
-            navigate('/area-personale')
-         }
-         return
+        if (isStaff) {
+          await handleClaimSession()
+        } else {
+          navigate('/area-personale')
+        }
+        return
+      }
+    } else {
+      // Se non ancora accettato e il cliente esce, segnaliamo l'abbandono per fermare lo squillo staff
+      if (!isStaff) {
+        if (window.confirm("Sei sicuro di voler uscire? La sessione verrà annullata.")) {
+          await apiJson(getToken, `/api/booking/session/${id}/abandon`, { method: 'POST' }).catch(() => {})
+          navigate('/area-personale')
+        }
+        return
       }
     }
     navigate(isStaff ? '/control-room' : '/area-personale')
@@ -453,8 +464,8 @@ export default function LiveSessionPage() {
       </main>
 
       {/* FOOTER INPUT */}
-      <footer className={`relative z-50 p-6 shrink-0 transition-all ${
-         theme === 'dark' ? 'bg-[#050810]/95 border-t border-white/5' : 'bg-white/95 border-t border-dark-900/5 shadow-inner'
+      <footer className={`relative z-50 p-6 shrink-0 backdrop-blur-3xl transition-all ${
+         theme === 'dark' ? 'bg-black/60 border-t border-white/10' : 'bg-white/95 border-t border-dark-900/5 shadow-inner'
       }`}>
          <div className="max-w-4xl mx-auto flex flex-col gap-4">
             <AnimatePresence>
@@ -485,13 +496,15 @@ export default function LiveSessionPage() {
                         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSendMessage(e as any) }
                      }}
                      placeholder="Scrivi qui il tuo messaggio..."
-                     className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-inner ${
-                        theme === 'dark' ? 'bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:border-gold-500/80' : 'bg-dark-900/10 border-dark-900/20 text-dark-900 placeholder:text-dark-900/40 focus:border-gold-600/60'
+                     className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-xl ${
+                        theme === 'dark' 
+                           ? 'bg-slate-800/90 border-white/20 text-white placeholder:text-white/80 focus:border-gold-500/80' 
+                           : 'bg-white border-dark-900/10 text-dark-900 placeholder:text-dark-900/40 focus:border-gold-600/60 shadow-inner'
                      }`}
                   />
                   <button 
                      type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                     className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                     className={`absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all ${theme === 'dark' ? 'text-white' : 'text-dark-900/60'}`}
                   >
                      <span className="text-xl">✨</span>
                   </button>
