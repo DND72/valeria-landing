@@ -14,6 +14,7 @@ type ReviewRow = {
   source: string
   authorDisplayName: string
   rating: number
+  title: string | null
   body: string
   status: string
   staffResponse: string | null
@@ -147,9 +148,12 @@ export default function StaffReviewsPage() {
                     {expanded === r.id ? 'Chiudi' : 'Gestisci →'}
                   </button>
                 </div>
-                <p className="text-white/70 text-sm mt-4 whitespace-pre-wrap italic font-serif border-l border-gold-500/20 pl-4">
-                  &ldquo;{r.body}&rdquo;
-                </p>
+                <div className="mt-4">
+                   {r.title && <p className="text-white font-bold text-sm mb-1">{r.title}</p>}
+                   <p className="text-white/70 text-sm whitespace-pre-wrap italic font-serif border-l border-gold-500/20 pl-4">
+                     &ldquo;{r.body}&rdquo;
+                   </p>
+                </div>
 
                 {expanded === r.id && (
                   <div className="mt-6 pt-6 border-t border-white/5 space-y-4">

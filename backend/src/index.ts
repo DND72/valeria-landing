@@ -73,7 +73,7 @@ app.get('/api/public/reviews', async (_req, res) => {
     const average = count === 0 ? 0 : Math.round(Number(row?.avg ?? 0) * 100) / 100
 
     const { rows } = await pool.query(
-      `SELECT id, source, author_display_name, rating, body, staff_response, staff_responded_at,
+      `SELECT id, source, author_display_name, rating, title, body, staff_response, staff_responded_at,
               published_at, created_at, external_platform
        FROM site_reviews
        WHERE status = 'published'
@@ -82,11 +82,12 @@ app.get('/api/public/reviews', async (_req, res) => {
     )
     res.json({
       stats: { count, average },
-      reviews: rows.map((r) => ({
+      reviews: rows.map((r: any) => ({
         id: r.id,
         source: r.source,
         authorDisplayName: r.author_display_name,
         rating: r.rating,
+        title: r.title,
         body: r.body,
         staffResponse: r.staff_response,
         staffRespondedAt: r.staff_responded_at

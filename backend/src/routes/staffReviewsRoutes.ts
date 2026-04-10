@@ -10,8 +10,10 @@ const staffReviewPatch = z.object({
 const externalImportBody = z.object({
   authorDisplayName: z.string().min(2).max(80).trim(),
   rating: z.number().int().min(1).max(5),
+  title: z.string().min(2).max(100).optional(),
   body: z.string().min(20).max(8000),
   platform: z.string().min(2).max(80).trim(),
+  consultId: z.string().uuid().optional(),
 })
 
 export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
@@ -26,15 +28,15 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
       res.status(400).json({ error: 'Dati non validi', details: parsed.error.flatten() })
       return
     }
-    const { authorDisplayName, rating, body, platform } = parsed.data
+    const { authorDisplayName, rating, title, body, platform, consultId } = parsed.data
     try {
       const ins = await pool.query(
         `INSERT INTO site_reviews (
-           source, clerk_user_id, author_display_name, rating, body, status,
-           published_at, external_platform, imported_by_clerk_id, updated_at
-         ) VALUES ('external', NULL, $1, $2, $3, 'pending', NULL, $4, $5, now())
-         RETURNING id, author_display_name, rating, body, status, published_at, external_platform, created_at`,
-        [authorDisplayName, rating, body, platform, staffId]
+           source, clerk_user_id, author_display_name, rating, title, body, status,
+           published_at, external_platform, imported_by_clerk_id, consult_id, updated_at
+         ) VALUES ('external', NULL, $1, $2, $3, $4, 'pending', NULL, $5, $6, $7, now())
+         RETURNING id, author_display_name, rating, title, body, status, published_at, external_platform, created_at, consult_id`,
+        [authorDisplayName, rating, title || null, body, platform, staffId, consultId || null]
       )
       const r0 = ins.rows[0]
       res.status(201).json({
@@ -43,11 +45,13 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
           source: 'external',
           authorDisplayName: r0.author_display_name,
           rating: r0.rating,
+          title: r0.title,
           body: r0.body,
           status: r0.status,
           publishedAt: r0.published_at ? new Date(r0.published_at).toISOString() : null,
           externalPlatform: r0.external_platform,
           createdAt: new Date(r0.created_at).toISOString(),
+          consultId: r0.consult_id,
         },
       })
     } catch (e) {
@@ -59,9 +63,9 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
   r.get('/reviews', async (_req, res) => {
     try {
       const { rows } = await pool.query(
-        `SELECT id, source, clerk_user_id, author_display_name, rating, body, status,
+        `SELECT id, source, clerk_user_id, author_display_name, rating, title, body, status,
                 staff_response, staff_responded_at, published_at, external_platform, imported_by_clerk_id,
-                created_at, updated_at
+                consult_id, created_at, updated_at
          FROM site_reviews
          ORDER BY created_at DESC
          LIMIT 300`
@@ -73,6 +77,7 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
           clerkUserId: row.clerk_user_id,
           authorDisplayName: row.author_display_name,
           rating: row.rating,
+          title: row.title,
           body: row.body,
           status: row.status,
           staffResponse: row.staff_response,
@@ -82,6 +87,7 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
           publishedAt: row.published_at ? new Date(row.published_at).toISOString() : null,
           externalPlatform: row.external_platform,
           importedByClerkId: row.imported_by_clerk_id,
+          consultId: row.consult_id,
           createdAt: new Date(row.created_at).toISOString(),
           updatedAt: new Date(row.updated_at).toISOString(),
         })),
@@ -132,9 +138,9 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
       await pool.query(`UPDATE site_reviews SET ${sets.join(', ')} WHERE id = $${i}`, vals)
 
       const row = await pool.query(
-        `SELECT id, source, clerk_user_id, author_display_name, rating, body, status,
+        `SELECT id, source, clerk_user_id, author_display_name, rating, title, body, status,
                 staff_response, staff_responded_at, published_at, external_platform, imported_by_clerk_id,
-                created_at, updated_at
+                consult_id, created_at, updated_at
          FROM site_reviews WHERE id = $1`,
         [id]
       )
@@ -146,6 +152,7 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
           clerkUserId: r0.clerk_user_id,
           authorDisplayName: r0.author_display_name,
           rating: r0.rating,
+          title: r0.title,
           body: r0.body,
           status: r0.status,
           staffResponse: r0.staff_response,
@@ -155,6 +162,7 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
           publishedAt: r0.published_at ? new Date(r0.published_at).toISOString() : null,
           externalPlatform: r0.external_platform,
           importedByClerkId: r0.imported_by_clerk_id,
+          consultId: r0.consult_id,
           createdAt: new Date(r0.created_at).toISOString(),
           updatedAt: new Date(r0.updated_at).toISOString(),
         },

@@ -408,19 +408,32 @@ export function createStaffRouter(pool: Pool): Router {
       let actualCost = consult.cost_credits
       let refundAmount = 0
       
+      const { rows: typingRows } = await client.query(`SELECT valeria_typing_seconds FROM consults WHERE id = $1`, [id])
+      const valeriaWritingSecs = typingRows[0]?.valeria_typing_seconds || 0
+      const valeriaWritingMins = valeriaWritingSecs / 60
+
       if (typeof actualDurationMinutes === 'number' && consult.consult_kind && consult.consult_kind in CONSULT_META) {
          const kind = consult.consult_kind as keyof typeof CONSULT_META
          const expectedDuration = CONSULT_META[kind].durationMinutes
-         if (actualDurationMinutes < expectedDuration && actualDurationMinutes >= 0) {
-             const costPerMinute = consult.cost_credits / expectedDuration
-             // PALETTO: Fatturazione minima al 75% del tempo previsto
-             const minBillableMinutes = expectedDuration * 0.75
-             const billableMinutes = Math.max(actualDurationMinutes, minBillableMinutes)
-             
-             actualCost = Math.round(costPerMinute * billableMinutes)
-             actualCost = Math.min(actualCost, consult.cost_credits) // Sicurezza per non sforare i crediti bloccati
-             refundAmount = consult.cost_credits - actualCost
-         }
+         
+         const costPerMinute = consult.cost_credits / expectedDuration
+         
+         // CALCOLO RICHIESTO: 
+         // Valeria Writing Minutes -> 50% rate
+         // Resto (Client Writing + Reading) -> 100% rate
+         // Formula: (ValeriaMins * 0.5 + (TotalMins - ValeriaMins) * 1.0) * costPerMinute
+         // NOTA: Se actualDurationMinutes è inferiore a valeriaWritingMins (improbabile ma possibile), usiamo total.
+         
+         const othersMins = Math.max(0, actualDurationMinutes - valeriaWritingMins)
+         let rawCalculatedMins = (valeriaWritingMins * 0.5) + othersMins
+         
+         // PALETTO: Fatturazione minima al 75% del tempo previsto
+         const minBillableMinutes = expectedDuration * 0.75
+         const finalBillableMinutes = Math.max(rawCalculatedMins, minBillableMinutes)
+         
+         actualCost = Math.round(costPerMinute * finalBillableMinutes)
+         actualCost = Math.min(actualCost, consult.cost_credits) // Sicurezza
+         refundAmount = consult.cost_credits - actualCost
       }
 
       if (consult.cost_credits > 0 && consult.clerk_user_id) {
@@ -456,7 +469,7 @@ export function createStaffRouter(pool: Pool): Router {
       )
 
       await client.query('COMMIT')
-      res.json({ ok: true })
+      res.json({ ok: true, actualCost, valeriaWritingSeconds: valeriaWritingSecs })
     } catch (e) {
       await client.query('ROLLBACK')
       console.error('[staff claim]', e)

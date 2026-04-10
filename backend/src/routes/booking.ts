@@ -344,7 +344,8 @@ export function createBookingRouter(pool: Pool): Router {
 
       // Recuperiamo anche i dettagli del consulto per tempo/costo e typing status
       const { rows: consultInfo } = await pool.query(
-        `SELECT cost_credits, consult_kind, status, actual_start_at,
+        `SELECT cost_credits, consult_kind, status, actual_start_at, created_at,
+                invitee_name, valeria_typing_seconds,
                 (staff_is_typing_until > now()) as staff_typing,
                 (client_is_typing_until > now()) as client_typing
          FROM consults WHERE id = $1`,
@@ -370,6 +371,8 @@ export function createBookingRouter(pool: Pool): Router {
           status: info.status,
           actualStartAt: info.actual_start_at,
           createdAt: info.created_at,
+          inviteeName: info.invitee_name,
+          valeriaWritingSeconds: info.valeria_typing_seconds,
           expectedDuration: (info.consult_kind && info.consult_kind in CONSULT_META) ? (CONSULT_META as any)[info.consult_kind].durationMinutes : 30
         }
       })
@@ -416,10 +419,18 @@ export function createBookingRouter(pool: Pool): Router {
   r.post('/session/:id/typing', requireClerkAuth, async (req, res) => {
     const { id } = req.params
     const { role } = req.body
-    const col = role === 'valeria' ? 'staff_is_typing_until' : 'client_is_typing_until'
+    const isValeria = role === 'valeria'
+    const col = isValeria ? 'staff_is_typing_until' : 'client_is_typing_until'
+    const secCol = isValeria ? 'valeria_typing_seconds' : 'client_typing_seconds'
+    
     try {
+       // Incrementiamo il contatore di 5 secondi (l'intervallo dell'invio segnale)
        await pool.query(
-         `UPDATE consults SET ${col} = now() + INTERVAL '5 seconds' WHERE id = $1`,
+         `UPDATE consults SET 
+            ${col} = now() + INTERVAL '5 seconds', 
+            ${secCol} = ${secCol} + 5,
+            updated_at = now() 
+          WHERE id = $1`,
          [id]
        )
        res.json({ ok: true })

@@ -9,13 +9,16 @@ import {
 
 const reviewBody = z.object({
   rating: z.number().int().min(1).max(5),
+  title: z.string().min(2).max(100).optional(), // Nuovo campo titolo
   body: z.string().min(20).max(8000),
   authorDisplayName: z.string().min(2).max(80).trim(),
+  consultId: z.string().uuid().optional(), // Opzionale per recensioni Generali del sito
 })
 
 export function registerMeReviewRoutes(r: Router, pool: Pool): void {
   r.get('/reviews/eligibility', async (req, res) => {
     const userId = req.auth?.userId
+    const { consultId } = req.query
     if (!userId) {
       res.status(401).json({ error: 'Non autenticato' })
       return
@@ -55,13 +58,25 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
       const pend = pendingRow.rows[0]
 
       const publishedRows = await pool.query(
-        `SELECT id, status, rating, body, author_display_name, created_at, staff_response, staff_responded_at
+        `SELECT id, status, rating, title, body, author_display_name, created_at, staff_response, staff_responded_at, consult_id
          FROM site_reviews
          WHERE clerk_user_id = $1 AND source = 'client' AND status = 'published'
          ORDER BY published_at DESC NULLS LAST, created_at DESC
          LIMIT 20`,
         [userId]
       )
+
+      // Se viene passato consultId, verifichiamo se esiste già una recensione caricata
+      let specificReview: any = null
+      if (consultId) {
+         const specRes = await pool.query(
+            `SELECT id, status, rating, title, body, author_display_name, created_at, staff_response, staff_responded_at
+             FROM site_reviews
+             WHERE clerk_user_id = $1 AND consult_id = $2`,
+            [userId, consultId]
+         )
+         specificReview = specRes.rows[0] ? mapRow(specRes.rows[0]) : null
+      }
 
       const canSubmitNew = pending === 0 && published < maxAllowed
       const canEditPending = Boolean(pend)
@@ -83,32 +98,9 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
         canSubmitNew,
         canEditPending,
         reasonHint,
-        pendingReview: pend
-          ? {
-              id: pend.id,
-              status: pend.status,
-              rating: pend.rating,
-              body: pend.body,
-              authorDisplayName: pend.author_display_name,
-              createdAt: new Date(pend.created_at).toISOString(),
-              staffResponse: pend.staff_response,
-              staffRespondedAt: pend.staff_responded_at
-                ? new Date(pend.staff_responded_at).toISOString()
-                : null,
-            }
-          : null,
-        publishedReviews: publishedRows.rows.map((row) => ({
-          id: row.id,
-          status: row.status,
-          rating: row.rating,
-          body: row.body,
-          authorDisplayName: row.author_display_name,
-          createdAt: new Date(row.created_at).toISOString(),
-          staffResponse: row.staff_response,
-          staffRespondedAt: row.staff_responded_at
-            ? new Date(row.staff_responded_at).toISOString()
-            : null,
-        })),
+        specificReview, // Aggiunto per consulti
+        pendingReview: pend ? mapRow(pend) : null,
+        publishedReviews: publishedRows.rows.map(mapRow),
       })
     } catch (e) {
       console.error('[me reviews eligibility]', e)
@@ -145,6 +137,17 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
         return
       }
 
+      const { rating, title, body, authorDisplayName, consultId } = parsed.data
+
+      // Check se esiste già per questo consulto
+      if (consultId) {
+         const existing = await pool.query(`SELECT id FROM site_reviews WHERE consult_id = $1`, [consultId])
+         if (existing.rows.length > 0) {
+            res.status(409).json({ error: 'Hai già recensito questo consulto.' })
+            return
+         }
+      }
+
       const cnt = await pool.query<{ pub: string; pend: string }>(
         `SELECT
            COUNT(*) FILTER (WHERE status = 'published')::text AS pub,
@@ -156,13 +159,13 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
       const published = Number(cnt.rows[0]?.pub ?? 0)
       const pending = Number(cnt.rows[0]?.pend ?? 0)
 
-      if (pending > 0) {
+      if (pending > 0 && !consultId) { // Per recensioni generali blocchiamo se c'è pending
         res.status(409).json({
           error: 'Hai già una recensione in moderazione. Modificala dalla stessa schermata o attendi l’esito.',
         })
         return
       }
-      if (published >= maxAllowed) {
+      if (published >= maxAllowed && !consultId) {
         res.status(403).json({
           error:
             'Con il numero di consulti completati hai già raggiunto il massimo di recensioni consentito. Il percorso si allunga: ne potrai aggiungere altre dopo nuovi consulti completati.',
@@ -170,12 +173,11 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
         return
       }
 
-      const { rating, body, authorDisplayName } = parsed.data
       const ins = await pool.query(
-        `INSERT INTO site_reviews (source, clerk_user_id, author_display_name, rating, body, status, updated_at)
-         VALUES ('client', $1, $2, $3, $4, 'pending', now())
-         RETURNING id, status, rating, body, author_display_name, created_at`,
-        [userId, authorDisplayName, rating, body]
+        `INSERT INTO site_reviews (source, clerk_user_id, author_display_name, rating, title, body, status, consult_id, updated_at)
+         VALUES ('client', $1, $2, $3, $4, $5, 'pending', $6, now())
+         RETURNING id, status, rating, title, body, author_display_name, created_at, consult_id`,
+        [userId, authorDisplayName, rating, title || null, body, consultId || null]
       )
       res.status(201).json({ review: mapRow(ins.rows[0]) })
     } catch (e) {
@@ -211,16 +213,17 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
         return
       }
 
-      const { rating, body, authorDisplayName } = parsed.data
+      const { rating, title, body, authorDisplayName } = parsed.data
       const upd = await pool.query(
         `UPDATE site_reviews SET
            author_display_name = $2,
            rating = $3,
-           body = $4,
+           title = $4,
+           body = $5,
            updated_at = now()
-         WHERE id = $1 AND clerk_user_id = $5
-         RETURNING id, status, rating, body, author_display_name, created_at`,
-        [id, authorDisplayName, rating, body, userId]
+         WHERE id = $1 AND clerk_user_id = $6
+         RETURNING id, status, rating, title, body, author_display_name, created_at, consult_id`,
+        [id, authorDisplayName, rating, title || null, body, userId]
       )
       res.json({ review: mapRow(upd.rows[0]) })
     } catch (e) {
@@ -230,20 +233,17 @@ export function registerMeReviewRoutes(r: Router, pool: Pool): void {
   })
 }
 
-function mapRow(row: {
-  id: string
-  status: string
-  rating: number
-  body: string
-  author_display_name: string
-  created_at: Date
-}): Record<string, unknown> {
+function mapRow(row: any): Record<string, unknown> {
   return {
     id: row.id,
     status: row.status,
     rating: row.rating,
+    title: row.title,
     body: row.body,
     authorDisplayName: row.author_display_name,
-    createdAt: new Date(row.created_at).toISOString(),
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : null,
+    staffResponse: row.staff_response,
+    staffRespondedAt: row.staff_responded_at ? new Date(row.staff_responded_at).toISOString() : null,
+    consultId: row.consult_id,
   }
 }

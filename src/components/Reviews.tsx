@@ -39,6 +39,7 @@ type ApiReview = {
   id: string
   authorDisplayName: string
   rating: number
+  title?: string | null
   body: string
   staffResponse: string | null
   staffRespondedAt: string | null
@@ -103,6 +104,7 @@ export default function Reviews() {
         name: r.authorDisplayName,
         platform: r.fromOtherPlatform ? (r.externalPlatform?.trim() || 'Altra piattaforma') : 'Sul sito',
         rating: r.rating,
+        title: r.title,
         text: r.body,
         date: r.publishedAt
           ? new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(new Date(r.publishedAt))
@@ -115,6 +117,7 @@ export default function Reviews() {
         name: r.name,
         platform: r.platform,
         rating: r.rating,
+        title: null as string | null,
         text: r.text,
         date: r.date,
         staffResponse: null as string | null,
@@ -197,7 +200,10 @@ export default function Reviews() {
                 </div>
                 <StarsRating value={review.rating} size="sm" />
               </div>
-              <p className="text-white/60 text-sm leading-relaxed italic flex-1">&ldquo;{review.text}&rdquo;</p>
+              <div className="flex-1">
+                 {review.title && <p className="text-white font-bold text-sm mb-2">{review.title}</p>}
+                 <p className="text-white/60 text-sm leading-relaxed italic">&ldquo;{review.text}&rdquo;</p>
+              </div>
               {'staffResponse' in review && review.staffResponse && (
                 <div className="mt-4 pt-3 border-t border-white/10">
                   <p className="text-gold-500/90 text-xs font-medium mb-1">Valeria</p>

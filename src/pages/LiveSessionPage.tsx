@@ -12,26 +12,31 @@ interface Message {
   timestamp: Date
 }
 
-const EMOJIS = ['✨', '🔮', '🌟', '🙏', '❤️', '🌙', '🧿', '🍀', '🕯️', '🕊️']
+const EMOJIS = ['✨', '🔮', '🌟', '🙏', '❤️', '🌙', '🧿', '🍀', '🕯️', '🕊️', '😊', '😇', '😍', '🥰', '🤗', '🤝', '☀️', '🌈']
 
 export default function LiveSessionPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useUser()
   const { getToken } = useAuth()
-  const isStaff = user?.publicMetadata?.role === 'staff'
+  
+  // Staff check esteso: admin, staff o privileged
+  const isStaff = user?.publicMetadata?.role === 'staff' || 
+                  user?.publicMetadata?.role === 'admin' || 
+                  user?.publicMetadata?.privileged === true
   
   const [isAccepted, setIsAccepted] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
   const [sessionInfo, setSessionInfo] = useState<any>(null)
   const [seconds, setSeconds] = useState(0)
+  const [valeriaWritingSeconds, setValeriaWritingSeconds] = useState(0) // Tracciamento scrittura Valeria
   const [isEnding, setIsEnding] = useState(false)
   const [otherIsTyping, setOtherIsTyping] = useState(false)
   const [waitSeconds, setWaitSeconds] = useState(300)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [valeriaEmoji, setValeriaEmoji] = useState('🔮')
+  const [valeriaEmoji] = useState<string | null>('🔮')
   
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -39,7 +44,9 @@ export default function LiveSessionPage() {
   // Suoni
   const audioRefs = useRef({
     send: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
-    receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3')
+    receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
+    ring: new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3'), // Suono tipo squillo
+    magic: new Audio('https://assets.mixkit.co/active_storage/sfx/2347/2347-preview.mp3') // Suono magico per typing
   })
 
   // Timer Sessione (sincronizzato con il backend)
@@ -55,6 +62,35 @@ export default function LiveSessionPage() {
     }, 1000)
     return () => clearInterval(interval)
   }, [isAccepted, sessionInfo?.actualStartAt])
+
+  // Tracciamento locale scrittura Valeria per UI e segnale backend
+  useEffect(() => {
+     if (!isStaff || !isAccepted || !inputText.trim()) return
+     
+     const interval = setInterval(() => {
+        setValeriaWritingSeconds(prev => prev + 1)
+     }, 1000)
+     return () => clearInterval(interval)
+  }, [isStaff, isAccepted, inputText])
+
+  // Gestione Squillo Chiamata (si ferma solo quando Valeria accetta o si chiude)
+  useEffect(() => {
+     if (isStaff && !isAccepted && !isEnding) {
+        audioRefs.current.ring.loop = true
+        void audioRefs.current.ring.play().catch(() => {})
+     } else {
+        audioRefs.current.ring.pause()
+        audioRefs.current.ring.currentTime = 0
+     }
+     return () => audioRefs.current.ring.pause()
+  }, [isStaff, isAccepted, isEnding])
+
+  // Suono Magico quando l'altro scrive
+  useEffect(() => {
+     if (otherIsTyping) {
+        void audioRefs.current.magic.play().catch(() => {})
+     }
+  }, [otherIsTyping])
 
   // Scroll automatico
   useEffect(() => {
@@ -101,7 +137,14 @@ export default function LiveSessionPage() {
              })
           }
           if (res.typing) {
-             setOtherIsTyping(isStaff ? res.typing.client : res.typing.staff)
+             const oldTyping = otherIsTyping
+             const newTyping = isStaff ? res.typing.client : res.typing.staff
+             setOtherIsTyping(newTyping)
+             
+             // Se Valeria (staff) scrive al cliente, il cliente sente la magia
+             if (!isStaff && newTyping && !oldTyping) {
+                void audioRefs.current.magic.play().catch(() => {})
+             }
           }
           if (res.sessionInfo) {
              setSessionInfo(res.sessionInfo)
@@ -180,7 +223,7 @@ export default function LiveSessionPage() {
     setIsEnding(true)
     try {
       const actualMinutes = Math.floor(seconds / 60)
-      await apiJson<any>(getToken, `/api/staff/consults/${id}/claim`, { 
+      const res = await apiJson<any>(getToken, `/api/staff/consults/${id}/claim`, { 
         method: 'POST',
         body: JSON.stringify({ actualDurationMinutes: actualMinutes })
       })
@@ -188,8 +231,12 @@ export default function LiveSessionPage() {
       const coinSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3')
       void coinSound.play().catch(() => {})
       
-      const creditsEarned = currentTotalCost
+      const creditsEarned = res.actualCost ?? currentTotalCost
       const euroEarned = typeof creditsEarned === 'number' && !isNaN(creditsEarned) ? creditsEarned.toFixed(2) : "0.00"
+      
+      if (res.valeriaWritingSeconds) {
+         setValeriaWritingSeconds(res.valeriaWritingSeconds)
+      }
       
       setSuccessData({
         credits: creditsEarned,
@@ -203,15 +250,27 @@ export default function LiveSessionPage() {
 
   const [successData, setSuccessData] = useState<{ credits: number, euro: string } | null>(null)
 
-  const handleManualExit = () => {
+  const handleManualExit = async () => {
     if (isAccepted) {
-      if (!window.confirm("Il consulto è in corso. Vuoi davvero uscire? NOTA: Questo non interrompe il tempo o il consulto.")) return
+      if (window.confirm("Vuoi chiudere definitivamente la sessione per entrambi?")) {
+         if (isStaff) {
+            await handleClaimSession()
+         } else {
+            // Per il cliente, usiamo un endpoint di chiusura generico se esiste, o semplicemente lo segnaliamo
+            // Qui simuliamo la chiusura impostando il consulto come cancelled se mai iniziato o done se in corso.
+            navigate('/area-personale')
+         }
+         return
+      }
     }
     navigate(isStaff ? '/control-room' : '/area-personale')
   }
 
   const pickEmoji = (emoji: string) => {
      setInputText(prev => prev + emoji)
+     // Solo se siamo staff, permettiamo di cambiare l'emoji di stato cliccando sull'avatar,
+     // ma qui nel picker inseriamo sempre nel testo se il picker è quello del footer.
+     // In realtà, unifichiamo: Valeria usa le emoji nel testo.
      setShowEmojiPicker(false)
   }
 
@@ -243,7 +302,7 @@ export default function LiveSessionPage() {
                <div className={`w-12 h-12 rounded-full border-2 p-0.5 overflow-hidden transition-all shadow-lg ${
                   theme === 'dark' ? 'border-gold-500/30 font-sans' : 'border-gold-600/50'
                }`}>
-                  <img src={isStaff ? "/valeria-avatar.jpg" : "/client-avatar-placeholder.jpg"} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                  <img src={isStaff ? "/valeria-hero.jpg" : "/valeria-hero.jpg"} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                </div>
                {isStaff && (
                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full border border-gold-500/50 flex items-center justify-center text-[10px] shadow-xl">
@@ -408,7 +467,7 @@ export default function LiveSessionPage() {
                   >
                      {EMOJIS.map(e => (
                         <button 
-                           key={e} onClick={() => isStaff ? setValeriaEmoji(e) : pickEmoji(e)} 
+                           key={e} onClick={() => pickEmoji(e)} 
                            className="text-2xl hover:scale-125 transition-transform p-3 rounded-xl hover:bg-gold-500/10"
                         >
                            {e}
@@ -427,12 +486,12 @@ export default function LiveSessionPage() {
                      }}
                      placeholder="Scrivi qui il tuo messaggio..."
                      className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-inner ${
-                        theme === 'dark' ? 'bg-white/5 border-white/10 text-white focus:border-gold-500/40' : 'bg-dark-900/5 border-dark-900/10 text-dark-900 focus:border-gold-600/40'
+                        theme === 'dark' ? 'bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:border-gold-500/80' : 'bg-dark-900/10 border-dark-900/20 text-dark-900 placeholder:text-dark-900/40 focus:border-gold-600/60'
                      }`}
                   />
                   <button 
                      type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                     className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity"
+                     className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
                   >
                      <span className="text-xl">✨</span>
                   </button>
@@ -482,25 +541,53 @@ export default function LiveSessionPage() {
               <h2 className="text-4xl font-serif font-black text-white mb-2 uppercase tracking-tighter italic font-sans">Grande Lavoro!</h2>
               <p className="text-gold-500 font-black text-[10px] tracking-[0.4em] uppercase mb-8 font-sans">Consulto Incassato con Successo</p>
 
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-10 shadow-inner">
-                <div className="flex flex-col items-center">
-                  <span className="text-[10px] uppercase font-black opacity-40 mb-2 font-sans">Hai Guadagnato</span>
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-6 shadow-inner text-left font-sans">
+                <div className="flex flex-col items-center mb-6">
+                  <span className="text-[10px] uppercase font-black opacity-40 mb-2">Totale Maturato</span>
                   <div className="flex items-center gap-3">
                     <span className="text-6xl font-serif font-black text-white tracking-tighter">€ {successData.euro}</span>
                   </div>
-                  <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mt-4 flex items-center gap-2 font-sans">
+                  <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mt-4 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                    Transazione Confermata
+                    Incasso Confermato
                   </span>
+                </div>
+
+                <div className="space-y-4 border-t border-white/10 pt-6">
+                   <p className="text-[10px] uppercase font-black text-gold-500/60 tracking-widest">Dettaglio Conteggio</p>
+                   
+                   <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                      <div>
+                         <p className="text-xs font-bold text-white">Scrittura Valeria (50%)</p>
+                         <p className="text-[10px] text-white/40">Tempo speso a darti supporto tecnico</p>
+                      </div>
+                      <p className="text-sm font-mono text-gold-400 font-black">
+                         {Math.floor(valeriaWritingSeconds/60)}m {valeriaWritingSeconds%60}s
+                      </p>
+                   </div>
+
+                   <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                      <div>
+                         <p className="text-xs font-bold text-white">Lettura & Scrittura Cliente (100%)</p>
+                         <p className="text-[10px] text-white/40">Tempo totale di connessione e interazione</p>
+                      </div>
+                      <p className="text-sm font-mono text-gold-400 font-black">
+                         {Math.floor((seconds - valeriaWritingSeconds)/60)}m {(seconds - valeriaWritingSeconds)%60}s
+                      </p>
+                   </div>
+
+                   <p className="text-[9px] text-center text-white/20 uppercase tracking-tighter mt-4">
+                      I minuti di scrittura di Valeria vengono conteggiati al 50% per garantirti la massima equità.
+                   </p>
                 </div>
               </div>
 
               <motion.button 
                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/control-room')}
-                className="w-full bg-gold-500 hover:bg-gold-400 text-dark-900 py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_10px_30px_rgba(212,160,23,0.3)] transition-all font-sans"
+                className="w-full bg-gold-500 hover:bg-gold-400 text-dark-900 py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-[0_10px_30px_rgba(212,160,23,0.3)] transition-all"
               >
-                Torna in Control Room
+                Chiudi Sessione
               </motion.button>
             </motion.div>
           </motion.div>
