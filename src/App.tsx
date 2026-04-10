@@ -129,8 +129,9 @@ export default function App() {
   // Hub Immersivo: Staff e Clienti vedono un'area pulita senza Navbar/Footer globali
   const isDashboardArea = pathname.startsWith('/area-personale')
   const isStaffArea = pathname.startsWith('/control-room') || pathname.startsWith('/gestione-')
-  const isSessionArea = pathname.startsWith('/sessione')
-  const isImmersiveHub = isDashboardArea || isStaffArea || isSessionArea
+  const isSessionArea = pathname.startsWith('/sessione') || pathname.startsWith('/video-session')
+  const isVideoTest = pathname.startsWith('/video-test')
+  const isImmersiveHub = isDashboardArea || isStaffArea || isSessionArea || isVideoTest
 
   return (
     <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
