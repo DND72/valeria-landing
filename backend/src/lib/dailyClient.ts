@@ -27,28 +27,19 @@ export async function createDailyRoom(roomName?: string, exp?: number): Promise<
     throw new Error('Chiave DAILY_API_KEY mancante nel server')
   }
 
+  // Sanitizziamo il nome della stanza per sicurezza
+  const safeName = roomName ? roomName.replace(/[^a-zA-Z0-9_-]/g, '') : undefined
+
   const payload: any = {
     privacy: 'private',
     properties: {
       max_participants: 2, 
       start_audio_off: false,
       start_video_off: false,
-      user_background_effects_allowed: true,
-      theme: {
-        colors: {
-          accent: '#d4a017',
-          accentText: '#0a0a0b',
-          background: '#0a0a0b',
-          backgroundAccent: '#161618',
-          baseText: '#ffffff',
-          border: '#d4a01733',
-          mainAreaBg: '#0a0a0b'
-        }
-      }
     }
   }
 
-  if (roomName) payload.name = roomName
+  if (safeName) payload.name = safeName
   if (exp) payload.properties.exp = exp
 
   const res = await fetch(`${DAILY_API_URL}/rooms`, {
@@ -61,8 +52,9 @@ export async function createDailyRoom(roomName?: string, exp?: number): Promise<
   })
 
   if (!res.ok) {
-    const txt = await res.text()
-    throw new Error(`Errore creazione stanza Daily: ${res.status} ${txt}`)
+    const errorText = await res.text()
+    console.error('[daily room error response]', errorText)
+    throw new Error(`Errore creazione stanza Daily: ${res.status} ${errorText}`)
   }
 
   const data = await res.json() as DailyRoom
@@ -84,7 +76,19 @@ export async function createDailyToken(roomName: string, isOwner: boolean = fals
       room_name: roomName,
       is_owner: isOwner,
       enable_screenshare: true,
-      enable_recording: 'cloud' // se Valeria ha il pro, sennò rimuoviamo
+      enable_recording: 'cloud',
+      user_background_effects_allowed: true,
+      theme: {
+        colors: {
+          accent: '#d4a017',
+          accentText: '#0a0a0b',
+          background: '#0a0a0b',
+          backgroundAccent: '#161618',
+          baseText: '#ffffff',
+          border: '#d4a01733',
+          mainAreaBg: '#0a0a0b'
+        }
+      }
     }
   }
 
@@ -98,8 +102,9 @@ export async function createDailyToken(roomName: string, isOwner: boolean = fals
   })
 
   if (!res.ok) {
-    const txt = await res.text()
-    throw new Error(`Errore creazione Token Daily: ${res.status} ${txt}`)
+    const errorText = await res.text()
+    console.error('[daily token error response]', errorText)
+    throw new Error(`Errore creazione Token Daily: ${res.status} ${errorText}`)
   }
 
   const data = await res.json()
