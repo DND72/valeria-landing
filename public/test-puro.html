@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily.co Standalone Test</title>
+    <style>
+        body {
+            background: #0a0a0b;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-col;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212, 160, 23, 0.3);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        button {
+            padding: 12px 30px;
+            background: #d4a017;
+            color: black;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover { background: #b8860b; }
+        .video-container {
+            margin-top: 30px;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: black;
+            border-radius: 20px;
+            overflow: hidden;
+            display: none;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div className="container">
+        <h1 style="color: #d4a017; font-family: serif;">Test Standalone Daily.co</h1>
+        <p style="opacity: 0.6; font-size: 13px; margin-bottom: 30px;">Crea una stanza nella dashboard di Daily, copia l'URL e incollalo qui sotto.</p>
+        
+        <input type="text" id="dailyUrl" placeholder="Incolla qui l'URL della stanza (es: https://yourdomain.daily.co/roomname)">
+        <button onclick="startTest()">Avvia Video</button>
+
+        <div id="container" class="video-container">
+            <iframe id="dailyIframe" allow="camera; microphone; fullscreen; display-capture; autoplay" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        function startTest() {
+            const url = document.getElementById('dailyUrl').value;
+            if (!url) {
+                alert('Inserisci un URL valido');
+                return;
+            }
+            const container = document.getElementById('container');
+            const iframe = document.getElementById('dailyIframe');
+            
+            container.style.display = 'block';
+            iframe.src = url;
+            
+            console.log('Avvio test su:', url);
+        }
+    </script>
+</body>
+</html>
