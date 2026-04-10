@@ -167,7 +167,8 @@ export default function BookingFlow({
               const selected = selectedConsult === c.kind
               const status = getAstralStatus(user, donePaidConsults)
               const discountFactor = ASTRAL_STATUSES[status].discountFactor
-              const finalCredits = Math.max(0, Math.round(c.costCredits * discountFactor))
+              const ratePerMin = c.costCredits * discountFactor
+              const formattedRate = ratePerMin.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
               const isDiscounted = discountFactor < 1 && c.costCredits > 0
               return (
                 <div key={c.kind} className={`mystical-card text-center flex flex-col transition-shadow relative ${selected ? 'ring-2 ring-gold-500/50 shadow-[0_0_24px_rgba(212,160,23,0.15)]' : ''}`}>
@@ -178,10 +179,10 @@ export default function BookingFlow({
                   )}
                   <div className="text-3xl mb-2">{c.icon}</div>
                   <h3 className="font-serif text-lg font-bold text-white mb-0.5">{c.name}</h3>
-                  <p className="text-gold-500 text-xs mb-1">{c.duration}</p>
+                  <p className="text-gold-500 text-xs mb-1 lowercase">{c.duration}</p>
                   <div className="mb-4">
                     <p className="font-serif text-2xl font-bold leading-tight" style={{ background: c.kind === 'free' ? 'linear-gradient(135deg, #86efac, #22c55e)' : 'linear-gradient(180deg, #fffde0 0%, #ffdd00 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                      {c.kind === 'free' ? c.priceLabel : `${finalCredits} CR`}
+                      {c.kind === 'free' ? c.priceLabel : `${formattedRate} CR / min`}
                     </p>
                   </div>
                   <button type="button" className="btn-gold text-sm px-4 py-2.5 w-full mt-auto" onClick={() => { setSelectedConsult(c.kind); setTimeout(() => calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80) }}>
