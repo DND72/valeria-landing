@@ -409,39 +409,28 @@ export function createStaffRouter(pool: Pool): Router {
       const valeriaWritingSecs = typingRows[0]?.valeria_typing_seconds || 0
       const consultKind = typingRows[0]?.consult_kind
 
-      // Calcola i costi effettivi scalati (specialmente per le chat 'a tempo')
+      // Calcola i costi effettivi scalati (Tariffazione pura al minuto per tutte le offerte)
       let actualCost = consult.cost_credits
-      if (consultKind === 'chat_flash' || consultKind === 'chat_prenotabile') {
-         const basePrice = consultKind === 'chat_flash' ? 1.5 : 1.1;
-         actualCost = Math.ceil(basePrice * Math.max(1, actualDurationMinutes));
+      const baseRates: Record<string, number> = {
+         'chat_flash': 1.3,
+         'chat_prenotabile': 1.0,
+         'tarocchi_flash': 1.3,
+         'tarocchi_prenotabile': 1.0,
+         'coaching_flash': 1.5,
+         'coaching_prenotabile': 1.2,
+         'combo_flash': 1.7,
+         'combo_prenotabile': 1.4,
+         'free': 0
       }
       
-      let refundAmount = 0
-      const valeriaWritingMins = valeriaWritingSecs / 60
-
-      if (typeof actualDurationMinutes === 'number' && consult.consult_kind && consult.consult_kind in CONSULT_META) {
-         const kind = consult.consult_kind as keyof typeof CONSULT_META
-         const expectedDuration = CONSULT_META[kind].durationMinutes
-         
-         const costPerMinute = consult.cost_credits / expectedDuration
-         
-         // CALCOLO RICHIESTO: 
-         // Valeria Writing Minutes -> 50% rate
-         // Resto (Client Writing + Reading) -> 100% rate
-         // Formula: (ValeriaMins * 0.5 + (TotalMins - ValeriaMins) * 1.0) * costPerMinute
-         // NOTA: Se actualDurationMinutes è inferiore a valeriaWritingMins (improbabile ma possibile), usiamo total.
-         
-         const othersMins = Math.max(0, actualDurationMinutes - valeriaWritingMins)
-         let rawCalculatedMins = (valeriaWritingMins * 0.5) + othersMins
-         
-         // PALETTO: Fatturazione minima al 75% del tempo previsto
-         const minBillableMinutes = expectedDuration * 0.75
-         const finalBillableMinutes = Math.max(rawCalculatedMins, minBillableMinutes)
-         
-         actualCost = Math.round(costPerMinute * finalBillableMinutes)
-         actualCost = Math.min(actualCost, consult.cost_credits) // Sicurezza
-         refundAmount = consult.cost_credits - actualCost
-      }
+      const rate = consultKind && baseRates[consultKind] !== undefined ? baseRates[consultKind] : 1.0;
+      actualCost = Math.ceil(rate * Math.max(1, actualDurationMinutes));
+      
+      // Sicurezza: non addebitare mai più dei crediti approvati nel wallet bloccato inizialmente
+      actualCost = Math.min(actualCost, consult.cost_credits);
+      
+      let refundAmount = consult.cost_credits - actualCost;
+      if (refundAmount < 0) refundAmount = 0;
 
       if (consult.cost_credits > 0 && consult.clerk_user_id) {
         // Scala definitivamente dai blocchi

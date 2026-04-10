@@ -431,20 +431,45 @@ export function createBookingRouter(pool: Pool): Router {
            const consult = rows[0]
            
            // Calculate duration if it's per minute
-           let finalCost = consult.cost_credits;
-           if (consult.consult_kind === 'chat_flash' || consult.consult_kind === 'chat_prenotabile') {
-               const start = consult.actual_start_at ? new Date(consult.actual_start_at).getTime() : Date.now();
-               const actualMinutes = Math.floor((Date.now() - start) / 60000);
-               const basePrice = consult.consult_kind === 'chat_flash' ? 1.5 : 1.1;
-               finalCost = Math.ceil(basePrice * Math.max(1, actualMinutes)); // almeno 1 min
-           }
+           const start = consult.actual_start_at ? new Date(consult.actual_start_at).getTime() : Date.now();
+           const actualMinutes = Math.floor((Date.now() - start) / 60000);
            
-           // Billa la sessione (incassa da wallet locked a effettivo)
-           if (finalCost > 0) {
+           const baseRates: Record<string, number> = {
+              'chat_flash': 1.3,
+              'chat_prenotabile': 1.0,
+              'tarocchi_flash': 1.3,
+              'tarocchi_prenotabile': 1.0,
+              'coaching_flash': 1.5,
+              'coaching_prenotabile': 1.2,
+              'combo_flash': 1.7,
+              'combo_prenotabile': 1.4,
+              'free': 0
+           }
+           const rate = consult.consult_kind && baseRates[consult.consult_kind] !== undefined ? baseRates[consult.consult_kind] : 1.0;
+           let finalCost = Math.ceil(rate * Math.max(1, actualMinutes));
+           finalCost = Math.min(finalCost, consult.cost_credits);
+           
+           let refundAmount = consult.cost_credits - finalCost;
+           if (refundAmount < 0) refundAmount = 0;
+           
+           // Move locked balance to available and staff claim
+           if (consult.cost_credits > 0 && consult.clerk_user_id) {
               await pool.query(
-                `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'staff_claim', $3)`,
-                [consult.clerk_user_id, finalCost, id]
+                `UPDATE wallets SET balance_locked = balance_locked - $1, balance_available = balance_available + $2, updated_at = now() WHERE clerk_user_id = $3`,
+                [consult.cost_credits, refundAmount, consult.clerk_user_id]
               )
+              if (finalCost > 0) {
+                 await pool.query(
+                   `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'staff_claim', $3)`,
+                   [consult.clerk_user_id, finalCost, id]
+                 )
+              }
+              if (refundAmount > 0) {
+                 await pool.query(
+                   `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'unlock_refund', $3)`,
+                   [consult.clerk_user_id, refundAmount, id]
+                 )
+              }
            }
            await pool.query(`UPDATE consults SET status = 'done', status_billing = 'billed', updated_at = now() WHERE id = $1`, [id])
            return res.json({ ok: true, billed: true })
