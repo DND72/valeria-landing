@@ -46,6 +46,9 @@ export default function LiveSessionPage() {
   
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const prevMessagesLengthRef = useRef<number>(0)
+  const isTypingRef = useRef<boolean>(false)
+  const lastTypingSignalRef = useRef<number>(0)
   
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({
     receive: (() => { const a = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'); a.crossOrigin = "anonymous"; return a })(),
@@ -80,15 +83,36 @@ export default function LiveSessionPage() {
     return () => clearInterval(interval)
   }, [isAccepted, sessionInfo?.actualStartAt])
 
-  // Tracciamento locale scrittura Valeria
+  // Aggiorna ref globale per il typing
   useEffect(() => {
-     if (!isStaff || !isAccepted || !inputText.trim()) return
+    isTypingRef.current = !!inputText.trim()
+  }, [inputText])
+
+  // Tracciamento locale scrittura Valeria & Invio Segnale Typing al Backend
+  useEffect(() => {
+     if (!id) return // Attivo anche in attesa per permettere il typing setup
      
      const interval = setInterval(() => {
-        setValeriaWritingSeconds(prev => prev + 1)
+        if (isTypingRef.current) {
+           // 1. Incremento locale (solo se lo staff è attivo e accettato)
+           if (isStaff && isAccepted) {
+              setValeriaWritingSeconds(prev => prev + 1)
+           }
+           
+           // 2. Debounce Segnale Backend a 5 secondi (essenziale per evitare DB spam)
+           const now = Date.now()
+           if (now - lastTypingSignalRef.current >= 5000) {
+              lastTypingSignalRef.current = now
+              void apiJson(getToken, `/api/booking/session/${id}/typing`, {
+                 method: 'POST',
+                 body: JSON.stringify({ role: isStaff ? 'valeria' : 'client' })
+              }).catch(() => {})
+           }
+        }
      }, 1000)
+     
      return () => clearInterval(interval)
-  }, [isStaff, isAccepted, inputText])
+  }, [isStaff, isAccepted, id, getToken])
 
   // Gestione Suoni Attesa/Squillo
   useEffect(() => {
@@ -158,14 +182,15 @@ export default function LiveSessionPage() {
               timestamp: m.timestamp ? new Date(m.timestamp) : new Date() 
             }))
             
-            // Suona se c'è un nuovo messaggio dall'altro
-            if (newMsgs.length > messages.length && messages.length > 0) {
+            // Suona se c'è un nuovo messaggio dall'altro usando la Ref non stale
+            if (newMsgs.length > prevMessagesLengthRef.current && prevMessagesLengthRef.current > 0) {
                const last = newMsgs[newMsgs.length - 1]
                const wasMe = last.role === (isStaff ? 'valeria' : 'client')
                if (!wasMe) {
                   void audioRefs.current.receive.play().catch(() => {})
                }
             }
+            prevMessagesLengthRef.current = newMsgs.length
             setMessages(newMsgs)
           if (res.typing) {
              setOtherIsTyping(Boolean(isStaff ? res.typing.client : res.typing.staff))
@@ -211,14 +236,7 @@ export default function LiveSessionPage() {
     return () => clearInterval(interval)
   }, [isAccepted, sessionInfo, isStaff])
 
-  // Typing signal
-  useEffect(() => {
-     if (!inputText.trim() || !id) return
-     void apiJson(getToken, `/api/booking/session/${id}/typing`, {
-        method: 'POST',
-        body: JSON.stringify({ role: isStaff ? 'valeria' : 'client' })
-     }).catch(() => {})
-  }, [inputText, id, isStaff, getToken])
+  // Wait countdown logic qui sotto...
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault()
