@@ -98,6 +98,26 @@ export function registerStaffReviewRoutes(r: Router, pool: Pool): void {
     }
   })
 
+  r.get('/reviews/by-consult/:consultId', async (req, res) => {
+    const { consultId } = req.params
+    try {
+      const { rows } = await pool.query(
+        `SELECT id, source, clerk_user_id, author_display_name, rating, title, body, status,
+                staff_response, staff_responded_at, published_at, external_platform, imported_by_clerk_id,
+                consult_id, created_at, updated_at
+         FROM site_reviews WHERE consult_id = $1`,
+        [consultId]
+      )
+      if (rows.length === 0) {
+        res.status(404).json({ error: 'Recensione non trovata' })
+        return
+      }
+      res.json({ review: rows[0] })
+    } catch (e) {
+      res.status(500).json({ error: 'Errore' })
+    }
+  })
+
   r.patch('/reviews/:id', async (req, res) => {
     const id = req.params.id
     const parsed = staffReviewPatch.safeParse(req.body)

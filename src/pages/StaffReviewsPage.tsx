@@ -22,7 +22,20 @@ type ReviewRow = {
   publishedAt: string | null
   createdAt: string
   externalPlatform: string | null
+  consultId: string | null
 }
+
+const RESPONSE_POLICIES = [
+  { title: 'Tono Mistico', desc: 'Usa un linguaggio elevato, coerente con l’identità di Valeria.' },
+  { title: 'Empatia e Distacco', desc: 'Sii vicina alla cliente ma mantieni la professionalità della guida.' },
+  { title: 'Discrezione', desc: 'Mai rivelare dettagli sensibili emersi durante il consulto.' }
+]
+
+const QUICK_INSPIRATIONS = [
+  "È stato un onore scorgere la luce del tuo percorso. Continua a coltivare la tua consapevolezza.",
+  "Le stelle indicano la via, ma è il tuo cuore a compiere i passi. Grazie per la fiducia.",
+  "La nostra sessione ha rivelato radici profonde. Sii paziente con il tuo processo di fioritura."
+]
 
 export default function StaffReviewsPage() {
   const { isLoaded, user } = useUser()
@@ -89,10 +102,22 @@ export default function StaffReviewsPage() {
   return (
     <StaffLayout title="Recensioni" subtitle="Voce delle clienti e reputazione del portale">
       <div className="relative z-10 max-w-5xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex justify-between items-center">
-          <p className="text-white/45 text-sm max-w-2xl italic font-serif">
-            "Ogni parola è un riflesso dell'esperienza che abbiamo donato."
-          </p>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-10 grid md:grid-cols-3 gap-6">
+           {RESPONSE_POLICIES.map((p, i) => (
+             <div key={i} className="bg-white/[0.03] border border-white/5 p-4 rounded-xl">
+               <p className="text-gold-500 font-serif text-sm mb-1">{p.title}</p>
+               <p className="text-white/40 text-[10px] uppercase tracking-tighter leading-relaxed">{p.desc}</p>
+             </div>
+           ))}
+        </motion.div>
+
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-white font-serif text-xl font-bold flex items-center gap-2">
+            <span>In attesa di riscontro</span>
+            <span className="bg-amber-500/20 text-amber-500 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20">
+               {list.filter(r => !r.staffResponse).length}
+            </span>
+          </h2>
           <button
             type="button"
             onClick={() => void load()}
@@ -101,7 +126,7 @@ export default function StaffReviewsPage() {
           >
             Sincronizza
           </button>
-        </motion.div>
+        </div>
 
         {!apiConfigured && <p className="text-amber-200/85 text-xs mb-6">Backend non collegato.</p>}
         {error && <p className="text-red-400 text-xs mb-4" role="alert">{error}</p>}
@@ -139,6 +164,11 @@ export default function StaffReviewsPage() {
                     >
                       {r.status}
                     </span>
+                    {r.consultId && (
+                       <span className="text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                          Recensione Sessione
+                       </span>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -157,6 +187,20 @@ export default function StaffReviewsPage() {
 
                 {expanded === r.id && (
                   <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
+                    <div className="space-y-3">
+                       <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Ispirazioni Rapide:</p>
+                       <div className="flex flex-wrap gap-2">
+                          {QUICK_INSPIRATIONS.map((insp, i) => (
+                             <button 
+                                key={i} onClick={() => setResponseDraft(p => ({ ...p, [r.id]: insp }))}
+                                className="text-[9px] bg-white/5 hover:bg-white/10 border border-white/10 px-2 py-1 rounded text-white/50 transition-all italic"
+                             >
+                                "{insp.slice(0, 30)}..."
+                             </button>
+                          ))}
+                       </div>
+                    </div>
+                    
                     <textarea
                       value={responseDraft[r.id] ?? ''}
                       onChange={(e) => setResponseDraft((p) => ({ ...p, [r.id]: e.target.value }))}

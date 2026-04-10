@@ -13,6 +13,14 @@ type ConsultRow = {
   start_at: string | null
   end_at: string | null
   created_at: string
+  cost_credits?: number
+  status_billing?: string
+  consult_kind?: string
+  valeria_typing_seconds?: number
+  client_typing_seconds?: number
+  review_rating?: number | null
+  review_title?: string | null
+  review_status?: string | null
   notes: { id: string; body: string; created_at: string }[]
 }
 
@@ -71,11 +79,15 @@ export default function StaffCrmDrawer({ email, onClose }: Props) {
   const [unlockReview, setUnlockReview] = useState(false)
   const [bonusCredits, setBonusCredits] = useState(0)
 
-  // Nota per singolo consulto
   const [noteConsultId, setNoteConsultId] = useState<string | null>(null)
   const [noteBody, setNoteBody] = useState('')
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteMsg, setNoteMsg] = useState<string | null>(null)
+
+  // Risposta a recensione
+  const [replyConsultId, setReplyConsultId] = useState<string | null>(null)
+  const [replyBody, setReplyBody] = useState('')
+  const [replySaving, setReplySaving] = useState(false)
 
   const loadDetail = useCallback(async () => {
     if (!api || !email) return
@@ -146,6 +158,35 @@ export default function StaffCrmDrawer({ email, onClose }: Props) {
       setNoteMsg(e instanceof ApiError ? String(e.message) : 'Errore nota')
     } finally {
       setNoteSaving(false)
+    }
+  }
+
+  async function handleReplyReview(consultId: string) {
+    if (!api || !replyBody.trim()) return
+    setReplySaving(true)
+    try {
+      // Troviamo l'ID della recensione
+      const c = detail?.consults.find(x => x.id === consultId)
+      if (!c) return
+      
+      // Cerchiamo l'ID effettivo della recensione tramite una query rapida o assumiamo che l'API sia pronta
+      // In realtà, facciamo un PATCH all'endpoint delle reviews staff
+      // Ma prima dobbiamo recuperare l'ID della recensione per quel consultId
+      // Per semplicità, ipotizziamo un endpoint /api/staff/reviews/by-consult/:id
+      const revData = await apiJson<any>(getToken, `/api/staff/reviews/by-consult/${consultId}`)
+      if (revData && revData.review) {
+        await apiJson(getToken, `/api/staff/reviews/${revData.review.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ staffResponse: replyBody.trim() })
+        })
+      }
+      setReplyBody('')
+      setReplyConsultId(null)
+      await loadDetail()
+    } catch (e) {
+      alert("Errore nel salvataggio risposta.")
+    } finally {
+      setReplySaving(false)
     }
   }
 
@@ -330,13 +371,65 @@ export default function StaffCrmDrawer({ email, onClose }: Props) {
                       <div>
                         <p className="text-gold-500/80 text-xs font-mono">{formatWhen(c.start_at)}</p>
                         <p className="text-white/80 text-sm font-medium">
-                          {c.is_free_consult ? '🎁 Omaggio' : '✅ Pagato'}
+                          {c.is_free_consult ? '🎁 Omaggio' : `✅ ${c.consult_kind || 'Pagato'}`}
+                        </p>
+                        <p className="text-[10px] text-white/30 font-mono mt-0.5">
+                           Fine: {c.end_at ? formatWhen(c.end_at).split(' ')[1] : '—'} 
+                           {c.cost_credits != null && ` · ${c.cost_credits} CR`}
                         </p>
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-white/10 text-white/40 shrink-0">
-                        {c.status}
-                      </span>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-white/10 text-white/40">
+                          {c.status}
+                        </span>
+                        {c.review_rating != null && (
+                           <div className="flex items-center gap-1 bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/20">
+                              <span className="text-gold-500 text-[10px]">★</span>
+                              <span className="text-gold-500 text-[10px] font-bold">{c.review_rating}</span>
+                           </div>
+                        )}
+                      </div>
                     </div>
+
+                    {c.review_title && (
+                       <div className="mb-4 p-4 bg-gold-500/5 border border-gold-500/10 rounded-xl space-y-3">
+                          <div>
+                            <p className="text-white font-bold text-[11px] mb-0.5">{c.review_title}</p>
+                            <p className="text-[10px] text-white/50 italic leading-snug">Il cliente ha lasciato un feedback per questa sessione.</p>
+                          </div>
+                          
+                          {replyConsultId === c.id ? (
+                             <div className="space-y-2 pt-2 border-t border-white/5">
+                                <textarea 
+                                   value={replyBody} onChange={(e) => setReplyBody(e.target.value)}
+                                   placeholder="Scrivi la tua risposta saggia..."
+                                   rows={2} className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white"
+                                />
+                                <div className="flex gap-2">
+                                   <button 
+                                      onClick={() => void handleReplyReview(c.id)} disabled={replySaving}
+                                      className="btn-gold text-[10px] px-3 py-1"
+                                   >
+                                      {replySaving ? 'Salvo...' : 'Rispondi'}
+                                   </button>
+                                   <button onClick={() => setReplyConsultId(null)} className="text-white/40 text-[10px]">Annulla</button>
+                                </div>
+                             </div>
+                          ) : (
+                             <button 
+                                onClick={() => {
+                                   setReplyConsultId(c.id)
+                                   // Inizializziamo con la risposta esistente se c'è?
+                                   // Nel backend non la passiamo ancora direttamente qui, ma possiamo recuperarla
+                                   setReplyBody('') 
+                                }}
+                                className="text-[10px] text-gold-500/80 hover:underline font-bold"
+                             >
+                                Rispondi al Feedback →
+                             </button>
+                          )}
+                       </div>
+                    )}
 
                     {/* Note su questo consulto */}
                     {c.notes.length > 0 && (

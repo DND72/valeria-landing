@@ -202,13 +202,45 @@ export function registerStaffClientRoutes(r: Router, pool: Pool): void {
     const clerkId = rawClerkId as string || null
     try {
       let consultResult: any;
-      if (email) consultResult = await pool.query(`SELECT id, clerk_user_id, status, is_free_consult, invitee_email, invitee_name, start_at, end_at, created_at, updated_at FROM consults WHERE LOWER(TRIM(invitee_email)) = $1 ORDER BY start_at DESC`, [email])
-      else consultResult = await pool.query(`SELECT id, clerk_user_id, status, is_free_consult, invitee_email, invitee_name, start_at, end_at, created_at, updated_at FROM consults WHERE clerk_user_id = $1 ORDER BY start_at DESC`, [clerkId])
+      if (email) {
+        consultResult = await pool.query(
+          `SELECT c.id, c.clerk_user_id, c.status, c.is_free_consult, c.invitee_email, c.invitee_name, 
+                  c.start_at, c.end_at, c.created_at, c.updated_at, c.cost_credits, c.status_billing, 
+                  c.consult_kind, c.valeria_typing_seconds, c.client_typing_seconds,
+                  r.rating as review_rating, r.title as review_title, r.status as review_status
+           FROM consults c
+           LEFT JOIN site_reviews r ON c.id = r.consult_id
+           WHERE LOWER(TRIM(c.invitee_email)) = $1 
+           ORDER BY c.start_at DESC`, 
+          [email]
+        )
+      } else {
+        consultResult = await pool.query(
+          `SELECT c.id, c.clerk_user_id, c.status, c.is_free_consult, c.invitee_email, c.invitee_name, 
+                  c.start_at, c.end_at, c.created_at, c.updated_at, c.cost_credits, c.status_billing, 
+                  c.consult_kind, c.valeria_typing_seconds, c.client_typing_seconds,
+                  r.rating as review_rating, r.title as review_title, r.status as review_status
+           FROM consults c
+           LEFT JOIN site_reviews r ON c.id = r.consult_id
+           WHERE c.clerk_user_id = $1 
+           ORDER BY c.start_at DESC`, 
+          [clerkId]
+        )
+      }
       const consultRows = consultResult.rows;
       const ids = consultRows.map((c: any) => c.id)
-      const { rows: noteRows } = await pool.query(`SELECT cn.id, cn.consult_id, cn.staff_clerk_user_id, cn.body, cn.created_at, cn.updated_at FROM consult_notes cn WHERE cn.consult_id = ANY($1::uuid[]) ORDER BY cn.created_at ASC`, [ids])
+      const { rows: noteRows } = await pool.query(
+        `SELECT cn.id, cn.consult_id, cn.staff_clerk_user_id, cn.body, cn.created_at, cn.updated_at 
+         FROM consult_notes cn 
+         WHERE cn.consult_id = ANY($1::uuid[]) 
+         ORDER BY cn.created_at ASC`, 
+        [ids]
+      )
       const notesByConsult = new Map<string, any[]>()
-      for (const n of noteRows) { if (!notesByConsult.has(n.consult_id)) notesByConsult.set(n.consult_id, []); notesByConsult.get(n.consult_id)!.push(n) }
+      for (const n of noteRows) { 
+        if (!notesByConsult.has(n.consult_id)) notesByConsult.set(n.consult_id, []); 
+        notesByConsult.get(n.consult_id)!.push(n) 
+      }
 
       let profile: any = null;
       if (email) profile = (await pool.query(`SELECT email_normalized, general_notes, last_invoiced_at, updated_at, manual_bonus_credits, unlock_review_override, contact_preference, phone_number, contact_details FROM client_profiles WHERE email_normalized = $1`, [email])).rows[0] || null
