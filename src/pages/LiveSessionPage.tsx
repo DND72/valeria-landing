@@ -21,20 +21,23 @@ const EMOJIS = [
 export default function LiveSessionPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
   
-  // Staff check esteso: admin, staff o privileged
-  const isStaff = user?.publicMetadata?.role === 'staff' || 
+  // Staff check esteso: attendiamo il caricamento di Clerk per evitare il limbo
+  const isStaff = isLoaded && (
+                  user?.publicMetadata?.role === 'staff' || 
                   user?.publicMetadata?.role === 'admin' || 
-                  user?.publicMetadata?.privileged === true
+                  user?.publicMetadata?.privileged === true ||
+                  user?.publicMetadata?.role === 'staff' // Ripetizione di sicurezza per alcuni env
+  )
   
   const [isAccepted, setIsAccepted] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
   const [sessionInfo, setSessionInfo] = useState<any>(null)
   const [seconds, setSeconds] = useState(0)
-  const [valeriaWritingSeconds, setValeriaWritingSeconds] = useState(0) // Tracciamento scrittura Valeria
+  const [valeriaWritingSeconds, setValeriaWritingSeconds] = useState(0) 
   const [isEnding, setIsEnding] = useState(false)
   const [otherIsTyping, setOtherIsTyping] = useState(false)
   const [waitSeconds, setWaitSeconds] = useState(300)
@@ -49,7 +52,8 @@ export default function LiveSessionPage() {
   const audioRefs = useRef({
     send: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
     receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
-    ring: new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3'), // Suono tipo squillo
+    ring: new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3'), // Squillo Valeria
+    waiting: new Audio('https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3'), // Musica attesa cliente
     magic: new Audio('https://assets.mixkit.co/active_storage/sfx/2347/2347-preview.mp3') // Suono magico per typing
   })
 
@@ -67,7 +71,7 @@ export default function LiveSessionPage() {
     return () => clearInterval(interval)
   }, [isAccepted, sessionInfo?.actualStartAt])
 
-  // Tracciamento locale scrittura Valeria per UI e segnale backend
+  // Tracciamento locale scrittura Valeria
   useEffect(() => {
      if (!isStaff || !isAccepted || !inputText.trim()) return
      
@@ -77,17 +81,33 @@ export default function LiveSessionPage() {
      return () => clearInterval(interval)
   }, [isStaff, isAccepted, inputText])
 
-  // Gestione Squillo Chiamata (si ferma solo quando Valeria accetta o si chiude)
+  // Gestione Suoni Attesa/Squillo
   useEffect(() => {
-     if (isStaff && !isAccepted && !isEnding) {
-        audioRefs.current.ring.loop = true
-        void audioRefs.current.ring.play().catch(() => {})
+     if (!isLoaded) return
+
+     if (!isAccepted && !isEnding) {
+        if (isStaff) {
+           // Valeria sente lo squillo
+           audioRefs.current.ring.loop = true
+           void audioRefs.current.ring.play().catch(() => {})
+        } else {
+           // Il cliente sente la musica d'attesa (tipo telefono in attesa)
+           audioRefs.current.waiting.loop = true
+           void audioRefs.current.waiting.play().catch(() => {})
+        }
      } else {
         audioRefs.current.ring.pause()
-        audioRefs.current.ring.currentTime = 0
+        audioRefs.current.waiting.pause()
      }
-     return () => audioRefs.current.ring.pause()
-  }, [isStaff, isAccepted, isEnding])
+     return () => {
+        audioRefs.current.ring.pause()
+        audioRefs.current.waiting.pause()
+     }
+  }, [isStaff, isAccepted, isEnding, isLoaded])
+
+  if (!isLoaded) {
+     return <div className="fixed inset-0 bg-[#050810] flex items-center justify-center text-gold-500 font-serif">Inizializzazione Frequenze Sacre...</div>
+  }
 
   // Suono Magico quando l'altro scrive
   useEffect(() => {
@@ -216,7 +236,12 @@ export default function LiveSessionPage() {
   const handleAcceptSession = async () => {
     try {
       await apiJson(getToken, `/api/booking/session/${id}/accept`, { method: 'POST' })
-      setIsAccepted(true)
+      // Forza un refresh immediato per avere actual_start_at e far partire il timer subito
+      const res = await apiJson<{ sessionInfo: any }>(getToken, `/api/booking/session/${id}/messages`)
+      if (res.sessionInfo) {
+         setSessionInfo(res.sessionInfo)
+         setIsAccepted(true)
+      }
     } catch {
       alert("Errore accettazione.")
     }
@@ -255,6 +280,7 @@ export default function LiveSessionPage() {
   const [successData, setSuccessData] = useState<{ credits: number, euro: string } | null>(null)
 
   const handleManualExit = async () => {
+    // Se siamo già in sessione accettata
     if (isAccepted) {
       if (window.confirm("Vuoi chiudere definitivamente la sessione per entrambi?")) {
         if (isStaff) {
@@ -264,17 +290,21 @@ export default function LiveSessionPage() {
         }
         return
       }
-    } else {
-      // Se non ancora accettato e il cliente esce, segnaliamo l'abbandono per fermare lo squillo staff
-      if (!isStaff) {
-        if (window.confirm("Sei sicuro di voler uscire? La sessione verrà annullata.")) {
+      // Se clicca annulla sul confirm, resta qui
+      return
+    } 
+
+    // Se NON accettata (Siamo in attesa/squillo)
+    if (!isStaff) {
+       // Il cliente vuole uscire
+       if (window.confirm("Sei sicuro di voler uscire? La sessione verrà annullata.")) {
           await apiJson(getToken, `/api/booking/session/${id}/abandon`, { method: 'POST' }).catch(() => {})
           navigate('/area-personale')
-        }
-        return
-      }
+       }
+    } else {
+       // Valeria vuole uscire dall'attesa
+       navigate('/control-room')
     }
-    navigate(isStaff ? '/control-room' : '/area-personale')
   }
 
   const pickEmoji = (emoji: string) => {
