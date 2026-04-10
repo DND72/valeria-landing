@@ -1,4 +1,3 @@
-import fetch from 'node-fetch'
 
 const DAILY_API_KEY = process.env.DAILY_API_KEY
 const DAILY_API_URL = 'https://api.daily.co/v1'
