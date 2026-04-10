@@ -7,6 +7,7 @@ import { CONSULT_META, isValidConsultKind } from '../lib/consultPrices.js'
 import { sendTelegramNotification } from '../lib/telegram.js'
 import { getDiscountFactor } from '../lib/status.js'
 import { clerkClient } from '../middleware/clerkAuth.js'
+import { createDailyRoom, createDailyToken } from '../lib/dailyClient.js'
 
 
 export function createBookingRouter(pool: Pool): Router {
@@ -332,7 +333,78 @@ export function createBookingRouter(pool: Pool): Router {
 
   })
 
-  // --- SISTEMA CHAT LIVE ---
+  // --- SISTEMA CHAT LIVE / VIDEO LIVE ---
+  r.get('/video-session/:id', requireClerkAuth, async (req, res) => {
+    const { id } = req.params
+    const userId = req.auth?.userId
+
+    try {
+      const { rows } = await pool.query(
+        `SELECT clerk_user_id, status, consult_kind, actual_start_at, meeting_link
+         FROM consults WHERE id = $1`,
+        [id]
+      )
+      if (rows.length === 0) return res.status(404).json({ error: 'Sessione non trovata' })
+      const consult = rows[0]
+      
+      // Controlla se utente è Staff
+      let isStaff = false
+      if (clerkClient && userId) {
+        try {
+          const u = await clerkClient.users.getUser(userId)
+          isStaff = u.publicMetadata?.role === 'staff' || u.publicMetadata?.role === 'admin'
+        } catch {}
+      }
+
+      if (!isStaff && userId !== consult.clerk_user_id) {
+        return res.status(403).json({ error: 'Non autorizzato' })
+      }
+
+      let roomName = ''
+      // Generiamo / Recuperiamo la room
+      if (consult.meeting_link && consult.meeting_link.startsWith('daily:')) {
+        roomName = consult.meeting_link.split(':')[1]
+      } else {
+         // Generiamo la stanza su Daily.co (se non esiste)
+         // Lo facciamo on the fly. In produzione potremmo farlo nell'interfaccia staff
+         try {
+           const room = await createDailyRoom(undefined, Math.floor(Date.now() / 1000) + 3600 * 2) 
+           roomName = room.name
+           await pool.query(
+             `UPDATE consults SET meeting_link = $1, meeting_provider = 'daily', updated_at = now() WHERE id = $2`,
+             [`daily:${roomName}`, id]
+           )
+         } catch (roomErr: any) {
+           console.error('[daily room error]', roomErr)
+           return res.status(500).json({ error: 'Impossibile creare stanza Daily' })
+         }
+      }
+
+      // Ora forgiato il badge personale
+      try {
+         const token = await createDailyToken(roomName, isStaff)
+         const dailyUrl = \`https://nonsolotarocchi.daily.co/\${roomName}?t=\${token}\`
+         
+         res.json({
+           videoLink: dailyUrl,
+           sessionInfo: {
+             kind: consult.consult_kind,
+             status: consult.status,
+             actualStartAt: consult.actual_start_at,
+             costCredits: consult.cost_credits,
+             inviteeName: consult.invitee_name
+           }
+         })
+      } catch (tokenErr) {
+         console.error('[daily token error]', tokenErr)
+         return res.status(500).json({ error: 'Impossibile generare accesso video' })
+      }
+
+    } catch (e) {
+      console.error('[video-session get]', e)
+      res.status(500).json({ error: 'Errore generico' })
+    }
+  })
   r.get('/session/:id/messages', requireClerkAuth, async (req, res) => {
     const { id } = req.params
     try {
