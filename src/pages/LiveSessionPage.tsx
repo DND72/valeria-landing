@@ -206,7 +206,7 @@ export default function LiveSessionPage() {
                 }
              }
              // AUTO-ACCEPTANCE FOR STAFF
-             if (isStaff && res.sessionInfo.status === 'client_waiting' && !isAccepted) {
+             if (isStaff && !isAccepted && (res.sessionInfo.status === 'scheduled' || res.sessionInfo.status === 'client_waiting')) {
                 console.log("[Auto-Accepting session]", id)
                 void handleAcceptSession()
              }
@@ -269,8 +269,8 @@ export default function LiveSessionPage() {
          setIsAccepted(true)
       }
     } catch (e: any) {
-      console.error('[Accept error]', e)
-      alert(`Errore di accettazione: ${e.message || 'Riprova tra pochi istanti'}`)
+      console.warn('[Accept warning]', e.message)
+      // Disattivato l'alert per evitare spam durante l'auto-accettazione in polling
     }
   }
 
