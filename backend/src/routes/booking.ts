@@ -426,14 +426,24 @@ export function createBookingRouter(pool: Pool): Router {
     const { id } = req.params
     try {
        // Controlla se è già in progress
-       const { rows } = await pool.query(`SELECT status, clerk_user_id, cost_credits, status_billing FROM consults WHERE id = $1`, [id])
+       const { rows } = await pool.query(`SELECT status, clerk_user_id, cost_credits, status_billing, consult_kind, actual_start_at FROM consults WHERE id = $1`, [id])
        if (rows.length > 0 && rows[0].status === 'in_progress' && rows[0].status_billing !== 'billed') {
            const consult = rows[0]
-           // Billa la sessione (incassa da wallet locked a effettivo o simile)
-           if (consult.cost_credits > 0) {
+           
+           // Calculate duration if it's per minute
+           let finalCost = consult.cost_credits;
+           if (consult.consult_kind === 'chat_flash' || consult.consult_kind === 'chat_prenotabile') {
+               const start = consult.actual_start_at ? new Date(consult.actual_start_at).getTime() : Date.now();
+               const actualMinutes = Math.floor((Date.now() - start) / 60000);
+               const basePrice = consult.consult_kind === 'chat_flash' ? 1.5 : 1.1;
+               finalCost = Math.ceil(basePrice * Math.max(1, actualMinutes)); // almeno 1 min
+           }
+           
+           // Billa la sessione (incassa da wallet locked a effettivo)
+           if (finalCost > 0) {
               await pool.query(
                 `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'staff_claim', $3)`,
-                [consult.clerk_user_id, consult.cost_credits, id]
+                [consult.clerk_user_id, finalCost, id]
               )
            }
            await pool.query(`UPDATE consults SET status = 'done', status_billing = 'billed', updated_at = now() WHERE id = $1`, [id])

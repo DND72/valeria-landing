@@ -158,7 +158,7 @@ export default function StaffIncomingCallMonitor() {
 
             <h2 className="text-3xl font-serif font-bold text-white mb-2">Richiesta Chat in Arrivo!</h2>
             <p className="text-gold-400 font-bold uppercase tracking-[0.2em] text-sm mb-8 animate-pulse">
-               ⚡ {waitingCall.service_kind === 'chat_15' ? 'CONSULTO FLASH' : 'CONSULTO LIVE'}
+               ⚡ {waitingCall.service_kind === 'chat_flash' ? 'CONSULTO FLASH' : 'CONSULTO LIVE'}
             </p>
 
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-10">

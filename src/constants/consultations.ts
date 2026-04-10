@@ -10,9 +10,8 @@ export type ConsultKind =
   | 'combo_light'
   | 'combo_full'
   | 'free'
-  | 'chat_15'
-  | 'chat_30'
-  | 'chat_60'
+  | 'chat_prenotabile'
+  | 'chat_flash'
 
 export type ConsultChoice = {
   kind: ConsultKind
@@ -60,9 +59,8 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
     costCredits: 390
   },
   { kind: 'free', name: 'Consulto omaggio', duration: '7 minuti con Valeria', priceLabel: 'Free', icon: '🎁', costCredits: 0 },
-  { kind: 'chat_15', name: 'Chat Flash', duration: '15 min · Testo in Diretta', priceLabel: '1,20 €/min', icon: '⚡', costCredits: 18 },
-  { kind: 'chat_30', name: 'Chat Standard', duration: '30 min · Testo in Diretta', priceLabel: '1,10 €/min', icon: '💬', costCredits: 33 },
-  { kind: 'chat_60', name: 'Chat Profonda', duration: '60 min · Testo in Diretta', priceLabel: '1,00 €/min', icon: '✨', costCredits: 60 },
+  { kind: 'chat_flash', name: 'Chat Flash', duration: 'A Tempo', priceLabel: '1,50 cr/min', icon: '⚡', costCredits: 1.5 },
+  { kind: 'chat_prenotabile', name: 'Chat Prenotabile', duration: 'A Tempo', priceLabel: '1,10 cr/min', icon: '💬', costCredits: 1.1 },
 ]
 
 /** Settore offerta nel Diario cliente: letture vs coaching/crescita personale vs combo. */

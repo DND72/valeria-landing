@@ -405,11 +405,18 @@ export function createStaffRouter(pool: Pool): Router {
         return
       }
 
-      let actualCost = consult.cost_credits
-      let refundAmount = 0
-      
-      const { rows: typingRows } = await client.query(`SELECT valeria_typing_seconds FROM consults WHERE id = $1`, [id])
+      const { rows: typingRows } = await client.query(`SELECT valeria_typing_seconds, consult_kind FROM consults WHERE id = $1`, [id])
       const valeriaWritingSecs = typingRows[0]?.valeria_typing_seconds || 0
+      const consultKind = typingRows[0]?.consult_kind
+
+      // Calcola i costi effettivi scalati (specialmente per le chat 'a tempo')
+      let actualCost = consult.cost_credits
+      if (consultKind === 'chat_flash' || consultKind === 'chat_prenotabile') {
+         const basePrice = consultKind === 'chat_flash' ? 1.5 : 1.1;
+         actualCost = Math.ceil(basePrice * Math.max(1, actualDurationMinutes));
+      }
+      
+      let refundAmount = 0
       const valeriaWritingMins = valeriaWritingSecs / 60
 
       if (typeof actualDurationMinutes === 'number' && consult.consult_kind && consult.consult_kind in CONSULT_META) {

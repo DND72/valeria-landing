@@ -202,7 +202,7 @@ export default function LiveSessionPage() {
              }
              if (res.sessionInfo.status === 'done' || res.sessionInfo.status === 'cancelled') {
                 if (!isEnding) {
-                   navigate(isStaff ? '/control-room' : '/area-personale/i-miei-consulti')
+                   setIsEnding(true)
                 }
              }
              // AUTO-ACCEPTANCE FOR STAFF
@@ -274,32 +274,36 @@ export default function LiveSessionPage() {
     }
   }
 
-  const handleClaimSession = async () => {
-    if (!window.confirm("Sei sicura di voler terminare il consulto e incassare i crediti?")) return
+  const handleEndSession = async () => {
+    if (!window.confirm(`Sei ${isStaff ? 'sicura' : 'sicuro'} di voler terminare il consulto per entrambi?`)) return
     setIsEnding(true)
     try {
-      const actualMinutes = Math.floor(seconds / 60)
-      const res = await apiJson<any>(getToken, `/api/staff/consults/${id}/claim`, { 
-        method: 'POST',
-        body: JSON.stringify({ actualDurationMinutes: actualMinutes })
-      })
-      
-      const coinSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3')
-      void coinSound.play().catch(() => {})
-      
-      const creditsEarned = res.actualCost ?? currentTotalCost
-      const euroEarned = typeof creditsEarned === 'number' && !isNaN(creditsEarned) ? creditsEarned.toFixed(2) : "0.00"
-      
-      if (res.valeriaWritingSeconds) {
-         setValeriaWritingSeconds(res.valeriaWritingSeconds)
+      if (isStaff) {
+         const actualMinutes = Math.floor(seconds / 60)
+         const res = await apiJson<any>(getToken, `/api/staff/consults/${id}/claim`, { 
+           method: 'POST',
+           body: JSON.stringify({ actualDurationMinutes: actualMinutes })
+         })
+         
+         const coinSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3')
+         void coinSound.play().catch(() => {})
+         
+         const creditsEarned = res.actualCost ?? currentTotalCost
+         const euroEarned = typeof creditsEarned === 'number' && !isNaN(creditsEarned) ? creditsEarned.toFixed(2) : "0.00"
+         
+         if (res.valeriaWritingSeconds) {
+            setValeriaWritingSeconds(res.valeriaWritingSeconds)
+         }
+         
+         setSuccessData({
+           credits: creditsEarned,
+           euro: euroEarned
+         })
+      } else {
+         await apiJson(getToken, `/api/booking/session/${id}/abandon`, { method: 'POST' }).catch(() => {})
       }
-      
-      setSuccessData({
-        credits: creditsEarned,
-        euro: euroEarned
-      })
     } catch (e: any) {
-      alert(e.message || "Errore incasso.")
+      alert(e.message || "Errore chiusura.")
       setIsEnding(false)
     }
   }
@@ -307,33 +311,7 @@ export default function LiveSessionPage() {
   const [successData, setSuccessData] = useState<{ credits: number, euro: string } | null>(null)
 
   const handleManualExit = async () => {
-    // Se siamo già in sessione accettata
-    if (isAccepted) {
-      if (window.confirm("Vuoi chiudere definitivamente la sessione per entrambi?")) {
-        if (isStaff) {
-          await handleClaimSession()
-        } else {
-          // Se chiude il cliente per primo, fa l'abbandono per chiudere la sessione (contabilizzando i costi)
-          await apiJson(getToken, `/api/booking/session/${id}/abandon`, { method: 'POST' }).catch(() => {})
-          navigate('/area-personale')
-        }
-        return
-      }
-      // Se clicca annulla sul confirm, resta qui
-      return
-    } 
-
-    // Se NON accettata (Siamo in attesa/squillo)
-    if (!isStaff) {
-       // Il cliente vuole uscire
-       if (window.confirm("Sei sicuro di voler uscire? La sessione verrà annullata.")) {
-          await apiJson(getToken, `/api/booking/session/${id}/abandon`, { method: 'POST' }).catch(() => {})
-          navigate('/area-personale')
-       }
-    } else {
-       // Valeria vuole uscire dall'attesa
-       navigate('/control-room')
-    }
+     navigate(isStaff ? '/control-room' : '/area-personale')
   }
 
   const pickEmoji = (emoji: string) => {
@@ -433,12 +411,12 @@ export default function LiveSessionPage() {
             )}
 
 
-            {isStaff && isAccepted && (
+            {isAccepted && !isEnding && (
                <button 
-                  onClick={handleClaimSession}
+                  onClick={handleEndSession}
                   className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-black uppercase text-[9px] tracking-widest shadow-lg transition-all font-sans"
                >
-                  Termina
+                  Termina Chat
                </button>
             )}
 
@@ -553,26 +531,29 @@ export default function LiveSessionPage() {
             <form onSubmit={handleSendMessage} className="flex gap-4 items-end">
                <div className="flex-1 relative group font-sans">
                   <textarea 
+                     disabled={isEnding}
                      rows={1} value={inputText} onChange={(e) => setInputText(e.target.value)}
                      onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSendMessage(e as any) }
                      }}
-                     placeholder="Scrivi qui il tuo messaggio..."
+                     placeholder={isEnding ? "La chat è terminata." : "Scrivi qui il tuo messaggio..."}
                      className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-2xl ${
                         theme === 'dark' 
                            ? 'bg-white/[0.03] border-white/10 text-white placeholder:text-white/20 focus:border-gold-500/50' 
                            : 'bg-white border-dark-900/10 text-dark-900 placeholder:text-dark-900/40 focus:border-gold-600/60 shadow-inner'
-                     }`}
+                     } disabled:opacity-50`}
                   />
                   <button 
+                     disabled={isEnding}
                      type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                     className={`absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all ${theme === 'dark' ? 'text-white' : 'text-dark-900/60'}`}
+                     className={`absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all ${theme === 'dark' ? 'text-white' : 'text-dark-900/60'} disabled:opacity-50`}
                   >
                      <span className="text-xl">✨</span>
                   </button>
                   <button 
+                      disabled={isEnding}
                       type="button" onClick={() => fileInputRef.current?.click()}
-                      className="absolute right-14 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity"
+                      className="absolute right-14 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity disabled:opacity-30"
                   >
                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   </button>
@@ -580,7 +561,7 @@ export default function LiveSessionPage() {
                </div>
                <motion.button 
                   whileTap={{ scale: 0.9 }}
-                  type="submit" disabled={!inputText.trim()}
+                  type="submit" disabled={!inputText.trim() || isEnding}
                   className="w-14 h-14 flex items-center justify-center bg-gold-500 disabled:bg-white/5 text-dark-900 disabled:text-gray-500 rounded-full transition-all shadow-2xl shrink-0"
                >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
