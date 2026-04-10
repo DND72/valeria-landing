@@ -90,7 +90,7 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
     if (!apiConfigured) return
     setTodayLoading(true)
     try {
-      const r = await apiJson<MeetingsPayload>(getToken, '/api/staff/calendly-today')
+      const r = await apiJson<MeetingsPayload>(getToken, '/api/staff/appointments-today')
       setToday(r)
     } catch (e) {
       setToday({ configured: false, meetings: [], message: e instanceof ApiError ? String(e.message) : 'Errore caricamento.' })

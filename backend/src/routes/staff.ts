@@ -1,10 +1,7 @@
 import { Router } from 'express'
 import type { Pool } from 'pg'
 import { z } from 'zod'
-import { getStaffAvailabilityOrError } from '../lib/calendlyAvailability.js'
-import {
-  getStaffScheduledMeetingsOrError,
-} from '../lib/calendlyScheduledMeetings.js'
+
 import { requireClerkAuth, requireStaff } from '../middleware/clerkAuth.js'
 import { registerStaffClientRoutes } from './staffClientsRoutes.js'
 import { serviceKindFromEventName } from '../lib/consultServiceLabel.js'
@@ -44,29 +41,7 @@ export function createStaffRouter(pool: Pool): Router {
   const r = Router()
   r.use(requireClerkAuth, requireStaff)
 
-  r.get('/calendly-availability', async (_req, res) => {
-    try {
-      const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN
-      const payload = await getStaffAvailabilityOrError(token)
-      res.json(payload)
-    } catch (e) {
-      console.error('[staff calendly-availability]', e)
-      res.status(500).json({ error: 'Errore server' })
-    }
-  })
-
-  r.get('/calendly-scheduled-meetings', async (_req, res) => {
-    try {
-      const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN
-      const payload = await getStaffScheduledMeetingsOrError(token)
-      res.json(payload)
-    } catch (e) {
-      console.error('[staff calendly-scheduled-meetings]', e)
-      res.status(500).json({ error: 'Errore server' })
-    }
-  })
-
-  r.get('/calendly-today', async (_req, res) => {
+  r.get('/appointments-today', async (_req, res) => {
     try {
       const { rows } = await pool.query<{
         id: string;
@@ -222,11 +197,11 @@ export function createStaffRouter(pool: Pool): Router {
   r.get('/consults', async (_req, res) => {
     try {
       const { rows } = await pool.query(
-        `SELECT c.id, c.clerk_user_id, c.calendly_event_uri, c.status, c.is_free_consult,
+        `SELECT c.id, c.clerk_user_id, c.status, c.is_free_consult,
                 c.meeting_join_url, c.meeting_provider, 
                 COALESCE(c.invitee_email, bp.email_normalized) as invitee_email, 
                 COALESCE(c.invitee_name, bp.first_name || ' ' || bp.last_name, bp.email_normalized) as invitee_name,
-                c.start_at, c.end_at, c.paypal_order_id, c.calendly_event_name, c.created_at, c.updated_at,
+                c.start_at, c.end_at, c.paypal_order_id, c.created_at, c.updated_at,
                 c.consult_kind, c.status_billing
          FROM consults c
          LEFT JOIN client_billing_profiles bp ON c.clerk_user_id = bp.clerk_user_id
@@ -237,7 +212,7 @@ export function createStaffRouter(pool: Pool): Router {
         consults: rows.map((row) => ({
           ...row,
           service_kind: serviceKindFromEventName(
-            typeof row.calendly_event_name === 'string' ? row.calendly_event_name : null
+            null
           ),
         })),
       })
@@ -285,8 +260,8 @@ export function createStaffRouter(pool: Pool): Router {
       vals.push(id)
       await pool.query(`UPDATE consults SET ${sets.join(', ')} WHERE id = $${i}`, vals)
       const row = await pool.query(
-        `SELECT id, clerk_user_id, calendly_event_uri, status, is_free_consult,
-                meeting_join_url, invitee_email, start_at, end_at, calendly_event_name, updated_at,
+        `SELECT id, clerk_user_id, status, is_free_consult,
+                meeting_join_url, invitee_email, start_at, end_at, consult_kind, updated_at,
                 cost_credits, status_billing
          FROM consults WHERE id = $1`,
         [id]
@@ -295,9 +270,6 @@ export function createStaffRouter(pool: Pool): Router {
       res.json({
         consult: {
           ...r0,
-          service_kind: serviceKindFromEventName(
-            typeof r0.calendly_event_name === 'string' ? r0.calendly_event_name : null
-          ),
         },
       })
     } catch (e) {
@@ -310,9 +282,9 @@ export function createStaffRouter(pool: Pool): Router {
     const id = req.params.id
     try {
       const c = await pool.query(
-        `SELECT id, clerk_user_id, calendly_event_uri, calendly_invitee_uri, status, is_free_consult,
+        `SELECT id, clerk_user_id, status, is_free_consult,
                 meeting_join_url, meeting_provider, invitee_email, invitee_name,
-                start_at, end_at, paypal_order_id, calendly_event_name, raw_payload, created_at, updated_at,
+                start_at, end_at, paypal_order_id, consult_kind, created_at, updated_at,
                 cost_credits, status_billing
          FROM consults WHERE id = $1`,
         [id]
@@ -331,7 +303,7 @@ export function createStaffRouter(pool: Pool): Router {
         consult: {
           ...row,
           service_kind: serviceKindFromEventName(
-            typeof row.calendly_event_name === 'string' ? row.calendly_event_name : null
+            null
           ),
         },
         notes: notes.rows,

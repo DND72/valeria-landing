@@ -37,8 +37,7 @@ const DAYS_LABELS = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì'
 type ConsultRow = {
   id: string
   clerk_user_id: string | null
-  calendly_event_uri: string | null
-  calendly_event_name?: string | null
+
   status: string
   is_free_consult: boolean
   meeting_join_url: string | null
@@ -943,10 +942,6 @@ export default function ControlRoom() {
                     <div>
                       <dt className="text-white/40">Clerk cliente</dt>
                       <dd className="text-white/90 font-mono text-xs break-all">{detailConsult.clerk_user_id || '—'}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-white/40">Tipo consulto (Interno)</dt>
-                      <dd className="text-white/90">{detailConsult.calendly_event_name?.trim() || '—'}</dd>
                     </div>
                     <div>
                       <dt className="text-white/40">Indicativo</dt>

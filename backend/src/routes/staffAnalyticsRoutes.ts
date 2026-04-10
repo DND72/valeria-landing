@@ -31,18 +31,12 @@ export function registerStaffAnalyticsRoutes(r: Router, pool: Pool): void {
          ORDER BY 1 ASC`
       )
  
-      // === 2. Distribuzione per tipo (Supporta sia consult_kind che calendly_event_name) ===
+      // === 2. Distribuzione per tipo ===
       const typeRows = await pool.query<{ kind: string; n: string }>(
         `SELECT
            COALESCE(
              consult_kind,
-             CASE
-               WHEN LOWER(calendly_event_name) ILIKE '%combo full%'   THEN 'combo_full'
-               WHEN LOWER(calendly_event_name) ILIKE '%combo light%'  THEN 'combo_light'
-               WHEN LOWER(calendly_event_name) ILIKE '%coaching%'     THEN 'coaching'
-               WHEN LOWER(calendly_event_name) ILIKE '%tarocch%'      THEN 'tarocchi'
-               ELSE 'altro'
-             END
+             'altro'
            ) AS kind,
            COUNT(*)::text AS n
          FROM consults

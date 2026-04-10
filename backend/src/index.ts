@@ -3,7 +3,7 @@ import cors from 'cors'
 import express from 'express'
 import { pool } from './db.js'
 import { isValidArticleSlug } from './lib/articleSlugs.js'
-import { createCalendlyWebhookHandler } from './routes/calendlyWebhook.js'
+
 import { createPaymentsRouter } from './routes/payments.js'
 import { createMeRouter } from './routes/me.js'
 import { createStaffRouter } from './routes/staff.js'
@@ -49,11 +49,7 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, service: 'valeria-landing-api' })
 })
 
-app.post(
-  '/api/calendly/webhook',
-  express.raw({ type: 'application/json' }),
-  createCalendlyWebhookHandler(pool)
-)
+
 
 // Stripe webhook deve ricevere il body RAW (prima di express.json)
 const paymentsRouter = createPaymentsRouter(pool)

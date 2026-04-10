@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { clerkClient, requireClerkAuth } from '../middleware/clerkAuth.js'
 import { registerMeBlogCommentRoutes } from './meBlogComments.js'
 import { registerMeReviewRoutes } from './meReviews.js'
-import { calendlyPost } from '../lib/calendlyClient.js'
+
 
 const taxCodeBody = z.object({
   firstName: z.string().min(1).max(200),
@@ -247,8 +247,8 @@ export function createMeRouter(pool: Pool): Router {
       
       const bonusRes = await pool.query(
         `SELECT 
-           COUNT(*) FILTER (WHERE calendly_event_name ILIKE '%7 min%') > 0 as has_used_7,
-           COUNT(*) FILTER (WHERE calendly_event_name ILIKE '%conoscenza%' OR calendly_event_name ILIKE '%10 min%') > 0 as has_used_10
+           COUNT(*) FILTER (WHERE consult_kind = 'free') > 0 as has_used_7,
+           COUNT(*) FILTER (WHERE consult_kind = 'free') > 0 as has_used_10
          FROM consults
          WHERE (clerk_user_id = $1 OR (invitee_email IS NOT NULL AND LOWER(TRIM(invitee_email)) = $2))
            AND status <> 'cancelled'`,
@@ -437,7 +437,7 @@ export function createMeRouter(pool: Pool): Router {
       await client.query('BEGIN')
       
       const { rows } = await client.query(
-        `SELECT clerk_user_id, status, calendly_invitee_uri, start_at, cost_credits, reschedule_count
+        `SELECT clerk_user_id, status, start_at, cost_credits, reschedule_count
          FROM consults WHERE id = $1 FOR UPDATE`,
         [req.params.id]
       )
@@ -461,15 +461,7 @@ export function createMeRouter(pool: Pool): Router {
          throw new Error('Hai già usufruito di uno spostamento per questo consulto in precedenza.')
       }
 
-      // 1. Diciamo a Calendly di liberare lo slot di Valeria
-      if (c.calendly_invitee_uri) {
-         const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN
-         if (token) {
-           await calendlyPost(c.calendly_invitee_uri + '/cancellation', token, {
-             reason: action === 'cancel' ? "Cancellato dal cliente via sito web." : "Il cliente ha disdetto per riprogrammare con i fondi restituiti."
-           }).catch(err => console.error('[calendly cancel fail]', err))
-         }
-      }
+
 
       // 2. Restituiamo i crediti locked rendendoli available, pronti per un nuovo repick
       if (c.cost_credits > 0) {
