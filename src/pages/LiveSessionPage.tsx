@@ -131,13 +131,13 @@ export default function LiveSessionPage() {
 
   // Segnale di Entrata Cliente
   useEffect(() => {
-     if (isStaff || !id) return
+     if (!isLoaded || isStaff || !id) return
      void apiJson(getToken, `/api/booking/session/${id}/enter`, { method: 'POST' }).catch(() => {})
-  }, [id, isStaff, getToken])
+  }, [id, isStaff, isLoaded, getToken])
 
   // POLLING MESSAGGI E STATUS
   useEffect(() => {
-    if (!id) return
+    if (!isLoaded || !id) return
     
     let isMounted = true
     const fetchMessages = async () => {
@@ -176,7 +176,7 @@ export default function LiveSessionPage() {
              }
              if (res.sessionInfo.status === 'done' || res.sessionInfo.status === 'cancelled') {
                 if (!isEnding) {
-                   navigate(isStaff ? '/control-room' : '/area-personale')
+                   navigate(isStaff ? '/control-room' : '/area-personale/i-miei-consulti')
                 }
              }
           }
@@ -324,6 +324,15 @@ export default function LiveSessionPage() {
 
   const clientName = sessionInfo?.inviteeName || 'Anima in Cammino'
   const displayName = isStaff ? clientName : 'Valeria Di Pace'
+
+  if (!isLoaded) {
+    return (
+      <div className="fixed inset-0 bg-[#050810] flex flex-col items-center justify-center gap-4 z-[99999]">
+        <div className="w-12 h-12 rounded-full border-2 border-gold-500/20 border-t-gold-500 animate-spin" />
+        <p className="text-gold-500/60 font-serif text-sm uppercase tracking-widest">Inizializzazione Frequenza…</p>
+      </div>
+    )
+  }
 
   return (
     <div className={`fixed inset-0 h-screen w-screen flex flex-col z-[10000] overflow-hidden transition-colors duration-700 ${

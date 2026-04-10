@@ -5,6 +5,8 @@ import { Navigate, Link } from 'react-router-dom'
 import { apiJson } from '../lib/api'
 import { getApiBaseUrl } from '../constants/api'
 import ClientLayout from '../components/dashboard/ClientLayout'
+import TransactionHistory from '../components/dashboard/TransactionHistory'
+import { useMeApi } from '../api/me'
 
 type ConsultRow = {
   id: string
@@ -56,6 +58,12 @@ export default function MyConsultsPage() {
   const [consults, setConsults] = useState<ConsultRow[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  const [wallet, setWallet] = useState<{ balanceAvailable: number; balanceLocked: number } | null>(null)
+  const [transactions, setTransactions] = useState<any[] | null>(null)
+  const [transactionsLoading, setTransactionsLoading] = useState(false)
+
+  const meApi = useMeApi()
 
   const [selectedConsult, setSelectedConsult] = useState<ConsultRow | null>(null)
   const [eligibility, setEligibility] = useState<Eligibility | null>(null)
@@ -81,7 +89,28 @@ export default function MyConsultsPage() {
     }
   }, [isLoaded, user, getToken, apiOk])
 
-  useEffect(() => { void load() }, [load])
+  const loadWallet = useCallback(async () => {
+    if (!user) return
+    try {
+      const data = await apiJson<{ balanceAvailable: number; balanceLocked: number }>(getToken, '/api/wallet/me')
+      setWallet(data)
+    } catch { /* ignore */ }
+  }, [user, getToken])
+
+  const loadTransactions = useCallback(async () => {
+    if (!user) return
+    setTransactionsLoading(true)
+    try {
+      const res = await meApi.getWalletTransactions()
+      setTransactions(res.transactions)
+    } catch { setTransactions([]) } finally { setTransactionsLoading(false) }
+  }, [user, meApi])
+
+  useEffect(() => { 
+    void load()
+    void loadWallet()
+    void loadTransactions()
+  }, [load, loadWallet, loadTransactions])
 
   const loadEligibility = useCallback(async (cid: string) => {
     setReviewLoading(true)
@@ -143,9 +172,27 @@ export default function MyConsultsPage() {
     <ClientLayout title="I miei Consulti" subtitle="Cronologia Astrale">
       <div className="space-y-12">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <p className="text-white/40 text-sm mb-10">
-            Storico completo delle tue sessioni con Valeria.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <p className="text-white/40 text-sm">
+              Storico completo delle tue sessioni con Valeria.
+            </p>
+            {wallet && (
+              <div className="flex items-center gap-2">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                  <p className="text-[10px] text-emerald-400/70 uppercase tracking-widest font-medium mb-0.5">Disponibile</p>
+                  <p className="text-sm font-bold text-emerald-400 leading-none">{wallet.balanceAvailable} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl backdrop-blur-sm">
+                  <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-medium mb-0.5">Impegnato</p>
+                  <p className="text-sm font-bold text-amber-400 leading-none">{wallet.balanceLocked} <span className="text-[10px] font-normal uppercase opacity-70">CR</span></p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mb-10">
+             <TransactionHistory transactions={transactions} loading={transactionsLoading} />
+          </div>
 
           {/* Loading */}
           {loading && (

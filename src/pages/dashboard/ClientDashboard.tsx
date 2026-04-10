@@ -7,7 +7,6 @@ import SiteReviewComposer from '../../components/SiteReviewComposer'
 import BigFiveWidget from '../../components/BigFiveWidget'
 import AstralRankCard from '../../components/dashboard/AstralRankCard'
 import AstralBadge from '../../components/dashboard/AstralBadge'
-import TransactionHistory from '../../components/dashboard/TransactionHistory'
 import TaxInfoForm from '../../components/dashboard/TaxInfoForm'
 import BookingFlow from '../../components/dashboard/BookingFlow'
 import ClientLayout from '../../components/dashboard/ClientLayout'
@@ -71,8 +70,6 @@ export default function ClientDashboard() {
   const [myCharts, setMyCharts] = useState<SavedNatalChart[] | null>(null)
   const [myChartsLoading, setMyChartsLoading] = useState(false)
   const [wallet, setWallet] = useState<{ balanceAvailable: number; balanceLocked: number } | null>(null)
-  const [transactions, setTransactions] = useState<any[] | null>(null)
-  const [transactionsLoading, setTransactionsLoading] = useState(false)
 
   const [profileLoading, setProfileLoading] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
@@ -120,15 +117,6 @@ export default function ClientDashboard() {
     }
   }, [user, getMyCharts])
 
-  const loadTransactions = useCallback(async () => {
-    if (!user) return
-    setTransactionsLoading(true)
-    try {
-      const res = await meApi.getWalletTransactions()
-      setTransactions(res.transactions)
-    } catch { setTransactions([]) } finally { setTransactionsLoading(false) }
-  }, [user, meApi])
-
   const loadProfile = useCallback(async () => {
     if (!user) return
     setProfileLoading(true)
@@ -156,9 +144,8 @@ export default function ClientDashboard() {
     void loadMyConsults()
     void loadWallet()
     void loadMyCharts()
-    void loadTransactions()
     void loadProfile()
-  }, [loadMyConsults, loadWallet, loadMyCharts, loadTransactions, loadProfile])
+  }, [loadMyConsults, loadWallet, loadMyCharts, loadProfile])
 
   useEffect(() => {
     if (!user) return
@@ -225,63 +212,6 @@ export default function ClientDashboard() {
   return (
     <ClientLayout title="Il tuo Diario" subtitle="Evoluzione Astrale">
       <div className="space-y-12">
-        {/* ── Annuncio Dono del Cosmo ── */}
-        {transactions && transactions.length > 0 && (() => {
-          const lastBonus = transactions.find(t => t.tx_type === 'bonus');
-          if (!lastBonus) return null;
-          
-          const bonusId = lastBonus.id;
-          const isDismissed = typeof window !== 'undefined' && localStorage.getItem(`bonus_seen_${bonusId}`);
-          if (isDismissed) return null;
-
-          const label = lastBonus.reference_id || '';
-          let icon = "✨";
-          let message = "Il Cosmo ti ha inviato un dono speciale nel tuo Diario.";
-          let colorClass = "from-gold-500/20 to-amber-500/5 border-gold-500/30 text-gold-200";
-
-          if (label.includes("Cometa")) {
-            icon = "☄️";
-            message = "La cometa è appena apparsa sul tuo cielo, ti porta un bonus di 30 crediti per il prossimo consulto.";
-            colorClass = "from-indigo-500/20 to-blue-500/5 border-indigo-500/30 text-indigo-200";
-          } else if (label.includes("Stella")) {
-            icon = "⭐";
-            message = "Una Stella brilla nel tuo Diario: il cosmo ti omaggia con 50 crediti per illuminare il tuo cammino.";
-            colorClass = "from-gold-500/30 to-amber-600/10 border-gold-400/50 text-gold-100";
-          } else if (label.includes("Costellazione")) {
-            icon = "🌌";
-            message = "Una Costellazione di opportunità: 100 crediti bonus accreditati per le tue mappe astrali.";
-            colorClass = "from-purple-600/20 to-fuchsia-500/5 border-purple-500/40 text-purple-100";
-          }
-
-          return (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className={`relative p-6 rounded-2xl border bg-gradient-to-br ${colorClass} shadow-xl overflow-hidden mb-8`}
-            >
-              <div className="absolute top-0 right-0 p-2">
-                <button 
-                  onClick={() => {
-                    localStorage.setItem(`bonus_seen_${bonusId}`, '1');
-                    setTransactions([...transactions]); // Trigger re-render
-                  }}
-                  className="text-white/30 hover:text-white/60 p-1"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
-              <div className="flex items-center gap-5">
-                <div className="text-4xl animate-pulse">{icon}</div>
-                <div>
-                  <h3 className="font-serif text-lg font-bold mb-1">Dono del Cosmo Ricevuto</h3>
-                  <p className="text-sm opacity-90 leading-relaxed font-light italic">"{message}"</p>
-                </div>
-              </div>
-              <div className="absolute -bottom-6 -right-6 text-6xl opacity-10 pointer-events-none">{icon}</div>
-            </motion.div>
-          );
-        })()}
-
         {/* ── Status Header ── */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -335,8 +265,6 @@ export default function ClientDashboard() {
           </motion.div>
         )}
         <AstralRankCard user={user} donePaidConsults={taxInfo?.donePaidConsults || 0} />
-
-        <TransactionHistory transactions={transactions} loading={transactionsLoading} />
 
 
         {/* ── Finestre Live ── */}
