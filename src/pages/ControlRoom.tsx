@@ -732,7 +732,16 @@ export default function ControlRoom() {
           </div>
           
           <div className="flex items-center gap-2">
-             <button 
+              <button 
+                onClick={() => navigate('/video-test')}
+                className="p-2.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all flex items-center gap-2"
+                title="Prova la tua inquadratura e lo sfondo"
+              >
+                 <span className="text-xl">📹</span>
+                 <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Prova Specchio</span>
+              </button>
+
+              <button 
                onClick={() => setAudioEnabled(!audioEnabled)}
                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${audioEnabled ? 'bg-gold-500/10 border-gold-500/30 text-gold-400' : 'bg-white/5 border-white/10 text-white/30'}`}
                title={audioEnabled ? "Disattiva avvisi acustici" : "Attiva avvisi acustici"}

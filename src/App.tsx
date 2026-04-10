@@ -114,6 +114,7 @@ function AppRoutes() {
 
             <Route path="/sessione/:id" element={<LiveSessionPage />} />
             <Route path="/video-session/:id" element={<LiveVideoPage />} />
+            <Route path="/video-test" element={<VideoTestPage />} />
             <Route path="/affinita-di-coppia" element={<SynastryPage />} />
             <Route path="/maree-del-cuore" element={<HeartTidesPage />} />
       </Routes>

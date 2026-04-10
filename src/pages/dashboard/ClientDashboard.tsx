@@ -264,6 +264,27 @@ export default function ClientDashboard() {
             )}
           </motion.div>
         )}
+
+        {/* ── Test Video / Privacy Check ── */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mystical-card border-indigo-500/20 bg-indigo-500/[0.02] flex flex-col sm:flex-row items-center justify-between gap-6"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-2xl border border-indigo-500/20">
+              🪞
+            </div>
+            <div>
+              <h3 className="text-white font-bold leading-tight">Lo Specchio Sacro</h3>
+              <p className="text-white/40 text-xs mt-1">Prova camera, audio e sfocatura sfondo prima del consulto.</p>
+            </div>
+          </div>
+          <Link to="/video-test" className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(79,70,229,0.2)]">
+            Inizia Test
+          </Link>
+        </motion.div>
+
         <AstralRankCard user={user} donePaidConsults={taxInfo?.donePaidConsults || 0} />
 
 
