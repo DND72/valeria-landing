@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth, useClerk, useUser } from '@clerk/clerk-react'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { apiJson } from '../../lib/api'
 import { type ValeriaPresenceStatus } from '../../lib/valeriaPresence'
 import { getApiBaseUrl } from '../../constants/api'
@@ -46,6 +46,13 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
   const [presenceSaving, setPresenceSaving] = useState(false)
 
   const [hasNewRequest, setHasNewRequest] = useState(false)
+  const prevWaitingIdsRef = useRef<Set<string>>(new Set())
+  const audioNotificationRef = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    // Inizializza l'avviso acustico globale per nuova richiesta (indipendentemente dalla pagina)
+    audioNotificationRef.current = new Audio('/sounds/suono_suora.mp3')
+  }, [])
   
   const loadPresence = useCallback(async () => {
     if (!getApiBaseUrl()) return
@@ -53,10 +60,26 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
     if (presenceSaving) return
 
     try {
-      // Per il segnale di "nuova richiesta", controlliamo l'elenco dei consulti in attesa
+      // Per il segnale di "nuova richiesta", controlliamo l'elenco dei consulti appena prenotati o in attesa
       const consults = await apiJson<any[]>(getToken, '/api/staff/consults')
-      const waiting = consults?.some(c => c.status === 'client_waiting')
-      setHasNewRequest(!!waiting)
+      const waitingConsults = consults?.filter(c => c.status === 'scheduled' || c.status === 'client_waiting') || []
+      
+      setHasNewRequest(waitingConsults.length > 0)
+
+      // Se troviamo un consulto con ID che non avevamo visto nello stato "in attesa", suoniamo!
+      const currentWaitingIds = new Set(waitingConsults.map(c => c.id))
+      let hasNew = false
+      for (const id of currentWaitingIds) {
+         if (!prevWaitingIdsRef.current.has(id)) {
+            hasNew = true
+            break
+         }
+      }
+      
+      if (hasNew) {
+         void audioNotificationRef.current?.play().catch(() => {})
+      }
+      prevWaitingIdsRef.current = currentWaitingIds
 
       // Carichiamo anche la presenza
       const r = await apiJson<{ status: ValeriaPresenceStatus }>(getToken, '/api/staff/presence')

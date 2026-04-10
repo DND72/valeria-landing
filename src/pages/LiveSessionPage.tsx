@@ -313,6 +313,8 @@ export default function LiveSessionPage() {
         if (isStaff) {
           await handleClaimSession()
         } else {
+          // Se chiude il cliente per primo, fa l'abbandono per chiudere la sessione (contabilizzando i costi)
+          await apiJson(getToken, `/api/booking/session/${id}/abandon`, { method: 'POST' }).catch(() => {})
           navigate('/area-personale')
         }
         return

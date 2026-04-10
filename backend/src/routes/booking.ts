@@ -425,6 +425,21 @@ export function createBookingRouter(pool: Pool): Router {
   r.post('/session/:id/abandon', requireClerkAuth, async (req, res) => {
     const { id } = req.params
     try {
+       // Controlla se è già in progress
+       const { rows } = await pool.query(`SELECT status, clerk_user_id, cost_credits, status_billing FROM consults WHERE id = $1`, [id])
+       if (rows.length > 0 && rows[0].status === 'in_progress' && rows[0].status_billing !== 'billed') {
+           const consult = rows[0]
+           // Billa la sessione (incassa da wallet locked a effettivo o simile)
+           if (consult.cost_credits > 0) {
+              await pool.query(
+                `INSERT INTO wallet_transactions (clerk_user_id, amount, tx_type, reference_id) VALUES ($1, $2, 'staff_claim', $3)`,
+                [consult.clerk_user_id, consult.cost_credits, id]
+              )
+           }
+           await pool.query(`UPDATE consults SET status = 'done', status_billing = 'billed', updated_at = now() WHERE id = $1`, [id])
+           return res.json({ ok: true, billed: true })
+       }
+
        // Se il cliente abbandona prima che valeria accetti, cancelliamo.
        // Se è già in progress, potremmo voler gestire un rimborso parziale o simili, 
        // ma per ora lo settiamo a 'done' o 'cancelled' per fermare la sessione.
