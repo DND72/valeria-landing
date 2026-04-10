@@ -429,7 +429,7 @@ export default function NatalChartPage() {
   }
 
   return (
-    <ClientLayout title="Tema Natale Free" subtitle="Il tuo Progetto Celeste" hideSidebar={true}>
+    <ClientLayout title="Tema Natale Free" subtitle="Il tuo Progetto Celeste">
       <div className="max-w-4xl mx-auto px-6 py-12">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-14">
             <p className="text-gold-500 text-[10px] font-semibold tracking-[0.25em] uppercase mb-4">✦ Astrologia di Precisione</p>

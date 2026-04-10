@@ -27,6 +27,7 @@ const ADMIN_LINKS = [
   { to: '/gestione-clienti', label: 'Gestione Clienti', emoji: '📇' },
   { to: '/gestione-recensioni', label: 'Recensioni', emoji: '⭐' },
   { to: '/gestione-commenti-blog', label: 'Commenti Blog', emoji: '💬' },
+  { to: '/video-test', label: 'Specchio Magico', emoji: '🪞' },
 ]
 
 export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', onToggleTheme }: StaffSidebarProps) {

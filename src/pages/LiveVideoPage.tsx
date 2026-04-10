@@ -21,7 +21,7 @@ export default function LiveVideoPage() {
   const [isEnding, setIsEnding] = useState(false)
   const [dailyRoomUrl, setDailyRoomUrl] = useState<string | null>(null)
   const [successData, setSuccessData] = useState<{ credits: number, euro: string } | null>(null)
-  const [attachments, setAttachments] = useState<any[]>([])
+  const [attachments] = useState<any[]>([])
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
