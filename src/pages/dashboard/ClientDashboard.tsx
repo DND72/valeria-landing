@@ -324,58 +324,71 @@ export default function ClientDashboard() {
 
         {/* ── Storico consulti ── */}
         <motion.section id="storico" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.38 }} className="mb-10 scroll-mt-28">
-          <h2 className="font-serif text-xl font-bold text-white mb-1">I tuoi consulti</h2>
-          <p className="text-white/40 text-sm mb-4 max-w-2xl">Storico degli appuntamenti prenotati tramite app.</p>
+          <h2 className="font-serif text-xl font-bold text-white mb-1">A colpo d'occhio</h2>
+          <p className="text-white/40 text-sm mb-4 max-w-2xl">Gli appuntamenti di oggi e le tue prossime sessioni programmate.</p>
           {!getApiBaseUrl() && <p className="text-amber-200/80 text-sm">Servizio storico non disponibile senza connessione al server.</p>}
           {getApiBaseUrl() && myConsultsLoading && <p className="text-white/45 text-sm">Caricamento elenco…</p>}
-          {getApiBaseUrl() && !myConsultsLoading && myConsults?.length === 0 && (
+          {getApiBaseUrl() && !myConsultsLoading && (!myConsults || myConsults.length === 0) && (
             <div className="mystical-card border border-white/10">
-              <p className="text-white/50 text-sm">Non risultano ancora consulti collegati.</p>
+              <p className="text-white/50 text-sm">Non risultano appuntamenti imminenti.</p>
             </div>
           )}
           {getApiBaseUrl() && !myConsultsLoading && myConsults && myConsults.length > 0 && (
             <div className="relative pl-5 border-l-2 border-gold-600/30 space-y-8 my-10 ml-2">
-              {myConsults.map((c) => {
-                const startDate = c.start_at ? new Date(c.start_at) : null
-                const isPast = !startDate || startDate < new Date()
-                const isSoon = !isPast && startDate && (startDate.getTime() - new Date().getTime() < 15 * 60 * 1000)
-                const statusBadge = c.status === 'done'
-                  ? { label: 'Completato', cls: 'border-emerald-600/30 text-emerald-400/80', dot: 'bg-emerald-400' }
-                  : c.status === 'cancelled'
-                  ? { label: 'Cancellato', cls: 'border-red-800/30 text-red-400/60', dot: 'bg-red-400' }
-                  : { label: isPast ? 'Passato' : 'In programma', cls: isPast ? 'border-white/15 text-white/35' : 'border-gold-600/35 text-gold-400/80', dot: isPast ? 'bg-white/30' : 'bg-gold-400 animate-pulse' }
-                return (
-                  <div key={c.id} className="relative">
-                    <div className={`absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-dark-500 ${statusBadge.dot}`} />
-                    <div className={`mystical-card p-0 overflow-hidden border ${isSoon ? 'border-gold-500/50 bg-gold-500/[0.03]' : 'border-white/10 bg-white/[0.02]'}`}>
-                      <div className="p-4">
-                        <div className="flex flex-wrap justify-between items-start gap-3 mb-2">
-                          <div>
-                            <span className="text-gold-500/80 text-xs font-mono">{formatConsultWhen(c.start_at)}</span>
-                            <h4 className="text-white font-medium text-sm mt-0.5">{c.is_free_consult ? 'Consulto Omaggio (7 min)' : 'Consulto con Valeria'}</h4>
+              {myConsults
+                .filter(c => {
+                   if (c.status === 'cancelled') return false
+                   const start = c.start_at ? new Date(c.start_at) : null
+                   if (!start) return c.status === 'scheduled'
+                   
+                   const now = new Date()
+                   const isToday = start.getDate() === now.getDate() && 
+                                   start.getMonth() === now.getMonth() && 
+                                   start.getFullYear() === now.getFullYear()
+                   
+                   return c.status === 'scheduled' || isToday
+                })
+                .map((c) => {
+                  const startDate = c.start_at ? new Date(c.start_at) : null
+                  const isPast = !startDate || startDate < new Date()
+                  const isSoon = !isPast && startDate && (startDate.getTime() - new Date().getTime() < 15 * 60 * 1000)
+                  const statusBadge = c.status === 'done'
+                    ? { label: 'Completato', cls: 'border-emerald-600/30 text-emerald-400/80', dot: 'bg-emerald-400' }
+                    : c.status === 'cancelled'
+                    ? { label: 'Cancellato', cls: 'border-red-800/30 text-red-400/60', dot: 'bg-red-400' }
+                    : { label: isPast ? 'Passato' : 'In programma', cls: isPast ? 'border-white/15 text-white/35' : 'border-gold-600/35 text-gold-400/80', dot: isPast ? 'bg-white/30' : 'bg-gold-400 animate-pulse' }
+                  return (
+                    <div key={c.id} className="relative">
+                      <div className={`absolute -left-[27px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-dark-500 ${statusBadge.dot}`} />
+                      <div className={`mystical-card p-0 overflow-hidden border ${isSoon ? 'border-gold-500/50 bg-gold-500/[0.03]' : 'border-white/10 bg-white/[0.02]'}`}>
+                        <div className="p-4">
+                          <div className="flex flex-wrap justify-between items-start gap-3 mb-2">
+                            <div>
+                              <span className="text-gold-500/80 text-xs font-mono">{formatConsultWhen(c.start_at)}</span>
+                              <h4 className="text-white font-medium text-sm mt-0.5">{c.is_free_consult ? 'Consulto Omaggio (7 min)' : 'Consulto con Valeria'}</h4>
+                            </div>
+                            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${statusBadge.cls}`}>{statusBadge.label}</span>
                           </div>
-                          <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${statusBadge.cls}`}>{statusBadge.label}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-3 p-3 bg-white/[0.03] border-t border-white/5 items-center justify-between">
+                          {c.status === 'scheduled' && !isPast && (
+                            <Link to={`/sessione/${c.id}`} className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 ${isSoon ? 'bg-gold-500 text-dark-500 hover:bg-gold-400' : 'bg-white/10 text-gold-400 hover:bg-white/20 border border-gold-500/30'}`}>
+                              {isSoon ? 'Entra nel Consulto Live' : 'Apri la ChatRoom'} <span>→</span>
+                            </Link>
+                          )}
+                          {!isPast && c.status === 'scheduled' && (
+                            <div className="flex gap-2 ml-auto">
+                              {c.reschedule_count === 0 && (
+                                <button onClick={() => { if (window.confirm("Vuoi spostare la data? I crediti verranno rimborsati.")) handleConsultAction(c.id, 'reschedule') }} className="px-3 py-1.5 rounded-full border border-gold-500/30 text-gold-400 text-xs hover:bg-gold-500/10">Sposta Data</button>
+                              )}
+                              <button onClick={() => { if (window.confirm("Sei sicuro di voler disdire?")) handleConsultAction(c.id, 'cancel') }} className="px-3 py-1.5 rounded-full border border-red-500/30 text-red-400 text-xs hover:bg-red-500/10">Disdici</button>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-3 p-3 bg-white/[0.03] border-t border-white/5 items-center justify-between">
-                        {c.status === 'scheduled' && !isPast && (
-                          <Link to={`/sessione/${c.id}`} className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 ${isSoon ? 'bg-gold-500 text-dark-500 hover:bg-gold-400' : 'bg-white/10 text-gold-400 hover:bg-white/20 border border-gold-500/30'}`}>
-                            {isSoon ? 'Entra nel Consulto Live' : 'Apri la ChatRoom'} <span>→</span>
-                          </Link>
-                        )}
-                        {!isPast && c.status === 'scheduled' && (
-                          <div className="flex gap-2 ml-auto">
-                            {c.reschedule_count === 0 && (
-                              <button onClick={() => { if (window.confirm("Vuoi spostare la data? I crediti verranno rimborsati.")) handleConsultAction(c.id, 'reschedule') }} className="px-3 py-1.5 rounded-full border border-gold-500/30 text-gold-400 text-xs hover:bg-gold-500/10">Sposta Data</button>
-                            )}
-                            <button onClick={() => { if (window.confirm("Sei sicuro di voler disdire?")) handleConsultAction(c.id, 'cancel') }} className="px-3 py-1.5 rounded-full border border-red-500/30 text-red-400 text-xs hover:bg-red-500/10">Disdici</button>
-                          </div>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
             </div>
           )}
         </motion.section>
