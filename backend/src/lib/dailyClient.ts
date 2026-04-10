@@ -35,6 +35,17 @@ export async function createDailyRoom(roomName?: string, exp?: number): Promise<
       start_video_off: false,
       enable_low_brightness_compensation: true,
       user_background_effects_allowed: true,
+      theme: {
+        colors: {
+          accent: '#d4a017',
+          accentText: '#0a0a0b',
+          background: '#0a0a0b',
+          backgroundAccent: '#161618',
+          baseText: '#ffffff',
+          border: '#d4a01733',
+          mainAreaBg: '#0a0a0b'
+        }
+      }
     }
   }
 
