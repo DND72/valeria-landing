@@ -51,7 +51,7 @@ export default function StaffSidebar({ activeTab, onTabChange, theme = 'dark', o
 
   useEffect(() => {
     // Inizializza l'avviso acustico globale per nuova richiesta (indipendentemente dalla pagina)
-    audioNotificationRef.current = new Audio('/sounds/suono_suora.mp3')
+    audioNotificationRef.current = new Audio('/sounds/Il_portale_è_aperto.mp3')
   }, [])
   
   const loadPresence = useCallback(async () => {
