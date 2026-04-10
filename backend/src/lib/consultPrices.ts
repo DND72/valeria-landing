@@ -101,6 +101,7 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     isFree: false,
     durationMinutes: 10,
   },
+}
 
 export function isValidConsultKind(k: unknown): k is ConsultKind {
   return typeof k === 'string' && k in CONSULT_META
