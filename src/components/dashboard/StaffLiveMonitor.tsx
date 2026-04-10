@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
@@ -19,6 +19,13 @@ export default function StaffLiveMonitor() {
   const { getToken } = useAuth()
   const [liveConsults, setLiveConsults] = useState<Consult[]>([])
   const [loading, setLoading] = useState(true)
+  const [alarmActive, setAlarmActive] = useState(false)
+  
+  const alarmAudio = useRef<HTMLAudioElement | null>(null)
+  
+  useEffect(() => {
+     alarmAudio.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1232/1232-preview.mp3')
+  }, [])
 
   const loadLive = useCallback(async () => {
     try {
@@ -44,6 +51,10 @@ export default function StaffLiveMonitor() {
          return new Date(a.start_at).getTime() - new Date(b.start_at).getTime()
       })
       
+      
+      const hasWaiting = filtered.some(c => c.status === 'client_waiting')
+      setAlarmActive(hasWaiting)
+      
       setLiveConsults(filtered)
     } catch (err) {
       console.error(err)
@@ -53,9 +64,20 @@ export default function StaffLiveMonitor() {
   }, [getToken])
 
   useEffect(() => {
-    void loadLive()
-    const timer = setInterval(loadLive, 10000)
-    return () => clearInterval(timer)
+    if (alarmActive && alarmAudio.current) {
+       alarmAudio.current.loop = true
+       void alarmAudio.current.play().catch(() => {})
+    } else if (alarmAudio.current) {
+       alarmAudio.current.pause()
+       alarmAudio.current.currentTime = 0
+    }
+    return () => alarmAudio.current?.pause()
+  }, [alarmActive])
+
+  useEffect(() => {
+     void loadLive()
+     const timer = setInterval(loadLive, 5000) // Polling più rapido per non perdere chiamate
+     return () => clearInterval(timer)
   }, [loadLive])
 
   const handleSaveLink = async (id: string, link: string) => {
@@ -87,9 +109,11 @@ export default function StaffLiveMonitor() {
           <h2 className="text-3xl font-serif font-bold text-white mb-2">Monitor Live 📡</h2>
           <p className="text-white/45 text-sm">Gestioni consulti in diretta, chat e videochiamate odierne.</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-           <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-widest">Monitor Attivo</span>
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${alarmActive ? 'bg-red-500 animate-pulse border-2 border-white' : 'bg-emerald-500/10 border border-emerald-500/20'}`}>
+           <span className={`w-2 h-2 rounded-full ${alarmActive ? 'bg-white' : 'bg-emerald-500 animate-ping'}`} />
+           <span className={`text-[10px] uppercase font-black tracking-widest ${alarmActive ? 'text-white' : 'text-emerald-400'}`}>
+              {alarmActive ? '🔔 ALLARME CHIAMATA' : 'Monitor Attivo'}
+           </span>
         </div>
       </div>
 

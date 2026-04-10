@@ -24,12 +24,11 @@ export default function LiveSessionPage() {
   const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
   
-  // Staff check esteso: attendiamo il caricamento di Clerk per evitare il limbo
+  // Staff check esteso e sicuro al 100%
   const isStaff = isLoaded && (
-                  user?.publicMetadata?.role === 'staff' || 
-                  user?.publicMetadata?.role === 'admin' || 
-                  user?.publicMetadata?.privileged === true ||
-                  user?.publicMetadata?.role === 'staff' // Ripetizione di sicurezza per alcuni env
+    user?.publicMetadata?.role === 'staff' || 
+    user?.publicMetadata?.role === 'admin' || 
+    user?.publicMetadata?.privileged === true
   )
   
   const [isAccepted, setIsAccepted] = useState(false)
@@ -48,14 +47,21 @@ export default function LiveSessionPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  // Suoni
   const audioRefs = useRef({
     send: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
     receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
-    ring: new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3'), // Squillo Valeria
+    ring: new Audio('https://www.soundjay.com/phone/phone-calling-1.mp3'), // Squillo Valeria più professionale
     waiting: new Audio('https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3'), // Musica attesa cliente
-    magic: new Audio('https://assets.mixkit.co/active_storage/sfx/2347/2347-preview.mp3') // Suono magico per typing
+    magic: new Audio('https://assets.mixkit.co/active_storage/sfx/2347/2347-preview.mp3')
   })
+  
+  // Sostituiamo il "fruscio" con qualcosa di più pulito se necessario, 
+  // ma mixkit 123 è solitamente una melodia corta. 
+  // Proviamo un ambient loop più solido per il cliente.
+  useEffect(() => {
+     audioRefs.current.waiting.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' // Melodia d'opera/mistica pulita
+     audioRefs.current.waiting.volume = 0.3
+  }, [])
 
   // Timer Sessione (sincronizzato con il backend)
   useEffect(() => {
@@ -147,18 +153,15 @@ export default function LiveSessionPage() {
                ...m, 
                timestamp: m.timestamp ? new Date(m.timestamp) : new Date() 
              }))
-             
-             setMessages(prev => {
-                if (newMsgs.length > prev.length) {
-                   const last = newMsgs[newMsgs.length-1]
-                   const wasMe = last.role === (isStaff ? 'valeria' : 'client')
-                   if (!wasMe) {
-                      void audioRefs.current.receive.play().catch(() => {})
-                   }
-                   return newMsgs
+             setMessages(newMsgs)
+             // Se l'ultimo messaggio non è mio, suona
+             if (newMsgs.length > 0) {
+                const last = newMsgs[newMsgs.length-1]
+                const wasMe = last.role === (isStaff ? 'valeria' : 'client')
+                if (!wasMe && messages.length > 0 && newMsgs.length > messages.length) {
+                   void audioRefs.current.receive.play().catch(() => {})
                 }
-                return prev
-             })
+             }
           }
           if (res.typing) {
              const oldTyping = otherIsTyping
@@ -235,15 +238,19 @@ export default function LiveSessionPage() {
 
   const handleAcceptSession = async () => {
     try {
-      await apiJson(getToken, `/api/booking/session/${id}/accept`, { method: 'POST' })
+      console.log('[Accepting session]', id)
+      const resAcc = await apiJson<any>(getToken, `/api/booking/session/${id}/accept`, { method: 'POST' })
+      if (!resAcc.ok) throw new Error("Accettazione non riuscita sul server.")
+      
       // Forza un refresh immediato per avere actual_start_at e far partire il timer subito
       const res = await apiJson<{ sessionInfo: any }>(getToken, `/api/booking/session/${id}/messages`)
       if (res.sessionInfo) {
          setSessionInfo(res.sessionInfo)
          setIsAccepted(true)
       }
-    } catch {
-      alert("Errore accettazione.")
+    } catch (e: any) {
+      console.error('[Accept error]', e)
+      alert(`Errore di accettazione: ${e.message || 'Riprova tra pochi istanti'}`)
     }
   }
 

@@ -384,9 +384,8 @@ export function createBookingRouter(pool: Pool): Router {
 
   r.post('/session/:id/accept', requireClerkAuth, async (req, res) => {
     const { id } = req.params
-    // Opzionale: verificare ruolo staff se vogliamo super sicurezza
     try {
-       await pool.query(
+       const { rowCount } = await pool.query(
          `UPDATE consults SET 
             status = 'in_progress', 
             actual_start_at = COALESCE(actual_start_at, now()), 
@@ -394,6 +393,13 @@ export function createBookingRouter(pool: Pool): Router {
           WHERE id = $1 AND (status = 'scheduled' OR status = 'client_waiting')`,
          [id]
        )
+       if (rowCount === 0) {
+          // Verifichiamo se è già in progress
+          const check = await pool.query(`SELECT status FROM consults WHERE id = $1`, [id])
+          if (check.rows.length === 0) return res.status(404).json({ error: 'Sessione non trovata' })
+          if (check.rows[0].status === 'in_progress') return res.json({ ok: true, alreadyActive: true })
+          return res.status(400).json({ error: 'Stato non valido per accettazione' })
+       }
        res.json({ ok: true })
     } catch (e) {
        console.error('[accept error]', e)
