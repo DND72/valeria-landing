@@ -28,6 +28,7 @@ export type ConsultMeta = {
   durationMinutes: number
 }
 
+export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
   tarocchi_flash: {
     amountCents: 1300,
     costCredits: 13,

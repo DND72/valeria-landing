@@ -94,7 +94,8 @@ export default function PersonalGrowthPage() {
           >
             Pacchetti
           </h2>
-          Conoscenza gratuita (7 min), oppure le opzioni standard: <strong className="text-slate-700">Immediato (Flash)</strong> o <strong className="text-slate-700">Programmato (Prenotabile)</strong>, con tariffazione semplice valutata per i soli minuti effettivi del consulto.
+          <p className="text-slate-500 text-sm text-center max-w-2xl mx-auto mb-8">
+            Conoscenza gratuita (7 min), oppure le opzioni standard: <strong className="text-slate-700">Immediato (Flash)</strong> o <strong className="text-slate-700">Programmato (Prenotabile)</strong>, con tariffazione semplice valutata per i soli minuti effettivi del consulto.
           </p>
           <div className="grid md:grid-cols-3 gap-5">
             {COACHING_PACKAGES.map((pkg, i) => {
