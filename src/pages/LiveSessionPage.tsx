@@ -88,7 +88,6 @@ export default function LiveSessionPage() {
                timestamp: m.timestamp ? new Date(m.timestamp) : new Date() 
              }))
              
-             // Aggiorniamo solo se ci sono nuovi messaggi
              setMessages(prev => {
                 if (newMsgs.length > prev.length) {
                    const last = newMsgs[newMsgs.length-1]
@@ -162,8 +161,6 @@ export default function LiveSessionPage() {
           method: 'POST',
           body: JSON.stringify({ text, role })
        })
-       // Ottimistico rimosso per evitare glitch se il server non è allineato immediatamente
-       // setMessages(prev => [...prev, { id: 'temp-'+Date.now(), role, text, timestamp: new Date() }])
     } catch (err) {
        alert("Errore nell'invio. Verifica la tua connessione.")
     }
@@ -222,6 +219,9 @@ export default function LiveSessionPage() {
     ? Math.floor((seconds / 60) * (sessionInfo.costCredits / sessionInfo.expectedDuration)) 
     : 0
 
+  const clientName = sessionInfo?.inviteeName || 'Anima in Cammino'
+  const displayName = isStaff ? clientName : 'Valeria Di Pace'
+
   return (
     <div className={`fixed inset-0 h-screen w-screen flex flex-col z-[10000] overflow-hidden transition-colors duration-700 ${
       theme === 'dark' ? 'bg-[#050810] text-white font-sans' : 'bg-[#fcf8f0] text-dark-900 font-sans'
@@ -243,21 +243,20 @@ export default function LiveSessionPage() {
                <div className={`w-12 h-12 rounded-full border-2 p-0.5 overflow-hidden transition-all shadow-lg ${
                   theme === 'dark' ? 'border-gold-500/30 font-sans' : 'border-gold-600/50'
                }`}>
-                  <img src="/valeria-avatar.jpg" alt="V" className="w-full h-full rounded-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 bg-black/60 flex items-center justify-center h-4 translate-y-4 group-hover:translate-y-0 transition-all font-sans">
-                     <span className="text-[7px] text-white font-black">EDIT</span>
-                  </div>
+                  <img src={isStaff ? "/valeria-avatar.jpg" : "/client-avatar-placeholder.jpg"} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                </div>
-               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full border border-gold-500/50 flex items-center justify-center text-[10px] shadow-xl">
-                  {valeriaEmoji}
-               </div>
+               {isStaff && (
+                 <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full border border-gold-500/50 flex items-center justify-center text-[10px] shadow-xl">
+                    {valeriaEmoji}
+                 </div>
+               )}
             </div>
             <div>
-               <h1 className="text-sm font-serif font-black tracking-[0.2em] uppercase transition-colors">Valeria Di Pace</h1>
+               <h1 className="text-sm font-serif font-black tracking-[0.2em] uppercase transition-colors">{displayName}</h1>
                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${isAccepted ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gold-500'}`} />
+                  <span className={`w-2 h-2 rounded-full ${isAccepted ? 'bg-emerald-500 animate-pulse' : 'bg-gold-500'}`} />
                   <span className="text-[10px] uppercase font-bold tracking-[0.1em] opacity-50 font-sans">
-                     {isAccepted ? 'Sessione Attiva' : 'Frequenza in Connessione'}
+                     {isAccepted ? 'In Sessione' : (isStaff ? 'Cliente in Attesa' : 'Frequenza in Connessione')}
                   </span>
                </div>
             </div>
@@ -278,14 +277,14 @@ export default function LiveSessionPage() {
                   theme === 'dark' ? 'bg-white/5 border-white/10 shadow-inner' : 'bg-dark-900/5 border-dark-900/10'
                }`}>
                   <div className="flex flex-col items-center">
-                     <span className="text-[8px] uppercase opacity-40 font-black">Tempo</span>
+                     <span className="text-[8px] uppercase opacity-40 font-black">{isStaff ? 'Tua Sessione' : 'Tua Sessione'}</span>
                      <span className="text-gold-500 font-mono font-black text-sm leading-none">
                         {Math.floor(seconds / 60)}:{(seconds % 60).toString().padStart(2, '0')}
                      </span>
                   </div>
                   <div className="h-4 w-px bg-current opacity-10" />
                   <div className="flex flex-col items-center">
-                     <span className="text-[8px] uppercase opacity-40 font-black">Crediti</span>
+                     <span className="text-[8px] uppercase opacity-40 font-black">{isStaff ? 'Guadagno' : 'Costo'}</span>
                      <span className="text-gold-500 font-mono font-black text-sm leading-none">
                         {currentTotalCost}
                      </span>
@@ -294,14 +293,12 @@ export default function LiveSessionPage() {
             )}
 
             {!isAccepted && isStaff && (
-               <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+               <button 
                   onClick={handleAcceptSession}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-dark-900 px-8 py-3 rounded-full font-black uppercase text-[10px] tracking-widest transition-all shadow-xl font-sans"
+                  className="bg-emerald-500 hover:bg-emerald-400 text-dark-900 px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl font-sans"
                >
-                  Accetta Consulto
-               </motion.button>
+                  Accetta
+               </button>
             )}
 
             {isStaff && isAccepted && (
@@ -309,7 +306,7 @@ export default function LiveSessionPage() {
                   onClick={handleClaimSession}
                   className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-black uppercase text-[9px] tracking-widest shadow-lg transition-all font-sans"
                >
-                  Termina Chat
+                  Termina
                </button>
             )}
 
@@ -319,7 +316,6 @@ export default function LiveSessionPage() {
                   theme === 'dark' ? 'bg-white/5 border-white/5 text-white/40 hover:text-white hover:bg-white/10' : 'bg-dark-900/5 border-dark-900/5 text-dark-900/40 hover:text-dark-900 hover:bg-dark-900/10'
                }`}
             >
-               <span>Esci</span>
                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                </svg>
@@ -329,30 +325,23 @@ export default function LiveSessionPage() {
 
       {/* MAIN AREA */}
       <main className="relative z-10 flex-1 flex flex-col min-h-0">
-         {!isAccepted && !isStaff && (
-            <div className={`absolute inset-0 z-40 backdrop-blur-3xl flex items-center justify-center p-6 text-center transition-colors ${
-               theme === 'dark' ? 'bg-[#050810]/80' : 'bg-white/80'
-            }`}>
-               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md">
-                  <div className="w-32 h-32 mx-auto mb-10 relative">
-                     <div className="absolute inset-0 border-4 border-gold-500/10 rounded-full animate-ping" />
-                     <div className="absolute inset-0 border-2 border-gold-500/20 rounded-full animate-[spin_10s_linear_infinite]" />
-                     <div className="absolute inset-2 border border-gold-500/30 rounded-full" />
-                     <div className="absolute inset-8 rounded-full bg-gold-500/5 flex items-center justify-center text-5xl">🧘</div>
-                  </div>
-                  <h2 className="text-4xl font-serif font-black mb-4 italic tracking-tight uppercase">Connessione Sacra</h2>
-                  <p className="text-sm mb-10 leading-relaxed font-light opacity-60 font-sans">
-                     Valeria sta arrivando nel vostro spazio di ascolto. <br/>
-                     La sessione avrà inizio solo quando la connessione sarà stabilita.
-                  </p>
-                  <div className="inline-flex items-center gap-6 px-8 py-4 bg-gold-500/5 rounded-3xl border border-gold-500/20 uppercase font-black text-[10px] tracking-[0.3em] text-gold-500 font-sans">
-                     <span>Pronta in circa</span>
-                     <div className="w-1.5 h-1.5 bg-gold-500 rounded-full animate-pulse" />
-                     <span>{waitSeconds}s</span>
-                  </div>
-               </motion.div>
-            </div>
-         )}
+         {/* Banner d'attesa non invasivo */}
+         <AnimatePresence>
+           {!isAccepted && (
+             <motion.div 
+               initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -50, opacity: 0 }}
+               className="bg-gold-500/20 backdrop-blur-3xl border-b border-gold-500/20 px-6 py-3 flex items-center justify-between z-40"
+             >
+               <div className="flex items-center gap-3">
+                 <div className="w-2 h-2 bg-gold-500 rounded-full animate-pulse" />
+                 <p className="text-[10px] uppercase font-black tracking-widest text-gold-500">
+                   {isStaff ? 'In attesa che tu accetti il consulto...' : 'Connessione Sacra: Valeria ti accoglierà tra pochi istanti...'}
+                 </p>
+               </div>
+               {!isStaff && <span className="text-[10px] font-mono text-gold-500/60">{waitSeconds}s</span>}
+             </motion.div>
+           )}
+         </AnimatePresence>
 
          <div className="flex-1 overflow-y-auto px-6 py-10 space-y-10 scroll-smooth custom-scrollbar">
             <div className="max-w-4xl mx-auto space-y-10">
@@ -377,19 +366,12 @@ export default function LiveSessionPage() {
                            )}
                            <p className="text-sm md:text-base leading-relaxed font-light whitespace-pre-wrap">{msg.text}</p>
                            
-                           {msg.file_url && (
-                              <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 shadow-lg">
-                                 <img src={msg.file_url} alt="Content" className="max-w-full h-auto" />
-                              </div>
-                           )}
-
                            <div className="mt-4 flex items-center justify-between gap-4 border-t border-current opacity-10 pt-2">
                               <span className="text-[10px] font-mono tracking-tighter opacity-50">#ID-{String(msg.id).slice(-4).toUpperCase()}</span>
                               <p className="text-[9px] flex items-center gap-2 opacity-50 font-sans">
                                  {msg.timestamp instanceof Date && !isNaN(msg.timestamp.getTime()) 
                                    ? msg.timestamp.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) 
                                    : '--:--'}
-                                 {msg.role !== 'valeria' && <span className="text-emerald-500 font-bold ml-1">✓✓</span>}
                               </p>
                            </div>
                         </div>
@@ -432,55 +414,47 @@ export default function LiveSessionPage() {
                            {e}
                         </button>
                      ))}
-                     <p className="w-full text-[8px] uppercase font-black tracking-widest opacity-30 mt-1 text-center font-sans">
-                        {isStaff ? 'Scegli il tuo spirito guida per oggi' : 'Invia un simbolo di luce'}
-                     </p>
                   </motion.div>
                )}
             </AnimatePresence>
 
-            {(isAccepted || isStaff) ? (
-               <form onSubmit={handleSendMessage} className="flex gap-4 items-end">
-                  <div className="flex-1 relative group font-sans">
-                     <textarea 
-                        rows={1} value={inputText} onChange={(e) => setInputText(e.target.value)}
-                        onKeyDown={(e) => {
-                           if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSendMessage(e as any) }
-                        }}
-                        placeholder="Condividi ciò che vibra nel tuo cuore..."
-                        className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-inner ${
-                           theme === 'dark' ? 'bg-white/5 border-white/10 text-white focus:border-gold-500/40' : 'bg-dark-900/5 border-dark-900/10 text-dark-900 focus:border-gold-600/40'
-                        }`}
-                     />
-                     <button 
-                        type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity"
-                     >
-                        <span className="text-xl">✨</span>
-                     </button>
-                     <button 
-                         type="button" onClick={() => fileInputRef.current?.click()}
-                         className="absolute right-14 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity"
-                     >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                     </button>
-                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={() => alert("Servizio upload in arrivo.")} />
-                  </div>
-                  <motion.button 
-                     whileTap={{ scale: 0.9 }}
-                     type="submit" disabled={!inputText.trim()}
-                     className="w-14 h-14 flex items-center justify-center bg-gold-500 disabled:bg-white/5 text-dark-900 disabled:text-gray-500 rounded-full transition-all shadow-2xl shrink-0"
+            <form onSubmit={handleSendMessage} className="flex gap-4 items-end">
+               <div className="flex-1 relative group font-sans">
+                  <textarea 
+                     rows={1} value={inputText} onChange={(e) => setInputText(e.target.value)}
+                     onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSendMessage(e as any) }
+                     }}
+                     placeholder="Scrivi qui il tuo messaggio..."
+                     className={`w-full border rounded-3xl pl-16 pr-14 py-4 text-base transition-all resize-none max-h-40 shadow-inner ${
+                        theme === 'dark' ? 'bg-white/5 border-white/10 text-white focus:border-gold-500/40' : 'bg-dark-900/5 border-dark-900/10 text-dark-900 focus:border-gold-600/40'
+                     }`}
+                  />
+                  <button 
+                     type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                     className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity"
                   >
-                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                  </motion.button>
-               </form>
-            ) : (
-               <div className="text-center font-black uppercase text-[10px] tracking-[0.4em] opacity-30 animate-pulse py-4 font-sans">
-                  Connessione Protetta e Riservata
+                     <span className="text-xl">✨</span>
+                  </button>
+                  <button 
+                      type="button" onClick={() => fileInputRef.current?.click()}
+                      className="absolute right-14 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity"
+                  >
+                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  </button>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={() => alert("Servizio upload in arrivo.")} />
                </div>
-            )}
+               <motion.button 
+                  whileTap={{ scale: 0.9 }}
+                  type="submit" disabled={!inputText.trim()}
+                  className="w-14 h-14 flex items-center justify-center bg-gold-500 disabled:bg-white/5 text-dark-900 disabled:text-gray-500 rounded-full transition-all shadow-2xl shrink-0"
+               >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+               </motion.button>
+            </form>
+
             <p className="text-[10px] text-center opacity-30 uppercase font-bold tracking-[0.1em] mb-2 font-sans">
-               Il vostro dialogo è custodito dal sigillo del silenzio.
+               Canale Protetto e Riservato • Il sigillo del silenzio custodisce ogni parola.
             </p>
          </div>
       </footer>
