@@ -116,7 +116,14 @@ export default function ControlRoom() {
   
   // Audio Notification
   const [audioEnabled, setAudioEnabled] = useState(true)
-  const notifyAudio = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'))
+  const notifyAudio = useRef<HTMLAudioElement>(null!)
+  
+  useEffect(() => {
+     const a = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3')
+     a.crossOrigin = "anonymous"
+     // @ts-ignore
+     notifyAudio.current = a
+  }, [])
   const previousIdsRef = useRef<Set<string>>(new Set())
   const [pendingCharts, setPendingCharts] = useState<any[]>([])
   const [pendingHoros, setPendingHoros] = useState<any[]>([])

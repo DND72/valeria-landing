@@ -47,21 +47,22 @@ export default function LiveSessionPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  const audioRefs = useRef({
-    send: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
-    receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
-    ring: new Audio('https://www.soundjay.com/phone/phone-calling-1.mp3'), // Squillo Valeria più professionale
-    waiting: new Audio('https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3'), // Musica attesa cliente
-    magic: new Audio('https://assets.mixkit.co/active_storage/sfx/2347/2347-preview.mp3')
+  const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({
+    receive: (() => { const a = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'); a.crossOrigin = "anonymous"; return a })(),
+    send: (() => { const a = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'); a.crossOrigin = "anonymous"; return a })(),
+    waiting: (() => { const a = new Audio(); a.crossOrigin = "anonymous"; return a })(),
+    magic: (() => { const a = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'); a.crossOrigin = "anonymous"; return a })(),
+    receive_m: (() => { const a = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'); a.crossOrigin = "anonymous"; return a })(),
+    ring: (() => { const a = new Audio('https://www.soundjay.com/phone/phone-calling-1.mp3'); a.crossOrigin = "anonymous"; return a })(),
   })
   
   // Sostituiamo il "fruscio" con qualcosa di più pulito se necessario, 
   // ma mixkit 123 è solitamente una melodia corta. 
   // Proviamo un ambient loop più solido per il cliente.
   useEffect(() => {
-     // Usiamo un brano ambient mistico di SoundHelix (Opera/Piano) - Molto più professionale del fruscio
-     audioRefs.current.waiting.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-     audioRefs.current.waiting.volume = 0.2
+     // Usiamo un chime zen pulito e professionale (niente più opera/sospiri)
+     audioRefs.current.waiting.src = 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'
+     audioRefs.current.waiting.volume = 0.15
      audioRefs.current.waiting.loop = true
   }, [])
 
@@ -235,8 +236,8 @@ export default function LiveSessionPage() {
   const handleAcceptSession = async () => {
     try {
       console.log('[Accepting session]', id)
-      const resAcc = await apiJson<any>(getToken, `/api/booking/session/${id}/accept`, { method: 'POST' })
-      if (!resAcc.ok) throw new Error("Accettazione non riuscita sul server.")
+      // apiJson lancia eccezione se res.ok è false, quindi rimosso il check manuale errato
+      await apiJson<any>(getToken, `/api/booking/session/${id}/accept`, { method: 'POST' })
       
       // Forza un refresh immediato per avere actual_start_at e far partire il timer subito
       const res = await apiJson<{ sessionInfo: any }>(getToken, `/api/booking/session/${id}/messages`)
