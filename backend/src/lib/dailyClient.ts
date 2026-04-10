@@ -33,7 +33,6 @@ export async function createDailyRoom(roomName?: string, exp?: number): Promise<
       max_participants: 2, 
       start_audio_off: false,
       start_video_off: false,
-      enable_low_brightness_compensation: true,
       user_background_effects_allowed: true,
       theme: {
         colors: {
