@@ -126,34 +126,23 @@ export default function MyLiveConsultsPage() {
                          </div>
                       </div>
 
-                      <div className="flex shrink-0">
-                         {isChat ? (
-                           <Link 
-                             to={`/sessione/${c.id}`}
-                             className="btn-gold px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[11px] shadow-[0_0_20px_rgba(212,160,23,0.2)]"
-                           >
-                             ENTRA NELLA STANZA
-                           </Link>
-                         ) : (
-                           c.meeting_join_url ? (
-                             <a 
-                               href={c.meeting_join_url}
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(14,165,233,0.3)]"
-                             >
-                                APRI VIDEOCHIAMATA
-                             </a>
-                           ) : (
-                             <div className="flex flex-col items-end gap-1">
-                                <span className="text-[10px] text-white/30 italic">In attesa del link di Valeria...</span>
-                                <div className="h-2 w-24 bg-white/5 rounded-full overflow-hidden">
-                                   <div className="h-full bg-gold-500/50 animate-progress origin-left w-full" />
-                                </div>
-                             </div>
-                           )
-                         )}
-                      </div>
+                        <div className="flex shrink-0">
+                          {isChat ? (
+                            <Link 
+                              to={`/sessione/${c.id}`}
+                              className="btn-gold px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[11px] shadow-[0_0_20px_rgba(212,160,23,0.2)]"
+                            >
+                              ENTRA NELLA CHAT
+                            </Link>
+                          ) : (
+                            <Link 
+                              to={`/video-session/${c.id}`}
+                              className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+                            >
+                              ENTRA IN VIDEO
+                            </Link>
+                          )}
+                        </div>
                     </div>
                     {(isNow || c.status === 'scheduled') && (
                       <div className="mt-4 pt-4 border-t border-white/5 flex justify-end">

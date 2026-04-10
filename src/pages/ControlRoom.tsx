@@ -50,6 +50,7 @@ type ConsultRow = {
   created_at: string
   updated_at: string
   service_kind?: ServiceKind
+  consult_kind?: string
   cost_credits?: number
   status_billing?: string
 }
@@ -815,7 +816,7 @@ export default function ControlRoom() {
                                    </div>
                                    {app.status === 'client_waiting' && (
                                       <Link
-                                        to={`/sessione/${app.id}`}
+                                        to={app.consult_kind?.startsWith('chat_') ? `/sessione/${app.id}` : `/video-session/${app.id}`}
                                         className="bg-emerald-500 hover:bg-emerald-400 text-dark-500 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                                         onClick={(e) => e.stopPropagation()}
                                       >
@@ -880,7 +881,7 @@ export default function ControlRoom() {
                       </span>
                       {c.status === 'client_waiting' && (
                          <Link
-                           to={`/sessione/${c.id}`}
+                           to={c.consult_kind?.startsWith('chat_') ? `/sessione/${c.id}` : `/video-session/${c.id}`}
                            className="bg-emerald-500 text-dark-500 px-2 py-0.5 rounded text-[10px] font-bold"
                            onClick={(e) => e.stopPropagation()}
                          >
@@ -957,10 +958,10 @@ export default function ControlRoom() {
                        <dt className="text-white/40">Accesso alla Stanza in Diretta</dt>
                        <dd className="text-white/90 mt-2">
                          <Link
-                           to={`/sessione/${detailConsult.id}`}
+                           to={detailConsult.consult_kind?.startsWith('chat_') ? `/sessione/${detailConsult.id}` : `/video-session/${detailConsult.id}`}
                            className="inline-flex items-center gap-2 bg-gold-500 text-dark-500 hover:bg-gold-400 px-8 py-3 rounded-xl text-sm font-bold transition-all border border-gold-400/20"
                          >
-                           Entra nella Live Chat
+                           Entra in {detailConsult.consult_kind?.startsWith('chat_') ? 'Chat LIVE' : 'Videochiamata'}
                            <span className="text-lg leading-none">→</span>
                          </Link>
                        </dd>
