@@ -383,7 +383,7 @@ export function createBookingRouter(pool: Pool): Router {
       // Ora forgiato il badge personale
       try {
          const token = await createDailyToken(roomName, isStaff)
-         const dailyUrl = \`https://nonsolotarocchi.daily.co/\${roomName}?t=\${token}\`
+         const dailyUrl = `https://nonsolotarocchi.daily.co/${roomName}?t=${token}`
          
          res.json({
            videoLink: dailyUrl,
@@ -405,6 +405,7 @@ export function createBookingRouter(pool: Pool): Router {
       res.status(500).json({ error: 'Errore generico' })
     }
   })
+
   r.get('/session/:id/messages', requireClerkAuth, async (req, res) => {
     const { id } = req.params
     try {
