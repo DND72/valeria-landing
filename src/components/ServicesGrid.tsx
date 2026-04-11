@@ -3,32 +3,38 @@ import { useNavigate } from 'react-router-dom'
 
 const services = [
   {
-    title: "Consulto Evolutivo",
-    description: "Un'analisi profonda dello specchio del presente attraverso i Tarocchi di Marsiglia. Valeria decodifica i simboli arcaici per identificare i blocchi energetici e le potenzialità latenti, offrendo una guida chiara per orientarsi nelle scelte di vita più complesse.",
+    title: "Consulto Evolutivo (Video)",
+    description: "Un'analisi profonda dello specchio del presente attraverso i Tarocchi di Marsiglia. Avviene in sessioni live di videocall sulla piattaforma Nonsolotarocchi, con connessione protetta e certificata secondo gli standard HIPAA e SOC2 (infrastruttura Daily), garantendo la massima privacy e qualità video HD.",
     link: "/tarocchi",
     icon: "🔮"
   },
   {
+    title: "Consulto via Chat",
+    description: "Ideale per chi cerca risposte rapide o preferisce la scrittura. Il servizio avviene tramite messaggistica istantanea criptata direttamente sulla nostra piattaforma. Non usiamo app esterne: ogni dialogo resta protetto nel tuo Diario personale riservato.",
+    link: "/area-personale",
+    icon: "💬"
+  },
+  {
     title: "Coaching Personale",
-    description: "Un percorso strutturato di crescita che trasforma la consapevolezza in azione. Attraverso sessioni individuali mirate, Valeria ti accompagna nel raggiungimento di obiettivi concreti, superando ostacoli ricorrenti e potenziando la tua visione strategica personale.",
+    description: "Un percorso strutturato di crescita che trasforma la consapevolezza in azione. Attraverso sessioni mirate (Video o Chat), Valeria ti accompagna nel raggiungimento di obiettivi concreti, superando ostacoli ricorrenti e potenziando la tua visione strategica.",
     link: "/crescita-personale",
     icon: "🌱"
   },
   {
     title: "Tema Natale Evolutivo",
-    description: "Un'analisi completa del cielo al momento della tua nascita. Utilizziamo calcoli astronomici precisi (Swiss Ephemeris) per mappare i tuoi potenziali innati. Diversamente dall'astrologia generica, il focus è sull'evoluzione del sé: capire le sfide karmiche e i talenti da sviluppare in questa incarnazione.",
+    description: "Un'analisi completa del cielo al momento della tua nascita con calcoli astronomici precisi (Swiss Ephemeris). Il focus è sull'evoluzione del sé: capire le sfide karmiche e i talenti da sviluppare in questa incarnazione attraverso la mappa astrale.",
     link: "/area-personale/tema-natale",
     icon: "🪐"
   },
   {
     title: "La Stanza Sicura",
-    description: "Un protocollo protetto unico in Italia per la gestione di crisi relazionali. Valeria agisce come facilitatrice neutrale e moderatrice tecnica in una sessione video a tre. Garantisce un ambiente di dialogo rispettoso, protetto da segreto professionale e documentato tramite registrazione certificata per la massima sicurezza delle parti.",
+    description: "Protocollo protetto unico in Italia per crisi relazionali. Valeria agisce come facilitatrice neutrale in sessione video a tre su connessione criptata certificata. Ambiente di dialogo protetto da segreto professionale e documentato per la massima sicurezza delle parti.",
     link: "/stanza-sicura",
     icon: "🛡️"
   },
   {
     title: "Mentore Silente",
-    description: "Un servizio di supporto continuativo accessibile tramite il Diario Privato della piattaforma. Ogni settimana riceverai insight, consigli e meditazioni personalizzate basate sul tuo percorso analizzato durante i consulti. È come avere una guida evolutiva sempre al proprio fianco per mantenere alta la consapevolezza.",
+    description: "Supporto continuativo tramite il Diario Privato della piattaforma. Ogni settimana riceverai insight, consigli e meditazioni personalizzate basate sul tuo percorso analizzato durante i consulti, per mantenere alta la consapevolezza nel quotidiano.",
     link: "/area-personale/mentore",
     icon: "👁️"
   }
