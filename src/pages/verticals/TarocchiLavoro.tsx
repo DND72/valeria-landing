@@ -25,6 +25,12 @@ export default function TarocchiLavoroPage() {
             </p>
           </div>
           <div className="space-y-4">
+            <h2 className="text-3xl font-serif font-bold text-emerald-400">Quanto dura e come si svolge?</h2>
+            <p className="text-lg text-white/60 leading-relaxed font-light">
+              Puoi scegliere tra un <strong>Focus Strategico</strong> per una questione urgente o una <strong>Analisi Professionale Profonda</strong>. In ogni caso, gestisci il tuo tempo in autonomia, pagando solo i minuti effettivi di consulto.
+            </p>
+          </div>
+          <div className="space-y-4">
             <h2 className="text-3xl font-serif font-bold text-emerald-400">Cosa fare in caso di crisi finanziaria?</h2>
             <p className="text-lg text-white/60 leading-relaxed font-light">
               Attraverso il consulto, Valeria identifica i flussi di energia legati al denaro e al valore personale. Spesso i problemi economici nascono da blocchi psicologici o eredità familiari: i tarocchi aiutano a sbloccare queste dinamiche.

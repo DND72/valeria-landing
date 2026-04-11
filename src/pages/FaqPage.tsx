@@ -101,8 +101,8 @@ const FAQ_SECTIONS: FaqSection[] = [
         a: "No. Valeria ha una formazione in psicologia e offre percorsi di accompagnamento e crescita personale. Il servizio non e psicoterapia ne consulenza psicologica riservata agli iscritti all'Albo degli Psicologi. Se stai attraversando un momento di difficolta clinica, ti invitiamo a rivolgerti a un professionista abilitato.",
       },
       {
-        q: 'Cosa sono i Percorsi Combo?',
-        a: "I Percorsi Combo uniscono consulti di Tarocchi e sessioni di Coaching in un unico pacchetto. La Combo Light include 2 consulti brevi di Tarocchi (30 min) + 1 sessione di Coaching (30 min). La Combo Full include 2 consulti completi (60 min) + 1 sessione di Coaching (60 min). Sono ideali per chi vuole sia riflessione profonda che un piano d'azione concreto.",
+        q: "Cosa sono i Percorsi Evolutivi?",
+        a: "I Percorsi Evolutivi uniscono l'analisi dei Tarocchi e le sessioni di Coaching in un unico cammino coerente. Sono stati progettati per chi non cerca solo una risposta spot, ma vuole sia una riflessione profonda che un piano d'azione concreto per cambiare realmente direzione nella propria vita.",
       },
     ],
   },

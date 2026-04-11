@@ -28,7 +28,7 @@ export default function TarocchiAmorePage() {
           <div className="space-y-4">
             <h2 className="text-3xl font-serif font-bold text-gold-500">Quanto dura e cosa posso chiedere?</h2>
             <p className="text-lg text-white/60 leading-relaxed font-light">
-              Puoi scegliere tra il <strong>Consulto Rapido (10 min)</strong> per una domanda secca o la <strong>Sessione Evolutiva (30 min)</strong> per un'analisi profonda. Puoi chiedere indicazioni su ritorni, nuove conoscenze, crisi di coppia o dubbi sulla fedeltà, ricevendo sempre una risposta onesta e priva di giudizio.
+              Puoi scegliere tra un <strong>Consulto Lampo</strong> per una domanda secca o una <strong>Analisi Evolutiva Profonda</strong> per una visione d'insieme. Il pagamento avviene sempre sul tempo effettivo, permettendoti di gestire la sessione in totale libertà.
             </p>
           </div>
 
