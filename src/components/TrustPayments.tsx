@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ShieldCheck, Lock, CreditCard, ChevronRight } from 'lucide-react'
+import { ShieldCheck, Lock, CreditCard } from 'lucide-react'
 
 export default function TrustPayments() {
   return (
