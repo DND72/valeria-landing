@@ -89,7 +89,28 @@ export default function StanzaSicuraPage() {
             </motion.div>
         </section>
 
-        {/* 3) Security Vault: TESTO SINISTRA - IMMAGINE DESTRA */}
+        {/* 3) L'Armonia della Stanza - CENTRALE */}
+        <section className="mb-40 text-center relative">
+            <div className="absolute inset-0 bg-gold-500/5 blur-[120px] rounded-full" />
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="relative z-10 max-w-4xl mx-auto space-y-8"
+            >
+                <div className="w-20 h-[1px] bg-gold-500 mx-auto" />
+                <h2 className="text-5xl md:text-7xl font-serif font-black brilliant-gold-text">L'Armonia della Stanza</h2>
+                <p className="text-2xl md:text-3xl text-white/80 leading-relaxed font-serif italic">
+                    "Il silenzio non è assenza di parole, ma la protezione dello spazio in cui ogni voce può finalmente essere ascoltata."
+                </p>
+                <p className="text-xl text-white/50 leading-relaxed max-w-2xl mx-auto">
+                    Preservare l'armonia significa garantire che il confronto non scada mai in rumore. Valeria agisce come custode di questo equilibrio, intervenendo con grazia e fermezza per ristabilire la risonanza tra le parti, permettendo al dialogo di evolvere in comprensione.
+                </p>
+                <div className="w-20 h-[1px] bg-gold-500 mx-auto" />
+            </motion.div>
+        </section>
+
+        {/* 4) Security Vault: TESTO SINISTRA - IMMAGINE DESTRA */}
         <section className="grid lg:grid-cols-2 gap-16 items-center mb-40">
             <motion.div 
                 initial={{ opacity: 0, x: -30 }}
