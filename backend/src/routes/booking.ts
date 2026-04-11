@@ -409,16 +409,16 @@ export function createBookingRouter(pool: Pool): Router {
   r.get('/video-test-token', requireClerkAuth, async (req, res) => {
     const userId = req.auth?.userId
     try {
-      // Creiamo una stanza al volo che scade tra 15 minuti
       const exp = Math.floor(Date.now() / 1000) + 900 
-      const room = await createDailyRoom(`test-${userId}-${Date.now()}`, exp)
-      const token = await createDailyToken(room.name, true) // owner per poter cambiare sfondo etc
+      const safeId = userId ? userId.replace(/[^a-zA-Z0-9]/g, '').slice(-8) : 'guest'
+      const room = await createDailyRoom(`test-${safeId}-${Date.now()}`, exp)
+      const token = await createDailyToken(room.name, true) 
       
       const dailyUrl = `https://nonsolotarocchi.daily.co/${room.name}?t=${token}`
       res.json({ videoLink: dailyUrl })
-    } catch (e) {
+    } catch (e: any) {
       console.error('[video-test-token]', e)
-      res.status(500).json({ error: 'Errore generazione test' })
+      res.status(500).json({ error: e.message || 'Errore generazione test' })
     }
   })
 
