@@ -129,10 +129,11 @@ export default function StanzaSicuraPage() {
 
         {/* Disclaimer Legale Obbligatorio */}
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-40">
-            <h4 className="text-red-500 font-black uppercase tracking-widest text-sm mb-4">Note Legali Indispensabili</h4>
+            <h4 className="text-red-500 font-black uppercase tracking-widest text-sm mb-4">Note Legali Prescrittive (Legge 4/2013)</h4>
             <div className="text-white/40 text-sm space-y-4 leading-relaxed italic">
-                <p>La Stanza Sicura è un servizio di facilitazione del dialogo e moderazione tecnica di videochiamata. Non costituisce mediazione civile ai sensi del D.Lgs. 28/2010, né attività di supporto psicologico o legale riservata agli iscritti agli albi professionali. Valeria Di Pace agisce in qualità di moderatrice tecnica e testimone neutrale privata.</p>
-                <p>Il servizio non è un pronto intervento per emergenze fisiche o imminenti. In caso di pericolo, contattare immediatamente le autorità competenti (112) o il servizio nazionale antiviolenza (1522).</p>
+                <p><strong>Attività professionale di cui alla Legge 14 gennaio 2013, n. 4.</strong> La Stanza Sicura è un servizio di facilitazione del dialogo e moderazione tecnica di videochiamata. Non costituisce mediazione civile ai sensi del D.Lgs. 28/2010, né attività di supporto psicologico (ex L. 56/89) o legaleReserved (ex R.D. 1578/33). </p>
+                <p>Valeria Di Pace, pur possedendo doppia laurea in Giurisprudenza e Psicologia ed un'esperienza quindicennale nella gestione di strutture sanitarie (Parafarmacia), agisce qui esclusivamente come facilitatrice privata e testimone neutrale, non esercitando le professioni protette di avvocato o psicologo.</p>
+                <p>L'infrastruttura Daily.co garantisce crittografia AES-256 e registrazione server-side. I dati vengono trattati secondo il GDPR con eliminazione automatica a 24 ore.</p>
             </div>
         </div>
 

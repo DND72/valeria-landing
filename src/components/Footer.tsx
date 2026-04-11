@@ -107,7 +107,11 @@ export default function Footer() {
           Le letture dei tarocchi sono offerte a scopo di intrattenimento, riflessione personale e crescita interiore.
           Non costituiscono consulenza medica, legale o finanziaria.
         </p>
+        <p className="text-center text-white/10 text-[10px] uppercase tracking-widest mt-4 italic">
+          Attività professionale di cui alla Legge 14 gennaio 2013, n. 4
+        </p>
       </div>
+
     </footer>
   )
 }
