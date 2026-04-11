@@ -68,26 +68,28 @@ export default function TrustPayments() {
               
               <div className="flex flex-col gap-6">
                 {/* Stripe Banner */}
-                <div className="flex items-center justify-between p-6 rounded-3xl bg-[#635bff] border border-white/20 shadow-xl shadow-purple-600/10">
-                   <div className="space-y-1">
-                      <p className="text-[10px] uppercase tracking-tighter text-white/60 font-medium">Global Payments by</p>
-                      <p className="text-3xl font-black text-white italic tracking-tighter">stripe</p>
-                   </div>
+                <div className="flex items-center justify-between p-8 rounded-3xl bg-white border border-white/20 shadow-xl shadow-purple-600/5 group/stripe">
+                   <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" 
+                    alt="Stripe" 
+                    className="h-10 w-auto"
+                   />
                    <div className="flex gap-2">
-                      <div className="w-8 h-5 rounded bg-white/20" />
-                      <div className="w-8 h-5 rounded bg-white/20" />
-                      <div className="w-8 h-5 rounded bg-white/20" />
+                      <div className="w-8 h-5 rounded bg-slate-100" />
+                      <div className="w-8 h-5 rounded bg-slate-100" />
+                      <div className="w-8 h-5 rounded bg-slate-100" />
                    </div>
                 </div>
 
                 {/* PayPal Banner */}
-                <div className="flex items-center justify-between p-6 rounded-3xl bg-[#0070ba] border border-white/20 shadow-xl shadow-blue-600/10">
-                   <div className="space-y-1">
-                      <p className="text-[10px] uppercase tracking-tighter text-white/60 font-medium">Trusted Wallet by</p>
-                      <p className="text-3xl font-black text-white italic tracking-tighter">PayPal</p>
-                   </div>
-                   <div className="flex gap-2 text-white/80">
-                      <ChevronRight size={24} />
+                <div className="flex items-center justify-between p-8 rounded-3xl bg-white border border-white/20 shadow-xl shadow-blue-600/5 group/paypal">
+                   <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" 
+                    alt="PayPal" 
+                    className="h-10 w-auto"
+                   />
+                   <div className="flex gap-2 text-slate-400">
+                      <ShieldCheck size={24} />
                    </div>
                 </div>
               </div>
