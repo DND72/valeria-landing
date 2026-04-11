@@ -37,7 +37,8 @@ export async function createDailyRoom(roomName?: string, exp?: number): Promise<
       start_audio_off: false,
       start_video_off: false,
       enable_transcription: true,
-      enable_recording: 'cloud'
+      enable_recording: 'cloud',
+      owner_only_recording: true
     }
   }
 

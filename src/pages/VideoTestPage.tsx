@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 import { apiJson } from '../lib/api'
-import { Sparkles, Headphones, ShieldCheck, RefreshCcw, X, AlertCircle } from 'lucide-react'
+import { Sparkles, ShieldCheck, RefreshCcw, X, AlertCircle } from 'lucide-react'
 
 export default function VideoTestPage() {
   const navigate = useNavigate()
@@ -14,7 +14,6 @@ export default function VideoTestPage() {
   const [error, setError] = useState<string | null>(null)
   
   // State for effects
-  const [isAudioHQ, setIsAudioHQ] = useState(false)
   const [activeVideoEffect, setActiveVideoEffect] = useState<'none' | 'blur' | 'cosmic' | 'study' | 'temple'>('none')
   
   const callRef = useRef<any>(null)
@@ -86,7 +85,6 @@ export default function VideoTestPage() {
     }).then(() => {
         console.log('Joined successfully');
         setActiveVideoEffect('none');
-        setIsAudioHQ(false);
     }).catch((err: any) => {
         console.error('Join error:', err)
         setError('Impossibile accedere alla stanza video.')
@@ -95,18 +93,15 @@ export default function VideoTestPage() {
     // Listen for effect changes from within Daily UI to keep sidebar in sync
     frame.on('input-settings-updated', (ev: any) => {
         const videoProc = ev.inputSettings?.video?.processor?.type
-        const audioProc = ev.inputSettings?.audio?.processor?.type
         
         if (videoProc === 'none') setActiveVideoEffect('none')
         else if (videoProc === 'background-blur') setActiveVideoEffect('blur')
         else if (videoProc === 'background-image') {
-            const src = ev.inputSettings?.video?.processor?.config?.source
+            const src = ev.inputSettings?.video?.processor?.config?.source || ev.inputSettings?.video?.processor?.config?.url
             if (src?.includes('cosmic')) setActiveVideoEffect('cosmic')
             else if (src?.includes('study')) setActiveVideoEffect('study')
             else if (src?.includes('temple')) setActiveVideoEffect('temple')
         }
-        
-        setIsAudioHQ(audioProc === 'noise-suppression')
     })
 
     return () => {
@@ -117,26 +112,13 @@ export default function VideoTestPage() {
     }
   }, [videoUrl])
 
-  const toggleAudioQuality = async () => {
-    if (!callRef.current) return
-    const newState = !isAudioHQ
-    
-    // Optimistic update for better responsiveness
-    setIsAudioHQ(newState)
-    
-    try {
-        await callRef.current.updateInputSettings({
-            audio: {
-                processor: newState ? { type: 'noise-suppression' } : { type: 'none' }
-            }
-        })
-    } catch (e) {
-        console.error('Audio quality toggle failed', e)
-        // Re-sync state in case of failure or check if Daily already handled it
-        const settings = await callRef.current.getInputSettings()
-        setIsAudioHQ(settings?.audio?.processor?.type === 'noise-suppression')
+  useEffect(() => {
+    return () => {
+      if (callRef.current) {
+        callRef.current.destroy()
+      }
     }
-  }
+  }, [])
 
   const applyVideoEffect = async (effect: 'none' | 'blur' | 'cosmic' | 'study' | 'temple') => {
     if (!callRef.current) return
@@ -239,32 +221,8 @@ export default function VideoTestPage() {
       <main className="flex-1 relative z-10 flex flex-col md:flex-row overflow-hidden">
          {/* Sidebar Controls */}
          <div className="w-full md:w-80 shrink-0 p-8 border-r border-white/5 bg-black/20 backdrop-blur-3xl flex flex-col justify-between overflow-y-auto custom-scrollbar">
+            {/* Effetti Video */}
             <div className="space-y-6">
-                <button 
-                    onClick={toggleAudioQuality}
-                    disabled={loading || !!error}
-                    className={`w-full text-left p-6 rounded-[32px] transition-all border group relative overflow-hidden ${
-                        isAudioHQ 
-                        ? 'bg-gold-500/10 border-gold-500/40 shadow-[0_0_20px_rgba(212,160,23,0.1)]' 
-                        : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10'
-                    }`}
-                >
-                    <div className="flex justify-between items-start mb-4">
-                        <div className={`p-3 rounded-2xl ${isAudioHQ ? 'bg-gold-500 text-black' : 'bg-white/5 text-white/40 group-hover:text-white transition-colors'}`}>
-                            <Headphones className="w-6 h-6" />
-                        </div>
-                        {isAudioHQ && (
-                            <span className="text-[8px] bg-gold-500 text-black px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Active</span>
-                        )}
-                    </div>
-                    <h3 className="text-white font-bold text-xs uppercase tracking-widest mb-2">Qualità Audio</h3>
-                    <p className="text-white/40 text-[10px] leading-relaxed">
-                       {isAudioHQ 
-                        ? 'Filtro rumore attivo. La tua voce è ora più cristallina e pura.' 
-                        : 'Attiva la riduzione del rumore per una sessione più intima e profonda.'}
-                    </p>
-                </button>
-                
                 <div className="space-y-3">
                     <h3 className="text-white font-bold text-[10px] uppercase tracking-widest pl-2 mb-4 opacity-50">Ambienti e Privacy</h3>
                     
