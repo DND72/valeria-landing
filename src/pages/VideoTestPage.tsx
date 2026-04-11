@@ -54,31 +54,50 @@ export default function VideoTestPage() {
         height: '100%',
         border: '0',
         borderRadius: '48px',
-        backgroundColor: '#000'
+        backgroundColor: '#050810'
       },
       showLeaveButton: false,
       showFullscreenButton: true,
       appearanceConfig: {
         colors: {
-            accent: '#D4A017',
-            accentText: '#FFFFFF',
-            background: '#0a0a0a',
-            backgroundAccent: '#1a1a1a',
+            accent: '#D4A017', // Gold 
+            accentText: '#000000',
+            background: '#050810', // Deep Space
+            backgroundAccent: '#0D111A',
             baseText: '#FFFFFF',
-            border: '#333333',
-            mainAreaBg: '#000000',
-            mainAreaBgAccent: '#050505',
+            border: '#1E2533',
+            mainAreaBg: '#050810',
+            mainAreaBgAccent: '#080C14',
             mainAreaText: '#FFFFFF',
-            supportiveText: '#888888',
+            supportiveText: '#6C7A99',
         }
       }
     })
 
     callRef.current = frame
 
-    frame.join({ url: videoUrl }).catch((err: any) => {
+    // Join with forced clear settings to avoid defaults
+    frame.join({ 
+        url: videoUrl,
+        inputSettings: {
+            video: { processor: { type: 'none' } },
+            audio: { processor: { type: 'none' } }
+        }
+    }).then(() => {
+        console.log('Joined successfully');
+        setIsBlurred(false);
+        setIsAudioHQ(false);
+    }).catch((err: any) => {
         console.error('Join error:', err)
         setError('Impossibile accedere alla stanza video.')
+    })
+
+    // Listen for effect changes from within Daily UI to keep sidebar in sync
+    frame.on('input-settings-updated', (ev: any) => {
+        const videoProc = ev.inputSettings?.video?.processor?.type
+        const audioProc = ev.inputSettings?.audio?.processor?.type
+        setIsBlurred(videoProc === 'background-blur')
+        setIsAudioHQ(audioProc === 'noise-suppression')
     })
 
     return () => {
@@ -93,6 +112,7 @@ export default function VideoTestPage() {
     if (!callRef.current) return
     const newState = !isAudioHQ
     try {
+        // Daily standard for high quality audio toggle
         await callRef.current.updateInputSettings({
             audio: {
                 processor: newState ? { type: 'noise-suppression' } : { type: 'none' }
@@ -101,6 +121,9 @@ export default function VideoTestPage() {
         setIsAudioHQ(newState)
     } catch (e) {
         console.error('Audio quality toggle failed', e)
+        // Re-sync state in case of failure
+        const settings = await callRef.current.getInputSettings()
+        setIsAudioHQ(settings?.audio?.processor?.type === 'noise-suppression')
     }
   }
 
@@ -116,6 +139,9 @@ export default function VideoTestPage() {
         setIsBlurred(newState)
     } catch (e) {
         console.error('Background blur toggle failed', e)
+        // Re-sync state
+        const settings = await callRef.current.getInputSettings()
+        setIsBlurred(settings?.video?.processor?.type === 'background-blur')
     }
   }
 
