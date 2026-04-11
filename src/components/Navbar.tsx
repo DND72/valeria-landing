@@ -179,18 +179,18 @@ export default function Navbar() {
                       <a
                         href={pathname === '/' ? link.href : `/${link.href}`}
                         onClick={() => setMenuOpen(false)}
-                        className="text-3xl md:text-5xl font-serif font-black text-white/50 hover:text-gold-400 hover:scale-105 transition-all inline-block"
+                        className="text-4xl md:text-7xl font-serif font-black text-white/40 hover:brilliant-gold-text transition-all duration-300 inline-block hover:scale-110 active:scale-95 group"
                       >
-                         <span className="text-gold-500/20 mr-4 font-mono text-sm leading-none align-middle">0{i+1}</span>
+                         <span className="text-gold-500/20 mr-4 font-mono text-xl leading-none align-middle group-hover:text-gold-500/40 transition-colors">0{i+1}</span>
                          {link.label}
                       </a>
                     ) : (
                       <Link
                         to={link.href}
                         onClick={() => setMenuOpen(false)}
-                        className="text-3xl md:text-5xl font-serif font-black text-white/50 hover:text-gold-400 hover:scale-105 transition-all inline-block"
+                        className="text-4xl md:text-7xl font-serif font-black text-white/40 hover:brilliant-gold-text transition-all duration-300 inline-block hover:scale-110 active:scale-95 group"
                       >
-                         <span className="text-gold-500/20 mr-4 font-mono text-sm leading-none align-middle">0{i+1}</span>
+                         <span className="text-gold-500/20 mr-4 font-mono text-xl leading-none align-middle group-hover:text-gold-500/40 transition-colors">0{i+1}</span>
                          {link.label}
                       </Link>
                     )}
@@ -220,6 +220,16 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <style>{`
+        .brilliant-gold-text {
+            background: linear-gradient(180deg, #fffde0 0%, #ffdd00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(255, 220, 80, 0.6));
+        }
+      `}</style>
     </>
   )
 }
+
