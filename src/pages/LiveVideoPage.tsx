@@ -171,27 +171,65 @@ export default function LiveVideoPage() {
              </div>
           </div>
 
-          {/* Metrics */}
-          <div className="grid grid-cols-2 gap-3 mb-8">
-             <div className="bg-white/5 border border-white/5 rounded-2xl p-3 text-center">
-                <span className="text-[8px] uppercase text-white/30 block mb-1">Durata</span>
-                <span className="font-mono font-bold text-lg">
+          {/* Metrics Timer come nelle Chat */}
+          <div className="flex bg-black/40 border border-gold-500/20 rounded-2xl p-4 mb-6 relative overflow-hidden items-center justify-between">
+             <div className="absolute top-0 left-0 w-1 h-full bg-gold-500 animate-pulse" />
+             <div>
+                <span className="text-[8px] uppercase text-white/40 block mb-1 font-bold tracking-widest">Tempo Trascorso</span>
+                <span className="font-mono font-black text-2xl gold-text tracking-tighter">
                    {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
                 </span>
              </div>
-             <div className="bg-white/5 border border-white/5 rounded-2xl p-3 text-center">
-                <span className="text-[8px] uppercase text-white/30 block mb-1">{isStaff ? 'Incasso' : 'Costo CR'}</span>
-                <span className="font-mono font-bold text-lg text-emerald-400">{currentTotalCost}</span>
+             <div className="text-right">
+                <span className="text-[8px] uppercase text-white/40 block mb-1 font-bold tracking-widest">{isStaff ? 'Incasso' : 'Costo Attuale'}</span>
+                <span className="font-mono font-bold text-xl text-emerald-400">{currentTotalCost} CR</span>
              </div>
           </div>
 
+          {/* Widget Astrologico Cliente */}
+          {clientAstral && (
+             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 relative overflow-hidden group hover:border-gold-500/30 transition-all">
+                {/* Background decorative wheel */}
+                <div className="absolute right-[-20%] top-[-20%] w-32 h-32 border-4 border-gold-500/10 rounded-full flex items-center justify-center opacity-30 group-hover:scale-110 transition-transform duration-700">
+                    <div className="w-full h-px bg-gold-500/10 absolute rotate-0" />
+                    <div className="w-full h-px bg-gold-500/10 absolute rotate-45" />
+                    <div className="w-full h-px bg-gold-500/10 absolute rotate-90" />
+                    <div className="w-full h-px bg-gold-500/10 absolute rotate-[135deg]" />
+                    <div className="w-24 h-24 border-2 border-gold-500/10 rounded-full absolute" />
+                </div>
+
+                <h3 className="text-[9px] uppercase tracking-widest font-black text-gold-500 mb-4 opacity-80 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-gold-500 rounded-full" /> Mappa del Cielo (Fissa)
+                </h3>
+                
+                <div className="grid grid-cols-2 gap-3 relative z-10">
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                        <span className="text-xs text-amber-400 block mb-1">☉ Sole</span>
+                        <p className="text-[10px] font-bold uppercase tracking-wider">{clientAstral.sole}</p>
+                    </div>
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                        <span className="text-xs text-blue-300 block mb-1">☽ Luna</span>
+                        <p className="text-[10px] font-bold uppercase tracking-wider">{clientAstral.luna}</p>
+                    </div>
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                        <span className="text-xs text-purple-400 block mb-1">🏹 Ascendente</span>
+                        <p className="text-[10px] font-bold uppercase tracking-wider">{clientAstral.asc}</p>
+                    </div>
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+                        <span className="text-[9px] text-zinc-400 uppercase tracking-widest block mb-1 mt-0.5">Fase Lunare</span>
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Analisi in corso...</p>
+                    </div>
+                </div>
+             </div>
+          )}
+
           {/* Attachments Area */}
           <div className="flex-1 flex flex-col min-h-0">
-             <h3 className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-4 px-1">Elementi Condivisi</h3>
-             <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
+             <h3 className="text-[10px] uppercase tracking-widest font-black text-white/40 mb-3 px-1">Elementi Condivisi</h3>
+             <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
                 {attachments.length === 0 ? (
-                   <div className="py-10 text-center border border-dashed border-white/5 rounded-2xl">
-                      <p className="text-[9px] text-white/20 italic">Trascina qui foto o documenti</p>
+                   <div className="py-8 text-center border border-dashed border-white/10 rounded-2xl bg-white/5">
+                      <p className="text-[9px] text-white/30 italic font-bold">Nessun file condiviso</p>
                    </div>
                 ) : (
                    attachments.map(at => (
@@ -207,9 +245,6 @@ export default function LiveVideoPage() {
                    ))
                 )}
              </div>
-             <button className="mt-4 w-full py-3 bg-white/5 border border-white/10 rounded-xl text-[9px] uppercase font-bold tracking-[0.2em] text-white/40 hover:text-white hover:border-gold-500 transition-all">
-                + Invia File / Foto
-             </button>
           </div>
 
           <button onClick={handleEndSession} className="mt-8 w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-red-500/20 transition-all">
