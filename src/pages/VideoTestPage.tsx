@@ -146,10 +146,10 @@ export default function VideoTestPage() {
         if (effect === 'blur') {
             processor = { type: 'background-blur' }
         } else if (effect !== 'none') {
-            // Background replacement with local public assets
-            // Use absolute path for reliability
-            const imgUrl = `${window.location.protocol}//${window.location.host}/backgrounds/${effect}.png`
-            console.log(`[Daily] Image URL: ${imgUrl}`);
+            // Utilizziamo un CDN pubblico (jsDelivr) collegato a GitHub per aggirare i problemi CORS 
+            // che impediscono a Daily (in un iframe cross-origin) di leggere immagini dal dominio locale.
+            const imgUrl = `https://cdn.jsdelivr.net/gh/DND72/valeria-landing@main/public/backgrounds/${effect}.png`
+            console.log(`[Daily] Image URL (CDN): ${imgUrl}`);
             
             processor = { 
                 type: 'background-image', 
