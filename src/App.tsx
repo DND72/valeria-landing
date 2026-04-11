@@ -46,6 +46,7 @@ import MentorePage from './pages/dashboard/MentorePage'
 import SynastryPage from './pages/SynastryPage'
 import HeartTidesPage from './pages/HeartTidesPage'
 import MyLiveConsultsPage from './pages/dashboard/MyLiveConsultsPage'
+import StanzaSicuraPage from './pages/StanzaSicuraPage'
 
 function HomePage() {
   return (
@@ -97,6 +98,7 @@ function AppRoutes() {
             <Route path="/gestione-commenti-blog" element={<StaffGuard><StaffBlogCommentsPage /></StaffGuard>} />
             <Route path="/grazie" element={<GraziePage />} />
             <Route path="/crescita-personale" element={<PersonalGrowthPage />} />
+            <Route path="/stanza-sicura" element={<StanzaSicuraPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<ArticlePage />} />
             <Route path="/faq" element={<FaqPage />} />
