@@ -29,6 +29,14 @@ export default function LiveVideoPage() {
   const [isSummarizing, setIsSummarizing] = useState(false)
   const [transcriptionText, setTranscriptionText] = useState<string[]>([])
 
+  const MAJOR_ARCANA = [
+    "Il Matto (0)", "Il Bagatto (1)", "La Papessa (2)", "L'Imperatrice (3)", "L'Imperatore (4)", "Il Papa (5)", 
+    "Gli Amanti (6)", "Il Carro (7)", "La Giustizia (8)", "L'Eremita (9)", "La Ruota della Fortuna (10)", "La Forza (11)", 
+    "L'Appeso (12)", "La Morte (13)", "La Temperanza (14)", "Il Diavolo (15)", "La Torre (16)", "La Stella (17)", 
+    "La Luna (18)", "Il Sole (19)", "Il Giudizio (20)", "Il Mondo (21)"
+  ]
+  const [drawnCards, setDrawnCards] = useState<number[]>([])
+
   // Astral Data for Lower Thirds
   const [clientAstral, setClientAstral] = useState<any>(null)
   const valeriaAstral = { sole: 'Ariete', luna: 'Pesci', asc: 'Scorpione' }
@@ -108,10 +116,12 @@ export default function LiveVideoPage() {
   }
 
   const handleGenerateSummary = async () => {
-     if (transcriptionText.length < 2) return alert("Trascrizione troppo breve per un riassunto.")
+     if (transcriptionText.length < 2 && drawnCards.length === 0) return alert("Nessun dato nella sessione (trascrizione o carte) per creare un riassunto.")
      setIsSummarizing(true)
      try {
-        const fullText = transcriptionText.join("\n")
+        const manualCards = drawnCards.length > 0 ? `\n\nCARTE ESTRATTE SELEZIONATE MANUALMENTE DA VALERIA:\n${drawnCards.map(c => MAJOR_ARCANA[c]).join(', ')}` : ""
+        const fullText = transcriptionText.join("\n") + manualCards
+
         await apiJson(getToken, `/api/staff/consults/${id}/summarize`, {
             method: 'POST',
             body: JSON.stringify({ 
@@ -274,7 +284,35 @@ export default function LiveVideoPage() {
                     </button>
                 </div>
 
-                {transcriptionText.length > 0 && (
+                {/* Secret Tarot Card Pad */}
+                <div className="bg-black/20 border border-white/5 rounded-2xl p-4 mt-4">
+                    <h4 className="text-[9px] uppercase tracking-widest font-black text-white/40 mb-3 flex items-center justify-between">
+                        <span>Taccuino Arcani Maggiori</span>
+                        <span className="text-gold-500">{drawnCards.length} Svelati</span>
+                    </h4>
+                    <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                        {MAJOR_ARCANA.map((card, i) => {
+                            const isSelected = drawnCards.includes(i)
+                            return (
+                                <button
+                                    key={i}
+                                    onClick={() => {
+                                        if (drawnCards.includes(i)) setDrawnCards(drawnCards.filter(c => c !== i))
+                                        else setDrawnCards([...drawnCards, i])
+                                    }}
+                                    title={card}
+                                    className={`w-7 h-7 rounded-lg text-[10px] font-bold flex items-center justify-center transition-all ${
+                                        isSelected ? 'bg-gold-500 text-black shadow-[0_0_10px_rgba(212,160,23,0.4)]' : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'
+                                    }`}
+                                >
+                                    {i === 0 ? '0' : i}
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
+
+                {(transcriptionText.length > 0 || drawnCards.length > 0) && (
                     <button 
                         onClick={handleGenerateSummary}
                         disabled={isSummarizing}
