@@ -68,11 +68,14 @@ export default function StanzaSicuraPage() {
             transition={{ delay: 0.3 }}
             className="p-8 bg-red-500/5 border border-red-500/20 rounded-3xl mb-16 text-center"
         >
-            <h3 className="text-lg font-bold text-red-500 mb-2 uppercase tracking-widest text-[11px]">Avvertenza Legale e Consenso</h3>
-            <h4 className="text-2xl font-serif text-white mb-4">Registrazione Automatica Obbligatoria</h4>
+            <h3 className="text-lg font-bold text-red-500 mb-2 uppercase tracking-widest text-[11px]">Avvertenza Legale, Consenso e Privacy</h3>
+            <h4 className="text-2xl font-serif text-white mb-4">Gestione Trasparente delle Registrazioni</h4>
             <p className="text-white/60 text-sm max-w-3xl mx-auto leading-relaxed mb-6">
-                Per la tutela di chi prenota, ogni secondo passato nella Stanza Sicura viene **registrato in automatico in alta qualità**. Le registrazioni sono criptate e disponibili come prova inconfutabile in caso di necessità legali o denunce future. <br/><br/>
-                <strong>L'invio del link al partner funge da liberatoria</strong>: entrando nella stanza video, entrambe le parti accettano irrevocabilmente di essere registrate ai fini della sicurezza personale.
+                Per la tutela di chi prenota e di chi viene invitato, ogni secondo passato nella Stanza Sicura viene **registrato in automatico in alta qualità**. Le registrazioni sono criptate e disponibili come prova inibitoria in caso di necessità o comportamenti illeciti. <br/><br/>
+                <strong>Regole di Trattamento:</strong><br/>
+                1. <strong>Accesso Paritario:</strong> Le registrazioni saranno fruibili e rilasciate su richiesta esplicita ad <strong>entrambi</strong> gli interessati coinvolti nella seduta.<br/>
+                2. <strong>Cancellazione Automatica:</strong> A tutela della privacy (GDPR), il file video verrà <strong>distrutto irreversibilmente dopo 24 ore</strong> dal termine della sessione, se non ne viene fatta richiesta da una delle parti o dalle autorità.<br/>
+                3. <strong>Consenso:</strong> L'accesso alla stanza video costituisce implicita ed irrevocabile accettazione di tali termini di registrazione.
             </p>
         </motion.div>
 
