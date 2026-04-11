@@ -98,13 +98,19 @@ export default function Navbar() {
               <li key={link.href}>
                 <Link
                   to={link.href}
-                  className={`text-[13px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
-                    isActive 
-                      ? 'brilliant-gold-text scale-110' 
-                      : 'text-gold-500/60 hover:text-gold-400 hover:scale-105'
-                  }`}
+                  className={`text-sm font-black uppercase tracking-[0.2em] transition-all duration-300 relative group py-2
+                    ${isActive 
+                      ? 'brilliant-gold-active scale-110' 
+                      : 'text-white/60 hover:text-gold-400 hover:scale-105'
+                    }`}
                 >
                   {link.label}
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeTab"
+                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold-400 to-transparent"
+                    />
+                  )}
                 </Link>
               </li>
             )
@@ -196,4 +202,27 @@ export default function Navbar() {
       </AnimatePresence>
     </motion.nav>
   )
+}
+
+const styles = `
+  .brilliant-gold-active {
+    background: linear-gradient(180deg, #ffffff 0%, #ffdd00 45%, #d4a017 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: brightness(1.3) contrast(1.1);
+    animation: gold-pulse 3s infinite alternate;
+  }
+
+  @keyframes gold-pulse {
+    from { filter: brightness(1.2) contrast(1.1); }
+    to { filter: brightness(1.5) contrast(1.2); }
+  }
+`
+
+// Inseriamo lo stile nell'head se non presente
+if (typeof document !== 'undefined' && !document.getElementById('navbar-styles')) {
+  const styleEl = document.createElement('style')
+  styleEl.id = 'navbar-styles'
+  styleEl.textContent = styles
+  document.head.appendChild(styleEl)
 }
