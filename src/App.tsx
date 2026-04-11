@@ -51,12 +51,15 @@ import TarocchiLavoroPage from './pages/verticals/TarocchiLavoro'
 import TarocchiEvolutiviPage from './pages/verticals/TarocchiEvolutivi'
 import TarocchiOnlinePage from './pages/verticals/TarocchiOnline'
 
+import TrustPayments from './components/TrustPayments'
+
 function HomePage() {
   return (
     <>
       <Hero />
       <Stats />
       <AstrologyPromo />
+      <TrustPayments />
       <ServicesGrid />
       <HomeFaq />
       <BookingSection />
