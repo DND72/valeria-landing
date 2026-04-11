@@ -9,6 +9,7 @@ export type ConsultKind =
   | 'free'
   | 'chat_prenotabile'
   | 'chat_flash'
+  | 'protocollo_protetto'
 
 export type ConsultChoice = {
   kind: ConsultKind
@@ -29,6 +30,7 @@ export const CONSULT_CHOICES: ConsultChoice[] = [
   { kind: 'chat_prenotabile', name: 'Chat Prenotabile', duration: 'A Tempo', priceLabel: '1,00 cr/min', icon: '💬', costCredits: 1.0 },
   { kind: 'combo_flash', name: 'Combo Flash', duration: 'A Tempo', priceLabel: '1,70 cr/min', icon: '⚡', costCredits: 1.7 },
   { kind: 'combo_prenotabile', name: 'Combo Prenotabile', duration: 'A Tempo', priceLabel: '1,40 cr/min', icon: '🔥', costCredits: 1.4 },
+  { kind: 'protocollo_protetto', name: 'L\'Ultimo Incontro', duration: 'Protogollo Protetto', priceLabel: '1,80 cr/min', icon: '🛡️', costCredits: 1.8 },
 ]
 
 /** Settore offerta nel Diario cliente: letture vs coaching/crescita personale vs combo. */
@@ -37,6 +39,6 @@ export type OfferCategory = 'tarocchi' | 'crescita' | 'combo' | 'chat'
 export function consultOfferCategory(kind: ConsultKind): OfferCategory {
   if (kind.startsWith('chat_')) return 'chat'
   if (kind.startsWith('combo_')) return 'combo'
-  if (kind.startsWith('coaching_')) return 'crescita'
+  if (kind.startsWith('coaching_') || kind === 'protocollo_protetto') return 'crescita'
   return 'tarocchi'
 }

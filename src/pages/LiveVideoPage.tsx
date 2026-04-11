@@ -38,6 +38,8 @@ export default function LiveVideoPage() {
     "La Luna (18)", "Il Sole (19)", "Il Giudizio (20)", "Il Mondo (21)"
   ]
   const [drawnCards, setDrawnCards] = useState<number[]>([])
+  
+  const isProtectedProtocol = sessionInfo?.consultKind === 'protocollo_protetto'
 
   // Astral Data for Lower Thirds
   const [clientAstral, setClientAstral] = useState<any>(null)
@@ -166,25 +168,27 @@ export default function LiveVideoPage() {
   return (
     <div className="fixed inset-0 bg-[#0a0a0b] text-white flex flex-col overflow-hidden">
       
-      {/* 🔮 Mystical Overlays */}
-      <div className="absolute inset-0 pointer-events-none z-20">
-         <div className="absolute top-0 left-0 w-24 h-24 border-t border-l border-gold-500/20 rounded-tl-3xl m-4" />
-         <div className="absolute top-0 right-0 w-24 h-24 border-t border-r border-gold-500/20 rounded-tr-3xl m-4" />
-         <div className="absolute bottom-0 left-0 w-24 h-24 border-b border-l border-gold-500/20 rounded-bl-3xl m-4" />
-         <div className="absolute bottom-0 right-0 w-24 h-24 border-b border-r border-gold-500/20 rounded-br-3xl m-4" />
-         
-         <div className="absolute inset-0 overflow-hidden opacity-10">
-            {[...Array(10)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 bg-gold-400 rounded-full blur-[1px]"
-                animate={{ y: [-20, 1000], opacity: [0, 1, 0] }}
-                transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, ease: "linear", delay: i }}
-                style={{ left: `${i * 10}%`, top: '-5%' }}
-              />
-            ))}
-         </div>
-      </div>
+      {/* 🔮 Mystical Overlays - Solo se NON è Protocollo Protetto */}
+      {!isProtectedProtocol && (
+        <div className="absolute inset-0 pointer-events-none z-20">
+            <div className="absolute top-0 left-0 w-24 h-24 border-t border-l border-gold-500/20 rounded-tl-3xl m-4" />
+            <div className="absolute top-0 right-0 w-24 h-24 border-t border-r border-gold-500/20 rounded-tr-3xl m-4" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 border-b border-l border-gold-500/20 rounded-bl-3xl m-4" />
+            <div className="absolute bottom-0 right-0 w-24 h-24 border-b border-r border-gold-500/20 rounded-br-3xl m-4" />
+            
+            <div className="absolute inset-0 overflow-hidden opacity-10">
+                {[...Array(10)].map((_, i) => (
+                <motion.div
+                    key={i}
+                    className="absolute w-1 h-1 bg-gold-400 rounded-full blur-[1px]"
+                    animate={{ y: [-20, 1000], opacity: [0, 1, 0] }}
+                    transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, ease: "linear", delay: i }}
+                    style={{ left: `${i * 10}%`, top: '-5%' }}
+                />
+                ))}
+            </div>
+        </div>
+      )}
 
       <div className="relative z-10 w-full h-full flex flex-col md:flex-row">
         {/* Sidebar */}
@@ -217,8 +221,8 @@ export default function LiveVideoPage() {
              </div>
           </div>
 
-          {/* Widget Astrologico Cliente */}
-          {clientAstral && (
+          {/* Widget Astrologico Cliente - Solo se NON è Protocollo Protetto */}
+          {clientAstral && !isProtectedProtocol && (
              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 relative overflow-hidden group hover:border-gold-500/30 transition-all">
                 {/* Background decorative wheel */}
                 <div className="absolute right-[-20%] top-[-20%] w-32 h-32 border-4 border-gold-500/10 rounded-full flex items-center justify-center opacity-30 group-hover:scale-110 transition-transform duration-700">
@@ -304,15 +308,27 @@ export default function LiveVideoPage() {
                         <span className="text-[8px] uppercase font-bold tracking-widest">Trascrizione AI</span>
                     </button>
 
-                    <button 
-                        onClick={handleInvokeOracle}
-                        disabled={isInvokingOracle}
-                        className={`py-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${oracleInsight ? 'bg-gold-500/10 border-gold-500/40 text-gold-500' : 'bg-white/5 border-white/5 text-white/40'}`}
-                    >
-                        <span className="text-xs">{isInvokingOracle ? '⌛' : '👁️'}</span>
-                        <span className="text-[8px] uppercase font-bold tracking-widest">Invoca Oracolo</span>
-                    </button>
+                    {!isProtectedProtocol && (
+                        <button 
+                            onClick={handleInvokeOracle}
+                            disabled={isInvokingOracle}
+                            className={`py-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${oracleInsight ? 'bg-gold-500/10 border-gold-500/40 text-gold-500' : 'bg-white/5 border-white/5 text-white/40'}`}
+                        >
+                            <span className="text-xs">{isInvokingOracle ? '⌛' : '👁️'}</span>
+                            <span className="text-[8px] uppercase font-bold tracking-widest">Invoca Oracolo</span>
+                        </button>
+                    )}
                 </div>
+
+                {isProtectedProtocol && (
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3">
+                        <span className="text-xl">🛡️</span>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-red-500">Security Mode</p>
+                            <p className="text-[8px] text-white/40 uppercase font-bold">Protocollo Protetto Attivo</p>
+                        </div>
+                    </div>
+                )}
 
                 {oracleInsight && (
                     <motion.div 
@@ -330,8 +346,9 @@ export default function LiveVideoPage() {
                     </motion.div>
                 )}
 
-                {/* Secret Tarot Card Pad */}
-                <div className="bg-black/20 border border-white/5 rounded-2xl p-4 mt-4">
+                {/* Secret Tarot Card Pad - Solo se NON è Protocollo Protetto */}
+                {!isProtectedProtocol && (
+                   <div className="bg-black/20 border border-white/5 rounded-2xl p-4 mt-4">
                     <h4 className="text-[9px] uppercase tracking-widest font-black text-white/40 mb-3 flex items-center justify-between">
                         <span>Taccuino Arcani Maggiori</span>
                         <span className="text-gold-500">{drawnCards.length} Svelati</span>
@@ -356,7 +373,8 @@ export default function LiveVideoPage() {
                             )
                         })}
                     </div>
-                </div>
+                   </div>
+                )}
 
                 {(transcriptionText.length > 0 || drawnCards.length > 0) && (
                     <button 
@@ -415,23 +433,29 @@ export default function LiveVideoPage() {
                             <div className="bg-black/40 backdrop-blur-2xl border-l-[3px] border-gold-500 p-4 rounded-r-3xl flex items-center gap-6 shadow-2xl">
                                 <div>
                                     <h4 className="text-white font-serif font-black text-xs uppercase tracking-[0.2em] leading-none mb-1.5">Valeria Di Pace</h4>
-                                    <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold">Mentore Evolutivo</p>
+                                    <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold">
+                                        {isProtectedProtocol ? 'Coach Professionista - Gestione Crisi' : 'Mentore Evolutivo'}
+                                    </p>
                                 </div>
-                                <div className="h-8 w-px bg-white/10" />
-                                <div className="flex gap-4">
-                                    <div className="text-center">
-                                         <span className="text-xs block text-amber-400">☉</span>
-                                         <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.sole}</span>
-                                    </div>
-                                    <div className="text-center">
-                                         <span className="text-xs block text-blue-300">☽</span>
-                                         <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.luna}</span>
-                                    </div>
-                                    <div className="text-center">
-                                         <span className="text-xs block text-purple-400">🏹</span>
-                                         <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.asc}</span>
-                                    </div>
-                                </div>
+                                {!isProtectedProtocol && (
+                                    <>
+                                        <div className="h-8 w-px bg-white/10" />
+                                        <div className="flex gap-4">
+                                            <div className="text-center">
+                                                <span className="text-xs block text-amber-400">☉</span>
+                                                <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.sole}</span>
+                                            </div>
+                                            <div className="text-center">
+                                                <span className="text-xs block text-blue-300">☽</span>
+                                                <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.luna}</span>
+                                            </div>
+                                            <div className="text-center">
+                                                <span className="text-xs block text-purple-400">🏹</span>
+                                                <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.asc}</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             {/* Client's Identity (if available) */}
@@ -441,24 +465,30 @@ export default function LiveVideoPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     className="bg-black/40 backdrop-blur-2xl border-r-[3px] border-indigo-400 p-4 rounded-l-3xl flex items-center gap-6 shadow-2xl text-right"
                                 >
-                                    <div className="flex gap-4">
-                                        <div className="text-center">
-                                             <span className="text-xs block text-indigo-300">☉</span>
-                                             <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.sole}</span>
-                                        </div>
-                                        <div className="text-center">
-                                             <span className="text-xs block text-indigo-200">☽</span>
-                                             <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.luna}</span>
-                                        </div>
-                                        <div className="text-center">
-                                             <span className="text-xs block text-indigo-400">🏹</span>
-                                             <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.asc}</span>
-                                        </div>
-                                    </div>
-                                    <div className="h-8 w-px bg-white/10" />
+                                    {!isProtectedProtocol && (
+                                        <>
+                                            <div className="flex gap-4">
+                                                <div className="text-center">
+                                                    <span className="text-xs block text-indigo-300">☉</span>
+                                                    <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.sole}</span>
+                                                </div>
+                                                <div className="text-center">
+                                                    <span className="text-xs block text-indigo-200">☽</span>
+                                                    <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.luna}</span>
+                                                </div>
+                                                <div className="text-center">
+                                                    <span className="text-xs block text-indigo-400">🏹</span>
+                                                    <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.asc}</span>
+                                                </div>
+                                            </div>
+                                            <div className="h-8 w-px bg-white/10" />
+                                        </>
+                                    )}
                                     <div>
-                                        <h4 className="text-white font-serif font-black text-xs uppercase tracking-[0.2em] leading-none mb-1.5">{sessionInfo?.inviteeName || 'Cliente'}</h4>
-                                        <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold">Viaggiatore Astrale</p>
+                                        <h4 className="text-white font-serif font-black text-xs uppercase tracking-[0.2em] leading-none mb-1.5">{sessionInfo?.inviteeName || 'Partecipante'}</h4>
+                                        <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold">
+                                            {isProtectedProtocol ? 'Partecipante Ricevente' : 'Viaggiatore Astrale'}
+                                        </p>
                                     </div>
                                 </motion.div>
                             )}

@@ -12,6 +12,7 @@ export type ConsultKind =
   | 'free'
   | 'chat_prenotabile'
   | 'chat_flash'
+  | 'protocollo_protetto'
 
 export type ConsultMeta = {
   /** Prezzo originario Stripe (mantenuto per legacy) */
@@ -98,6 +99,14 @@ export const CONSULT_META: Record<ConsultKind, ConsultMeta> = {
     costCredits: 13, 
     name: 'Chat Flash',
     description: 'Chat prioritaria istantanea (1,3 cr / min)',
+    isFree: false,
+    durationMinutes: 10,
+  },
+  protocollo_protetto: {
+    amountCents: 1800,
+    costCredits: 18, 
+    name: 'L\'Ultimo Incontro',
+    description: 'Protocollo Protetto - Coaching Sociale (1,8 cr / min)',
     isFree: false,
     durationMinutes: 10,
   },

@@ -395,6 +395,7 @@ export function createStaffRouter(pool: Pool): Router {
          'coaching_prenotabile': 1.2,
          'combo_flash': 1.7,
          'combo_prenotabile': 1.4,
+         'protocollo_protetto': 1.8,
          'free': 0
       }
       

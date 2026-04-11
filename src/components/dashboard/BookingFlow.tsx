@@ -126,7 +126,7 @@ export default function BookingFlow({
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             { cat: 'tarocchi' as OfferCategory, icon: '🃏', title: 'Tarocchi & Letture', desc: 'Consulti tramite Carte: Breve, Completo o Live Chat.', cta: 'Vedi i consulti →' },
-            { cat: 'crescita' as OfferCategory, icon: '🌱', title: 'Coaching & Crescita', desc: 'Definire obiettivi, superare le paure o cambiare abitudini.', cta: 'Vedi il coaching →' },
+            { cat: 'crescita' as OfferCategory, icon: '🛡️', title: 'Coaching & Gestione Crisi', desc: 'Sostegno professionale per obiettivi o situazioni di crisi (Protocollo Protetto).', cta: 'Vedi le opzioni →' },
             { cat: 'combo' as OfferCategory, icon: '🦋', title: 'Percorsi (Combo)', desc: "L'unione di Tarocchi e Coaching in percorsi guidati.", cta: 'Scopri le combo →' },
             { cat: 'chat' as OfferCategory, icon: '💬', title: 'Live Chat', desc: 'Sessione testuale in tempo reale. Privacy totale.', cta: 'Vedi opzioni chat →' },
           ].map(({ cat, icon, title, desc, cta }) => (
