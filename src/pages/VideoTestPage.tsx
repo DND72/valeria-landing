@@ -141,6 +141,8 @@ export default function VideoTestPage() {
   const applyVideoEffect = async (effect: 'none' | 'blur' | 'cosmic' | 'study' | 'temple') => {
     if (!callRef.current) return
     
+    console.log(`[Daily] Applying effect: ${effect}`);
+    
     // Optimistic update
     const prevEffect = activeVideoEffect
     setActiveVideoEffect(effect)
@@ -150,28 +152,45 @@ export default function VideoTestPage() {
         
         if (effect === 'blur') {
             processor = { type: 'background-blur' }
-        } else if (effect === 'cosmic' || effect === 'study' || effect === 'temple') {
+        } else if (effect !== 'none') {
             // Background replacement with local public assets
-            const baseUrl = window.location.origin
+            // Use absolute path for reliability
+            const imgUrl = `${window.location.protocol}//${window.location.host}/backgrounds/${effect}.png`
+            console.log(`[Daily] Image URL: ${imgUrl}`);
+            
             processor = { 
                 type: 'background-image', 
-                config: { source: `${baseUrl}/backgrounds/${effect}.png` } 
+                config: { 
+                    source: imgUrl, // standard 2026/latest
+                    url: imgUrl     // fallback for older builds
+                } 
             }
         }
 
         await callRef.current.updateInputSettings({
             video: { processor }
         })
+        console.log('[Daily] Input settings updated successfully');
     } catch (e) {
-        console.error('Video effect change failed', e)
+        console.error('[Daily] Video effect change failed', e)
         setActiveVideoEffect(prevEffect)
-        // Re-sync
-        const settings = await callRef.current.getInputSettings()
-        const videoProc = settings?.video?.processor?.type
-        if (videoProc === 'background-blur') setActiveVideoEffect('blur')
-        else if (videoProc === 'background-image') {
-             // Logic to re-sync specific image could be added here
-        } else setActiveVideoEffect('none')
+        
+        // Tentativo di ri-sincronizzazione
+        try {
+            const settings = await callRef.current.getInputSettings()
+            const videoProc = settings?.video?.processor?.type
+            if (videoProc === 'background-blur') setActiveVideoEffect('blur')
+            else if (videoProc === 'background-image') {
+                 // Sincronizzazione dell'effetto specifico basata sull'URL
+                 const currentSource = settings?.video?.processor?.config?.source || settings?.video?.processor?.config?.url
+                 if (currentSource?.includes('cosmic')) setActiveVideoEffect('cosmic')
+                 else if (currentSource?.includes('study')) setActiveVideoEffect('study')
+                 else if (currentSource?.includes('temple')) setActiveVideoEffect('temple')
+                 else setActiveVideoEffect('none')
+            } else setActiveVideoEffect('none')
+        } catch (syncErr) {
+            console.error('[Daily] Re-sync failed', syncErr)
+        }
     }
   }
 
