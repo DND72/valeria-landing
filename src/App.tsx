@@ -12,6 +12,8 @@ import HowItWorks from './components/HowItWorks'
 import Reviews from './components/Reviews'
 import TarotAppPromo from './components/TarotAppPromo'
 import AstrologyPromo from './components/AstrologyPromo'
+import ServicesGrid from './components/ServicesGrid'
+import HomeFaq from './components/HomeFaq'
 import BookingSection from './components/BookingSection'
 import Footer from './components/Footer'
 import SignInPage from './pages/SignInPage'
@@ -47,6 +49,11 @@ import SynastryPage from './pages/SynastryPage'
 import HeartTidesPage from './pages/HeartTidesPage'
 import MyLiveConsultsPage from './pages/dashboard/MyLiveConsultsPage'
 import StanzaSicuraPage from './pages/StanzaSicuraPage'
+import AboutPage from './pages/AboutPage'
+import TarocchiAmorePage from './pages/verticals/TarocchiAmore'
+import TarocchiLavoroPage from './pages/verticals/TarocchiLavoro'
+import TarocchiEvolutiviPage from './pages/verticals/TarocchiEvolutivi'
+import TarocchiOnlinePage from './pages/verticals/TarocchiOnline'
 
 function HomePage() {
   return (
@@ -59,6 +66,8 @@ function HomePage() {
       <Reviews />
       <TarotAppPromo />
       <AstrologyPromo />
+      <ServicesGrid />
+      <HomeFaq />
       <BookingSection />
     </>
   )
@@ -67,8 +76,6 @@ function HomePage() {
 function AppRoutes() {
   const { pathname } = useLocation()
 
-  // Clerk / widget esterni a volte lasciano overflow:hidden o position:fixed sul body.
-  // Ripristina lo scroll quando si cambia pagina (es. uscita da Dashboard / modali).
   useLayoutEffect(() => {
     const body = document.body
     const html = document.documentElement
@@ -99,6 +106,11 @@ function AppRoutes() {
             <Route path="/grazie" element={<GraziePage />} />
             <Route path="/crescita-personale" element={<PersonalGrowthPage />} />
             <Route path="/stanza-sicura" element={<StanzaSicuraPage />} />
+            <Route path="/chi-sono" element={<AboutPage />} />
+            <Route path="/tarocchi-amore" element={<TarocchiAmorePage />} />
+            <Route path="/tarocchi-lavoro" element={<TarocchiLavoroPage />} />
+            <Route path="/tarocchi-evolutivi" element={<TarocchiEvolutiviPage />} />
+            <Route path="/tarocchi-online" element={<TarocchiOnlinePage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<ArticlePage />} />
             <Route path="/faq" element={<FaqPage />} />
@@ -128,68 +140,50 @@ function AppRoutes() {
 export default function App() {
   const { pathname } = useLocation()
   
-  // Hub Immersivo: Staff e Clienti vedono un'area pulita senza Navbar/Footer globali
   const isDashboardArea = pathname.startsWith('/area-personale')
   const isStaffArea = pathname.startsWith('/control-room') || pathname.startsWith('/gestione-')
   const isSessionArea = pathname.startsWith('/sessione') || pathname.startsWith('/video-session')
-  const isVideoTest = pathname.startsWith('/video-test')
-  const isImmersiveHub = isDashboardArea || isStaffArea || isSessionArea || isVideoTest
+  const isVideoTest = pathname === '/video-test'
+  
+  const showGlobalUI = !isDashboardArea && !isStaffArea && !isSessionArea && !isVideoTest
 
   return (
-    <div className="relative min-h-screen bg-dark-500 text-white overflow-x-hidden">
-      <ScrollToTop />
+    <div className="relative min-h-screen bg-dark-500 font-sans text-white overflow-x-hidden selection:bg-gold-500/30 selection:text-gold-200">
       <CosmicBackground />
-      {!isImmersiveHub && <Navbar />}
-      <main className={`relative z-0 ${isImmersiveHub ? 'pt-0' : 'pt-24 md:pt-28'}`}>
-        <div className={isImmersiveHub ? 'w-full' : 'max-w-7xl mx-auto px-4'}>
-          {!isImmersiveHub && <Breadcrumbs />}
-          <AppRoutes />
-        </div>
+      <ScrollToTop />
+      
+      {showGlobalUI && <Navbar />}
+
+      <main className="relative z-10">
+        {!isDashboardArea && !isStaffArea && !isSessionArea && !isVideoTest && <Breadcrumbs />}
+        <AppRoutes />
       </main>
 
-      {!isImmersiveHub && <Footer />}
+      {showGlobalUI && <Footer />}
 
       <CookieConsent
         location="bottom"
         buttonText="Accetto"
-        declineButtonText="Rifiuta"
-        enableDeclineButton={true}
-        cookieName="valeria_landing_consent"
+        cookieName="nonsolotarocchi-cookies"
         style={{ 
-          background: "rgba(10, 26, 47, 0.95)",
-          color: "#f5f0e8",
-          fontSize: "13px",
-          borderTop: "1px solid rgba(212, 160, 23, 0.3)",
-          backdropFilter: "blur(8px)",
-          alignItems: "center",
-          padding: "12px 24px",
-          zIndex: 9999
+          background: "rgba(18, 18, 18, 0.95)",
+          backdropFilter: "blur(10px)",
+          borderTop: "1px solid rgba(212, 160, 23, 0.2)",
+          color: "#fff",
+          fontSize: "14px",
+          zIndex: 2147483647
         }}
         buttonStyle={{ 
-          background: "linear-gradient(90deg, #d4a017, #b8860b)",
-          color: "#0a1a2f",
-          fontSize: "13px",
-          fontWeight: "600",
-          borderRadius: "6px",
-          padding: "8px 24px",
-          cursor: "pointer",
-          margin: "5px"
+          backgroundColor: "#d4a017", 
+          color: "#000", 
+          fontSize: "13px", 
+          fontWeight: "bold",
+          borderRadius: "9999px",
+          padding: "8px 25px"
         }}
-        declineButtonStyle={{
-          background: "transparent",
-          color: "rgba(245, 240, 232, 0.5)",
-          fontSize: "13px",
-          borderRadius: "6px",
-          border: "1px solid rgba(245, 240, 232, 0.2)",
-          padding: "8px 24px",
-          cursor: "pointer",
-          margin: "5px"
-        }}
-        expires={30}
       >
-        Noi utilizziamo cookie tecnici e di terze parti (Stripe, Clerk) per garantirti la migliore esperienza di consulenza e sicurezza. 
-        Proseguendo la navigazione o cliccando su Accetto, acconsenti al loro utilizzo. 
-        Leggi la nostra <Link to="/cookie" className="text-gold-400 hover:underline">Cookie Policy</Link> per maggiori dettagli.
+        Utilizziamo i cookie per migliorare la tua esperienza e analizzare il traffico. Cliccando "Accetto", acconsenti al loro utilizzo.{" "}
+        <Link to="/cookie" className="text-gold-500 underline">Info</Link>
       </CookieConsent>
     </div>
   )
