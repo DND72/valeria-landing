@@ -52,7 +52,7 @@ export default function VideoTestPage() {
       iframeStyle: {
         width: '100%',
         height: '100%',
-        border: '0',
+        border: '1px solid rgba(212, 160, 23, 0.2)',
         borderRadius: '48px',
         backgroundColor: '#050810'
       },
@@ -111,17 +111,19 @@ export default function VideoTestPage() {
   const toggleAudioQuality = async () => {
     if (!callRef.current) return
     const newState = !isAudioHQ
+    
+    // Optimistic update for better responsiveness
+    setIsAudioHQ(newState)
+    
     try {
-        // Daily standard for high quality audio toggle
         await callRef.current.updateInputSettings({
             audio: {
                 processor: newState ? { type: 'noise-suppression' } : { type: 'none' }
             }
         })
-        setIsAudioHQ(newState)
     } catch (e) {
         console.error('Audio quality toggle failed', e)
-        // Re-sync state in case of failure
+        // Re-sync state in case of failure or check if Daily already handled it
         const settings = await callRef.current.getInputSettings()
         setIsAudioHQ(settings?.audio?.processor?.type === 'noise-suppression')
     }
@@ -297,7 +299,7 @@ export default function VideoTestPage() {
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="w-full h-full max-w-5xl aspect-video bg-zinc-900 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5 relative"
+                        className="w-full h-full max-w-5xl aspect-video bg-zinc-900 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border-2 border-gold-500/30 relative"
                     >
                        <div ref={containerRef} className="w-full h-full" />
                     </motion.div>

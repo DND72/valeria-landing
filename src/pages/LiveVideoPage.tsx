@@ -162,13 +162,15 @@ export default function LiveVideoPage() {
         </div>
 
         {/* Video Main */}
-        <div className="flex-1 bg-black relative">
+        <div className="flex-1 bg-black relative flex items-center justify-center p-4 md:p-8 overflow-hidden">
           {dailyRoomUrl ? (
-            <iframe 
-              ref={iframeRef} src={dailyRoomUrl}
-              allow="camera; microphone; fullscreen; display-capture; autoplay"
-              className="w-full h-full border-none" title="Video"
-            />
+            <div className="w-full h-full max-w-6xl aspect-video bg-zinc-900 rounded-[32px] md:rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border-2 border-gold-500/30 relative">
+                <iframe 
+                    ref={iframeRef} src={dailyRoomUrl}
+                    allow="camera; microphone; fullscreen; display-capture; autoplay"
+                    className="w-full h-full border-none" title="Video"
+                />
+            </div>
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center">
                <div className="w-10 h-10 border-2 border-gold-500/20 border-t-gold-500 rounded-full animate-spin mb-4" />
