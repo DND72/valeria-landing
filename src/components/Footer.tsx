@@ -31,11 +31,8 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 gap-12 mb-12">
           {/* Brand */}
           <div>
-            <h3 className="font-serif text-2xl font-bold gold-text mb-3">Valeria Di Pace</h3>
-            <p className="text-white/40 text-sm leading-relaxed mb-4">
-          Tarologa · Tarocchi di Marsiglia<br />
-          Attrice TV · Psicologa · Dama Templare
-            </p>
+            <h3 className="font-serif text-2xl font-bold gold-text mb-6">Valeria Di Pace</h3>
+
             <p className="text-white/30 text-xs italic">
               "Ogni carta è uno specchio.<br />Valeria ti aiuta a guardare."
             </p>
