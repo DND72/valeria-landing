@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 import { apiJson } from '../lib/api'
+import { Sparkles, Headphones, ShieldCheck, RefreshCcw, X, AlertCircle } from 'lucide-react'
 
 export default function VideoTestPage() {
   const navigate = useNavigate()
@@ -11,6 +12,13 @@ export default function VideoTestPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // State for effects
+  const [isAudioHQ, setIsAudioHQ] = useState(false)
+  const [isBlurred, setIsBlurred] = useState(false)
+  
+  const callRef = useRef<any>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const loadTest = async () => {
     setLoading(true)
@@ -29,6 +37,87 @@ export default function VideoTestPage() {
   useEffect(() => {
     void loadTest()
   }, [getToken])
+
+  // Initialize Daily when videoUrl is available
+  useEffect(() => {
+    if (!videoUrl || !containerRef.current || callRef.current) return
+
+    const daily = (window as any).DailyIframe
+    if (!daily) {
+      console.error('Daily SDK not loaded')
+      return
+    }
+
+    const frame = daily.createFrame(containerRef.current, {
+      iframeStyle: {
+        width: '100%',
+        height: '100%',
+        border: '0',
+        borderRadius: '48px',
+        backgroundColor: '#000'
+      },
+      showLeaveButton: false,
+      showFullscreenButton: true,
+      appearanceConfig: {
+        colors: {
+            accent: '#D4A017',
+            accentText: '#FFFFFF',
+            background: '#0a0a0a',
+            backgroundAccent: '#1a1a1a',
+            baseText: '#FFFFFF',
+            border: '#333333',
+            mainAreaBg: '#000000',
+            mainAreaBgAccent: '#050505',
+            mainAreaText: '#FFFFFF',
+            supportiveText: '#888888',
+        }
+      }
+    })
+
+    callRef.current = frame
+
+    frame.join({ url: videoUrl }).catch((err: any) => {
+        console.error('Join error:', err)
+        setError('Impossibile accedere alla stanza video.')
+    })
+
+    return () => {
+      if (callRef.current) {
+        callRef.current.destroy()
+        callRef.current = null
+      }
+    }
+  }, [videoUrl])
+
+  const toggleAudioQuality = async () => {
+    if (!callRef.current) return
+    const newState = !isAudioHQ
+    try {
+        await callRef.current.updateInputSettings({
+            audio: {
+                processor: newState ? { type: 'noise-suppression' } : { type: 'none' }
+            }
+        })
+        setIsAudioHQ(newState)
+    } catch (e) {
+        console.error('Audio quality toggle failed', e)
+    }
+  }
+
+  const toggleBackgroundBlur = async () => {
+    if (!callRef.current) return
+    const newState = !isBlurred
+    try {
+        await callRef.current.updateInputSettings({
+            video: {
+                processor: newState ? { type: 'background-blur' } : { type: 'none' }
+            }
+        })
+        setIsBlurred(newState)
+    } catch (e) {
+        console.error('Background blur toggle failed', e)
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-[#050810] text-white z-[99999] overflow-hidden flex flex-col font-sans">
@@ -59,7 +148,7 @@ export default function VideoTestPage() {
                 onClick={() => navigate(-1)} 
                 className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-gold-500/20 transition-all border border-white/5 group"
             >
-                <span className="text-white/40 group-hover:text-white transition-colors">✕</span>
+                <X className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
             </button>
             <div>
                 <h1 className="text-sm font-serif font-black gold-text uppercase tracking-[0.2em] leading-none mb-1">Lo Specchio Sacro</h1>
@@ -73,22 +162,66 @@ export default function VideoTestPage() {
       </header>
 
       <main className="flex-1 relative z-10 flex flex-col md:flex-row overflow-hidden">
-         {/* Sidebar Advice */}
+         {/* Sidebar Controls */}
          <div className="w-full md:w-80 shrink-0 p-8 border-r border-white/5 bg-black/20 backdrop-blur-3xl flex flex-col justify-between overflow-y-auto custom-scrollbar">
             <div className="space-y-6">
-                <div className="p-6 rounded-[32px] bg-white/[0.02] border border-white/5">
-                    <span className="text-3xl mb-4 block">🎧</span>
-                    <h3 className="text-white font-bold text-xs uppercase tracking-widest mb-3">Qualità Audio</h3>
+                <button 
+                    onClick={toggleAudioQuality}
+                    disabled={loading || !!error}
+                    className={`w-full text-left p-6 rounded-[32px] transition-all border group relative overflow-hidden ${
+                        isAudioHQ 
+                        ? 'bg-gold-500/10 border-gold-500/40 shadow-[0_0_20px_rgba(212,160,23,0.1)]' 
+                        : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10'
+                    }`}
+                >
+                    <div className="flex justify-between items-start mb-4">
+                        <div className={`p-3 rounded-2xl ${isAudioHQ ? 'bg-gold-500 text-black' : 'bg-white/5 text-white/40 group-hover:text-white transition-colors'}`}>
+                            <Headphones className="w-6 h-6" />
+                        </div>
+                        {isAudioHQ && (
+                            <span className="text-[8px] bg-gold-500 text-black px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Active</span>
+                        )}
+                    </div>
+                    <h3 className="text-white font-bold text-xs uppercase tracking-widest mb-2">Qualità Audio</h3>
                     <p className="text-white/40 text-[10px] leading-relaxed">
-                       Usa le cuffie per evitare l'effetto eco e rendere la sessione più intima e profonda.
+                       {isAudioHQ 
+                        ? 'Filtro rumore attivo. La tua voce è ora più cristallina e pura.' 
+                        : 'Attiva la riduzione del rumore per una sessione più intima e profonda.'}
                     </p>
-                </div>
+                </button>
                 
-                <div className="p-6 rounded-[32px] bg-white/[0.02] border border-white/5">
-                    <span className="text-3xl mb-4 block">✨</span>
-                    <h3 className="text-white font-bold text-xs uppercase tracking-widest mb-3">Privacy & Sfondo</h3>
+                <button 
+                    onClick={toggleBackgroundBlur}
+                    disabled={loading || !!error}
+                    className={`w-full text-left p-6 rounded-[32px] transition-all border group relative overflow-hidden ${
+                        isBlurred 
+                        ? 'bg-gold-500/10 border-gold-500/40 shadow-[0_0_20px_rgba(212,160,23,0.1)]' 
+                        : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10'
+                    }`}
+                >
+                    <div className="flex justify-between items-start mb-4">
+                        <div className={`p-3 rounded-2xl ${isBlurred ? 'bg-gold-500 text-black' : 'bg-white/5 text-white/40 group-hover:text-white transition-colors'}`}>
+                            <Sparkles className="w-6 h-6" />
+                        </div>
+                        {isBlurred && (
+                            <span className="text-[8px] bg-gold-500 text-black px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Active</span>
+                        )}
+                    </div>
+                    <h3 className="text-white font-bold text-xs uppercase tracking-widest mb-2">Privacy & Sfondo</h3>
                     <p className="text-white/40 text-[10px] leading-relaxed">
-                       Puoi sfocare lo sfondo o aggiungere un'immagine cliccando sulle icone della fotocamera nel pannello video.
+                       {isBlurred 
+                        ? 'Sfondo sfocato per proteggere la tua intimità domestica.' 
+                        : 'Sfoca lo sfondo per concentrare l\'energia solo su di te.'}
+                    </p>
+                </button>
+
+                <div className="p-6 rounded-[32px] bg-emerald-500/5 border border-emerald-500/10">
+                    <div className="flex items-center gap-3 mb-3">
+                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                        <h3 className="text-emerald-500 font-bold text-[10px] uppercase tracking-widest">Connessione Protetta</h3>
+                    </div>
+                    <p className="text-white/30 text-[9px] leading-relaxed italic">
+                       Lo specchio utilizza crittografia end-to-end. Nessuno può vedere o registrare questa prova.
                     </p>
                 </div>
             </div>
@@ -102,35 +235,48 @@ export default function VideoTestPage() {
 
          {/* Video area */}
          <div className="flex-1 bg-black relative flex items-center justify-center p-4 sm:p-12 overflow-hidden">
-            {loading ? (
-                <div className="flex flex-col items-center gap-6">
-                    <div className="w-12 h-12 border-2 border-gold-500/10 border-t-gold-500 rounded-full animate-spin shadow-[0_0_20px_rgba(212,160,23,0.2)]" />
-                    <p className="text-gold-500/40 text-[10px] uppercase tracking-[0.4em] font-black animate-pulse">Accordatura dello specchio...</p>
-                </div>
-            ) : error ? (
-                <div className="max-w-xs w-full text-center bg-dark-500 p-8 rounded-[40px] border border-red-500/20 shadow-2xl">
-                    <span className="text-4xl mb-6 block">🌑</span>
-                    <h2 className="text-lg font-serif font-black text-white mb-2 uppercase italic tracking-tighter">Visione Oscurata</h2>
-                    <p className="text-red-400 text-[10px] uppercase font-black tracking-widest mb-8 leading-relaxed italic px-4">
-                        {error}
-                    </p>
-                    <button 
-                        onClick={loadTest} 
-                        className="w-full py-4 bg-white text-black rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-xl"
+            <AnimatePresence mode="wait">
+                {loading ? (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex flex-col items-center gap-6"
                     >
-                        Riprova Invocazione
-                    </button>
-                </div>
-            ) : (
-                <div className="w-full h-full max-w-5xl aspect-video bg-zinc-900 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5 relative">
-                   <iframe
-                        src={videoUrl!}
-                        allow="camera; microphone; display-capture; autoplay; encrypted-media; fullscreen"
-                        className="w-full h-full border-none"
-                        title="Video Test Room"
-                    />
-                </div>
-            )}
+                        <div className="w-12 h-12 border-2 border-gold-500/10 border-t-gold-500 rounded-full animate-spin shadow-[0_0_20px_rgba(212,160,23,0.2)]" />
+                        <p className="text-gold-500/40 text-[10px] uppercase tracking-[0.4em] font-black animate-pulse">Accordatura dello specchio...</p>
+                    </motion.div>
+                ) : error ? (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="max-w-xs w-full text-center bg-dark-500 p-10 rounded-[40px] border border-red-500/20 shadow-2xl relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-red-500/5 pointer-events-none" />
+                        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-6" />
+                        <h2 className="text-lg font-serif font-black text-white mb-2 uppercase italic tracking-tighter">Visione Oscurata</h2>
+                        <p className="text-red-400 text-[10px] uppercase font-black tracking-widest mb-8 leading-relaxed italic px-4">
+                            {error}
+                        </p>
+                        <button 
+                            onClick={loadTest} 
+                            className="w-full py-4 bg-white text-black rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2"
+                        >
+                            <RefreshCcw className="w-3 h-3" />
+                            Riprova Invocazione
+                        </button>
+                    </motion.div>
+                ) : (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="w-full h-full max-w-5xl aspect-video bg-zinc-900 rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5 relative"
+                    >
+                       <div ref={containerRef} className="w-full h-full" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
          </div>
       </main>
     </div>
