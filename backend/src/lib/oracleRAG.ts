@@ -1,3 +1,4 @@
+import { getGeminiClient } from './gemini.js'
 import { getKnowledgeBase } from './knowledge.js'
 
 export async function askOracleMentor(query: string): Promise<string> {

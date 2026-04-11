@@ -3,7 +3,7 @@ import { getKnowledgeBase } from './knowledge.js'
 
 let ai: GoogleGenerativeAI | null = null
 
-function getGeminiClient() {
+export function getGeminiClient() {
   if (!ai) {
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) throw new Error('GEMINI_API_KEY non configurata')
