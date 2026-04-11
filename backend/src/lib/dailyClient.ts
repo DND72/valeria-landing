@@ -75,18 +75,7 @@ export async function createDailyToken(roomName: string, isOwner: boolean = fals
     properties: {
       room_name: roomName,
       is_owner: isOwner,
-      enable_screenshare: true,
-      theme: {
-        colors: {
-          accent: '#d4a017',
-          accentText: '#0a0a0b',
-          background: '#0a0a0b',
-          backgroundAccent: '#161618',
-          baseText: '#ffffff',
-          border: '#d4a01733',
-          mainAreaBg: '#0a0a0b'
-        }
-      }
+      enable_screenshare: true
     }
   }
 

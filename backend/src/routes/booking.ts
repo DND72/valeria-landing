@@ -411,7 +411,7 @@ export function createBookingRouter(pool: Pool): Router {
     try {
       const exp = Math.floor(Date.now() / 1000) + 900 
       const safeId = userId ? userId.replace(/[^a-zA-Z0-9]/g, '').slice(-8) : 'guest'
-      const room = await createDailyRoom(`test-${safeId}-${Date.now()}`, exp)
+      const room = await createDailyRoom(`specchio-${safeId}-${Date.now()}`, exp)
       const token = await createDailyToken(room.name, true) 
       
       const dailyUrl = `https://nonsolotarocchi.daily.co/${room.name}?t=${token}`
