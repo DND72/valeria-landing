@@ -252,3 +252,40 @@ export async function generateHeartTidesInterpretation(
     return "L'algoritmo non riesce a leggere le correnti in questo momento."
   }
 }
+
+export async function generateConsultationSummary(transcript: string, clientName: string): Promise<string> {
+  const client = getGeminiClient()
+  
+  const sysPrompt = `Sei l'Assistente AI di Valeria Di Pace, esperta di tarocchi, astrologia e coaching evolutivo.
+  Il tuo compito è analizzare la TRASCRIZIONE di un consulto video e generare un RIASSUNTO TECNICO E INTUITIVO ad uso esclusivo dello Staff.
+  
+  STRUTTURA DEL RIASSUNTO:
+  1. **DATI CHIAVE**: Argomenti principali trattati (Amore, Lavoro, Famiglia, etc.).
+  2. **CARTE ESTRATTE**: Elenca le carte menzionate nel consulto (se presenti).
+  3. **INSIGHTS DI VALERIA**: Quali sono stati i punti chiave della sua lettura?
+  4. **NOTE PER IL FUTURO**: Eventuali impegni presi o consigli specifici per il prossimo consulto.
+  5. **STATO ENERGETICO**: Una breve nota sulla vibrazione del cliente percepita.
+  
+  Tono: Professionale, sintetico, orientato al coaching.
+  NOTA IMPORTANTE: Questo testo è riservato allo staff. Non includere saluti rivolti al cliente.`
+
+  const userPrompt = `Cliente: ${clientName}
+  Trascrizione:
+  ${transcript}
+  
+  Genera il riassunto del consulto.`
+
+  const model = client.getGenerativeModel({ 
+    model: 'gemini-1.5-flash',
+    systemInstruction: sysPrompt
+  })
+
+  try {
+    const result = await model.generateContent(userPrompt)
+    return result.response.text() || 'Impossibile generare il riassunto...'
+  } catch (err: any) {
+    console.error('[consult-summary-gemini] Error:', err)
+    return "L'algoritmo non è riuscito a sintetizzare la sessione."
+  }
+}
+

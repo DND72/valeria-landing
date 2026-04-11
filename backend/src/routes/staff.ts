@@ -10,6 +10,7 @@ import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
 import { registerStaffBookingRoutes } from './staffBooking.js'
 import { askLenormandMentor } from '../lib/lenormandRAG.js'
+import { generateConsultationSummary } from '../lib/gemini.js'
 
 const noteBody = z.object({
   body: z.string().min(1).max(20000),
@@ -568,6 +569,34 @@ export function createStaffRouter(pool: Pool): Router {
     } catch (e: any) {
       console.error('[staff lenormand-mentor]', e)
       res.status(500).json({ error: 'Errore durante la consultazione del Mentore' })
+    }
+  })
+
+  r.post('/consults/:id/summarize', async (req, res) => {
+    const id = req.params.id
+    const userId = req.auth?.userId
+    const { transcript, clientName } = req.body
+    
+    if (!transcript) return res.status(400).json({ error: 'Trascrizione mancante' })
+    if (!userId) return res.status(401).json({ error: 'Non autenticato' })
+
+    try {
+      const summary = await generateConsultationSummary(transcript, clientName || 'Cliente')
+      
+      // Salvataggio come nota speciale
+      const body = `✨ **RIASSUNTO AI DEL CONSULTO** ✨\n\n${summary}\n\n*Nota: Questo riassunto è stato generato automaticamente dalla trascrizione video.*`
+      
+      const ins = await pool.query(
+        `INSERT INTO consult_notes (consult_id, staff_clerk_user_id, body, updated_at)
+         VALUES ($1, $2, $3, now())
+         RETURNING id, body, created_at`,
+        [id, userId, body]
+      )
+      
+      res.json({ ok: true, note: ins.rows[0] })
+    } catch (e) {
+      console.error('[staff summarize]', e)
+      res.status(500).json({ error: 'Errore generazione riassunto' })
     }
   })
 

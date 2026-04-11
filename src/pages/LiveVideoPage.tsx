@@ -26,6 +26,7 @@ export default function LiveVideoPage() {
   // Staff Only States
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
+  const [isSummarizing, setIsSummarizing] = useState(false)
   const [transcriptionText, setTranscriptionText] = useState<string[]>([])
 
   // Astral Data for Lower Thirds
@@ -101,8 +102,28 @@ export default function LiveVideoPage() {
 
   const toggleTranscription = () => {
      setIsTranscribing(!isTranscribing)
-     if (!isTranscribing) {
+     if (!isTranscribing && transcriptionText.length === 0) {
         setTranscriptionText(["[SISTEMA]: Trascrizione avviata...", "[VALERIA]: Benvenuta anima cara, sento un'energia positiva oggi..."])
+     }
+  }
+
+  const handleGenerateSummary = async () => {
+     if (transcriptionText.length < 2) return alert("Trascrizione troppo breve per un riassunto.")
+     setIsSummarizing(true)
+     try {
+        const fullText = transcriptionText.join("\n")
+        await apiJson(getToken, `/api/staff/consults/${id}/summarize`, {
+            method: 'POST',
+            body: JSON.stringify({ 
+                transcript: fullText, 
+                clientName: sessionInfo?.inviteeName || 'Cliente' 
+            })
+        })
+        alert("Riassunto generato e salvato nelle note del cliente!")
+     } catch (e: any) {
+        alert("Errore generazione riassunto: " + e.message)
+     } finally {
+        setIsSummarizing(false)
      }
   }
 
@@ -217,6 +238,21 @@ export default function LiveVideoPage() {
                         <span className="text-[8px] uppercase font-bold tracking-widest">Trascrizione AI</span>
                     </button>
                 </div>
+
+                {transcriptionText.length > 0 && (
+                    <button 
+                        onClick={handleGenerateSummary}
+                        disabled={isSummarizing}
+                        className="w-full py-3 bg-gold-500/10 border border-gold-500/20 rounded-xl text-gold-500 text-[9px] uppercase font-black tracking-widest hover:bg-gold-500/20 transition-all flex items-center justify-center gap-2"
+                    >
+                        {isSummarizing ? (
+                            <div className="w-3 h-3 border-t-2 border-gold-500 rounded-full animate-spin" />
+                        ) : (
+                            <span>✨</span>
+                        )}
+                        {isSummarizing ? 'Sintetizzazione...' : 'Sintetizza Sessione (Gemini)'}
+                    </button>
+                )}
 
                 {isTranscribing && (
                     <motion.div 
