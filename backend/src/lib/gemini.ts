@@ -276,7 +276,7 @@ export async function generateConsultationSummary(transcript: string, clientName
   Genera il riassunto del consulto.`
 
   const model = client.getGenerativeModel({ 
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.0-flash',
     systemInstruction: sysPrompt
   })
 
