@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { getKnowledgeBase } from './knowledge.js'
 
 let ai: GoogleGenerativeAI | null = null
 
@@ -291,12 +292,19 @@ export async function generateConsultationSummary(transcript: string, clientName
 
 export async function generateLiveOracleInsight(transcript: string, cards: string[], astral: any): Promise<string> {
   const client = getGeminiClient()
+  const combinedKnowledge = await getKnowledgeBase()
   
   const sysPrompt = `Sei il "Sussurro dell'Oracolo", un mentore silenzioso e intuitivo che assiste Valeria Di Pace durante un consulto live di tarocchi e coaching.
   Ricevi la trascrizione in tempo reale, le carte estratte e il profilo astrale del cliente.
   
+  CONOSCENZA PROFESSIONALE:
+  Hai accesso alla saggezza consolidata di Valeria (seminari Tarocchi, Villanova, Lenormand) per fornire suggerimenti coerenti con il suo metodo:
+  --- INIZIO CONOSCENZA ---
+  ${combinedKnowledge || 'Nessuna fonte esterna disponibile.'}
+  --- FINE CONOSCENZA ---
+  
   IL TUO COMPITO:
-  Fornire a Valeria una SINGOLA intuizione profonda, breve e folgorante (massimo 2 frasi). Non devi spiegare le carte, ma suggerire una connessione "invisibile" che Valeria può usare per sbloccare il consulto.
+  Fornire a Valeria una SINGOLA intuizione profonda, breve e folgorante (massimo 2 frasi). Non devi spiegare le carte, ma suggerire una connessione "invisibile" che Valeria può usare per sbloccare il consulto, basandoti sulla sua filosofia.
   
   TONO: Mistico, saggio, quasi poetico. Parla direttamente a Valeria.
   ESEMPIO: "Valeria, l'imperatore nel tema del cliente è ferito. La Morte estratta suggerisce che è tempo di lasciare il potere per trovare la pace."`
@@ -309,7 +317,7 @@ export async function generateLiveOracleInsight(transcript: string, cards: strin
   Fornisci il tuo sussurro.`
 
   const model = client.getGenerativeModel({ 
-    model: 'gemini-2.0-flash',
+    model: 'gemini-1.5-pro',
     systemInstruction: sysPrompt
   })
 

@@ -18,7 +18,7 @@ const WORKSPACE_LINKS = [
   { id: 'oggi', label: 'Oggi', emoji: '📅' },
   { id: 'crm', label: 'CRM Rapido', emoji: '👥' },
   { id: 'analytics', label: 'Analytics', emoji: '📊' },
-  { id: 'lenormand', label: 'Il Mentore', emoji: '🃏' },
+  { id: 'oracolo', label: 'L\'Oracolo', emoji: '👁️' },
   { id: 'astrologia', label: 'Tema Staff', emoji: '🌌' },
 ]
 

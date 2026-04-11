@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import StaffPersonalSpace from '../../components/StaffPersonalSpace'
 import StaffLayout from '../../components/dashboard/StaffLayout'
 
-type TabId = 'live' | 'oggi' | 'crm' | 'analytics' | 'lenormand' | 'astrologia'
+type TabId = 'live' | 'oggi' | 'crm' | 'analytics' | 'oracolo' | 'astrologia'
 
 export default function StaffDashboard() {
   const { user } = useUser()

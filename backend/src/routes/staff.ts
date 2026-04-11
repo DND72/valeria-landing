@@ -9,7 +9,7 @@ import { registerStaffBlogCommentRoutes } from './staffBlogCommentsRoutes.js'
 import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
 import { registerStaffBookingRoutes } from './staffBooking.js'
-import { askLenormandMentor } from '../lib/lenormandRAG.js'
+import { askOracleMentor } from '../lib/oracleRAG.js'
 import { 
   generateConsultationSummary, 
   generateLiveOracleInsight 
@@ -561,18 +561,18 @@ export function createStaffRouter(pool: Pool): Router {
     } finally { client.release() }
   })
 
-  r.post('/lenormand-mentor', async (req, res) => {
+  r.post('/oracle-mentor', async (req, res) => {
     const { query } = req.body
     if (!query || typeof query !== 'string') {
       res.status(400).json({ error: 'Query mancante' })
       return
     }
     try {
-      const response = await askLenormandMentor(query)
+      const response = await askOracleMentor(query)
       res.json({ response })
     } catch (e: any) {
-      console.error('[staff lenormand-mentor]', e)
-      res.status(500).json({ error: 'Errore durante la consultazione del Mentore' })
+      console.error('[staff oracle-mentor]', e)
+      res.status(500).json({ error: 'Errore durante la consultazione dell\'Oracolo' })
     }
   })
 

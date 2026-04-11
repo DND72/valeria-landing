@@ -9,10 +9,10 @@ interface Message {
   text: string
 }
 
-export default function StaffLenormandMentor() {
+export default function StaffOracleMentor() {
   const { getToken } = useAuth()
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'assistant', text: 'Benvenuta, Valeria. Il tuo sapere sulle Carte Lenormand è al sicuro qui. In cosa posso aiutarti ad affinare la tua visione oggi?' }
+    { id: '1', role: 'assistant', text: 'Benvenuta, Valeria. La biblioteca segreta è aperta. Attingo alle tue lezioni per guidare la tua visione. In cosa posso aiutarti oggi?' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -31,7 +31,7 @@ export default function StaffLenormandMentor() {
     setLoading(true)
 
     try {
-      const res = await apiJson<{ response: string }>(getToken, '/api/staff/lenormand-mentor', {
+      const res = await apiJson<{ response: string }>(getToken, '/api/staff/oracle-mentor', {
         method: 'POST',
         body: JSON.stringify({ query: input })
       })
@@ -39,7 +39,7 @@ export default function StaffLenormandMentor() {
       const botMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', text: res.response }
       setMessages(prev => [...prev, botMsg])
     } catch (err: any) {
-      const errorMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', text: "Le frequenze sono disturbate. Assicurati di aver caricato il testo del seminario nel backend." }
+      const errorMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', text: "Le frequenze sono disturbate. Verifica che le lezioni dell'Oracolo siano caricate correttamente." }
       setMessages(prev => [...prev, errorMsg])
     } finally {
       setLoading(false)
@@ -47,19 +47,19 @@ export default function StaffLenormandMentor() {
   }
 
   return (
-    <div className="flex flex-col h-[600px] bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md">
+    <div className="flex flex-col h-[600px] bg-white/[0.02] border border-gold-500/10 rounded-2xl overflow-hidden backdrop-blur-md shadow-[0_0_50px_rgba(212,160,23,0.05)]">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-gold-500/10 bg-white/[0.02] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🃏</span>
+          <span className="text-2xl">👁️</span>
           <div>
-            <h3 className="text-white font-serif font-bold text-lg leading-tight">Mentore Lenormand</h3>
-            <p className="text-white/40 text-[10px] uppercase tracking-widest">Estensione della tua saggezza</p>
+            <h3 className="text-white font-serif font-bold text-lg leading-tight">L'Oracolo di Valeria</h3>
+            <p className="text-gold-500/60 text-[10px] uppercase tracking-widest font-bold">RAG Knowledge Base</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-emerald-500 text-[10px] uppercase font-bold tracking-tight">Privato</span>
+          <span className="text-emerald-500 text-[10px] uppercase font-bold tracking-tight">Accesso Riservato</span>
         </div>
       </div>
 
@@ -72,13 +72,13 @@ export default function StaffLenormandMentor() {
           {messages.map((m) => (
             <motion.div
               key={m.id}
-              initial={{ opacity: 0, x: m.role === 'user' ? 20 : -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
                 m.role === 'user' 
-                  ? 'bg-gold-600/15 border border-gold-600/30 text-gold-100 italic' 
+                  ? 'bg-gold-500/10 border border-gold-500/20 text-gold-100 italic' 
                   : 'bg-white/[0.05] border border-white/10 text-white/80'
               }`}>
                 {m.text}
@@ -98,15 +98,15 @@ export default function StaffLenormandMentor() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white/[0.02] border-t border-white/10">
+      <div className="p-4 bg-white/[0.02] border-t border-gold-500/10">
         <div className="relative">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Chiedi al Mentore sul seminario..."
-            className="w-full bg-dark-400 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 pr-12"
+            placeholder="Interroga le lezioni dell'Oracolo..."
+            className="w-full bg-black/40 border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 pr-12 transition-all outline-none"
           />
           <button
             onClick={handleSend}
@@ -118,8 +118,8 @@ export default function StaffLenormandMentor() {
             </svg>
           </button>
         </div>
-        <p className="text-[10px] text-white/20 mt-3 text-center italic">
-          Le risposte si basano esclusivamente sulle tue lezioni trascritte.
+        <p className="text-[10px] text-white/20 mt-3 text-center italic uppercase tracking-tighter">
+          Tutte le risposte attingono dai file del sito "Valeria Cartomanzia"
         </p>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { getApiBaseUrl } from '../constants/api'
 import StaffExternalReviewImport from './StaffExternalReviewImport'
 import StaffAnalyticsWidget from './StaffAnalyticsWidget'
 import StaffCrmDrawer from './StaffCrmDrawer'
-import StaffLenormandMentor from './StaffLenormandMentor'
+import StaffOracleMentor from './StaffOracleMentor'
 import StaffAstrology from './StaffAstrology'
 import StaffLiveMonitor from './dashboard/StaffLiveMonitor'
 
@@ -51,7 +51,7 @@ type ClientRow = {
   lastScheduledAt: string | null
 }
 
-type Tab = 'live' | 'oggi' | 'crm' | 'analytics' | 'lenormand' | 'astrologia'
+type Tab = 'live' | 'oggi' | 'crm' | 'analytics' | 'oracolo' | 'astrologia'
 
 function formatWhen(iso: string): string {
   try {
@@ -457,10 +457,10 @@ export default function StaffPersonalSpace({ activeTab }: { activeTab: Tab }) {
           </motion.div>
         )}
 
-        {/* ===== TAB: LENORMAND MENTOR ===== */}
-        {tab === 'lenormand' && (
+        {/* ===== TAB: ORACOLO MENTOR ===== */}
+        {tab === 'oracolo' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <StaffLenormandMentor />
+            <StaffOracleMentor />
           </motion.div>
         )}
 
