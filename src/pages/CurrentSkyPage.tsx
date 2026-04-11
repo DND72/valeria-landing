@@ -392,17 +392,17 @@ export default function CurrentSkyPage() {
               >
                 <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex justify-between items-center">
                   <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium">
-                    🌒 Previsioni Eclissi 2024-2025
+                    🌒 Previsioni Eclissi 2026-2027
                   </h4>
-                  <span className="text-[10px] text-gold-500/60 font-mono">Eventi Critici</span>
+                  <span className="text-[10px] text-gold-500/60 font-mono">Real-Time Sync</span>
                 </div>
                 <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
                   {(sky.eclissi && sky.eclissi.length > 0 ? sky.eclissi : [
-                    { tipo: 'Lunare', sottotipo: 'Parziale', emoji: '🌒', data: '18 Set 2024', visibilità: 'Europa, Africa, America', durata: '1h 03m', gmt_inizio: '02:12', gmt_fine: '03:15' },
-                    { tipo: 'Solare', sottotipo: 'Anulare', emoji: '☀️', data: '02 Ott 2024', visibilità: 'Sud America, Antartide', durata: '7h 25m', gmt_inizio: '15:42', gmt_fine: '21:47' },
-                    { tipo: 'Lunare', sottotipo: 'Totale', emoji: '🌑', data: '14 Mar 2025', visibilità: 'Americhe, Europa, Africa', durata: '3h 38m', gmt_inizio: '06:26', gmt_fine: '10:04' },
-                    { tipo: 'Solare', sottotipo: 'Parziale', emoji: '☀️', data: '29 Mar 2025', visibilità: 'Europa, Nord Asia, Africa', durata: '-- --', gmt_inizio: '09:01', gmt_fine: '12:44' },
-                    { tipo: 'Lunare', sottotipo: 'Totale', emoji: '🌘', data: '07 Set 2025', visibilità: 'Europa, Asia, Australia, Africa', durata: '3h 29m', gmt_inizio: '17:27', gmt_fine: '20:56' },
+                    { tipo: 'Solare', sottotipo: 'Totale', emoji: '🌑', data: '12 Ago 2026', visibilità: 'Europa (Spagna/Islanda), Artide', durata: '2m 18s', gmt_inizio: '16:41', gmt_fine: '19:12' },
+                    { tipo: 'Lunare', sottotipo: 'Parziale', emoji: '🌘', data: '28 Ago 2026', visibilità: 'Europa, Africa, Americhe', durata: '3h 12m', gmt_inizio: '02:52', gmt_fine: '06:05' },
+                    { tipo: 'Solare', sottotipo: 'Anulare', emoji: '☀️', data: '06 Feb 2027', visibilità: 'Sud America, Africa, Antartide', durata: '7m 51s', gmt_inizio: '14:00', gmt_fine: '18:15' },
+                    { tipo: 'Lunare', sottotipo: 'Penombrale', emoji: '🌕', data: '20 Feb 2027', visibilità: 'Europa, Asia, Africa', durata: '4h 15m', gmt_inizio: '21:12', gmt_fine: '01:27' },
+                    { tipo: 'Solare', sottotipo: 'Totale', emoji: '🌑', data: '02 Ago 2027', visibilità: 'Africa (Egitto), Europa, Asia', durata: '6m 23s', gmt_inizio: '08:50', gmt_fine: '12:40' },
                   ]).map((e, i) => (
                     <div key={i} className="flex items-center gap-6 px-8 py-5 hover:bg-white/[0.04] transition-colors group">
                       <span className="text-3xl flex-shrink-0 transition-transform group-hover:scale-110">{e.emoji}</span>
