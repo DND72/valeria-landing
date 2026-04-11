@@ -24,25 +24,25 @@ const steps = [
 
 const services = [
   {
-    name: 'Consulto rapido',
-    duration: '10 min · Sessione Digitale',
+    name: 'Consulto Evolutivo',
+    duration: 'Analisi · Specchio del Presente',
     price: '1,50 €/min',
-    ideal: 'Consulto istantaneo per dubbi rapidi e precisi.',
-    icon: '🚀',
+    ideal: 'Identifica i blocchi e le potenzialità della tua situazione attuale.',
+    icon: '🔮',
   },
   {
-    name: 'Coaching 30 min',
-    duration: '30 minuti · Sessione Digitale',
-    price: '1,60 €/min',
-    ideal: 'Percorso evolutivo focalizzato su un obiettivo.',
-    icon: '🍃',
+    name: 'Coaching Personale',
+    duration: 'Percorso · Orientamento Obiettivi',
+    price: '1,20 €/min',
+    ideal: 'Lavoro strutturato per tradurre la consapevolezza in azione concreta.',
+    icon: '🌱',
   },
   {
-    name: 'Live ChatRoom',
-    duration: 'Tempo reale · Testo & Audio',
-    price: '1,40 €/min',
-    ideal: 'Sconto 50% mentre Valeria digita. Ideale per consulti flessibili.',
-    icon: '💬',
+    name: 'La Stanza Sicura',
+    duration: 'Protocollo · Facilitazione Protetta',
+    price: '1,80 €/min',
+    ideal: 'Moderazione tecnica di videochiamata per dialoghi ad alta tensione.',
+    icon: '🛡️',
   },
 ]
 

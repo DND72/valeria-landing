@@ -154,8 +154,8 @@ export default function Hero() {
           >
             <span className="not-italic text-gold-400/95 font-medium tracking-wide">Esperienza, precisione e visione.</span>{' '}
             Valeria applica un{' '}
-            <span className="not-italic text-gold-400/90">protocollo di analisi profonda</span> che va oltre la semplice
-            lettura, offrendo uno <span className="not-italic text-gold-400/90">strumento antico</span> per comprendere le{' '}
+            <span className="not-italic text-gold-400/90 font-bold uppercase tracking-widest">Protocollo Protetto di Facilitazione</span> che va oltre la semplice
+            lettura, offrendo uno <span className="not-italic text-gold-400/90">ambiente sicuro e legale</span> per comprendere le{' '}
             <span className="not-italic text-gold-400/90">dinamiche reali</span> della tua esistenza.
           </motion.p>
 
@@ -166,6 +166,9 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.45 }}
             className="flex flex-col sm:flex-row items-center gap-4"
           >
+            <a href="#prenota" className="btn-gold px-8 py-4 text-base shadow-[0_20px_40px_rgba(212,160,23,0.2)]">
+              🛡️ Prenota in Stanza Sicura
+            </a>
             <a href="https://stese.nonsolotarocchi.it" target="_blank" rel="noopener noreferrer" className="btn-outline text-base">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
