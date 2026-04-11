@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
-const LAST_UPDATED = '2 aprile 2026'
+const LAST_UPDATED = '11 aprile 2026'
 
 export default function TermsPage() {
   return (
@@ -73,12 +73,14 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="Art. 5 — Sistema Wallet a Crediti (CR), Modifiche e No-Show">
-            <p>La fornitura del servizio utilizza un portafoglio di <strong>Crediti (CR)</strong> nominali interni che si ricaricano via <strong>Stripe (PCI-DSS)</strong>.</p>
+          <Section title="Art. 5 — Sistema Wallet, Tariffe e Trasparenza">
+            <p>La Piattaforma utilizza un sistema di ricarica prepagata (Wallet) basato su crediti nominali interni, acquistabili tramite circuiti sicuri quali <strong>Stripe</strong> o <strong>PayPal</strong>.</p>
             <ul>
-              <li><strong>Gestione Prenotazione:</strong> L'appuntamento impegnerà istantaneamente i crediti per proteggere il Calendario. Ai sensi dell'Art. 59 lett. o) del Codice del Consumo, l'utente rinuncia al diritto di recesso sul pagamento qualora esso corrisponda alla consumazione del consulto entro strettissime 24 ore.</li>
-              <li><strong>Riprogrammazione e Cancellazione:</strong> È consentito uno spostamento di data oppure una disdetta se lo si opera attraverso l'apposita schermata a più ed estraneamente dal periodo di tolleranza di <strong>24 ore (ventiquattro ore)</strong> dall'inizio stabilito. Al di fuori del suddetto lasso, i fondi si tramutano interamente disponibili sul conto.</li>
-              <li><strong>Penale di No-Show:</strong> Laddove l'utente risultasse assente, irreperibile o mancasse all'esatto orario della seduta, il Gestore ha totale licenza tecnica d'ufficio per segnare l'inottemperanza trattendo una <strong>penale o tariffa di mora di € 5,00 pari a 5 Crediti CR</strong> e stornando a libero bilancio solo i soli crediti decurtati dalla penalità.</li>
+              <li><strong>Tariffazione Variabile:</strong> Il costo del servizio varia in base alla tipologia di consulto scelto, con una forbice compresa tra <strong>€ 1,20 e € 1,80 al minuto</strong>. La tariffa applicata è chiaramente indicata prima di ogni sessione.</li>
+              <li><strong>Calcolo al Secondo:</strong> Il sistema calcola il costo basandosi sui <strong>secondi effettivi di conversazione</strong>. In caso di interruzione anticipata della sessione decisa dall'Utente, i crediti non consumati rimangono immediatamente disponibili nel Wallet.</li>
+              <li><strong>Assenza di Numerazioni Speciali:</strong> Il Gestore non utilizza numeri a tariffazione specifica (es. 899, 800 o sovrapprezzi telefonici). L'intero servizio avviene via web, garantendo che non vi siano addebiti inattesi in bolletta telefonica.</li>
+              <li><strong>Diritto di Recesso:</strong> Ai sensi del Codice del Consumo, l'Utente può richiedere il rimborso del saldo Wallet non ancora utilizzato entro 14 giorni dall'acquisto. Una volta iniziato un consulto, l'importo relativo viene consumato in tempo reale e non è rimborsabile.</li>
+              <li><strong>Penale di No-Show:</strong> In caso di mancata presentazione all'appuntamento prenotato senza preavviso di almeno 24 ore, verrà trattenuta una penale di € 10,00 (pari a 10 Crediti) per il disturbo arrecato alla gestione dell'agenda professionale.</li>
             </ul>
           </Section>
 

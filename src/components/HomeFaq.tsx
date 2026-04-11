@@ -1,22 +1,19 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
-const faqs = [
+const HOME_FAQS = [
   {
     question: "Qual è la differenza tra un consulto di Tarocchi di Marsiglia e un oroscopo?",
-    answer: "L'oroscopo analizza i transiti planetari generali, mentre i Tarocchi di Marsiglia offrono una fotografia simbolica precisa della tua situazione personale attuale. Il metodo di Valeria Di Pace unisce l'archetipo delle carte alla psicologia, permettendo di identificare blocchi e potenzialità in tempo reale, offrendo una guida più dinamica e interattiva rispetto all'astrologia previsionale classica."
+    answer: "L'oroscopo analizza i transiti planetari generali, mentre i Tarocchi di Marsiglia offrono una fotografia simbolica precisa della tua situazione personale attuale. Il metodo di Valeria Di Pace unisce l'archetipo delle carte alla psicologia, permettendo di identificare blocchi e potenzialità in tempo reale."
   },
   {
-    question: "Quanto costano i consulti di Valeria Di Pace e come funziona il pagamento?",
-    answer: "La trasparenza è uno dei nostri valori cardine. I consulti avvengono tramite un sistema di crediti (wallet) ricaricabile. Il costo è di 1,80 cr/min per il Protocollo Protetto e per i consulti standard. Non usiamo numeri 899 o a sovrapprezzo: paghi solo i minuti effettivi di conversazione che decidi di svolgere, con la possibilità di interrompere la sessione in qualsiasi istante senza costi aggiuntivi."
+    question: "Quanto costano i consulti e come funziona la tariffazione?",
+    answer: "La trasparenza è il nostro valore cardine. I prezzi variano in base alla complessità del consulto, con una forbice che va da 1,20€ a 1,80€ al minuto. Non usiamo numeri a tariffazione speciale (899, 800, ecc.): il sistema calcola i secondi effettivi di conversazione e scala i crediti corrispondenti dal tuo wallet. Puoi interrompere la sessione in qualsiasi istante senza alcun costo aggiuntivo oltre i secondi consumati."
   },
   {
-    question: "I tarocchi possono prevedere eventi negativi sulla salute o questioni legali?",
-    answer: "Assolutamente no. Valeria osserva un rigido codice etico: i tarocchi sono percorsi di orientamento e crescita. Per legge (e per etica), Valeria non risponde a domande su salute, decessi o sentenze legali imminenti, invitando sempre gli utenti a consultare i rispettivi professionisti iscritti agli albi (medici, avvocati, consulenti finanziari)."
-  },
-  {
-    question: "Posso registrare i consulti con Valeria?",
-    answer: "Se utilizzi il Protocollo 'La Stanza Sicura', la registrazione è integrata e server-side (Daily.co) per garantire protezione e tracciabilità. In ogni caso, i tuoi dati e le note del consulto restano salvati nel tuo Diario Personale crittografato, permettendoti di rileggere i consigli del Mentore Silente in qualsiasi momento successivo alla sessione."
+    question: "I miei dati e i consulti sono protetti?",
+    answer: "Sì. Utilizziamo crittografia end-to-end e standard di sicurezza bancaria (HIPAA/SOC2 via Daily) per le videochiamate. Ogni dialogo è strettamente confidenziale e protetto dal segreto professionale. I dettagli della transazione sono gestiti in sicurezza dai circuiti Stripe e PayPal."
   }
 ]
 
@@ -26,14 +23,14 @@ export default function HomeFaq() {
   return (
     <section className="py-24 bg-[#0a0a0b]">
       <div className="max-w-4xl mx-auto px-6">
-        <h2 className="text-4xl font-serif font-black mb-12 text-center brilliant-gold-text underline decoration-gold-600/30 underline-offset-8">Domande Frequenti</h2>
+        <h2 className="text-4xl font-serif font-bold mb-12 text-center brilliant-gold-text">Alcune Domande Frequenti</h2>
         
         <script type="application/ld+json">
           {`
             {
               "@context": "https://schema.org",
               "@type": "FAQPage",
-              "mainEntity": ${JSON.stringify(faqs.map(f => ({
+              "mainEntity": ${JSON.stringify(HOME_FAQS.map(f => ({
                 "@type": "Question",
                 "name": f.question,
                 "acceptedAnswer": {
@@ -46,7 +43,7 @@ export default function HomeFaq() {
         </script>
 
         <div className="space-y-4">
-          {faqs.map((faq, idx) => (
+          {HOME_FAQS.map((faq, idx) => (
             <div key={idx} className="border border-white/10 rounded-3xl overflow-hidden bg-white/5">
               <button 
                 onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
@@ -66,6 +63,16 @@ export default function HomeFaq() {
               )}
             </div>
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <Link 
+            to="/faq" 
+            className="text-gold-500 font-medium hover:text-gold-400 transition-colors inline-flex items-center gap-2 group"
+          >
+            Consulta le Domande Frequenti complete
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </Link>
         </div>
       </div>
       <style>{`

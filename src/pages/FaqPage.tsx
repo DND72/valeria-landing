@@ -63,24 +63,28 @@ const FAQ_SECTIONS: FaqSection[] = [
     ],
   },
   {
-    title: 'Pagamenti e rimborsi',
+    title: 'Pagamenti e Trasparenza',
     emoji: '💳',
     items: [
       {
-        q: 'Come funziona il pagamento?',
-        a: "Il sito utilizza un sistema interno a Crediti virtuali (CR). Al momento della prenotazione, se il tuo conto è vuoto, ti verrà chiesto di ricaricarlo pagando con la moneta reale tramite un circuito sicuro (Stripe). Non è necessario possedere un conto Stripe, ma bastano le carte di debito e credito in comune. A quel punto i tuoi Crediti pagheranno i consulti.",
+        q: 'Quanto costa un consulto e come viene calcolato?',
+        a: "La trasparenza è il cuore della nostra piattaforma. I prezzi variano in base al servizio scelto (Tarocchi, Coaching o Protocollo Protetto) con una forbice che va da 1,20€ a 1,80€ al minuto. Il calcolo avviene sui secondi effettivi di conversazione: se chiudi la chiamata prima del previsto, i crediti non consumati restano immediatamente disponibili nel tuo Wallet.",
       },
       {
-        q: 'I miei dati di pagamento sono al sicuro?',
-        a: "Si. I portafogli di ricarica sono interamente elaborati da Stripe che decritta le tue carte. Valeria non archivia sul database né vede null'altro che il tuo saldo crediti.",
+        q: 'Esistono costi nascosti o numeri a sovrapprezzo?',
+        a: "Assolutamente no. Non utilizziamo numeri 899, 800 o altre numerazioni a tariffazione speciale. Il servizio è interamente gestito via web o tramite il tuo account. Paghi solo quello che decidi di caricare nel tuo Wallet tramite circuiti sicuri come Stripe o PayPal.",
       },
       {
-        q: 'Posso chiedere un rimborso?',
-        a: "A meno di 24 ore non è ammessa alcuna disdetta. Cancellando e disdicendo autonomamente dal tuo Diario entro e scostandoti oltre le 24 ore dall'evento prenotato, verrai liquidato integralmente (ti torneranno i Crediti completi da ri-spendere). In caso tu non ti presenti al minuto fissato della chiamata, scatta legalmente la clausola No-Show: 5 dei tuoi Crediti per il consulto verranno annullati e rubati da Valeria per il danno d'agenda provocato, mentre il resto dei crediti ti tornerà disponibile in tasca.",
+        q: 'I miei dati di pagamento sono sicuri?',
+        a: "Sì. Nonsolotarocchi non memorizza mai i dati della tua carta. Tutte le transazioni sono gestite esternamente dai sistemi crittografati di Stripe e PayPal, leader mondiali nella sicurezza dei pagamenti online.",
       },
       {
-        q: "Ricevero una fattura o ricevuta?",
-        a: "Stripe invia automaticamente la conferma di pagamento via email. Se hai bisogno di documentazione fiscale, puoi richiederla a Valeria indicando i tuoi dati di fatturazione.",
+        q: 'Posso chiedere un rimborso dei crediti ricaricati?',
+        a: "In conformità con il Codice del Consumo, puoi richiedere il rimborso del saldo residuo non ancora utilizzato entro 14 giorni dall'acquisto. Una volta che i crediti sono stati consumati per un servizio già erogato, non è più possibile richiedere il rimborso.",
+      },
+      {
+        q: 'Cosa succede se disdico un appuntamento?',
+        a: "Puoi spostare o cancellare un appuntamento direttamente dal tuo Diario senza penali fino a 24 ore prima dell'evento. In caso di disdetta oltre questo termine o di mancata presentazione (No-Show), verrà trattenuto un importo fisso a titolo di indennizzo per il professionista, come specificato nei Termini di Servizio.",
       },
     ],
   },

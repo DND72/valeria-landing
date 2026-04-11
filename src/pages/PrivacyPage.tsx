@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
-const LAST_UPDATED = '2 aprile 2026'
+const LAST_UPDATED = '11 aprile 2026'
 
 export default function PrivacyPage() {
   return (
