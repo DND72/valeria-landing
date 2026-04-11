@@ -6,8 +6,6 @@ import ScrollToTop from './components/ScrollToTop'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Stats from './components/Stats'
-import About from './components/About'
-import Gallery from './components/Gallery'
 import AstrologyPromo from './components/AstrologyPromo'
 import ServicesGrid from './components/ServicesGrid'
 import HomeFaq from './components/HomeFaq'
@@ -58,8 +56,6 @@ function HomePage() {
     <>
       <Hero />
       <Stats />
-      <About />
-      <Gallery />
       <AstrologyPromo />
       <ServicesGrid />
       <HomeFaq />

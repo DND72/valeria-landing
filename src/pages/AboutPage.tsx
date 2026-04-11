@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
+import Gallery from '../components/Gallery'
 
 export default function AboutPage() {
   const navigate = useNavigate()
@@ -55,10 +56,6 @@ export default function AboutPage() {
                   <span className="text-white font-bold">Diplomata in Naturopatia</span>
                   <span className="text-white/40 italic">Master in Fiori di Bach e riequilibrio energetico</span>
                 </li>
-                 <li className="flex flex-col gap-1">
-                  <span className="text-white font-bold">15 Anni di Esperienza Sanitaria</span>
-                  <span className="text-white/40 italic">Gestione e consulenza legale/professionale</span>
-                </li>
               </ul>
               
               <div className="mt-12 pt-8 border-t border-white/10">
@@ -81,7 +78,10 @@ export default function AboutPage() {
                     Valeria Di Pace non è solo una ricercatrice dell'anima, ma una mente forgiata dal rigore accademico e dalla sfida intellettuale. La sua storia parla di una curiosità inesauribile verso l'essere umano, analizzato da ogni angolazione: quella **legale**, quella **psicologica** e quella **energetica**.
                 </p>
                 <p>
-                    Con una doppia laurea in Giurisprudenza e Psicologia, Valeria ha trascorso oltre quindici anni all'interno del sistema sanitario, maturando una profonda conoscenza delle dinamiche del benessere e della tutela della persona. Questa solida base istituzionale è ciò che oggi le permette di offrire servizi come **La Stanza Sicura**, dove la facilitazione del dialogo è supportata da una competenza normativa e tecnica senza pari nel settore della tarologia.
+                    La sua formazione non si ferma alle scienze umane: gli studi in **Farmacia** hanno forgiato una mente capace di comprendere le interazioni biochimiche più complesse. Questa disciplina le ha conferito una capacità di analisi chirurgica e un rispetto profondo per l'equilibrio della vita, dalle cellule allo spirito.
+                </p>
+                <p>
+                    Questa solida base multidisciplinare è ciò che oggi le permette di offrire servizi come **La Stanza Sicura**, dove la facilitazione del dialogo è supportata da una competenza normativa e una visione d'insieme senza pari nel settore della tarologia.
                 </p>
             </section>
 
@@ -116,36 +116,8 @@ export default function AboutPage() {
           </motion.div>
         </div>
 
-        {/* PREMI E RICONOSCIMENTI (VISUAL SECTION) */}
-        <section className="mb-32">
-            <h2 className="text-center text-gold-500 font-bold uppercase tracking-[0.4em] mb-16 text-sm">Carriera e Iconografia</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-                <div className="group relative rounded-3xl overflow-hidden border border-white/10 aspect-video md:aspect-[4/5]">
-                    <img src="/valeria-award-1.jpg" alt="Rete 4 Award" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60" />
-                    <div className="absolute bottom-6 left-6">
-                        <p className="text-gold-400 font-bold text-xs uppercase">Premio alla Carriera</p>
-                        <p className="text-white text-lg font-serif italic">Rete Quattro, Modamania</p>
-                    </div>
-                </div>
-                <div className="group relative rounded-3xl overflow-hidden border border-white/10 aspect-video md:aspect-[4/5]">
-                    <img src="/valeria-chess.jpg" alt="Valeria Scacchi" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60" />
-                    <div className="absolute bottom-6 left-6">
-                        <p className="text-gold-400 font-bold text-xs uppercase">Eccellenza Sportiva</p>
-                        <p className="text-white text-lg font-serif italic">Arena International Master FIDE</p>
-                    </div>
-                </div>
-                <div className="group relative rounded-3xl overflow-hidden border border-white/10 aspect-video md:aspect-[4/5]">
-                    <img src="/valeria-carriera.jpg" alt="Anzio Film Festival" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60" />
-                    <div className="absolute bottom-6 left-6">
-                        <p className="text-gold-400 font-bold text-xs uppercase">Premi Cinema</p>
-                        <p className="text-white text-lg font-serif italic">Anzio Film Festival 2024</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        {/* PREMI E RICONOSCIMENTI (VISUAL SECTION) ORA SOSTITUITO DALLA GALLERY */}
+        <Gallery />
 
       </div>
 

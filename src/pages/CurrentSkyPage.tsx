@@ -172,7 +172,7 @@ export default function CurrentSkyPage() {
   const glowAlpha = theme.glowIntensity
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
+    <div className="min-h-screen relative overflow-x-hidden pb-24">
 
       {/* ── Circadian Background layers (stacking: -30 → -20 → -15 → -10) ── */}
 
@@ -241,7 +241,7 @@ export default function CurrentSkyPage() {
         }}
       />
 
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-16">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 pt-16 pb-12">
 
         {/* ── Header ─────────────────────────────────────────────────────────── */}
         <motion.div
@@ -378,58 +378,64 @@ export default function CurrentSkyPage() {
               </motion.div>
 
               {/* Eclipses Panel */}
-              {sky.eclissi && sky.eclissi.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="rounded-3xl overflow-hidden backdrop-blur-md w-full max-w-[800px] border"
-                  style={{
-                    background: theme.cardGradient,
-                    borderColor: theme.cardBorder,
-                    transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
-                  }}
-                >
-                  <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
-                    <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium text-center">
-                      🌒 Prossimi Eventi Celestiali
-                    </h4>
-                  </div>
-                  <div className="divide-y divide-white/5 max-h-[350px] overflow-y-auto custom-scrollbar">
-                    {sky.eclissi.map((e, i) => (
-                      <div key={i} className="flex items-center gap-6 px-8 py-5 hover:bg-white/[0.04] transition-colors group">
-                        <span className="text-3xl flex-shrink-0 transition-transform group-hover:scale-110">{e.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white/90 text-base font-semibold flex items-center gap-3">
-                            {e.tipo} {e.sottotipo}
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-normal ${e.tipo === 'Solare' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'}`}>
-                              {e.data}
-                            </span>
-                          </p>
-                          <p className="text-white/40 text-xs mt-1.5 italic group-hover:text-white/60 transition-colors">
-                            📍 {e.visibilità}
-                          </p>
+              {/* Eclipses Panel */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="rounded-3xl overflow-hidden backdrop-blur-md w-full max-w-[800px] border"
+                style={{
+                  background: theme.cardGradient,
+                  borderColor: theme.cardBorder,
+                  transition: 'background 4s ease-in-out, border-color 4s ease-in-out',
+                }}
+              >
+                <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex justify-between items-center">
+                  <h4 className="text-white/50 text-[10px] uppercase tracking-[0.25em] font-medium">
+                    🌒 Previsioni Eclissi 2024-2025
+                  </h4>
+                  <span className="text-[10px] text-gold-500/60 font-mono">Eventi Critici</span>
+                </div>
+                <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
+                  {(sky.eclissi && sky.eclissi.length > 0 ? sky.eclissi : [
+                    { tipo: 'Lunare', sottotipo: 'Parziale', emoji: '🌒', data: '18 Set 2024', visibilità: 'Europa, Africa, America', durata: '1h 03m', gmt_inizio: '02:12', gmt_fine: '03:15' },
+                    { tipo: 'Solare', sottotipo: 'Anulare', emoji: '☀️', data: '02 Ott 2024', visibilità: 'Sud America, Antartide', durata: '7h 25m', gmt_inizio: '15:42', gmt_fine: '21:47' },
+                    { tipo: 'Lunare', sottotipo: 'Totale', emoji: '🌑', data: '14 Mar 2025', visibilità: 'Americhe, Europa, Africa', durata: '3h 38m', gmt_inizio: '06:26', gmt_fine: '10:04' },
+                    { tipo: 'Solare', sottotipo: 'Parziale', emoji: '☀️', data: '29 Mar 2025', visibilità: 'Europa, Nord Asia, Africa', durata: '-- --', gmt_inizio: '09:01', gmt_fine: '12:44' },
+                    { tipo: 'Lunare', sottotipo: 'Totale', emoji: '🌘', data: '07 Set 2025', visibilità: 'Europa, Asia, Australia, Africa', durata: '3h 29m', gmt_inizio: '17:27', gmt_fine: '20:56' },
+                  ]).map((e, i) => (
+                    <div key={i} className="flex items-center gap-6 px-8 py-5 hover:bg-white/[0.04] transition-colors group">
+                      <span className="text-3xl flex-shrink-0 transition-transform group-hover:scale-110">{e.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/90 text-sm md:text-base font-semibold flex items-center gap-3">
+                          {e.tipo} {e.sottotipo}
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-normal ${e.tipo === 'Solare' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'}`}>
+                            {e.data}
+                          </span>
+                        </p>
+                        <p className="text-white/40 text-[10px] md:text-xs mt-1.5 italic group-hover:text-white/60 transition-colors">
+                          📍 {e.visibilità}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 border-l border-white/5 pl-6 min-w-[100px]">
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-[9px] uppercase tracking-tighter text-white/20">Ora Inizio</p>
+                            <p className="text-[10px] font-mono text-white/70">{e.gmt_inizio || '--:--'}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[9px] uppercase tracking-tighter text-white/20">Ora Fine</p>
+                            <p className="text-[10px] font-mono text-white/70">{e.gmt_fine || '--:--'}</p>
+                          </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1.5 border-l border-white/5 pl-6 min-w-[100px]">
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <p className="text-[9px] uppercase tracking-tighter text-white/20">GMT Start</p>
-                              <p className="text-xs font-mono text-white/70">{e.gmt_inizio || '--:--'}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[9px] uppercase tracking-tighter text-white/20">GMT End</p>
-                              <p className="text-xs font-mono text-white/70">{e.gmt_fine || '--:--'}</p>
-                            </div>
-                          </div>
-                          <div className="bg-white/10 px-2 py-0.5 rounded text-[10px] font-mono text-amber-400 font-bold flex items-center gap-1.5 border border-amber-400/20">
-                            <span className="text-[8px] opacity-80">⏱</span> {e.durata || '--'}
-                          </div>
+                        <div className="bg-white/10 px-2 py-0.5 rounded text-[9px] font-mono text-amber-400 font-bold flex items-center gap-1.5 border border-amber-400/20">
+                          {e.durata || '--'}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
 
               {/* 🌕 Timeline Transiti Lunari (3 Giorni) */}
               {sky.timeline_lunare && sky.timeline_lunare.length > 0 && (

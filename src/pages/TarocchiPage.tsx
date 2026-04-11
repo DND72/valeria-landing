@@ -42,8 +42,54 @@ export default function TarocchiPage() {
                     <li>• Decodifica dei simboli arcaici per la vita moderna</li>
                 </ul>
             </div>
-            <div className="relative rounded-[40px] overflow-hidden border border-gold-500/20">
-                <img src="/assets/tarot-detail.jpg" alt="Dettaglio Tarocchi" className="w-full h-auto" />
+            
+            <div className="relative h-[500px] md:h-[650px] flex items-center justify-center perspective-1000">
+                {/* Glow effetto */}
+                <div className="absolute w-72 h-72 bg-gold-600/20 blur-[100px] rounded-full" />
+                
+                {/* Ventaglio di carte */}
+                {[
+                    { src: '/assets/tarot/ruota.png', rotate: -15, x: -110, z: 10, name: 'La Ruota della Fortuna' },
+                    { src: '/assets/tarot/forza.png', rotate: -5, x: -55, z: 20, name: 'La Forza' },
+                    { src: '/assets/tarot/stella.png', rotate: 5, x: 0, z: 30, name: 'La Stella' },
+                    { src: '/assets/tarot/sole.png', rotate: 15, x: 55, z: 40, name: 'Il Sole' },
+                    { src: '/assets/tarot/mondo.png', rotate: 25, x: 110, z: 50, name: 'Il Mondo' },
+                ].map((card, idx) => (
+                    <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.5, x: 0, rotate: 0 }}
+                        whileInView={{ 
+                            opacity: 1, 
+                            scale: 1, 
+                            x: card.x, 
+                            rotate: card.rotate,
+                        }}
+                        viewport={{ once: true }}
+                        transition={{ 
+                            delay: idx * 0.1,
+                            type: "spring",
+                            stiffness: 50,
+                            damping: 15
+                        }}
+                        style={{ zIndex: card.z }}
+                        className="absolute w-44 md:w-60 rounded-xl md:rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] border border-gold-500/30 overflow-hidden bg-[#0c0c0d]"
+                    >
+                        <motion.img 
+                            animate={{ 
+                                y: [0, -12, 0],
+                            }}
+                            transition={{
+                                duration: 4 + idx,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                            src={card.src} 
+                            alt={card.name} 
+                            className="w-full h-auto object-cover" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                    </motion.div>
+                ))}
             </div>
         </div>
       </section>
