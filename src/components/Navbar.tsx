@@ -90,18 +90,26 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Links (Horizontal) */}
-        <ul className="hidden xl:flex items-center gap-6 list-none p-0 m-0">
-          {activeLinks.map((link) => (
-            <li key={link.href}>
-              <Link
-                to={link.href}
-                className="text-[13px] font-bold text-white/70 hover:text-gold-400 transition-colors uppercase tracking-widest"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
+        <ul className="hidden xl:flex items-center gap-8 list-none p-0 m-0">
+          {activeLinks.map((link) => {
+            const isActive = pathname === link.href
+            return (
+              <li key={link.href}>
+                <Link
+                  to={link.href}
+                  className={`text-[13px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+                    isActive 
+                      ? 'brilliant-gold-text scale-110' 
+                      : 'text-gold-500/60 hover:text-gold-400 hover:scale-105'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
+
 
         {/* Actions (Auth) */}
         <div className="hidden lg:flex items-center gap-4">
