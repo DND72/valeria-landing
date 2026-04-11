@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 import { apiJson } from '../lib/api'
-import { Sparkles, ShieldCheck, RefreshCcw, X, AlertCircle } from 'lucide-react'
+import { Sparkles, ShieldCheck, RefreshCcw, X, AlertCircle, Sun, Moon, Compass } from 'lucide-react'
 
 export default function VideoTestPage() {
   const navigate = useNavigate()
@@ -15,6 +15,7 @@ export default function VideoTestPage() {
   
   // State for effects
   const [activeVideoEffect, setActiveVideoEffect] = useState<'none' | 'blur' | 'cosmic' | 'study' | 'temple'>('none')
+  const [astralProfile, setAstralProfile] = useState<any>(null)
   
   const callRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -33,8 +34,18 @@ export default function VideoTestPage() {
     }
   }
 
+  const loadAstralProfile = async () => {
+    try {
+      const res = await apiJson<any>(getToken, '/api/me/astral-profile')
+      setAstralProfile(res)
+    } catch (e) {
+      console.error('Error loading astral profile', e)
+    }
+  }
+
   useEffect(() => {
     void loadTest()
+    void loadAstralProfile()
   }, [getToken])
 
   // Initialize Daily when videoUrl is available
@@ -269,7 +280,7 @@ export default function VideoTestPage() {
                     </div>
                 </div>
 
-                <div className="p-6 rounded-[32px] bg-emerald-500/5 border border-emerald-500/10">
+                <div className="p-6 rounded-[32px] bg-emerald-500/5 border border-emerald-500/10 mb-6">
                     <div className="flex items-center gap-3 mb-3">
                         <ShieldCheck className="w-4 h-4 text-emerald-500" />
                         <h3 className="text-emerald-500 font-bold text-[10px] uppercase tracking-widest">Connessione Protetta</h3>
@@ -278,6 +289,41 @@ export default function VideoTestPage() {
                        Lo specchio utilizza crittografia end-to-end. Nessuno può vedere o registrare questa prova.
                     </p>
                 </div>
+
+                {astralProfile && (
+                    <div className="space-y-4 p-6 rounded-[32px] bg-gold-500/5 border border-gold-500/10">
+                        <h3 className="text-gold-500 font-bold text-[10px] uppercase tracking-widest pl-1 opacity-50 mb-2">Impronta Astrale</h3>
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-gold-500/10 text-gold-500">
+                                    <Sun className="w-3.5 h-3.5" />
+                                </div>
+                                <div>
+                                    <p className="text-[7px] text-white/30 uppercase font-black tracking-widest">Sole</p>
+                                    <p className="text-[10px] font-bold text-white uppercase tracking-wider">{astralProfile.sole?.segno || '---'}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-gold-500/10 text-gold-500">
+                                    <Moon className="w-3.5 h-3.5" />
+                                </div>
+                                <div>
+                                    <p className="text-[7px] text-white/30 uppercase font-black tracking-widest">Luna</p>
+                                    <p className="text-[10px] font-bold text-white uppercase tracking-wider">{astralProfile.luna?.segno || '---'}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-gold-500/10 text-gold-500">
+                                    <Compass className="w-3.5 h-3.5" />
+                                </div>
+                                <div>
+                                    <p className="text-[7px] text-white/30 uppercase font-black tracking-widest">Ascendente</p>
+                                    <p className="text-[10px] font-bold text-white uppercase tracking-wider">{astralProfile.ascendente?.segno || '---'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="mt-10 p-4 border-t border-white/5 pt-8">
