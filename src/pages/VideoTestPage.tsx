@@ -15,7 +15,7 @@ export default function VideoTestPage() {
   
   // State for effects
   const [isAudioHQ, setIsAudioHQ] = useState(false)
-  const [isBlurred, setIsBlurred] = useState(false)
+  const [activeVideoEffect, setActiveVideoEffect] = useState<'none' | 'blur' | 'cosmic' | 'study' | 'temple'>('none')
   
   const callRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -85,7 +85,7 @@ export default function VideoTestPage() {
         }
     }).then(() => {
         console.log('Joined successfully');
-        setIsBlurred(false);
+        setActiveVideoEffect('none');
         setIsAudioHQ(false);
     }).catch((err: any) => {
         console.error('Join error:', err)
@@ -96,7 +96,16 @@ export default function VideoTestPage() {
     frame.on('input-settings-updated', (ev: any) => {
         const videoProc = ev.inputSettings?.video?.processor?.type
         const audioProc = ev.inputSettings?.audio?.processor?.type
-        setIsBlurred(videoProc === 'background-blur')
+        
+        if (videoProc === 'none') setActiveVideoEffect('none')
+        else if (videoProc === 'background-blur') setActiveVideoEffect('blur')
+        else if (videoProc === 'background-image') {
+            const src = ev.inputSettings?.video?.processor?.config?.source
+            if (src?.includes('cosmic')) setActiveVideoEffect('cosmic')
+            else if (src?.includes('study')) setActiveVideoEffect('study')
+            else if (src?.includes('temple')) setActiveVideoEffect('temple')
+        }
+        
         setIsAudioHQ(audioProc === 'noise-suppression')
     })
 
@@ -129,21 +138,40 @@ export default function VideoTestPage() {
     }
   }
 
-  const toggleBackgroundBlur = async () => {
+  const applyVideoEffect = async (effect: 'none' | 'blur' | 'cosmic' | 'study' | 'temple') => {
     if (!callRef.current) return
-    const newState = !isBlurred
+    
+    // Optimistic update
+    const prevEffect = activeVideoEffect
+    setActiveVideoEffect(effect)
+
     try {
-        await callRef.current.updateInputSettings({
-            video: {
-                processor: newState ? { type: 'background-blur' } : { type: 'none' }
+        let processor: any = { type: 'none' }
+        
+        if (effect === 'blur') {
+            processor = { type: 'background-blur' }
+        } else if (effect === 'cosmic' || effect === 'study' || effect === 'temple') {
+            // Background replacement with local public assets
+            const baseUrl = window.location.origin
+            processor = { 
+                type: 'background-image', 
+                config: { source: `${baseUrl}/backgrounds/${effect}.png` } 
             }
+        }
+
+        await callRef.current.updateInputSettings({
+            video: { processor }
         })
-        setIsBlurred(newState)
     } catch (e) {
-        console.error('Background blur toggle failed', e)
-        // Re-sync state
+        console.error('Video effect change failed', e)
+        setActiveVideoEffect(prevEffect)
+        // Re-sync
         const settings = await callRef.current.getInputSettings()
-        setIsBlurred(settings?.video?.processor?.type === 'background-blur')
+        const videoProc = settings?.video?.processor?.type
+        if (videoProc === 'background-blur') setActiveVideoEffect('blur')
+        else if (videoProc === 'background-image') {
+             // Logic to re-sync specific image could be added here
+        } else setActiveVideoEffect('none')
     }
   }
 
@@ -218,30 +246,51 @@ export default function VideoTestPage() {
                     </p>
                 </button>
                 
-                <button 
-                    onClick={toggleBackgroundBlur}
-                    disabled={loading || !!error}
-                    className={`w-full text-left p-6 rounded-[32px] transition-all border group relative overflow-hidden ${
-                        isBlurred 
-                        ? 'bg-gold-500/10 border-gold-500/40 shadow-[0_0_20px_rgba(212,160,23,0.1)]' 
-                        : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10'
-                    }`}
-                >
-                    <div className="flex justify-between items-start mb-4">
-                        <div className={`p-3 rounded-2xl ${isBlurred ? 'bg-gold-500 text-black' : 'bg-white/5 text-white/40 group-hover:text-white transition-colors'}`}>
-                            <Sparkles className="w-6 h-6" />
-                        </div>
-                        {isBlurred && (
-                            <span className="text-[8px] bg-gold-500 text-black px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Active</span>
-                        )}
+                <div className="space-y-3">
+                    <h3 className="text-white font-bold text-[10px] uppercase tracking-widest pl-2 mb-4 opacity-50">Ambienti e Privacy</h3>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                        <button 
+                            onClick={() => applyVideoEffect(activeVideoEffect === 'blur' ? 'none' : 'blur')}
+                            className={`p-3 rounded-2xl border transition-all flex flex-col items-center gap-2 group ${
+                                activeVideoEffect === 'blur' ? 'bg-gold-500/10 border-gold-500/40' : 'bg-white/5 border-white/5 hover:border-white/10'
+                            }`}
+                        >
+                            <Sparkles className={`w-4 h-4 ${activeVideoEffect === 'blur' ? 'text-gold-500' : 'text-white/40'}`} />
+                            <span className="text-[8px] uppercase font-bold tracking-widest">Sfocato</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => applyVideoEffect(activeVideoEffect === 'cosmic' ? 'none' : 'cosmic')}
+                            className={`p-3 rounded-2xl border transition-all flex flex-col items-center gap-2 group ${
+                                activeVideoEffect === 'cosmic' ? 'bg-gold-500/10 border-gold-500/40' : 'bg-white/5 border-white/5 hover:border-white/10'
+                            }`}
+                        >
+                            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 opacity-60" />
+                            <span className="text-[8px] uppercase font-bold tracking-widest">Cosmo</span>
+                        </button>
+
+                        <button 
+                            onClick={() => applyVideoEffect(activeVideoEffect === 'study' ? 'none' : 'study')}
+                            className={`p-3 rounded-2xl border transition-all flex flex-col items-center gap-2 group ${
+                                activeVideoEffect === 'study' ? 'bg-gold-500/10 border-gold-500/40' : 'bg-white/5 border-white/5 hover:border-white/10'
+                            }`}
+                        >
+                            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-800 to-orange-400 opacity-60" />
+                            <span className="text-[8px] uppercase font-bold tracking-widest">Studio</span>
+                        </button>
+
+                        <button 
+                            onClick={() => applyVideoEffect(activeVideoEffect === 'temple' ? 'none' : 'temple')}
+                            className={`p-3 rounded-2xl border transition-all flex flex-col items-center gap-2 group ${
+                                activeVideoEffect === 'temple' ? 'bg-gold-500/10 border-gold-500/40' : 'bg-white/5 border-white/5 hover:border-white/10'
+                            }`}
+                        >
+                            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-300 opacity-60" />
+                            <span className="text-[8px] uppercase font-bold tracking-widest">Tempio</span>
+                        </button>
                     </div>
-                    <h3 className="text-white font-bold text-xs uppercase tracking-widest mb-2">Privacy & Sfondo</h3>
-                    <p className="text-white/40 text-[10px] leading-relaxed">
-                       {isBlurred 
-                        ? 'Sfondo sfocato per proteggere la tua intimità domestica.' 
-                        : 'Sfoca lo sfondo per concentrare l\'energia solo su di te.'}
-                    </p>
-                </button>
+                </div>
 
                 <div className="p-6 rounded-[32px] bg-emerald-500/5 border border-emerald-500/10">
                     <div className="flex items-center gap-3 mb-3">

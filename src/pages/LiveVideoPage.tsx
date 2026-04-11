@@ -23,6 +23,11 @@ export default function LiveVideoPage() {
   const [successData, setSuccessData] = useState<{ credits: number, euro: string } | null>(null)
   const [attachments] = useState<any[]>([])
 
+  // Staff Only States
+  const [isRecording, setIsRecording] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [transcriptionText, setTranscriptionText] = useState<string[]>([])
+
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
@@ -69,6 +74,19 @@ export default function LiveVideoPage() {
          navigate('/area-personale')
       }
     } catch (e: any) { alert(e.message || "Errore chiusura."); setIsEnding(false) }
+  }
+
+  const toggleRecording = () => {
+     // Mock recording toggle for now
+     setIsRecording(!isRecording)
+     // alert(isRecording ? "Registrazione interrotta" : "Registrazione avviata")
+  }
+
+  const toggleTranscription = () => {
+     setIsTranscribing(!isTranscribing)
+     if (!isTranscribing) {
+        setTranscriptionText(["[SISTEMA]: Trascrizione avviata...", "[VALERIA]: Benvenuta anima cara, sento un'energia positiva oggi..."])
+     }
   }
 
   const currentTotalCost = (sessionInfo && sessionInfo.costCredits) ? Math.min(sessionInfo.costCredits, Math.ceil((seconds/60) * 1.0)) : 0
@@ -159,6 +177,47 @@ export default function LiveVideoPage() {
           <button onClick={handleEndSession} className="mt-8 w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-lg shadow-red-500/20 transition-all">
              Concludi Sessione
           </button>
+
+          {/* STAFF ONLY: Control Panel */}
+          {isStaff && (
+             <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
+                <h3 className="text-[10px] uppercase tracking-widest font-black text-gold-500 mb-2">Pannello Staff</h3>
+                
+                <div className="grid grid-cols-2 gap-2">
+                    <button 
+                        onClick={toggleRecording}
+                        className={`py-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${isRecording ? 'bg-red-500/10 border-red-500/40 text-red-500' : 'bg-white/5 border-white/5 text-white/40'}`}
+                    >
+                        <span className={`w-2 h-2 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-white/20'}`} />
+                        <span className="text-[8px] uppercase font-bold tracking-widest">{isRecording ? 'REC In Corso' : 'Registra'}</span>
+                    </button>
+                    
+                    <button 
+                        onClick={toggleTranscription}
+                        className={`py-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${isTranscribing ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-500' : 'bg-white/5 border-white/5 text-white/40'}`}
+                    >
+                        <span className="text-xs">📝</span>
+                        <span className="text-[8px] uppercase font-bold tracking-widest">Trascrizione AI</span>
+                    </button>
+                </div>
+
+                {isTranscribing && (
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="bg-black/40 border border-white/5 rounded-2xl p-4 max-h-40 overflow-y-auto custom-scrollbar"
+                    >
+                        <div className="space-y-2">
+                             {transcriptionText.map((t, i) => (
+                                 <p key={i} className="text-[9px] leading-relaxed text-white/60 italic border-l border-gold-500/30 pl-2">
+                                     {t}
+                                 </p>
+                             ))}
+                        </div>
+                    </motion.div>
+                )}
+             </div>
+          )}
         </div>
 
         {/* Video Main */}
