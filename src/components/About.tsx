@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 
 type PillarIcon = 'structure' | 'vision' | 'care' | 'tradition'
 
@@ -183,20 +184,12 @@ export default function About() {
                </div>
             </div>
  
-            <div className="mt-8 flex items-center gap-4">
-              <a href="#prenota" className="btn-gold">
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link to="/tarocchi" className="btn-gold">
+                Scopri il mondo dei Tarocchi
+              </Link>
+              <a href="#prenota" className="text-white/60 hover:text-gold-400 text-sm font-bold uppercase tracking-widest transition-colors">
                 Prenota ora
-              </a>
-              <a
-                href="https://stese.nonsolotarocchi.it"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gold-400 text-sm hover:text-gold-300 transition-colors flex items-center gap-1"
-              >
-                Prova le carte gratis
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
               </a>
             </div>
           </motion.div>

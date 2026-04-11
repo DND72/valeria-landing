@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom'
 
 const services = [
   {
-    title: "Consulto Rapido (10 min)",
-    description: "Ideale per chi cerca una risposta immediata a un dubbio specifico. Attraverso una stesa mirata di Arcani Maggiori, Valeria analizza il fulcro della questione fornendo chiarezza e orientamento veloce. Perfetto per domande dirette su amore, lavoro o scelte imminenti che richiedono una visione esterna e neutrale.",
-    link: "/area-personale",
-    icon: "⚡"
+    title: "Consulto Evolutivo",
+    description: "Un'analisi profonda dello specchio del presente attraverso i Tarocchi di Marsiglia. Valeria decodifica i simboli arcaici per identificare i blocchi energetici e le potenzialità latenti, offrendo una guida chiara per orientarsi nelle scelte di vita più complesse.",
+    link: "/tarocchi",
+    icon: "🔮"
   },
   {
-    title: "Coaching Evolutivo (30 min)",
-    description: "Un percorso più profondo che utilizza i Tarocchi di Marsiglia come specchio dell'anima. In questa sessione di mezz'ora, non ci si limita a guardare il futuro, ma si indagano le radici psicologiche del presente. Utile per chi si sente bloccato in schemi ripetitivi o deve affrontare una transizione di vita significativa.",
+    title: "Coaching Personale",
+    description: "Un percorso strutturato di crescita che trasforma la consapevolezza in azione. Attraverso sessioni individuali mirate, Valeria ti accompagna nel raggiungimento di obiettivi concreti, superando ostacoli ricorrenti e potenziando la tua visione strategica personale.",
     link: "/crescita-personale",
     icon: "🌱"
   },

@@ -9,6 +9,7 @@ import { labelForPresence } from '../lib/valeriaPresence'
 // Solo pagine dedicate, niente scroll anchors
 const links = [
   { label: 'Chi è Valeria', href: '/chi-sono' },
+  { label: 'Tarocchi', href: '/tarocchi' },
   { label: 'Crescita personale', href: '/crescita-personale' },
   { label: 'La Stanza Sicura', href: '/stanza-sicura' },
   { label: '🌌 Cielo Zodiacale', href: '/cielo' },

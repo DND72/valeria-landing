@@ -8,9 +8,6 @@ import Hero from './components/Hero'
 import Stats from './components/Stats'
 import About from './components/About'
 import Gallery from './components/Gallery'
-import HowItWorks from './components/HowItWorks'
-import Reviews from './components/Reviews'
-import TarotAppPromo from './components/TarotAppPromo'
 import AstrologyPromo from './components/AstrologyPromo'
 import ServicesGrid from './components/ServicesGrid'
 import HomeFaq from './components/HomeFaq'
@@ -50,6 +47,7 @@ import HeartTidesPage from './pages/HeartTidesPage'
 import MyLiveConsultsPage from './pages/dashboard/MyLiveConsultsPage'
 import StanzaSicuraPage from './pages/StanzaSicuraPage'
 import AboutPage from './pages/AboutPage'
+import TarocchiPage from './pages/TarocchiPage'
 import TarocchiAmorePage from './pages/verticals/TarocchiAmore'
 import TarocchiLavoroPage from './pages/verticals/TarocchiLavoro'
 import TarocchiEvolutiviPage from './pages/verticals/TarocchiEvolutivi'
@@ -62,9 +60,6 @@ function HomePage() {
       <Stats />
       <About />
       <Gallery />
-      <HowItWorks />
-      <Reviews />
-      <TarotAppPromo />
       <AstrologyPromo />
       <ServicesGrid />
       <HomeFaq />
@@ -104,6 +99,7 @@ function AppRoutes() {
             <Route path="/gestione-recensioni" element={<StaffGuard><StaffReviewsPage /></StaffGuard>} />
             <Route path="/gestione-commenti-blog" element={<StaffGuard><StaffBlogCommentsPage /></StaffGuard>} />
             <Route path="/grazie" element={<GraziePage />} />
+            <Route path="/tarocchi" element={<TarocchiPage />} />
             <Route path="/crescita-personale" element={<PersonalGrowthPage />} />
             <Route path="/stanza-sicura" element={<StanzaSicuraPage />} />
             <Route path="/chi-sono" element={<AboutPage />} />
