@@ -10,7 +10,10 @@ import { registerStaffReviewRoutes } from './staffReviewsRoutes.js'
 import { registerStaffAnalyticsRoutes } from './staffAnalyticsRoutes.js'
 import { registerStaffBookingRoutes } from './staffBooking.js'
 import { askLenormandMentor } from '../lib/lenormandRAG.js'
-import { generateConsultationSummary } from '../lib/gemini.js'
+import { 
+  generateConsultationSummary, 
+  generateLiveOracleInsight 
+} from '../lib/gemini.js'
 
 const noteBody = z.object({
   body: z.string().min(1).max(20000),
@@ -597,6 +600,18 @@ export function createStaffRouter(pool: Pool): Router {
     } catch (e) {
       console.error('[staff summarize]', e)
       res.status(500).json({ error: 'Errore generazione riassunto' })
+    }
+  })
+
+  // Richiesta Oracolo Live (Sussurro di Gemini)
+  r.post('/live-oracle', async (req, res) => {
+    try {
+      const { transcript, cards, astral } = req.body
+      const insight = await generateLiveOracleInsight(transcript || "", cards || [], astral || null)
+      res.json({ insight })
+    } catch (error: any) {
+      console.error('[live-oracle route] Error:', error)
+      res.status(500).json({ error: error.message })
     }
   })
 

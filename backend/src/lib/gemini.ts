@@ -289,3 +289,37 @@ export async function generateConsultationSummary(transcript: string, clientName
   }
 }
 
+export async function generateLiveOracleInsight(transcript: string, cards: string[], astral: any): Promise<string> {
+  const client = getGeminiClient()
+  
+  const sysPrompt = `Sei il "Sussurro dell'Oracolo", un mentore silenzioso e intuitivo che assiste Valeria Di Pace durante un consulto live di tarocchi e coaching.
+  Ricevi la trascrizione in tempo reale, le carte estratte e il profilo astrale del cliente.
+  
+  IL TUO COMPITO:
+  Fornire a Valeria una SINGOLA intuizione profonda, breve e folgorante (massimo 2 frasi). Non devi spiegare le carte, ma suggerire una connessione "invisibile" che Valeria può usare per sbloccare il consulto.
+  
+  TONO: Mistico, saggio, quasi poetico. Parla direttamente a Valeria.
+  ESEMPIO: "Valeria, l'imperatore nel tema del cliente è ferito. La Morte estratta suggerisce che è tempo di lasciare il potere per trovare la pace."`
+
+  const userPrompt = `
+  Trascrizione finora: ${transcript.slice(-2000)}
+  Carte estratte: ${cards.join(', ')}
+  Profilo Astrale Cliente: ${JSON.stringify(astral)}
+  
+  Fornisci il tuo sussurro.`
+
+  const model = client.getGenerativeModel({ 
+    model: 'gemini-2.0-flash',
+    systemInstruction: sysPrompt
+  })
+
+  try {
+    const result = await model.generateContent(userPrompt)
+    return result.response.text() || 'L\'oracolo resta in silenzio...'
+  } catch (err: any) {
+    console.error('[live-oracle-gemini] Error:', err)
+    return "Le nebbie del tempo impediscono la visione ora."
+  }
+}
+
+

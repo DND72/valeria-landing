@@ -27,6 +27,8 @@ export default function LiveVideoPage() {
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [isSummarizing, setIsSummarizing] = useState(false)
+  const [isInvokingOracle, setIsInvokingOracle] = useState(false)
+  const [oracleInsight, setOracleInsight] = useState<string | null>(null)
   const [transcriptionText, setTranscriptionText] = useState<string[]>([])
 
   const MAJOR_ARCANA = [
@@ -134,6 +136,25 @@ export default function LiveVideoPage() {
         alert("Errore generazione riassunto: " + e.message)
      } finally {
         setIsSummarizing(false)
+     }
+  }
+
+  const handleInvokeOracle = async () => {
+     setIsInvokingOracle(true)
+     try {
+        const res = await apiJson<any>(getToken, `/api/staff/live-oracle`, {
+            method: 'POST',
+            body: JSON.stringify({ 
+                transcript: transcriptionText.join("\n"),
+                cards: drawnCards.map(c => MAJOR_ARCANA[c]),
+                astral: clientAstral
+            })
+        })
+        setOracleInsight(res.insight)
+     } catch (e: any) {
+        console.error("Oracle error:", e)
+     } finally {
+        setIsInvokingOracle(false)
      }
   }
 
@@ -282,7 +303,32 @@ export default function LiveVideoPage() {
                         <span className="text-xs">📝</span>
                         <span className="text-[8px] uppercase font-bold tracking-widest">Trascrizione AI</span>
                     </button>
+
+                    <button 
+                        onClick={handleInvokeOracle}
+                        disabled={isInvokingOracle}
+                        className={`py-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all ${oracleInsight ? 'bg-gold-500/10 border-gold-500/40 text-gold-500' : 'bg-white/5 border-white/5 text-white/40'}`}
+                    >
+                        <span className="text-xs">{isInvokingOracle ? '⌛' : '👁️'}</span>
+                        <span className="text-[8px] uppercase font-bold tracking-widest">Invoca Oracolo</span>
+                    </button>
                 </div>
+
+                {oracleInsight && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 bg-gold-500/5 border border-gold-500/20 rounded-2xl relative overflow-hidden"
+                    >
+                        <div className="flex items-center gap-2 mb-2">
+                             <span className="text-[8px] uppercase font-black text-gold-500 tracking-widest">Sussurro dell'Oracolo</span>
+                             <div className="flex-1 h-px bg-gold-500/20" />
+                        </div>
+                        <p className="text-[10px] italic leading-relaxed text-white/80 font-serif">
+                            "{oracleInsight}"
+                        </p>
+                    </motion.div>
+                )}
 
                 {/* Secret Tarot Card Pad */}
                 <div className="bg-black/20 border border-white/5 rounded-2xl p-4 mt-4">
