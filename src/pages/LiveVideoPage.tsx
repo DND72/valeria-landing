@@ -28,6 +28,10 @@ export default function LiveVideoPage() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [transcriptionText, setTranscriptionText] = useState<string[]>([])
 
+  // Astral Data for Lower Thirds
+  const [clientAstral, setClientAstral] = useState<any>(null)
+  const valeriaAstral = { sole: 'Ariete', luna: 'Pesci', asc: 'Scorpione' }
+
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
@@ -60,6 +64,19 @@ export default function LiveVideoPage() {
     const poll = setInterval(fetchSessionStatus, 5000)
     return () => { isMounted = false; clearInterval(poll) }
   }, [id, getToken, dailyRoomUrl, isEnding, isLoaded])
+
+  // Fetch Client Astral Data
+  useEffect(() => {
+    if (!id || !isLoaded) return
+    const fetchAstral = async () => {
+        try {
+            // Tentativo di recuperare i dati astrali del cliente coinvolto nella sessione
+            const res = await apiJson<any>(getToken, `/api/booking/session/${id}/astral-context`)
+            if (res.astral) setClientAstral(res.astral)
+        } catch (e) { console.warn('[astral fetch]', e) }
+    }
+    void fetchAstral()
+  }, [id, getToken, isLoaded])
 
   const handleEndSession = async () => {
     if (!window.confirm(`Terminare il videoconsulto?`)) return
@@ -223,12 +240,76 @@ export default function LiveVideoPage() {
         {/* Video Main */}
         <div className="flex-1 bg-black relative flex items-center justify-center p-4 md:p-8 overflow-hidden">
           {dailyRoomUrl ? (
-            <div className="w-full h-full max-w-6xl aspect-video bg-zinc-900 rounded-[32px] md:rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border-2 border-gold-500/30 relative">
+            <div className="w-full h-full max-w-6xl aspect-video bg-zinc-900 rounded-[32px] md:rounded-[48px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border-2 border-gold-500/30 relative group">
                 <iframe 
                     ref={iframeRef} src={dailyRoomUrl}
                     allow="camera; microphone; fullscreen; display-capture; autoplay"
                     className="w-full h-full border-none" title="Video"
                 />
+
+                {/* 🏷️ Lower Thirds Overlay */}
+                <AnimatePresence>
+                    {!isEnding && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 50 }}
+                            className="absolute bottom-8 left-8 right-8 pointer-events-none z-50 flex items-end justify-between"
+                        >
+                            {/* Valeria's Identity */}
+                            <div className="bg-black/40 backdrop-blur-2xl border-l-[3px] border-gold-500 p-4 rounded-r-3xl flex items-center gap-6 shadow-2xl">
+                                <div>
+                                    <h4 className="text-white font-serif font-black text-xs uppercase tracking-[0.2em] leading-none mb-1.5">Valeria Di Pace</h4>
+                                    <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold">Mentore Evolutivo</p>
+                                </div>
+                                <div className="h-8 w-px bg-white/10" />
+                                <div className="flex gap-4">
+                                    <div className="text-center">
+                                         <span className="text-xs block text-amber-400">☉</span>
+                                         <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.sole}</span>
+                                    </div>
+                                    <div className="text-center">
+                                         <span className="text-xs block text-blue-300">☽</span>
+                                         <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.luna}</span>
+                                    </div>
+                                    <div className="text-center">
+                                         <span className="text-xs block text-purple-400">🏹</span>
+                                         <span className="text-[7px] uppercase font-black text-white/60">{valeriaAstral.asc}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Client's Identity (if available) */}
+                            {clientAstral && (
+                                <motion.div 
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="bg-black/40 backdrop-blur-2xl border-r-[3px] border-indigo-400 p-4 rounded-l-3xl flex items-center gap-6 shadow-2xl text-right"
+                                >
+                                    <div className="flex gap-4">
+                                        <div className="text-center">
+                                             <span className="text-xs block text-indigo-300">☉</span>
+                                             <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.sole}</span>
+                                        </div>
+                                        <div className="text-center">
+                                             <span className="text-xs block text-indigo-200">☽</span>
+                                             <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.luna}</span>
+                                        </div>
+                                        <div className="text-center">
+                                             <span className="text-xs block text-indigo-400">🏹</span>
+                                             <span className="text-[7px] uppercase font-black text-white/60">{clientAstral.asc}</span>
+                                        </div>
+                                    </div>
+                                    <div className="h-8 w-px bg-white/10" />
+                                    <div>
+                                        <h4 className="text-white font-serif font-black text-xs uppercase tracking-[0.2em] leading-none mb-1.5">{sessionInfo?.inviteeName || 'Cliente'}</h4>
+                                        <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold">Viaggiatore Astrale</p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center">
