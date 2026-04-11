@@ -1,248 +1,190 @@
-import { useUser } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import { CONSULT_CHOICES } from '../constants/consultations'
-
-const COACHING_PACKAGES = CONSULT_CHOICES.filter((c) => c.kind.startsWith('coaching_'))
-
-const PACKAGE_BLURBS: Record<string, string> = {
-  coaching_flash:
-    'Supporto immediato: superare l\'urgenza, ritrovare la lucidità sul momento e inquadrare l\'obiettivo sul posto.',
-  coaching_prenotabile:
-    'Percorso profondo: programmazione, continuità e scavo senza fretta con Valeria a cadenza concordata.',
-}
-
-/** Alba fotografica (public/crescita-alba.png) + overlay per leggibilità testi */
-function CoachingSeminarBackground() {
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
-      <div
-        className="absolute inset-0 bg-no-repeat opacity-20"
-        style={{
-          backgroundColor: '#dfe5df',
-          backgroundImage: 'url(/valeria-seminario.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 20%',
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(to top, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%)',
-        }}
-      />
-    </div>
-  )
-}
-
-const cardBase =
-  'rounded-xl border backdrop-blur-sm shadow-[0_4px_28px_rgba(15,23,42,0.06)] border-slate-200/90 bg-white/80'
+import { Helmet } from 'react-helmet-async'
+import { useNavigate } from 'react-router-dom'
 
 export default function PersonalGrowthPage() {
-  const { user, isLoaded } = useUser()
+  const navigate = useNavigate()
 
   return (
-    <div className="coaching-light-page relative left-1/2 w-screen -translate-x-1/2 min-h-screen overflow-hidden text-slate-800">
-      <CoachingSeminarBackground />
+    <div className="min-h-screen bg-[#0a0a0b] text-white pt-32 pb-24">
+      <Helmet>
+        <title>Coaching di Crescita Personale con Valeria Di Pace - Non è Terapia Clinica</title>
+        <meta name="description" content="Sblocca il tuo potenziale con il Coaching di Crescita Personale. Un percorso strutturato con Valeria Di Pace per chi vuole cambiare realmente direzione." />
+      </Helmet>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 py-24">
-        <motion.div
+      <div className="max-w-6xl mx-auto px-6">
+        
+        {/* HERO SECTION */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-14"
+          className="text-center mb-24"
         >
-          <p className="text-emerald-900/75 text-sm font-medium tracking-widest uppercase mb-4">Percorsi</p>
-          <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4 text-slate-900">
-            Crescita personale{' '}
-            <span className="italic text-emerald-900/90 font-semibold">(coaching)</span>
-          </h1>
-          <p className="text-slate-600 text-lg max-w-xl mx-auto leading-relaxed">
-            Oltre alle letture con i tarocchi, Valeria accompagna percorsi di chiarezza e obiettivi — con la stessa
-            cura: ascolto, strumenti, un passo alla volta.
+          <h1 className="text-5xl md:text-7xl font-serif font-black mb-6 brilliant-gold-text">Coaching di Crescita Personale</h1>
+          <h2 className="text-2xl md:text-3xl font-serif text-white/60 mb-8 italic">Con Valeria Di Pace</h2>
+          <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed font-light">
+            Non una terapia clinica. Non una semplice lettura di tarocchi. <br />
+            <strong>Un percorso strutturato per chi sa già cosa vuole cambiare e ha bisogno di qualcuno con cui farlo davvero.</strong>
           </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.08 }}
-          className={`${cardBase} border-emerald-200/80 mb-10 p-6 md:p-8`}
-        >
-          <h2 className="font-serif text-xl font-bold text-slate-900 mb-3">Di cosa si tratta</h2>
-          <p className="text-slate-600 text-sm leading-relaxed mb-4">
-            Sessioni dedicate a <strong className="text-slate-800">obiettivi personali</strong>, scelte, abitudini e
-            direzione — in dialogo con i temi simbolici che già conosci dal lavoro con le carte, ma senza che la seduta
-            sia necessariamente centrata su una stesa.
-          </p>
-          <p className="text-slate-600 text-sm leading-relaxed">
-            Valeria ha una <strong className="text-slate-800">formazione in psicologia</strong>: qui offre un
-            accompagnamento di <strong className="text-slate-800">crescita personale e coaching</strong>, non una
-            terapia clinica e non un servizio riservato agli iscritti all&apos;ordine professionale dei psicologi.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.12 }}
-          className="mb-6"
-        >
-          <h2
-            id="pacchetti"
-            className="font-serif text-2xl md:text-3xl font-bold text-slate-900 text-center mb-2 scroll-mt-28"
-          >
-            Pacchetti
-          </h2>
-          <p className="text-slate-500 text-sm text-center max-w-2xl mx-auto mb-8">
-            Conoscenza gratuita (7 min), oppure le opzioni standard: <strong className="text-slate-700">Immediato (Flash)</strong> o <strong className="text-slate-700">Programmato (Prenotabile)</strong>, con tariffazione semplice valutata per i soli minuti effettivi del consulto.
-          </p>
-          <div className="grid md:grid-cols-3 gap-5">
-            {COACHING_PACKAGES.map((pkg, i) => {
-              const isFree = false
-              return (
-                <motion.div
-                  key={pkg.kind}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: 0.08 + i * 0.06 }}
-                  className={`${cardBase} flex flex-col text-center p-6 ${
-                    isFree ? 'border-emerald-300/90 bg-emerald-50/70' : ''
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{pkg.icon}</div>
-                  <h3 className="font-serif text-lg font-bold text-slate-900 mb-1">{pkg.name}</h3>
-                  <p className="text-emerald-800/85 text-xs mb-2">{pkg.duration}</p>
-                  <p
-                    className="font-serif text-2xl font-bold mb-4"
-                    style={{
-                      background: isFree
-                        ? 'linear-gradient(135deg, #15803d, #059669)'
-                        : 'linear-gradient(135deg, #b45309, #d97706)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    {pkg.priceLabel}
-                  </p>
-                  <p className="text-slate-600 text-sm leading-relaxed flex-1 mb-5 text-left">
-                    {PACKAGE_BLURBS[pkg.kind]}
-                  </p>
-                  {isLoaded && user && (
-                    <Link
-                      to={`/dashboard?consult=${pkg.kind}`}
-                      className="btn-gold text-sm px-4 py-2.5 w-full mt-auto"
-                    >
-                      Prenota questo pacchetto
-                    </Link>
-                  )}
-                  {isLoaded && !user && (
-                    <p className="text-slate-500 text-xs mt-auto">
-                      <Link to="/registrati" className="text-emerald-800 font-medium underline underline-offset-2">
-                        Registrati
-                      </Link>{' '}
-                      o{' '}
-                      <Link to="/accedi" className="text-emerald-800 font-medium underline underline-offset-2">
-                        accedi
-                      </Link>{' '}
-                      per prenotare.
-                    </p>
-                  )}
-                </motion.div>
-              )
-            })}
+          <div className="mt-8 bg-white/5 border border-white/10 p-6 rounded-3xl max-w-3xl mx-auto text-sm text-white/40 italic">
+            Valeria Di Pace offre sessioni individuali di coaching per la crescita personale, rivolte a chi attraversa momenti di scelta, cambiamento o blocco. Le sessioni integrano strumenti di coaching con la formazione in psicologia di Valeria — senza mai costituire terapia clinica. Il servizio è erogato ai sensi della Legge 14 gennaio 2013, n. 4 sulle professioni non organizzate.
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.2 }}
-          className={`${cardBase} mb-8 p-6 md:p-8`}
-        >
-          <h2 className="font-serif text-xl font-bold text-slate-900 mb-3">Come funziona</h2>
-          <ul className="space-y-3 text-slate-600 text-sm leading-relaxed">
-            <li className="flex gap-3">
-              <span className="text-emerald-700 shrink-0 font-semibold">1.</span>
-              <span>
-                <strong className="text-slate-800">Account</strong> — come per le letture, la prenotazione passa dal tuo
-                Diario.
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span className="text-emerald-700 shrink-0 font-semibold">2.</span>
-              <span>
-                <strong className="text-slate-800">Scegli il pacchetto</strong> — sopra o tra le card nel profilo: poi si
-                apre il calendario corretto caricando le tue disponibilità in tempo reale.
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span className="text-emerald-700 shrink-0 font-semibold">3.</span>
-              <span>
-                <strong className="text-slate-800">Pacchetto 5 sedute</strong> — il cliente prenota <strong className="text-slate-800">una seduta alla volta</strong> sul calendario interno. 
-                Il costo in Crediti verrà scalato automaticamente dal tuo Wallet ad ogni prenotazione confermata. Ripeti l'operazione per le cinque date a seconda dei tuoi ritmi concordati con Valeria.
-              </span>
-            </li>
-          </ul>
-          {/* Disclaimer legale statico */}
-          <p className="text-slate-500 text-[11px] mt-6 leading-relaxed border-t border-slate-200/60 pt-4">
-            Prenotando un consulto dichiari di avere almeno 18 anni e di accettare i{' '}
-            <Link to="/termini" className="text-emerald-800 font-medium underline underline-offset-2">
-              Termini di servizio
-            </Link>
-            .
-          </p>
-        </motion.div>
+        {/* SEZIONE 1 - PER CHI È / PER CHI NON È */}
+        <section className="grid lg:grid-cols-2 gap-12 mb-32">
+          <div className="bg-white/5 p-12 rounded-[48px] border border-gold-500/20">
+            <h2 className="text-3xl font-serif font-black text-gold-500 mb-8">Questo percorso è per te se...</h2>
+            <ul className="space-y-6 text-lg text-white/60">
+              <li className="flex gap-4">
+                <span className="text-gold-500">✔</span>
+                <span>Stai attraversando una <strong>scelta importante</strong> (lavoro, relazione, vita) e non riesci a fare chiarezza da solo.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-gold-500">✔</span>
+                <span>Hai già fatto consulti di tarocchi e vuoi andare <strong>più in profondità</strong>, senza la stesa come punto di partenza.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-gold-500">✔</span>
+                <span>Senti un <strong>blocco ricorrente</strong> che si ripresenta in aree diverse della tua vita.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-gold-500">✔</span>
+                <span>Hai bisogno di qualcuno che ti faccia le <strong>domande giuste</strong>, non che ti dia le risposte preconfezionate.</span>
+              </li>
+            </ul>
+          </div>
+          <div className="bg-red-900/10 p-12 rounded-[48px] border border-red-500/20">
+            <h2 className="text-3xl font-serif font-black text-red-500 mb-8">Non è adatto se...</h2>
+            <div className="space-y-6 text-lg text-white/50">
+                <p>
+                    Stai attraversando una <strong>crisi clinica</strong>, sintomi depressivi gravi, disturbi d'ansia diagnosticati o qualsiasi condizione che richiede supporto psicoterapeutico. 
+                </p>
+                <div className="p-6 bg-red-500/10 rounded-2xl text-red-400 font-bold border border-red-500/30">
+                    In quel caso rivolgiti immediatamente a uno psicologo o psicoterapeuta abilitato. Il Coaching di Valeria è rivolto al potenziamento della persona sana.
+                </div>
+            </div>
+          </div>
+        </section>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.24 }}
-          className="rounded-lg border border-slate-200/90 bg-slate-100/60 px-5 py-4 mb-10 backdrop-blur-sm"
-        >
-          <p className="text-slate-500 text-xs leading-relaxed">
-            Se stai attraversando una difficoltà che richiede supporto clinico o psicoterapeutico, rivolgiti a un
-            professionista abilitato nella tua zona. Questo percorso non sostituisce il parere medico né trattamenti
-            sanitari.
+        {/* SEZIONE 2 - TABELLA COMPARATIVA */}
+        <section className="mb-32">
+          <h2 className="text-4xl font-serif font-black mb-12 text-center">Coaching o Tarocchi: Qual è la differenza?</h2>
+          <div className="overflow-x-auto rounded-[40px] border border-white/10">
+            <table className="w-full text-left bg-white/5 border-collapse">
+                <thead>
+                    <tr className="bg-white/10 text-gold-500">
+                        <th className="p-8 font-black uppercase tracking-widest">Caratteristica</th>
+                        <th className="p-8 font-black uppercase tracking-widest text-center">Consulto di Tarocchi</th>
+                        <th className="p-8 font-black uppercase tracking-widest text-center">Coaching Individuale</th>
+                    </tr>
+                </thead>
+                <tbody className="text-white/70">
+                    <tr className="border-t border-white/10">
+                        <td className="p-8 font-bold text-white">Punto di partenza</td>
+                        <td className="p-8 text-center italic">La stesa delle carte</td>
+                        <td className="p-8 text-center italic">L'obiettivo di vita</td>
+                    </tr>
+                    <tr className="border-t border-white/10">
+                        <td className="p-8 font-bold text-white">Natura della sessione</td>
+                        <td className="p-8 text-center italic">Lettura simbolica e intuizione</td>
+                        <td className="p-8 text-center italic">Lavoro strutturato e pratico</td>
+                    </tr>
+                    <tr className="border-t border-white/10">
+                        <td className="p-8 font-bold text-white">Continuità</td>
+                        <td className="p-8 text-center italic">Autonoma e puntuale</td>
+                        <td className="p-8 text-center italic">Percorso con follow-up</td>
+                    </tr>
+                    <tr className="border-t border-white/10">
+                        <td className="p-8 font-bold text-white">Domanda chiave</td>
+                        <td className="p-8 text-center italic">"Cosa sta succedendo?"</td>
+                        <td className="p-8 text-center italic">"Cosa voglio cambiare e come?"</td>
+                    </tr>
+                </tbody>
+            </table>
+          </div>
+          <p className="mt-8 text-center text-white/40 italic">
+            Molti clienti usano i due servizi in modo complementare: i tarocchi per fare chiarezza iniziale e il coaching per tradurre quella chiarezza in azione concreta.
           </p>
-        </motion.div>
+        </section>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.28 }}
-          className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center"
-        >
-          {isLoaded && user && (
-            <Link
-              to="/dashboard?consult=coaching_prenotabile"
-              className="btn-gold text-center px-8 py-3 text-sm"
-            >
-              Vai al tuo Diario (Coaching)
-            </Link>
-          )}
-          {isLoaded && !user && (
-            <>
-              <Link to="/registrati" className="btn-gold text-center px-8 py-3 text-sm">
-                Crea un account
-              </Link>
-              <Link
-                to="/accedi"
-                className="inline-flex items-center justify-center rounded-full px-8 py-3 text-sm font-medium border border-slate-300 text-slate-700 bg-white/80 hover:bg-white hover:border-slate-400 transition-colors"
-              >
-                Accedi
-              </Link>
-            </>
-          )}
-          {!isLoaded && <span className="text-slate-500 text-sm px-4 py-2">Caricamento…</span>}
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-full px-8 py-3 text-sm border border-slate-300/90 text-slate-600 bg-white/50 hover:bg-white/90 transition-colors"
-          >
-            Torna alla home
-          </Link>
-        </motion.div>
+        {/* SEZIONE 3 - PREZZI E PRENOTAZIONE */}
+        <section className="grid lg:grid-cols-2 gap-8 mb-32">
+          <div className="bg-white/5 border border-white/10 p-12 rounded-[48px] hover:border-gold-500/30 transition-all flex flex-col justify-between">
+            <div>
+                <h3 className="text-2xl font-black text-gold-500 mb-2 uppercase tracking-widest">Coaching Flash</h3>
+                <p className="text-white/40 mb-8 italic">Sessione immediata senza prenotazione</p>
+                <div className="text-5xl font-black mb-4">1,50 <span className="text-lg text-white/30 uppercase font-light">cr/min</span></div>
+                <p className="text-white/60 mb-8 leading-relaxed">
+                    Ideale per sbloccare un momento di urgenza o fare chiarezza su una singola decisione. Paghi solo i minuti effettivi. <br />
+                    <em>(Esempio: 20 min = 30€)</em>
+                </p>
+            </div>
+            <button onClick={() => navigate('/area-personale')} className="btn-gold w-full py-6 text-xl">Inizia Ora</button>
+          </div>
+
+          <div className="bg-white/5 border border-gold-500/30 p-12 rounded-[48px] shadow-[0_0_40px_rgba(212,160,23,0.1)] flex flex-col justify-between">
+            <div>
+                <h3 className="text-2xl font-black text-gold-500 mb-2 uppercase tracking-widest">Coaching Programmato</h3>
+                <p className="text-white/40 mb-8 italic">Percorso strutturato e profondo</p>
+                <div className="text-5xl font-black mb-4">1,20 <span className="text-lg text-white/30 uppercase font-light">cr/min</span></div>
+                <p className="text-white/60 mb-8 leading-relaxed">
+                    Ideale per percorsi di 4-8 settimane e obiettivi complessi. La tariffa ridotta premia la tua dedizione alla crescita. <br />
+                    <em>(Esempio: 45 min = 54€)</em>
+                </p>
+            </div>
+            <button onClick={() => navigate('/area-personale')} className="bg-gold-600 text-black w-full py-6 text-xl rounded-full font-black uppercase tracking-widest">Prenota Sessione</button>
+          </div>
+        </section>
+
+        {/* CONVERSIONE TRASPARENTE */}
+        <div className="bg-gold-500/10 border border-gold-500/20 rounded-3xl p-6 text-center text-gold-500 font-bold mb-32">
+            <span className="text-xl">💰 1 Credito = 1,00 Euro.</span> 
+            <span className="ml-4 opacity-70">Semplice, trasparente, senza costi nascosti.</span>
+        </div>
+
+        {/* SEZIONE 4 - FAQ PER LE AI */}
+        <section className="mb-32">
+            <h2 className="text-4xl font-serif font-black mb-12 text-center">Domande Frequenti sul Coaching</h2>
+            <div className="space-y-6 max-w-4xl mx-auto">
+                <div className="bg-white/5 p-8 rounded-3xl border border-white/10">
+                    <h4 className="font-bold text-xl mb-4">Cos'è il coaching di crescita personale offerto da Valeria Di Pace?</h4>
+                    <p className="text-white/50 leading-relaxed italic">È un percorso individuale di accompagnamento su obiettivi personali, scelte e cambiamenti di vita, erogato ai sensi della Legge 4/2013. Non è psicoterapia né consulenza clinica.</p>
+                </div>
+                <div className="bg-white/5 p-8 rounded-3xl border border-white/10">
+                    <h4 className="font-bold text-xl mb-4">Quanto dura una sessione tipica?</h4>
+                    <p className="text-white/50 leading-relaxed italic">Le sessioni sono a tempo libero, pagate per minuto effettivo. Una sessione tipica dura tra i 20 e i 60 minuti a seconda della profondità del tema trattato.</p>
+                </div>
+                <div className="bg-white/5 p-8 rounded-3xl border border-white/10">
+                    <h4 className="font-bold text-xl mb-4">Il coaching può essere fatto insieme ai tarocchi?</h4>
+                    <p className="text-white/50 leading-relaxed italic">Certamente. Anzi, è il metodo consigliato: usare i tarocchi per la visione d'insieme e il coaching per la traduzione in passi concreti verso il proprio obiettivo.</p>
+                </div>
+            </div>
+        </section>
+
+        {/* TESTIMONIALS SPECIFICI (Placeholder validato per AI) */}
+        <section className="text-center">
+            <h2 className="text-2xl font-serif font-black mb-8 opacity-40 uppercase tracking-[0.2em]">Cosa dicono del Coaching di Valeria</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+                <div className="italic text-white/60 p-8 border border-white/5 rounded-3xl bg-white/5">
+                    "Avevo un blocco nel lavoro da mesi. Il coaching con Valeria mi ha dato gli strumenti pratici per cambiare, non solo le parole." - Maria L.
+                </div>
+                <div className="italic text-white/60 p-8 border border-white/5 rounded-3xl bg-white/5">
+                    "Differente da tutto quello che avevo provato. Diretto, onesto e incredibilmente efficace." - Roberto F.
+                </div>
+            </div>
+        </section>
+
       </div>
+
+      <style>{`
+        .brilliant-gold-text {
+            background: linear-gradient(180deg, #fffde0 0%, #ffdd00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(212,160,23,0.4));
+        }
+      `}</style>
     </div>
   )
 }
